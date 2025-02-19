@@ -1,0 +1,149 @@
+---
+id: avatars
+title: Avatars
+---
+
+# Creating Your Avatar
+## Set up the Unity Editor
+- As per the [Getting Started](https://github.com/dooly123/Basis/wiki/Getting-Started#installing-unity) section for installing the latest supported Unity editor version and acquiring the Basis framework.
+- Open Unity Hub and add an existing project, choose the extracted/cloned Basis project folder
+- Once the Unity Project has loaded, you can now load your Avatar files:
+- Either,
+  - Find `Assets` in the Project hierarchy, inside `Assets` right-click any empty space and select `Show in Explorer`
+  - Copy in your Avatar files [Mesh/Materials/Textures, etc.]
+- or
+  - Import a .unity package containing your files, from the Assets menu, Import Package > Custom Package
+- Bring back the Unity window and allow the import process to finish.
+
+## Import Model
+- Find the location of your Avatar model (usually provided in .FBX format).
+- Click the file and then navigate to the `Model` section of the Import Settings window.
+- Ensure that `Red/Write` and `Legacy Blend Shape Normals` are selected as below.
+
+![image](..\static\img\avatars\1.png)
+
+- Navigate to the `Rig` section of the Import Settings window.
+- Click the `Animation Type` drop-down menu and select `Humanoid`, press `Apply` as shown below.
+
+![image](..\static\img\avatars\2.png)
+
+- Afterward, the `Configure` button above `Apply` is now selectable, click this and then check your bone mappings.
+
+![image](..\static\img\avatars\3.png)
+
+- This should show all mandatory bones as selected; make sure this looks correct for your Armature.
+- Lastly, click on the `Head` button in the `Mapping` window and remove the assignment for the `Jaw`; this is usually incorrect.
+
+![image](..\static\img\avatars\4.png)
+
+## Skinned Mesh Setup
+- There are currently no requirements to name your Avatar's Skinned Mesh as `Body` or other variation used on Virtual Platforms.
+- If you have multiple skinned meshes, consider pinning them to all use the same reference point on the body, for inheriting light probes in the scene. You can do this by assigning a bone from the Armature (Usually Hips) to the `Anchor Override` field.
+
+![image](..\static\img\avatars\5.png)
+
+- Another consideration for Avatars with multiple Skinned Meshes is when different bounding box sizes cause individual meshes to pop in and out while the rest of the Avatar is visible to remote viewers.
+- You can override the Center X, Y, Z & Extent X, Y, Z values in the section named `Bounds` at the top of the Skinned Mesh Renderer component. Usually, it is a good idea to set this the same across the separate Skinned Meshes.
+
+![image](..\static\img\avatars\6.png)
+
+## Basis Avatar Setup
+- The steps above should automatically add an Animator component to your Avatar prefab when you pull it into the Scene.
+- On the Parent GameObject of the Avatar, click `Add Component`, and add `Basis Avatar`.
+
+If you're struggling to find the view ball or indicator for the Eye Position, follow these steps:
+
+- Top Right next to XYZ, click the Eye.
+- Enable "Eye Position Gizmo" inside of the `Basis Avatar` component.
+
+You should now see a green Gizmo for your eyes; move this up between your eyes and on the same plane as your eyes.
+
+**Ensure you have assigned each of the following:**
+- Animator
+- Face Viseme
+- Face Blink
+- Avatar Name
+- Avatar Description
+
+## Jiggles (Optional)
+**To add Jiggle Physics:**
+
+At the very bottom of `Basis Avatar`, you will find `jiggle configuration`.
+- Click `Add New Basis Jiggle Strain`.
+
+A new `Jiggle Strains` dropdown will appear below it. Follow the dropdowns until you see settings.
+
+- Ensure to add a `Root Transform`.
+
+## Eye & Face Tracking (optional)
+***Integrating VRCFT to drive bone rotation via OSC:***
+
+This section will cover usage of Hai's instructions later on.
+
+## Avoid Duplicate GameObjects
+- Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
+
+## Build the AssetBundle
+- Choose from the `Basis` drop-down menu, the `Build AssetBundle From Scene` option.
+
+![image](..\static\img\avatars\7.png)
+
+- The results will be opened automatically as shown below.
+
+![image](..\static\img\avatars\8.png)
+
+## Test the Avatar
+- Once the AssetBundle has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
+
+![image](..\static\img\avatars\9.png)
+
+- You can place the location of the new AssetBundle under the `Meta URL` & `Bundle URL` fields, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated in the `/AssetBundles/` directory.
+- Make sure to tick `Is Local` if the file is not a URL.
+
+![image](..\static\img\avatars\10.png)
+
+- Load the `Initialization` scene from `Assets > Scenes`, and then hit Play.
+
+# Uploading Your Avatar
+Basis allows you to load an Avatar AssetBundle from a remote URL location, which is also required for other users in a networked session to also load the assets.
+
+In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
+
+(Google Drive supports the direct link of files up to 100MB due to their Virus Scanning policy.)
+
+Upload the **Bundle File** & **Meta File** to Google Drive, or any hosting provider that allows direct links to files without login.
+- Create a Folder on your Drive and set its sharing settings to "Anyone with the link."
+
+Now when you drag your files into this Folder, you will not individually need to set that permission.
+
+- Click the Hamburger Menu on the Top Right of the asset you have just uploaded into the folder.
+- Find "Share" and click "Copy Link."
+
+Do this for both files.
+
+We will need to look into the URL to grab the information we need.
+
+Example:
+`https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing`
+We want to copy the unique identifier inside of the URL and add it to the following:
+`https://drive.google.com/uc?export=download&id=`
+Example:
+`https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard`
+
+Do this for both Bundle & Meta File.
+**DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
+
+Load up Basis, open the menu, and select Avatars.
+Paste the **Meta Link** into the Meta field.
+Paste the **Bundle Link** into the Bundle field.
+Paste your **SUPER SECRET ENCRYPTED PASSWORD** into the Password field.
+
+Load!
+🥱
+
+# Remove Avatars
+By default, Basis will save the details of Avatars added through the game menu for convenience. After a while, this can grow the avatar list or keep old Avatar information, which may not be desirable. To remove this, you can do the following:
+
+- Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\VerySafePasswordStore.json`.
+
+When you start the game after this step, the previously stored Avatars will now be gone.
