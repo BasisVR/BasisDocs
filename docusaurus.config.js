@@ -18,7 +18,7 @@ const config = {
   url: 'https://docs.basisvr.org',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/BasisDocs/docs/',
+  baseUrl: '/BasisDocs/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -43,21 +43,23 @@ const config = {
       ({
         docs: {
           sidebarPath: './sidebars.js',
+          path: 'docs',
+          routeBasePath: 'docs',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          //editUrl:
+          //  'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
         },
-        blog: {
-          showReadingTime: true,
-          feedOptions: {
-            type: ['rss', 'atom'],
-            xslt: true,
-          },
+        //blog: {
+        //  showReadingTime: true,
+         // feedOptions: {
+         //   type: ['rss', 'atom'],
+         //   xslt: true,
+         // },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+            'https://github.com/BasisVR/BasisDocs/',
           // Useful options to enforce blogging best practices
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
@@ -74,11 +76,14 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       // Replace with your project's social card
-      image: 'img/docusaurus-social-card.jpg',
+      image: 'img/basisvr-social-card.jpg',
+      colorMode: {
+        defaultMode: 'dark',
+      },
       navbar: {
-        title: 'My Site',
+        title: 'BasisVR',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'BasisVR Logo',
           src: 'img/logo.svg',
         },
         items: [
@@ -112,16 +117,16 @@ const config = {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                label: 'Discord',
+                href: 'https://discord.gg/aCzSPKEW2v',
               },
               {
-                label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
-              },
+                label: 'BSky',
+                href: 'https://bsky.app/profile/basisvr.org',
+              },              
               {
                 label: 'X',
-                href: 'https://x.com/docusaurus',
+                href: 'https://x.com/basisvr',
               },
             ],
           },
@@ -129,17 +134,14 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
                 label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                href: 'https://github.com/BasisVR/Basis',
               },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        //copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Distributed under the MIT License. See MIT License for more information.`,
       },
       prism: {
         theme: prismThemes.github,
