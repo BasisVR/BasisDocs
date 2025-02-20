@@ -47,15 +47,15 @@ const config = {
           routeBasePath: 'docs',
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
-          //editUrl:
-          //  'https://github.com/facebook/docusaurus/tree/main/packages/create-docusaurus/templates/shared/',
+          editUrl:
+            'https://github.com/BasisVR/BasisDocs/',
         },
-        //blog: {
-        //  showReadingTime: true,
-         // feedOptions: {
-         //   type: ['rss', 'atom'],
-         //   xslt: true,
-         // },
+        /**blog: {
+          showReadingTime: true,
+          feedOptions: {
+            type: ['rss', 'atom'],
+            xslt: true,
+          },
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
@@ -64,7 +64,7 @@ const config = {
           onInlineTags: 'warn',
           onInlineAuthors: 'warn',
           onUntruncatedBlogPosts: 'warn',
-        //},
+        },*/
         theme: {
           customCss: './src/css/custom.css',
         },
