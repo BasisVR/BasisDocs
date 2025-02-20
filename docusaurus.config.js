@@ -84,18 +84,18 @@ const config = {
         title: 'BasisVR',
         logo: {
           alt: 'BasisVR Logo',
-          src: 'img/logo.svg',
+          src: 'img/BasisLogoSmall.png',
         },
         items: [
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Pages',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          //{to: '/blog', label: 'Blog', position: 'left'},
           {
-            href: 'https://github.com/facebook/docusaurus',
+            href: 'https://github.com/BasisVR/Basis',
             label: 'GitHub',
             position: 'right',
           },
@@ -108,9 +108,17 @@ const config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/intro',
+                label: 'Getting Started',
+                to: '/docs/getting-started',
               },
+              {
+                label: 'Avatars',
+                to: '/docs/avatars',
+              },
+              {
+                label: 'Worlds',
+                to: '/docs/worlds',
+              },              
             ],
           },
           {
