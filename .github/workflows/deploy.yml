@@ -4,8 +4,10 @@ on:
   push:
     branches:
       - main
-    # Review gh actions docs if you want to further define triggers, paths, etc
-    # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#on
+  # Allows external webhook trigger
+  repository_dispatch:
+    types:
+      - unity_ver_update
 
 jobs:
   build:
