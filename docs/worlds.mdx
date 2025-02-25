@@ -9,15 +9,15 @@ title: Worlds
 - Open Unity Hub and add an existing project, choose the extracted/cloned Basis project folder.
 - Once the Unity Project has loaded, you can now load your World files:
 - Either,
-  - Find 'Assets' in the Project hierarchy, inside 'Assets' right-click any empty space and select 'Show in Explorer'.
-  - Copy in your World files [Mesh/Materials/Textures, etc].
+  - Find `Assets` in the Project hierarchy, inside `Assets` right-click any empty space and select `Show in Explorer`.
+  - Copy in your World files [Mesh/Materials/Textures, etc.].
 - or
-  - Import a .unity package containing your files, from the Assets menu, Import Package > Custom Package.
+  - Import a .unity package containing your files, from the Assets menu, `Import Package > Custom Package`.
 - Bring back the Unity window and allow the import process to finish.
 
 ## Minimum Requirements for a functional Basis Scene
 - Import your world meshes or create a new 3D object, such as a Plane or Cube. Ensure a Collider is present.
-- Create a gameObject, give it a suitable name, and on the Inspector click 'Add Component' and find/select the Basis Scene component.
+- Create a gameObject, give it a suitable name, and on the Inspector click `Add Component` and find/select the Basis Scene component.
 
 ![image](..\static\img\worlds\1.png)
 
@@ -27,12 +27,12 @@ title: Worlds
 
 ![image](..\static\img\worlds\3.png)
 
-- Either way, make sure you place the gameObject of your spawn position of choice into the 'Spawn Point' field and then it will use the transform of that gameObject.
+- Either way, make sure you place the gameObject of your spawn position of choice into the `Spawn Point` field and then it will use the transform of that gameObject.
 
 ![image](..\static\img\worlds\4.png)
 
 ## Build the AssetBundle
-- Choose from the 'Basis' drop-down menu, the 'Build AssetBundle From Scene' option.
+- Choose from the `Basis` drop-down menu, the `Build AssetBundle From Scene` option.
 
 ![image](..\static\img\worlds\5.png)
 
@@ -41,14 +41,14 @@ title: Worlds
 ![image](..\static\img\worlds\6.png)
 
 ## Test the scene
-- Once the AssetBundle has been created, you can load this via the 'BootManager' prefab found at 'Assets > Prefabs > Boot'.
+- Once the AssetBundle has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
 
 ![image](..\static\img\worlds\7.png)
 
-- You can place the location of the new AssetBundle under the 'Meta URL' & 'Bundle URL' fields, along with the 'Unlock Password' provided in the 'dontuploadmepassword.txt' file generated in the '/AssetBundles/' directory.
+- You can place the location of the new AssetBundle under the `Meta URL` & `Bundle URL` fields, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated in the `/AssetBundles/` directory.
 
 ![image](..\static\img\worlds\8.png)
 
-- Load the 'Initialization' scene from 'Assets > Scenes', and then hit Play.
+- Load the `Initialization` scene from `Assets > Scenes`, and then hit Play.
 
 - You should then load in at the spawn location of your world.
