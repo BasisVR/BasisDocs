@@ -16,7 +16,7 @@ title: Avatars
 - Bring back the Unity window and allow the import process to finish.
 
 :::info
-If you place your content within a new directory "Assets > _UserContent" the default .gitignore file with the project will track changes in git on this folder.
+If you place your content within a new directory "Assets > _UserContent" the default .gitignore file with the project will hide changes in git on this folder.
 :::
 
 ## Import Model
@@ -88,15 +88,18 @@ This section will cover usage of Hai's instructions later on.
 - Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
 
 ## Build the AssetBundle
-- Choose from the `Basis` drop-down menu, the `Build AssetBundle From Scene` option.
+- At the bottom of the Basis Avatar componnent on your Avatar, make sure you tick the appropriate build targets for your content (Windows, Android etc)
+- Press the 'Create Avatar Bundle' button and wait for this process to complete.
 
 ![image](..\static\img\avatars\7.png)
 
-- The results will be opened automatically as shown below.
+- The results will be opened in a new window automatically as shown below.
 
 ![image](..\static\img\avatars\8.png)
 
-- Basis uses the .BEE file extension, which combines the asset bundle and meta data, in order to simplify user generated content.
+:::info
+Basis uses the .BEE file extension, which combines the asset bundle and meta data, in order to simplify user generated content.
+:::
 
 ## Test the Avatar
 - Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
