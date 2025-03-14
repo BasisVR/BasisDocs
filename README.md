@@ -6,7 +6,7 @@ Pull Requests created to contribute towards BasisDocs will automatically kick of
 
 Merged content to the repository will automatically kick off GitHub Actions to publish the content to pages.
 
-Published site can be found at https://docs.bassivr.org
+Published site can be found at https://docs.basisvr.org
 
 ### Contributing
 
