@@ -15,6 +15,10 @@ title: Avatars
   - Import a .unity package containing your files, from the Assets menu, Import Package > Custom Package
 - Bring back the Unity window and allow the import process to finish.
 
+:::info
+If you place your content within a new directory "Assets > _UserContent" the default .gitignore file with the project will track changes in git on this folder.
+:::
+
 ## Import Model
 - Find the location of your Avatar model (usually provided in .FBX format).
 - Click the file and then navigate to the `Model` section of the Import Settings window.
@@ -92,8 +96,10 @@ This section will cover usage of Hai's instructions later on.
 
 ![image](..\static\img\avatars\8.png)
 
+- Basis uses the .BEE file extension, which combines the asset bundle and meta data, in order to simplify user generated content.
+
 ## Test the Avatar
-- Once the AssetBundle has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
+- Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
 
 ![image](..\static\img\avatars\9.png)
 
@@ -105,7 +111,7 @@ This section will cover usage of Hai's instructions later on.
 - Load the `Initialization` scene from `Assets > Scenes`, and then hit Play.
 
 # Uploading Your Avatar
-Basis allows you to load an Avatar AssetBundle from a remote URL location, which is also required for other users in a networked session to also load the assets.
+Basis allows you to load an Avatar .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
 
 In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
 
