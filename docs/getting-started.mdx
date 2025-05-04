@@ -15,20 +15,26 @@ https://docs.unity3d.com/Manual/system-requirements.html
 - Standalone - https://unity.com/releases/editor/archive
 
 ## Compatible Unity Versions
-- As of today the latest compatible version of Unity 6 LTS is **6000.0.41f1**
+- As of today the latest compatible version of Unity 6 LTS is **6000.0.46f1**
 
 Direct Download via Unity Hub:\
-`unityhub://6000.0.41f1`
+`unityhub://6000.0.46f1`
 
 ## Additional Unity Modules
-- For building the Basis app, add "Windows Build Support (IL2CPP)" to project via the "Add modules"
+Add the following modules via the "Add modules" screen when installing the Unity Editor version:
+&check; Android Build Support
+L &check; OpenJDK
+L &check; Android SDK & NDK Tools
+&check; Linux Build Support (IL2CPP)
+&check; Linux Build Support (Mono)
+&check; Windows Build Support (IL2CPP)
 :::info
-If you only are only creating user generated content for Avatar and World creation, you may skip this additional module.
+Even if you only are only building user generated content for Avatar and World creation, you will still these additional modules for making this content available on these platforms.
 :::
 
 # Acquiring the Basis framework
 ## Git
-You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `Long-Term-Support` repository found at https://github.com/dooly123/Basis or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository, and then open the resulting Unity project on your local computer.
+You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `lts` repository found at https://github.com/BasisVR/Basis or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository, and then open the resulting Unity project on your local computer.
 
 ## Direct Zip Download
 For those wishing to forgo the Git experience
