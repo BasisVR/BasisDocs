@@ -108,16 +108,16 @@ Basis uses the .BEE file extension, which combines the asset bundle and meta dat
 :::
 
 ## Test the Avatar
-- Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Assets > Prefabs > Boot`.
+- Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
 
 ![image](..\static\img\avatars\9.png)
 
-- You can place the location of the new AssetBundle under the `Meta URL` & `Bundle URL` fields, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated in the `/AssetBundles/` directory.
+- You can place the location of the .BEE file under the `Combinned URL` fields as shown in the example below, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated within the `/AssetBundles/` directory.
 - Make sure to tick `Is Local` if the file is not a URL.
 
 ![image](..\static\img\avatars\10.png)
 
-- Load the `Initialization` scene from `Assets > Scenes`, and then hit Play.
+- Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play.
 
 # Uploading Your Avatar
 Basis allows you to load an Avatar .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
@@ -126,7 +126,7 @@ In order to support this, you will need to direct link to a remote location. For
 
 (Google Drive supports the direct link of files up to 100MB due to their Virus Scanning policy.)
 
-Upload the **Bundle File** & **Meta File** to Google Drive, or any hosting provider that allows direct links to files without login.
+Upload the **BEE file** to Google Drive, or any hosting provider that allows direct links to files without login.
 - Create a Folder on your Drive and set its sharing settings to "Anyone with the link."
 
 Now when you drag your files into this Folder, you will not individually need to set that permission.
@@ -145,20 +145,27 @@ We want to copy the unique identifier inside of the URL and add it to the follow
 Example:
 `https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard`
 
-Do this for both Bundle & Meta File.
+Do this for BEE file.
 **DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
 
 Load up Basis, open the menu, and select Avatars.
-Paste the **Meta Link** into the Meta field.
-Paste the **Bundle Link** into the Bundle field.
+![image](..\static\img\avatars\11.png)
+In the Avatar menu, select Add 'Add Avatar' in the top left.
+![image](..\static\img\avatars\12.png)
+Paste the **BEE File URL** into the field in the next winndow.
+![image](..\static\img\avatars\13.png)
 Paste your **SUPER SECRET ENCRYPTED PASSWORD** into the Password field.
+![image](..\static\img\avatars\14.png)
 
 Load!
 🥱
 
 # Remove Avatars
-By default, Basis will save the details of Avatars added through the game menu for convenience. Avatars can be removed by clicking on the Avatar in the menu and hitting the Red Delete Avatar button *(Currently no confirmation dialog is shown.)* After a while, this can grow the avatar list or keep old Avatar information, which may not be desirable. To remove all saved avatars, you can do the following:
+Basis will save the details of Avatars added through the game menu for convenience. Avatars can be removed by clicking on the Avatar in the menu and hitting the Red Delete Avatar button *(Currently no confirmation dialog is shown.)*
+![image](..\static\img\avatars\15.png)
+
+To remove all saved avatar information, outside of the game interface, you can also do the following:
 
 - Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\VerySafePasswordStore.json`.
 
-When you start the game after this step, the previously stored Avatars will now be gone.
+When you next reload the game the previously stored Avatars will now be gone.
