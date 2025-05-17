@@ -70,27 +70,49 @@ you first start the client.
 
 ### Compile and Run on Linux
 
-Assuming Ubuntu 22.04 
+#### Prerequisits Assuming Debian/Ubuntu
 
+For Ubuntu 22.04,
 `sudo add-apt-repository ppa:dotnet/backports`
+
+For Debian or other qurirky setups:
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Then continue installation:
 
 `sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
 
-`git clone`
+#### Get Basis
 
-Open a new terminal and cd /to/directory/with/Basis Server/
+Change to the folder you wish to download Basis to, and execute the following command:
+
+`git clone https://github.com/BasisVR/Basis`
+
+#### Build Basis Server
+
+Open a new terminal and cd /to/directory/with/Basis Server/, i.e. `cd Basis/Basis\ Server`
 
 `dotnet restore`
 
-`dotnet build`
+Then build, with either:
 
+`dotnet build` (for debug)
+
+or
+
+`dotnet build --configuration Release` (For release)
+
+#### Executing
 
 Navigate to the BasisServerConsole directory (Something like `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`)
-and run: 
+and run:
 
 `dotnet .\BasisNetworkConsole.dll`
-
-
 
 :::tip  For More Targeted Linux Release
 
@@ -100,12 +122,21 @@ You may compile with the following:
 
 The `--self-contained` switch is added to allow running on a OS without dotnet installed.
 
-If you compile via this method you should be able to run
+If you compile via this method (Or your build targeted the system) are on a you should be able to run
 
 `./BasisNetworkConsole`
 
+from `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`.
+
 :::
 
+## Firewall
+
+You may want to open ports:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/tcp
+ * 4296/udp
 
 <br />
 <br />
@@ -268,6 +299,10 @@ These are the files you place in the `InitialResources` folder.
 :::caution
 Note that the remote urls you use must be served from a proper server that supports chunking.
 Any modern server should do this but simple local dev servers may not.
+:::
+
+:::tip  To upload something
+One avenue you can use to test out a new scene is to create a scene in Unity, export the scene as a BEE file.  Upload that BEE file to a server that supports HTTP, then, place the URL in `CombinedURL`, and get the password from `dontuploadmepassword.txt` and place it in `UnlockPassword`.
 :::
 
 | Variable         | Definition |
