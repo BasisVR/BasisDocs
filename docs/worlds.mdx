@@ -43,6 +43,8 @@ title: Worlds
 ## Test the scene
 - Once the AssetBundle has been created, you can load this via the `BasisFramework` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
 
+- Select the `BasisFramework` .prefab asset in the Project files, **Do not instantiate this prefab into the current Scene! The Basis SDK does this automatically!**
+
 ![image](..\static\img\worlds\7.png)
 
 - You can place the location of the new AssetBundle under the `Meta URL` & `Bundle URL` fields, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated in the `/AssetBundles/` directory.
@@ -51,4 +53,6 @@ title: Worlds
 
 - Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play.
 
-- You should then load in at the spawn location of your world.
+- Enter a Username and press "Connect", localhost may be used *if* a [Server](/docs/server-setup#introduction) has been started on the local machine.
+
+- You should then load in at the spawn location of your world or the connecting Server.
