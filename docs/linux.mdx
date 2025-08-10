@@ -1,0 +1,52 @@
+---
+id: linux
+title: Building from Linux
+---
+
+:::warning
+Linux support is experimental and may have extra issues.
+:::
+:::note
+It is not recommended to build a Windows or Android build from Linux currently as they will likely be missing features or not function at all.
+:::
+
+This page assumes you have gone through [Getting Started](/docs/getting-started) first.
+
+# Linux prerequisites
+:::danger
+**Do not commit the removal of the Utilites listed on this doc page!**
+They are required for building Windows and Android clients!
+:::
+
+In order to build anything Basis under Linux you need to remove `com.meta.xr.sdk.core` "Meta XR Core SDK" and `com.unity.xr.openxr` "OpenXR Plugin" via the [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html),<br />
+You may need to install `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64" but Unity should install that for you.
+
+![image](..\static\img\linux\1.png)
+![image](..\static\img\linux\2.png)
+
+
+# Building .BEE files from Linux
+For building .bee files for Windows and Android from a Linux Editor you will need to delete the `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` file and set the "Scripting Backend" to `Mono` under `Edit > Project Settings > Player > Configuration > Scripting Backend`.
+
+![image](..\static\img\linux\3.png)
+![image](..\static\img\linux\4.png)
+
+# Building a native Linux client from Linux
+:::tip
+It is recommended to change your "Scripting Backend" to `IL2CPP` for better performance.
+![image](..\static\img\linux\3.png)
+![image](..\static\img\linux\5.png)
+:::
+
+- Make sure you have [removed the unsupported packages](/docs/linux#linux-prerequisites) first.
+- Make sure you *do not* have `Use Scene Provided Here` checked from [World Testing](/docs/worlds#test-the-scene).
+
+Then build Basis as you would normally.
+
+# Basis VR on Linux
+You may need to launch Basis with the `OXR_PARALLEL_VIEWS=1` environment variable and `--force-OpenVRLoader` flag for it to function properly:<br />
+`OXR_PARALLEL_VIEWS=1 ./basis.x86_64 --force-OpenVRLoader`
+
+# Other Info
+- Last tested working on branch `#developer` commit `70a695d11082a2806f0933145d448143207c72e4`<br />
+https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4
