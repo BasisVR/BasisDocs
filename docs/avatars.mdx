@@ -78,12 +78,15 @@ You should now see a green Gizmo for your eyes; move this up between your eyes a
 ## Jiggles (Optional)
 **To add Jiggle Physics:**
 
-At the very bottom of `Basis Avatar`, you will find `jiggle configuration`.
-- Click `Add New Basis Jiggle Strain`.
+For each jiggle root:
+- Add a new component `Jiggle Rig`, next to `Basis Avatar`.
+- Ensure to set a `Root Transform`.
+- Probably enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
+- Adjust `Settings` to your liking (activate `Advanced` to view all settings).
 
-A new `Jiggle Strains` dropdown will appear below it. Follow the dropdowns until you see settings.
-
-- Ensure to add a `Root Transform`.
+**Collision Interaction:**
+- Activate `Advanced` to view all settings.
+- Enable `Collision` and adjust `Collsion Radius` to fit the object.
 
 ## Eye & Face Tracking (optional)
 ***Integrating VRCFT to drive bone rotation via OSC:***
@@ -175,3 +178,4 @@ To remove all saved avatar information, outside of the game interface, you can a
 - Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\VerySafePasswordStore.json`.
 
 When you next reload the game the previously stored Avatars will now be gone.
+
