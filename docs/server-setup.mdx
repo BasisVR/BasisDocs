@@ -27,6 +27,43 @@ BasisNetworkCore\BasisNetworkVersion.cs
 <br />
 <br />
 
+### Run with Docker
+
+Using docker-compose is the easiest and fastest way to spin up a Basis server. Docker images of the server are published to github on both `long-term-support` and `developer` branches, under `latest` and `nightly` respectively.
+
+```yml
+services:
+  basis-server:
+    image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
+    container_name: basis-server
+    restart: unless-stopped
+    environment:
+      SetPort: 4296               # basis port
+      HealthCheckPort: 10666      # http healthcheck port
+      PromethusPort: 1234         # exists but is unused
+      Password: default_password
+      PeerLimit: 1024             # 1024 is the maximum supported
+      EnableStatistics: true
+      EnableConsole: false
+    ports:
+      - "4296:4296/udp"
+      - "10666:10666/tcp"
+      - "1234:1234/tcp" # unused
+    volumes:
+      - ./initialresources:/app/initialresources:ro
+      - ./config:/app/config
+      - ./logs:/app/logs
+    # exercise health endpoint (optional)
+    healthcheck:
+      # GET request, void all output.
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --output-document=/dev/null http://localhost:10666/health &> /dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+``` 
+Run once to create `config.xml` (under `./config` in the example). Settings in xml will be overridden by enviornment variables.
+
 ### Compile and Run on Windows
 
 Assuming you have cloned the LTS branch of the repo.
@@ -188,7 +225,7 @@ the directory the server exe rests in.
 | `DisconnectOnUnreachable`         | true                   | Disconnect players if unreachable. |
 | `AllowPeerAddressChange`          | true                   | LNL: Allow player clients to change IP address. |
 | `UsingLoggingFile`                | true                   | Enable logging to file. |
-| `HealthCheckHost`                 | localhost              | Hostname used for health checks. |
+| `HealthCheckHost`                 | localhost              | Hostname used for health checks. Use `*` to bind to any interface. |
 | `HealthCheckPort`                 | 10666                  | Port used for health checks. |
 | `HealthPath`                       | /health                | Path to health check endpoint. |
 | `BSRSMillisecondDefaultInterval`  | 50                     |  |
