@@ -79,9 +79,9 @@ You should now see a green Gizmo for your eyes; move this up between your eyes a
 **To add Jiggle Physics:**
 
 For each jiggle root:
-- Add a new component `Jiggle Rig`, next to `Basis Avatar`.
-- Ensure to set a `Root Transform`.
-- Probably enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
+- Add a new component `Jiggle Rig`, which can be placed in a separate gameObject, but it must under the hierarchy of your Avatar root.
+- In the Jiggle Rig componeont, ensure to set a `Root Transform`, which is a bone in the avatar armature.
+- If you have a parent bone (for multiple chains of child bones that you wish to apply the same effect to) you can enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
 - Adjust `Settings` to your liking (activate `Advanced` to view all settings).
 
 **Collision Interaction:**
@@ -89,9 +89,8 @@ For each jiggle root:
 - Enable `Collision` and adjust `Collsion Radius` to fit the object.
 
 ## Eye & Face Tracking (optional)
-***Integrating VRCFT to drive bone rotation via OSC:***
-
-This section will cover usage of Hai's instructions later on.
+- Hai has created a comprehensive guide on how to add the Automatic Face Tracking component to an avatar in a Basis project
+- You can follow the link [here](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-trackingsection) for instruction on how this works.
 
 ## Avoid Duplicate GameObjects
 - Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
