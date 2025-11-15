@@ -1,0 +1,12 @@
+{
+  "title": "Server",
+  "icon": "Server",
+  "pages": [
+    "index",
+    "deployment",
+    "configuration",
+    "monitoring",
+    "advanced",
+    "terminology"
+  ]
+}

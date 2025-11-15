@@ -1,0 +1,76 @@
+---
+title: Uploading
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Uploading Your Avatar
+
+Basis allows you to load an Avatar .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
+
+In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
+
+(Google Drive supports the direct link of files up to 100MB due to their Virus Scanning policy.)
+
+Upload the **BEE file** to Google Drive, or any hosting provider that allows direct links to files without login.
+
+- Create a Folder on your Drive and set its sharing settings to "Anyone with the link."
+
+Now when you drag your files into this Folder, you will not individually need to set that permission.
+
+- Click the Hamburger Menu on the Top Right of the asset you have just uploaded into the folder.
+- Find "Share" and click "Copy Link."
+
+We will need to look into the URL to grab the information we need for your BEE file.
+
+Example:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+We want to copy the unique identifier inside of the URL and add it to the following:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Example:
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+
+<Callout type="warn">
+**DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
+</Callout>
+
+## Loading in Basis
+
+Load up Basis, open the menu, and select Avatars.
+
+![Basis menu](/img/avatars/11.png)
+
+In the Avatar menu, select 'Add Avatar' in the top left.
+
+![Add Avatar button](/img/avatars/12.png)
+
+Paste the **BEE File URL** into the field in the next window.
+
+![BEE File URL field](/img/avatars/13.png)
+
+Paste your **SUPER SECRET ENCRYPTED PASSWORD** into the Password field.
+
+![Password field](/img/avatars/14.png)
+
+Load!
+🥱
+
+## Remove Avatars
+
+Basis will save the details of Avatars added through the game menu for convenience. Avatars can be removed by clicking on the Avatar in the menu and hitting the Red Delete Avatar button *(Currently no confirmation dialog is shown.)*
+
+![Delete Avatar button](/img/avatars/15.png)
+
+To remove all saved avatar information, outside of the game interface, you can also do the following:
+
+- Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\VerySafePasswordStore.json`.
+
+When you next reload the game the previously stored Avatars will now be gone.

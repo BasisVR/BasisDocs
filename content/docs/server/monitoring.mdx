@@ -1,0 +1,32 @@
+---
+title: Monitoring
+---
+
+## Health Check Endpoint
+
+When running the server locally you can check the server status by visiting the health check endpoint at:
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| Variable      | Definition                          |
+|---------------|--------------------------------------|
+| `listening`   | Is server listening for connections |
+| `visitors`    | The number of current players aka visitors |
+| `capacity`    | Maximum number of players allowed on server |
+| `sent`        | Total amount of data sent (in bytes?) |
+| `recv`        | Total amount of data received (in bytes?) |
+| `currentTime` | The current server time in ISO 8601 format |
+| `startTime`   | The server's start time in ISO 8601 format |
+| `version`     | The version number of the server. Important: Client code must match expected ServerVersion |

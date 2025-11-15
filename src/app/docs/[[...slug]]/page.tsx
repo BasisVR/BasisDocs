@@ -25,6 +25,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
       editOnGithub={{
         owner: 'BasisVR',
         repo: 'BasisDocs',
+        sha: 'main',
         path,
       }}
     >

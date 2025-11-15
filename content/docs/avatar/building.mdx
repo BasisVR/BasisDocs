@@ -1,0 +1,41 @@
+---
+title: Building
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Avoid Duplicate GameObjects
+
+- Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
+
+## Build the AssetBundle
+
+- At the bottom of the Basis Avatar component on your Avatar, check that the appropriate build targets for your content are enabled (Windows, Linux, Android etc)
+- Press the 'Create Avatar Bee File' button and wait for this process to complete.
+
+![Create Avatar Bee File](/img/avatars/7.png)
+
+- The results will be opened in a new window automatically as shown below.
+
+![Build results](/img/avatars/8.png)
+
+<Callout type="info">
+Basis uses the .BEE file extension, which contains your compiled asset and meta data, in order to simplify user generated content.
+
+The .BEE file, along with a randomly generated password to access it, is created under your Unity Project path /AssetBundles/ directory and is hidden from Unity by default.
+</Callout>
+
+## Locally Test the Avatar
+
+Testing the .BEE file locally is not yet supported and will be implemented in the near future, please proceed to [Uploading Your Avatar](/docs/avatar/uploading).
+
+{/* - Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
+
+![BootManager](/img/avatars/9.png)
+
+- You can place the location of the .BEE file under the `Combinned URL` fields as shown in the example below, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated within the `/AssetBundles/` directory.
+- Make sure to tick `Is Local` if the file is not a URL.
+
+![Local testing setup](/img/avatars/10.png)
+
+- Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play. */}

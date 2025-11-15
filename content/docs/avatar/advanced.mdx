@@ -1,0 +1,22 @@
+---
+title: Advanced Features
+---
+
+## Jiggles (Optional)
+
+**To add Jiggle Physics:**
+
+For each jiggle root:
+- Add a new component `Jiggle Rig`, which can be placed in a separate gameObject, but it must under the hierarchy of your Avatar root.
+- In the Jiggle Rig component, ensure to set a `Root Transform`, which is a bone in the avatar armature.
+- If you have a parent bone (for multiple chains of child bones that you wish to apply the same effect to) you can enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
+- Adjust `Settings` to your liking (activate `Advanced` to view all settings).
+
+**Collision Interaction:**
+- Activate `Advanced` to view all settings.
+- Enable `Collision` and adjust `Collision Radius` to fit the object.
+
+## Eye & Face Tracking (optional)
+
+- Hai has created a comprehensive guide on how to add the Automatic Face Tracking component to an avatar in a Basis project
+- You can follow the link [here](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-trackingsection) for instruction on how this works.

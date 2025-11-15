@@ -1,3 +1,18 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/solar.css';
 @import 'fumadocs-ui/css/preset.css';
+
+
+.dark {
+    --color-fd-background: #0f0e23;
+    --color-fd-primary: #ef1237;
+}
+
+#nd-subnav,
+#nd-sidebar {
+  border-top: 4px solid var(--color-fd-primary) !important;
+}
+
+#logo {
+    border: solid 1px #1c1b32;
+}

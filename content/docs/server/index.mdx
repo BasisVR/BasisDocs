@@ -1,0 +1,63 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+The Basis Server is the networking backbone for your social VR experience. This documentation will guide you through setting up, configuring, and managing your own Basis server instance.
+
+The server is built on .NET 9.0 and uses LiteNetLib for low-level networking. It's designed to handle multiple concurrent players with efficient bandwidth usage and supports both Docker deployments and native compilation on Windows and Linux.
+
+## Quick Start Guide
+
+<Cards>
+  <Card
+    title="Deployment"
+    description="Learn how to deploy the server using Docker, Windows, or Linux"
+    href="/docs/server/deployment"
+  />
+  <Card
+    title="Configuration"
+    description="Configure your server with config.xml and loadable resources"
+    href="/docs/server/configuration"
+  />
+  <Card
+    title="Monitoring"
+    description="Monitor your server health and performance metrics"
+    href="/docs/server/monitoring"
+  />
+  <Card
+    title="Advanced Configuration"
+    description="Optimize server performance with reduction systems"
+    href="/docs/server/advanced"
+  />
+</Cards>
+
+## Key Features
+
+- **Multi-threaded Performance**: Works well on as little as two cores, scales with more
+- **Flexible Deployment**: Docker, Windows, and Linux support
+- **Authentication**: DID-based identity verification
+- **Bandwidth Optimization**: Server and client reduction systems
+- **Health Monitoring**: Built-in HTTP health check endpoint
+- **Loadable Resources**: Dynamic world and object loading
+
+## Requirements
+
+- **CPU**: Minimum 2 cores (more cores improve performance)
+- **Network**: High bandwidth recommended for social VR
+- **Ports**: 
+  - 4296/udp (Basis protocol)
+  - 10666/tcp (Health checks)
+  - 1234/tcp (Prometheus metrics)
+
+## Server Version
+
+This documentation covers **Basis Server Version 6** from the LTS branch (May 2025).
+
+<Callout type="warn">
+Client and server code **must agree** on the version number. You can find the `ServerVersion` in `BasisNetworkCore\BasisNetworkVersion.cs`.
+</Callout>

@@ -1,0 +1,18 @@
+{
+  "title": "Documentation",
+  "pages": [
+    "---Introduction---",
+    "index",
+    "faq",
+    "contributing",
+    "---Guides---",
+    "avatar",
+    "world",
+    "project",
+    "server",
+    "---Technical---",
+    "...technical",
+    "---API Reference---",
+    "...reference"
+  ]
+}

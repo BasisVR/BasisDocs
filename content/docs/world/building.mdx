@@ -1,0 +1,38 @@
+---
+title: Building
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Minimum Requirements for a Functional Basis Scene
+
+- Import your world meshes or create a new 3D object, such as a Plane or Cube. Ensure a Collider is present.
+- Create a gameObject, give it a suitable name, and on the Inspector click `Add Component` and find/select the Basis Scene component.
+
+![Add Component menu](/img/worlds/1.png)
+
+![Basis Scene component](/img/worlds/2.png)
+
+- At this point you can create another gameObject, name it Spawn, and then place it somewhere in the world that you would like players to spawn into the world at, or simply use the same gameObject that was created for the Basis Scene component.
+
+![Spawn point in scene](/img/worlds/3.png)
+
+- Either way, make sure you place the gameObject of your spawn position of choice into the `Spawn Point` field and then it will use the transform of that gameObject.
+
+![Spawn Point field](/img/worlds/4.png)
+
+## Build the AssetBundle
+
+- On the `Basis Scene` Component, press the `Create Scene Bee File` button.
+
+![Create Scene Bee File button](/img/worlds/5.png)
+
+- The results will be opened automatically as shown below.
+
+![Build results](/img/worlds/6.png)
+
+<Callout type="info">
+Basis uses the .BEE file extension, which contains your compiled asset and meta data, in order to simplify user generated content.
+
+The .BEE file, along with a randomly generated password to access it, is created under your Unity Project path /AssetBundles/ directory and is hidden from Unity by default.
+</Callout>

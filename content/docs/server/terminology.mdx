@@ -1,0 +1,22 @@
+---
+title: Terminology
+---
+
+## Key Terms
+
+**Local Player**  
+The local avatar data that represents _you_ (the user or client).
+
+**Remote Player**  
+Represents other players whose data is sent to you by the server.
+
+**Basis Client**  
+The application you are writing that will communicate with the server.
+
+**Motion Data**  
+The data that represents the player bone positions as well as position and rotation in the world.
+Stored in network serializable format in LASM data structure.
+
+**LASM**  
+Stands for Local Avatar Sync Message, the data structure that contains compressed data
+for a player's muscles, position and rotation that is sent over the network.

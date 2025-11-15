@@ -1,0 +1,55 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overview
+
+Worlds are the environments where social VR experiences take place in Basis. This documentation will guide you through setting up, building, and testing your own custom worlds using Unity and the Basis SDK.
+
+Basis uses the `.BEE` file format for worlds, which packages your compiled scene and metadata into a single file. Worlds support custom meshes, materials, lighting, spawn points, and can be hosted remotely for multiplayer experiences.
+
+## Quick Start Guide
+
+<Cards>
+  <Card
+    title="Setup"
+    description="Set up Unity and import your world assets"
+    href="/docs/world/setup"
+  />
+  <Card
+    title="Building"
+    description="Configure scene components and build .BEE file"
+    href="/docs/world/building"
+  />
+  <Card
+    title="Testing"
+    description="Test your world locally in Basis"
+    href="/docs/world/testing"
+  />
+</Cards>
+
+## Key Features
+
+- **Custom Environments**: Import any 3D meshes, materials, and textures
+- **Spawn Points**: Define where players enter your world
+- **Multi-Platform**: Build for Windows, Linux, and Android
+- **Network Ready**: Designed for multiplayer experiences
+- **BEE Format**: Simple packaging for easy distribution
+
+## Requirements
+
+- **Unity**: Unity 6 (latest supported version)
+- **Assets**: 3D meshes with colliders for navigation
+- **Components**: Basis Scene component for scene configuration
+- **Hosting**: Remote URL hosting for multiplayer (optional for local testing)
+
+## Workflow Overview
+
+1. **Import** your world assets into Unity
+2. **Configure** the Basis Scene component and spawn points
+3. **Build** the .BEE file for your target platforms
+4. **Test** locally using the BasisFramework prefab
+5. **Upload** to hosting service for multiplayer (optional)
+6. **Load** in Basis using the URL and password
