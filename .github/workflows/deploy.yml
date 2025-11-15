@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - fumadocs
   workflow_dispatch:
 
 permissions:
