@@ -56,12 +56,12 @@ services:
       - ./logs:/app/logs
     # exercise health endpoint (optional)
     healthcheck:
-      # GET request, void all output.
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --output-document=/dev/null http://localhost:10666/health &> /dev/null || exit 1"]
+      # http GET request
+      test: ["CMD", "curl", "-f", "http://localhost:10666/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 20s
+      start_period: 2s
 ``` 
 Run once to create `config.xml` (under `./config` in the example). Settings in xml will be overridden by enviornment variables.
 
