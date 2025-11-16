@@ -1,0 +1,27 @@
+---
+title: Testing
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Test the Scene
+
+<Callout type="warn">
+Select the `BasisFramework` .prefab asset in the Project files, **Do not instantiate this prefab into the current Scene! The Basis SDK does this automatically!**
+</Callout>
+
+- Once the AssetBundle has been created, you can load this via the `BasisFramework` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
+
+![BasisFramework prefab location](/img/worlds/7.png)
+
+- You can place the location of the new AssetBundle under the `Remote BEE File Location` field, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated in the `/AssetBundles/` directory, then enable `Use Scene Provided Here`.
+
+![BasisFramework configuration](/img/worlds/8.png)
+
+- Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play.
+
+![Initialization scene](/img/worlds/9.png)
+
+- Enter a Username and press "Connect", localhost may be used *if* a [Server](/docs/server) has been started on the local machine.
+
+- You should then load in at the spawn location of your world or the connecting Server.

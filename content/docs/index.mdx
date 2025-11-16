@@ -1,0 +1,71 @@
+---
+title: Getting Started
+description: Welcome to BasisVR Documentation
+icon: BookOpen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Welcome to the Basis wiki!
+
+This page will help provide the minimum required steps, in order to get a Basis project up and running, including how-to guides for creating Avatars and World asset bundles.
+
+## Current System Requirements
+
+https://docs.unity3d.com/Manual/system-requirements.html
+
+## Installing Unity
+
+- Hub - https://unity.com/download
+- Standalone - https://unity.com/releases/editor/archive
+
+### Compatible Unity Versions
+
+Depending on the branch used, please observe the version of Unity Editor that the framework is built upon:
+
+✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
+✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+
+### Additional Unity Modules
+
+Add the following modules via the "Add modules" screen when installing the Unity Editor version:
+
+✓ Android Build Support  
+&nbsp;&nbsp;&nbsp;↳ ✓ OpenJDK  
+&nbsp;&nbsp;&nbsp;↳ ✓ Android SDK & NDK Tools  
+✓ Linux Build Support (IL2CPP)  
+✓ Linux Build Support (Mono) [Windows Only]  
+✓ Windows Build Support (IL2CPP) [Windows Only]  
+✓ Windows Build Support (Mono) [Linux Only]
+
+<Callout type="info">
+Even if you are only building user generated content for Avatar and World creation, you will still need these additional modules for making this content available on these platforms.
+</Callout>
+
+<Callout type="info">
+If you have the correct Unity version already installed but the "Add Modules" option isn't available it was likely installed externally from Unity Hub, please reinstall the correct Unity version from Unity Hub.
+</Callout>
+
+## Acquiring the Basis framework
+
+### Git
+
+You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `long-term-support` branch found at https://github.com/BasisVR/Basis (i.e. `git clone -b long-term-support https://github.com/BasisVR/Basis`) or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository, and then open the resulting Unity project on your local computer.
+
+### Direct Zip Download
+
+For those wishing to forgo the Git experience:
+
+- Select 'Code' dropdown in the top right then Download ZIP.
+- Unpack ZIP to any folder or destination you like.
+- Add the folder as an existing Project in Unity Hub
+
+![Download ZIP from GitHub](/img/getting-started/3.png)
+
+## Resources
+
+We have provided instructions for creating your first [Avatar](/docs/avatar) or [World](/docs/world) compatible with the Basis framework.
+
+Please join the [Basis Discord](https://discord.gg/F35u3cUMqt) and join a community of developers and hobbyists to help you on your way!
+
+Let's get started with BasisVR!

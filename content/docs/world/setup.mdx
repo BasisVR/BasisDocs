@@ -1,0 +1,21 @@
+---
+title: Setup
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Set up the Unity Editor
+
+- As per the [Getting Started](/docs#installing-unity) section for installing the latest supported Unity editor version and acquiring the Basis framework.
+- Open Unity Hub and add an existing project, choose the extracted/cloned Basis project folder.
+- Once the Unity Project has loaded, you can now load your World files:
+- Either,
+  - Find `Assets` in the Project hierarchy, inside `Assets` right-click any empty space and select `Show in Explorer`.
+  - Copy in your World files [Mesh/Materials/Textures, etc.].
+- or
+  - Import a .unity package containing your files, from the Assets menu, `Import Package > Custom Package`.
+- Bring back the Unity window and allow the import process to finish.
+
+<Callout type="info">
+If you place your content within a new directory "Assets > _UserContent" the default .gitignore file with the project will hide changes in git on this folder.
+</Callout>

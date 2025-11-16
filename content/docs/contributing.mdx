@@ -1,0 +1,95 @@
+---
+title: Contributing
+description: How to contribute to BasisVR
+icon: GitPullRequest
+---
+
+## BasisDocs Contributing Guide
+
+This page was created to assist those seeking to contribute documentation to the BasisDocs repository.
+
+BasisDocs uses Fumadocs, a modern documentation framework. The main directories you'll work with are:
+
+- `content/docs/` - Documentation content in MDX format
+- `public/img/` - Static images and assets
+
+![Documentation structure](/img/basisdocs-contrib/1.png)
+
+## Getting Started
+
+The quickest way to get up to speed with this site is to familiarize yourself with:
+
+- [MDX documentation](https://mdxjs.com/) - Extended Markdown with JSX components
+- [Fumadocs documentation](https://fumadocs.vercel.app/) - The documentation framework we use
+
+### Available Components
+
+You can use various components in your documentation:
+
+- `<Callout type="info|warn|error">` - For important notes and warnings
+- `<Card>` and `<Cards>` - For navigation cards
+- Code blocks with syntax highlighting
+- Images with proper alt text
+
+## Markdown Features
+
+Standard Markdown is supported, along with extended features:
+
+- **Tables** - For structured data
+- **Code blocks** - With language-specific syntax highlighting
+- **Admonitions** - Using Callout components
+- **Links** - Internal and external
+- **Images** - Properly referenced from `/public/img/`
+
+## Contributing Documentation
+
+1. **Fork the Repository**
+   
+   Fork the [BasisDocs repository](https://github.com/hactazia/basis-docs) on GitHub.
+
+2. **Clone Your Fork**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/basis-docs.git
+   cd basis-docs
+   ```
+
+3. **Install Dependencies**
+   
+   ```bash
+   npm install
+   ```
+
+4. **Run Development Server**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **Make Your Changes**
+   
+   Edit MDX files in `content/docs/` and add images to `public/img/`.
+
+6. **Test Your Changes**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **Submit a Pull Request**
+   
+   Push your changes and open a pull request on GitHub.
+
+## Guidelines
+
+- Use descriptive titles and proper heading hierarchy
+- Add alt text to all images
+- Use Callout components instead of plain text warnings
+- Follow the existing file structure and naming conventions
+- Test your changes locally before submitting
+
+Thank you in advance for your contributions!
+
+### Questions?
+
+Join our [Discord](https://discord.gg/aCzSPKEW2v) if you have any questions about contributing!

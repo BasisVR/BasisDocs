@@ -1,0 +1,21 @@
+---
+title: Advanced Configuration
+---
+
+## Server Reduction System
+
+As the number of players grows on the server the bandwidth requirements quickly grow. The SRS system attempts 
+to reduce the network load and improve performance by slowing down how often it needs to send motion data to players
+based on distance.
+
+The equation that governs how much longer the server takes to send Motion Data to users based on distance looks like:
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+The rest of this section will be published later. 
+
+## Client Reduction System
+
+This section will be published later.

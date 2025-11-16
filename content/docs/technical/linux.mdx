@@ -1,0 +1,77 @@
+---
+title: Building from Linux
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Linux support is experimental and may have extra issues.
+</Callout>
+
+<Callout type="info">
+It is not recommended to build a Windows or Android build from Linux currently as they will likely be missing features or not function at all.
+</Callout>
+
+This page assumes you have gone through [Getting Started](/docs/getting-started) first.
+
+## Linux prerequisites
+
+<Callout type="error">
+**Do not commit the removal of the Utilities listed on this doc page!**
+They are required for building Windows and Android clients!
+</Callout>
+
+In order to build anything Basis under Linux you need to remove `com.meta.xr.sdk.core` "Meta XR Core SDK" and `com.unity.xr.openxr` "OpenXR Plugin" via the [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html).
+
+You may need to install `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64" but Unity should install that for you.
+
+![Unity Package Manager](/img/linux/1.png)
+![Removing packages](/img/linux/2.png)
+
+## Building .BEE files from Linux
+
+For building .bee files for Windows and Android from a Linux Editor you will need to delete the `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` file and set the "Scripting Backend" to `Mono` under `Edit > Project Settings > Player > Configuration > Scripting Backend`.
+
+![Project Settings](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## Building a native Linux client from Linux
+
+<Callout type="info">
+It is recommended to change your "Scripting Backend" to `IL2CPP` for better performance.
+
+![Project Settings](/img/linux/3.png)
+![IL2CPP Backend](/img/linux/5.png)
+</Callout>
+
+- Make sure you have [removed the unsupported packages](#linux-prerequisites) first.
+- Make sure you *do not* have `Use Scene Provided Here` checked from [World Testing](/docs/world#test-the-scene).
+- Make sure the `Packages/com.basis.sdk/Scenes/Initialization` Scene is open.
+
+Then build Basis as you would normally.
+
+## Basis VR on Linux
+
+You may need to launch Basis with the `--force-OpenVRLoader` flag for it to function properly in VR:
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+You do not use this when launching for Desktop.
+
+## Proton / Wine
+
+If you wish to use OpenXR with a Windows build under Proton / Wine you can add:
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+To your Steam Launch Arguments.
+
+## Other Info
+
+- Last tested working on branch `#developer` commit `102765e5b05663ce9ce2967f3d09021d5216ec51`
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4
+

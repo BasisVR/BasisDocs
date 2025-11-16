@@ -1,0 +1,5 @@
+{
+  "title": "Avatar",
+  "icon": "User",
+  "pages": ["index", "setup", "building", "uploading", "jiggle", "face-tracking", "shaders"]
+}

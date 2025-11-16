@@ -1,0 +1,71 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overview
+
+Avatars are the heart of your social VR experience in Basis. This documentation will guide you through creating, building, uploading, and customizing your own avatars using Unity and the Basis SDK.
+
+Basis uses the `.BEE` file format for avatars, which packages your compiled assets and metadata into a single, easy-to-share file. Avatars support humanoid rigs, blend shapes, materials, jiggle physics, and face tracking.
+
+## Quick Start Guide
+
+<Cards>
+  <Card
+    title="Setup"
+    description="Set up Unity and prepare your avatar model"
+    href="/docs/avatar/setup"
+  />
+  <Card
+    title="Building"
+    description="Build your avatar into a .BEE file"
+    href="/docs/avatar/building"
+  />
+  <Card
+    title="Uploading"
+    description="Upload and load your avatar in Basis"
+    href="/docs/avatar/uploading"
+  />
+  <Card
+    title="Jiggle Physics"
+    description="Add dynamic physics to your avatar"
+    href="/docs/avatar/jiggle"
+  />
+  <Card
+    title="Face Tracking"
+    description="Add eye and face tracking support"
+    href="/docs/avatar/face-tracking"
+  />
+  <Card
+    title="Shaders"
+    description="Compatible URP shaders for avatars"
+    href="/docs/avatar/shaders"
+  />
+</Cards>
+
+## Key Features
+
+- **Humanoid Rig Support**: Standard Unity humanoid rigs with automatic bone mapping
+- **Blend Shapes**: Full support for facial expressions and visemes
+- **Multi-Platform**: Build for Windows, Linux, and Android
+- **Jiggle Physics**: Optional physics simulation for dynamic elements
+- **Face Tracking**: Optional eye and face tracking support
+- **URP Shaders**: Compatible with Unity's Universal Render Pipeline
+
+## Requirements
+
+- **Unity**: Unity 6 (latest supported version)
+- **Model Format**: FBX with humanoid rig
+- **Shader**: URP-compatible shaders (Lit, Poiyomi, lilToon, etc.)
+- **Hosting**: Remote URL hosting for .BEE files (max 100MB for Google Drive)
+
+## Workflow Overview
+
+1. **Import** your avatar model into Unity
+2. **Configure** the rig and skinned meshes
+3. **Add** the Basis Avatar component
+4. **Build** the .BEE file for your target platforms
+5. **Upload** to a hosting service
+6. **Load** in Basis using the URL and password

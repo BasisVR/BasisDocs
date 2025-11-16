@@ -1,0 +1,83 @@
+---
+title: Setup
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Set up the Unity Editor
+
+- As per the [Getting Started](/docs/getting-started#installing-unity) section for installing the latest supported Unity editor version and acquiring the Basis framework.
+- Open Unity Hub and add an existing project, choose the extracted/cloned Basis project folder
+- On the initial project load you will see the following prompt, please hit 'Restart Editor'.
+
+![Unity restart prompt](/img/avatars/0.png)
+
+- Once the project has loaded, you can now load in your Avatar files:
+- Either,
+  - Find `Assets` in the Project hierarchy, inside `Assets` right-click any empty space and select `Show in Explorer`
+  - Copy in your Avatar files [Mesh/Materials/Textures, etc.]
+- or
+  - Import a .unity package containing your files, from the Assets menu, Import Package > Custom Package
+- Bring back the Unity window and allow the import process to finish.
+
+<Callout type="info">
+If you place your content within a new directory "Assets > _UserContent" the default .gitignore file with the project will hide changes in git on this folder.
+</Callout>
+
+## Import Model
+
+- Find the location of your Avatar model (usually provided in .FBX format).
+- Click the file and then navigate to the `Model` section of the Import Settings window.
+- Ensure that `Red/Write` and `Legacy Blend Shape Normals` are selected as below.
+
+![Model import settings](/img/avatars/1.png)
+
+- Navigate to the `Rig` section of the Import Settings window.
+- Click the `Animation Type` drop-down menu and select `Humanoid`, press `Apply` as shown below.
+
+![Rig settings](/img/avatars/2.png)
+
+- Afterward, the `Configure` button above `Apply` is now selectable, click this and then check your bone mappings.
+
+![Bone mappings](/img/avatars/3.png)
+
+- This should show all mandatory bones as selected; make sure this looks correct for your Armature.
+- Lastly, click on the `Head` button in the `Mapping` window and remove the assignment for the `Jaw`; this is usually incorrect.
+
+![Head mapping](/img/avatars/4.png)
+
+## Skinned Mesh Setup
+
+- There are currently no requirements to name your Avatar's Skinned Mesh as `Body` or other variation used on Virtual Platforms.
+- If you have multiple skinned meshes, consider pinning them to all use the same reference point on the body, for inheriting light probes in the scene. You can do this by assigning a bone from the Armature (Usually Hips) to the `Anchor Override` field.
+
+![Anchor override](/img/avatars/5.png)
+
+- Another consideration for Avatars with multiple Skinned Meshes is when different bounding box sizes cause individual meshes to pop in and out while the rest of the Avatar is visible to remote viewers.
+- You can override the Center X, Y, Z & Extent X, Y, Z values in the section named `Bounds` at the top of the Skinned Mesh Renderer component. Usually, it is a good idea to set this the same across the separate Skinned Meshes.
+
+![Bounds settings](/img/avatars/6.png)
+
+## Materials/Shaders
+
+- You can jump straight in with the Universal Render Pipeline/Lit shader that comes with Unity 6
+- Otherwise, we have compiled a list of compatible [Avatar Shaders](/docs/avatar/shaders) that you can use.
+
+## Basis Avatar Setup
+
+- The steps above should automatically add an Animator component to your Avatar prefab when you pull it into the Scene.
+- On the Parent GameObject of the Avatar, click `Add Component`, and add `Basis Avatar`.
+
+If you're struggling to find the view ball or indicator for the Eye Position, follow these steps:
+
+- Top Right next to XYZ, click the Eye.
+- Enable "Eye Position Gizmo" inside of the `Basis Avatar` component.
+
+You should now see a green Gizmo for your eyes; move this up between your eyes and on the same plane as your eyes.
+
+**Ensure you have assigned each of the following:**
+- Animator
+- Face Viseme
+- Face Blink
+- Avatar Name
+- Avatar Description

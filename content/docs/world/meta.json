@@ -1,0 +1,5 @@
+{
+  "title": "World",
+  "icon": "Globe",
+  "pages": ["index", "setup", "building", "testing"]
+}

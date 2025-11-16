@@ -1,0 +1,17 @@
+---
+title: Jiggle Physics
+description: Jiggle Physics allows you to add dynamic movement to parts of your avatar, such as hair, clothing, or accessories, enhancing realism and immersion.
+---
+
+## To add Jiggle Physics
+
+For each jiggle root:
+- Add a new component `Jiggle Rig`, which can be placed in a separate gameObject, but it must under the hierarchy of your Avatar root.
+- In the Jiggle Rig component, ensure to set a `Root Transform`, which is a bone in the avatar armature.
+- If you have a parent bone (for multiple chains of child bones that you wish to apply the same effect to) you can enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
+- Adjust `Settings` to your liking (activate `Advanced` to view all settings).
+
+## Collision Interaction
+
+- Activate `Advanced` to view all settings.
+- Enable `Collision` and adjust `Collision Radius` to fit the object.
