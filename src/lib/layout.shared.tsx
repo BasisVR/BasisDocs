@@ -8,7 +8,7 @@ export function baseOptions(): BaseLayoutProps {
         <div className="flex items-center gap-2">
           <Image
             id="logo"
-            src="/basis-docs/img/BasisLogoSmall.png"
+            src="/img/BasisLogoSmall.png"
             alt="BasisVR Logo"
             width={32}
             height={32}

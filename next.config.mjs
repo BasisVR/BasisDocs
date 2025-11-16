@@ -6,7 +6,6 @@ const withMDX = createMDX();
 const config = {
   reactStrictMode: true,
   output: 'export',
-  basePath: '/basis-docs',
   images: {
     unoptimized: true,
   },
