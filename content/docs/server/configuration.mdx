@@ -35,7 +35,7 @@ services:
   basis-server:
     image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
     container_name: basis-server
-	init: true 					 # handle process termination
+    init: true 					 # handle process termination
     restart: unless-stopped
     environment:
       SetPort: 4296               # basis port
