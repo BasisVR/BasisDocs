@@ -12,11 +12,11 @@ export const metadata: Metadata = {
     default: 'BasisVR Docs',
     template: '%s | BasisVR Docs',
   },
-  description: 'Documentation for BasisVR - Virtual Reality Platform',
+  description: 'Documentation for BasisVR - Virtual Reality Framework',
   metadataBase: new URL('https://docs.basisvr.org'),
   openGraph: {
     title: 'BasisVR Docs',
-    description: 'Documentation for BasisVR - Virtual Reality Platform',
+    description: 'Documentation for BasisVR - Virtual Reality Framework',
     url: 'https://docs.basisvr.org',
     siteName: 'BasisVR Docs',
     images: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'BasisVR Docs',
-    description: 'Documentation for BasisVR - Virtual Reality Platform',
+    description: 'Documentation for BasisVR - Virtual Reality Framework',
     images: ['/img/basisvr-social-card.jpg'],
   },
   icons: {
