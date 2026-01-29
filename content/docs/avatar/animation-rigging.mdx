@@ -1,0 +1,36 @@
+---
+title: Animation Rigging
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup for Animation Rigging Packages
+<Steps>
+
+<Step>
+**Adding Rig Builder**: Add a `Rig Builder` component and `Animator` component on the `Armature` Gameobject. 
+
+![Inspector Window at Armature Gameobject](/img/avatars/16.png)
+
+<Callout type="warning">
+*Basis uses the Root/Avatar's gameobject animator for animation and rigging*.
+</Callout>
+</Step>
+<Step>
+**Creating Rig Setup**: Create an empty Gameobject named "Rig Setup" and add the `Rig` component to it.
+
+![Inspector Window for Rig Setup Gameobject](/img/avatars/17.png)
+
+</Step>
+
+<Step>
+**Assigning Rig Setup**: Assign the "Rig Setup" Gameobject to the `Rig Builder` component of the `Armature`.
+
+![Inspector Window for Armature after assignment](/img/avatars/18.png)
+
+</Step>
+</Steps>
+
+
+## Rotation Constraints
+Do the [Setup](#setup-for-animation-rigging-packages) first than continue with instructions for setting up Rotation Constraints.
