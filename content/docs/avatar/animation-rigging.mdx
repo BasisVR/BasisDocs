@@ -3,6 +3,7 @@ title: Animation Rigging
 ---
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
 
 Documentation can be found for all the Constraints that Animation Rigging provides [here](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
 
@@ -36,6 +37,20 @@ Documentation can be found for all the Constraints that Animation Rigging provid
 
 </Step>
 </Steps>
+
+## Notes on Jiggle Bones
+
+If Jiggle Bones is affecting any constraints you have to add the `Rig Transform` to all parent bones of the constraint bone.
+
+Fx: You have a laser that is constraint to look the direction of your avatar's head. You have to go from parent of the laser adding `Rig Transform` components until you hit an Armature/Humanoid bone.
+<Callout type="info">
+This includes all source bones if they are not part of the humanoid. Fx: Wings that are affected by Jiggle Bones need `Rig Transform` components if you have a constraint reference them.
+</Callout>
+<Accordions type="single">
+<Accordion title="Example Jiggle Bone">
+![Jiggle Bones Example](/img/avatars/21.png)
+</Accordion>
+</Accordions>
 
 
 ## Rotation Constraints
