@@ -7,7 +7,7 @@ const config = {
   reactStrictMode: true,
   output: 'export',
   images: {
-    unoptimized: process.env.NODE_ENV === 'development',
+    unoptimized: true,
   },
 };
 
