@@ -1,0 +1,83 @@
+---
+title: Animation Rigging
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+Documentation can be found for all the Constraints that Animation Rigging provides [here](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Setup for Animation Rigging Packages
+<Steps>
+
+<Step>
+**Adding Rig Builder**: Add a `Rig Builder` component and `Animator` component on the `Armature` Gameobject. 
+
+![Inspector Window at Armature Gameobject](/img/avatars/16.png)
+
+<Callout type="info">
+*Basis uses the Root/Avatar's gameobject animator for animation and rigging*. 
+</Callout>
+
+<Callout type="warning">
+**You can not use the root's animator for the Rig Builder and will break animation and Basis armature loader.**
+</Callout>
+</Step>
+<Step>
+**Creating Rig Setup**: Create an empty Gameobject named "Rig Setup" and add the `Rig` component to it.
+
+![Inspector Window for Rig Setup Gameobject](/img/avatars/17.png)
+
+</Step>
+
+<Step>
+**Assigning Rig Setup**: Assign the "Rig Setup" Gameobject to the `Rig Builder` component of the `Armature`.
+
+![Inspector Window for Armature after assignment](/img/avatars/18.png)
+
+</Step>
+</Steps>
+
+## Notes on Jiggle Bones
+
+If Jiggle Bones is affecting any constraints you have to add the `Rig Transform` to all parent bones of the constraint bone.
+
+Fx: You have a laser that is constraint to look the direction of your avatar's head. You have to go from parent of the laser adding `Rig Transform` components until you hit an Armature/Humanoid bone.
+<Callout type="info">
+This includes all source bones if they are not part of the humanoid. Fx: Wings that are affected by Jiggle Bones need `Rig Transform` components if you have a constraint reference them.
+</Callout>
+<Accordions type="single">
+<Accordion title="Example Jiggle Bone">
+![Jiggle Bones Example](/img/avatars/21.png)
+</Accordion>
+</Accordions>
+
+
+## Rotation Constraints
+<Steps>
+
+<Step>
+
+Do the [Setup](#setup-for-animation-rigging-packages) first than continue with instructions for setting up Rotation Constraints.
+
+</Step>
+
+<Step>
+
+Add the `Multi-Rotation Constraint` Component onto an gameobject that is a child of the `Rig Setup` Gameobject.
+
+![Twist Component in Inspector Window](/img/avatars/19.png)
+
+</Step>
+
+<Step>
+
+Assign the bone you want affected in the Constrained Object field. One or more source objects can be used.
+<Callout type="info">
+You can drag and drop the source bones/GameObjects onto the Source Bojects in the area highlighted in Red.
+You can only add one `Multi-Roation Constraint` per gameObject.
+</Callout>
+![Twist Component in Inspector Window](/img/avatars/20.png)
+</Step>
+
+</Steps>
