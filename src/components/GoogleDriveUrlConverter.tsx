@@ -5,15 +5,31 @@ import { Copy, Check } from 'lucide-react';
 
 export function GoogleDriveUrlConverter() {
   const [inputUrl, setInputUrl] = useState('');
+  const [inputPassword, setInputPassword] = useState('');
   const [outputUrl, setOutputUrl] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const encodeBase64Utf8 = (str: string) => {
+    try {
+      return btoa(encodeURIComponent(str));
+    } catch {
+      try {
+        return btoa(str);
+      } catch {
+        return '';
+      }
+    }
+  };
+
   const extractAndConvert = (url: string) => {
-    // Extract the file ID from the URL
     const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
     if (match && match[1]) {
       const fileId = match[1];
-      const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+      let downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+      if (inputPassword && inputPassword.length > 0) {
+        const encoded = encodeBase64Utf8(inputPassword);
+        if (encoded) downloadUrl = `${downloadUrl}#${encoded}`;
+      }
       setOutputUrl(downloadUrl);
       return downloadUrl;
     }
@@ -25,6 +41,14 @@ export function GoogleDriveUrlConverter() {
     const value = e.target.value;
     setInputUrl(value);
     extractAndConvert(value);
+    setCopied(false);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputPassword(value);
+    // Recompute output using the existing URL and new password
+    if (inputUrl) extractAndConvert(inputUrl);
     setCopied(false);
   };
 
@@ -50,6 +74,19 @@ export function GoogleDriveUrlConverter() {
             value={inputUrl}
             onChange={handleInputChange}
             placeholder="https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing"
+            className="w-full px-3 py-2 border border-fd-border rounded-md bg-fd-background text-fd-foreground placeholder-fd-muted-foreground focus:outline-none focus:ring-2 focus:ring-fd-primary"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Optional avatar password (will be base64-encoded and appended)
+          </label>
+          <input
+            type="password"
+            value={inputPassword}
+            onChange={handlePasswordChange}
+            placeholder="Optional password"
             className="w-full px-3 py-2 border border-fd-border rounded-md bg-fd-background text-fd-foreground placeholder-fd-muted-foreground focus:outline-none focus:ring-2 focus:ring-fd-primary"
           />
         </div>
