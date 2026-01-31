@@ -25,6 +25,13 @@ Basis uses the .BEE file extension, which contains your compiled asset and meta 
 The .BEE file, along with a randomly generated password to access it, is created under your Unity Project path /AssetBundles/ directory and is hidden from Unity by default.
 </Callout>
 
+- Each platform takes on average 2 minutes from cold/no cache build. Building for all platforms will take some time. Likely more than 10 minutes for all platforms. Hot build/cached took little over 2 mins on same avatar and specs.
+
+<Callout type="info">
+An avatar with 18 materials using Poiyomi URP with 120K polygons, with package size 45MB per platform, took 9m 43s on a Ryzen 7 9800x3D. Jan, 2026
+</Callout>
+
+
 ## Locally Test the Avatar
 
 Testing the .BEE file locally is not yet supported and will be implemented in the near future, please proceed to [Uploading Your Avatar](/docs/avatar/uploading).
