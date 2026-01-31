@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 
-export function GoogleDriveUrlConverter() {
+export function UrlConverter() {
+  const [mode, setMode] = useState<'google-drive' | 'custom-domain'>('google-drive');
   const [inputUrl, setInputUrl] = useState('');
   const [inputPassword, setInputPassword] = useState('');
   const [outputUrl, setOutputUrl] = useState('');
@@ -40,7 +41,17 @@ export function GoogleDriveUrlConverter() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputUrl(value);
-    extractAndConvert(value);
+    if (mode === 'google-drive') {
+      extractAndConvert(value);
+    } else {
+      // For custom domain, just update the output URL directly
+      let customUrl = value;
+      if (inputPassword && inputPassword.length > 0) {
+        const encoded = encodeBase64Utf8(inputPassword);
+        if (encoded) customUrl = `${customUrl}#${encoded}`;
+      }
+      setOutputUrl(customUrl || '');
+    }
     setCopied(false);
   };
 
@@ -48,7 +59,28 @@ export function GoogleDriveUrlConverter() {
     const value = e.target.value;
     setInputPassword(value);
     // Recompute output using the existing URL and new password
-    if (inputUrl) extractAndConvert(inputUrl);
+    if (inputUrl) {
+      if (mode === 'google-drive') {
+        extractAndConvert(inputUrl);
+      } else {
+        // For custom domain, recompute with new password
+        let customUrl = inputUrl;
+        if (value && value.length > 0) {
+          const encoded = encodeBase64Utf8(value);
+          if (encoded) customUrl = `${inputUrl}#${encoded}`;
+        }
+        setOutputUrl(customUrl || '');
+      }
+    }
+    setCopied(false);
+  };
+
+  const handleModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newMode = e.target.value as 'google-drive' | 'custom-domain';
+    setMode(newMode);
+    setInputUrl('');
+    setInputPassword('');
+    setOutputUrl('');
     setCopied(false);
   };
 
@@ -62,18 +94,42 @@ export function GoogleDriveUrlConverter() {
 
   return (
     <div className="rounded-lg border border-fd-border bg-fd-card p-6 my-6">
-      <h3 className="font-semibold mb-4">Google Drive Direct Link Converter</h3>
+      <h3 className="font-semibold mb-4">
+        {mode === 'google-drive'
+          ? 'Google Drive Direct Link Converter'
+          : 'Custom URL Converter'}
+      </h3>
       
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-medium mb-2">
-            Paste your Google Drive Share Link:
+            Conversion Mode:
+          </label>
+          <select
+            value={mode}
+            onChange={handleModeChange}
+            className="w-full px-3 py-2 border border-fd-border rounded-md bg-fd-background text-fd-foreground focus:outline-none focus:ring-2 focus:ring-fd-primary"
+          >
+            <option value="google-drive">Google Drive Link</option>
+            <option value="custom-domain">Custom Domain</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            {mode === 'google-drive'
+              ? 'Paste your Google Drive Share Link:'
+              : 'Paste your Custom Domain URL:'}
           </label>
           <input
             type="text"
             value={inputUrl}
             onChange={handleInputChange}
-            placeholder="https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing"
+            placeholder={
+              mode === 'google-drive'
+                ? 'https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing'
+                : 'https://example.com/path/to/file'
+            }
             className="w-full px-3 py-2 border border-fd-border rounded-md bg-fd-background text-fd-foreground placeholder-fd-muted-foreground focus:outline-none focus:ring-2 focus:ring-fd-primary"
           />
         </div>
