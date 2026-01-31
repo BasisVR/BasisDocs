@@ -9,6 +9,11 @@ import { GoogleDriveUrlConverter } from '@/components/GoogleDriveUrlConverter';
 
 Basis allows you to load an Avatar .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
 
+<Callout type="info">
+You can add your avatar password directly into the url for your .BEE file by `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Which you are appending `#` and Base64Encoded string of your password.
+</Callout>
+
 In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
 
 (Google Drive supports the direct link of files up to 100MB due to their Virus Scanning policy.)
@@ -41,6 +46,7 @@ Example:
 https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
 ```
 <GoogleDriveUrlConverter />
+
 <Callout type="warn">
 **DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
 </Callout>
