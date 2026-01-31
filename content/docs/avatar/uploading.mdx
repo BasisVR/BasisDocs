@@ -1,12 +1,18 @@
 ---
 title: Uploading
 ---
-
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
 
 ## Uploading Your Avatar
 
 Basis allows you to load an Avatar .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
+
+<Callout type="info">
+You can add your avatar password directly into the url for your .BEE file by `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Which you are appending `#` and Base64Encoded string of your password.
+</Callout>
 
 In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
 
@@ -23,6 +29,8 @@ Now when you drag your files into this Folder, you will not individually need to
 
 We will need to look into the URL to grab the information we need for your BEE file.
 
+
+
 Example:
 ```
 https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
@@ -37,34 +45,50 @@ Example:
 ```
 https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
 ```
+<UrlConverter />
 
 <Callout type="warn">
 **DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
 </Callout>
 
 ## Loading in Basis
+<Steps>
 
+<Step>
 Load up Basis, open the menu, and select Avatars.
 
 ![Basis menu](/img/avatars/11.png)
+</Step>
 
+<Step>
 In the Avatar menu, select 'New Avatar' near the top of the window.
 
 ![Add Avatar button](/img/avatars/12.png)
+</Step>
 
+
+<Step>
 Paste the **BEE File URL** into the Avatar URL field and the **SUPER SECRET ENCRYPTED PASSWORD** into the Avatar Password field.
 
 ![BEE file URL & password](/img/avatars/13.png)
+</Step>
 
+<Step>
 Click the Add button and the avatar should then automatically load!
 
 ![Add BEE file button](/img/avatars/14.png)
+</Step>
+</Steps>
 
-You will see your avatar appear at the bottom of the avatar list on the left (1) and the details of the avatar, such as the timestamp of when it was compiled, along with the Title and Description (2)
-
-This window will also show icons to indicate compatibility across various OS platforms (3).
+## Avatar Details
 
 ![New Avatar details](/img/avatars/15.png)
+
+Once your avatar is loaded, you'll see the following in the Avatar Details panel:
+
+- **(1) Avatar List** - Your avatar appears at the bottom of the avatar list on the left side
+- **(2) Avatar Information** - The details panel displays the compilation timestamp, Title, and Description
+- **(3) Platform Compatibility** - Icons indicate which OS platforms support this avatar
 
 
 ## Remove Avatars
@@ -75,6 +99,6 @@ Avatars can be removed by clicking on the Avatar in the menu and hitting the red
 
 To remove all saved avatar information, outside of the game interface, you can also do the following:
 
-- Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\VerySafePasswordStore.json`.
+- Delete `%appdata%\..\LocalLow\Basis Unity\Basis Unity\KeyStore.json`.
 
 When you next reload the game the previously stored Avatars will now be gone.

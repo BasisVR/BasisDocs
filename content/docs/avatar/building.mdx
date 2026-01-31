@@ -6,7 +6,10 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Avoid Duplicate GameObjects
 
-- Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
+- Basis Avatar will by default rename all duplicate name GameObjects within the avatar's hierarchy. 
+<Callout type="warning">
+If you enable `Do not auto-rename bones` in the Processing Options. Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
+</Callout>
 
 ## Build the AssetBundle
 
