@@ -3,6 +3,7 @@ title: Uploading
 ---
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { GoogleDriveUrlConverter } from '@/components/GoogleDriveUrlConverter';
 
 ## Uploading Your Avatar
 
@@ -23,6 +24,8 @@ Now when you drag your files into this Folder, you will not individually need to
 
 We will need to look into the URL to grab the information we need for your BEE file.
 
+
+
 Example:
 ```
 https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
@@ -37,7 +40,7 @@ Example:
 ```
 https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
 ```
-
+<GoogleDriveUrlConverter />
 <Callout type="warn">
 **DO NOT UPLOAD YOUR GENERATED PASSWORD FILE OR SHARE IT**
 </Callout>
