@@ -6,20 +6,20 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## What Are Props?
 
-Props are interactive objects which can be loaded into a Basis scene and synchronised across a network.
+Props are interactive objects which can be loaded into a Basis scene and optionally synchronised across a network.
 
 ## How to Create a Prop
 
-- Select a game object and add a Basis Prop component to it.
+- Select a Gameobject and add a Basis Prop component to it.
 - Enter an Asset Bundle Name.
 - Optionally, add an Asset Bundle Description.
 - Press the 'Create Prop Bee File' button and wait for this process to complete.
 
-![Inspector Window at Armature Gameobject](/img/props/1-.png)
+![Inspector Window showing Basis Prop component](/img/props/1.png)
 
 - The results will be opened in a new window automatically as shown below. 
 
-![Inspector Window at Armature Gameobject](/img/props/3.png)
+![Directory location of the generated prop .bee file](/img/props/3.png)
 
 ## How to Create a Network Synced Prop
 
@@ -27,7 +27,7 @@ Props can be network synced and generated at runtime. Below is example of how to
 
 - Add a cube object in the scene hierarchy.
 
-![Inspector Window at Cube](/img/props/2AA.png)
+![Inspector Window at Cube](/img/props/2A.png)
 
 - Add a Basis Pickup Interactable component. This allows a local player to pick up and move the cube.
 
@@ -39,11 +39,11 @@ Props can be network synced and generated at runtime. Below is example of how to
 
 - Add a Basis Prop component, enter an Asset Bundle Name and press the 'Create Prop Bee File' button. The generated .bee files will be used by the Basis Runtime Loader to load the network synced cube into a scene.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/2D.png)
+![Inspector Window showing Basis Prop component](/img/props/2D.png)
 
 ### Spawning the Prop into a Scene Using the Runtime Loader
 
-- Create an empty game object and give it a suitable name.
+- Create an empty Gameobject and give it a suitable name.
 
 - Attach the Runtime Loader component to it.
 
@@ -51,13 +51,13 @@ Props can be network synced and generated at runtime. Below is example of how to
 
 - Select Persistent to ensure synced changes persist for late-joining players.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/3A.png)
+![Inspector Window showing Runtime Loader](/img/props/3A.png)
 
 - In the Unity Editor toolbar, select Basis and click on the Loadable Config Editor. This Basis config editor is used to genertate XML files which Basis can use to spawn props into a scene.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/4B-.png)
+![Unity toolbar showing Basis Loadable Config Editor setting](/img/props/4A.png)
 
-- Enter 0 for the mode value. The 0 simply means that this is a loadable prop.
+- Enter 0 for the mode value. The 0 simply means that this is a loadable prop (a mode value of 1 is used for scenes).
 
 - Enter the same generated password and .bee url used previously.
 
@@ -65,29 +65,49 @@ Props can be network synced and generated at runtime. Below is example of how to
 
 - Click 'Save XML' and enter an appropriate file name to generate an XML file for the network synced pickup cube 
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/4C.png)
+![Inspector window of Basis Config](/img/props/4B.png)
 
 - The generated XML will be located in: *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources*
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/4D.png)
+![Location of generated XML output](/img/props/4C.png)
 
 - Its output should look something like this:
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/4E.png)
+```xml title="PropDemo.xml"
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BasisLoadableConfiguration>
+  <!-- Mode of the configuration --><Mode>0</Mode>
+  <!-- Network ID --><LoadedNetID></LoadedNetID>
+  <!-- Unlock password --><UnlockPassword><GENERATED-BEE-PASSWORD></UnlockPassword>
+  <!-- Combined URL --><CombinedURL><GENERATED-BEE-URL></CombinedURL>
+  <!-- Local load flag --><IsLocalLoad>false</IsLocalLoad>
+
+  <!-- Position values --><PositionX>0</PositionX><PositionY>0</PositionY><PositionZ>0</PositionZ>
+
+  <!-- Quaternion values --><QuaternionX>0</QuaternionX><QuaternionY>0</QuaternionY><QuaternionZ>0</QuaternionZ><QuaternionW>0</QuaternionW>
+
+  <!-- Scale values --><ScaleX>1</ScaleX><ScaleY>1</ScaleY><ScaleZ>1</ScaleZ>
+
+  <!-- Persist flag --><Persist>true</Persist>
+</BasisLoadableConfiguration>
+``` 
 
 ### Checking the Server to Confirm the Prop Loads
 
 - You can check if your prop is loaded correctly by the server. To do so, run the *BasisNetworkConsole.exe*, which is located at *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0*.
 
-- *Note:* 
-  - You will need to register yourself as an admin for the prop to be able to load. You can do this by entering entering the command */admin add* did:key:\<YOUR-KEY\> or by editing *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\config\admins.xml*. 
-  - You can find your key by opening up the Basis application and selecting your player's UUID in the Admin settings.
+<Callout type="info">
+You will need to register yourself as an admin for the prop to be able to load. You can do this by entering entering the command */admin add* did:key:\<YOUR-KEY\> or by editing *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\config\admins.xml*.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/5A.png)
+You can find your key by opening up the Basis application and selecting your player's UUID in the Admin settings.
+</Callout>
+
+
+![Server terminal output](/img/props/5A.png)
 
 ### Setting up the Basis Scene and Testing the Pickup Cube
 
-- Before you can test out the network synced pickup cube, ensure that your scene has a Basis Scene component attached to an empty game object.
+- Before you can test out the network synced pickup cube, ensure that your scene has a Basis Scene component attached to an empty Gameobject.
 
 - Click 'Create Scene Bee File'.
 
@@ -97,8 +117,8 @@ Props can be network synced and generated at runtime. Below is example of how to
 
 - Ensure Persistent is selected so that synced changes persist for late-joining players.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/5B.png)
+![Inspector Window for load config](/img/props/5B.png)
 
 - Open up the 'Initialization' scene and press play. This initialises the created scene and network objects. The next time when you load the scene through the server while running the basis application, all players will be able to interact with the network synced cube.
 
-![Inspector Window at Basic Object Sync Networking component](/img/props/5C.png)
+![Desktop Steam two game windows showing synced cube](/img/props/5C.png)
