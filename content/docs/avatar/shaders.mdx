@@ -39,3 +39,28 @@ import { Callout } from 'fumadocs-ui/components/callout';
 <Callout type="info">
 These are known to be working/compatible at the time of the latest documentation update.
 </Callout>
+
+
+## How to Make Avatars Which Use Poiyomi Shaders Work in BasisVR/URP
+
+Many avatars use Poiyomi shaders which originally only worked with Unity's Built-in Render Pipeline (BIRP). However, now, Poiyomi shaders are also supported to work with Unity's Universal Render Pipeline (URP), which is the render pipeline used for BasisVR.
+
+Poiyomi shaders support for URP is still in beta. If you have an avatar that was originally designed using BIRP Poiyomi shaders, you can easily convert them to be URP-compatible by following the steps below. To demonstrate how, this example uses uses [Hatsune Miku by Tomarudo](https://boothplorer.com/avatar/3226395).
+
+- Download the latest release from https://discord.gg/poiyomi #urp-release.
+
+- Import your character into the Unity scene. If it the shader looks different from what's expected (e.g., its colours are missing or it has a magenta colour due to missing shaders or similar), you will need to make just a few tiny adjustments to fix things.
+
+![Inspector Window showing button and components](/img/avatars/23.png)
+
+- Select each material in your avatar's folder and change its shader to use Poiyomi Pro URP.
+
+![Inspector Window showing button and components](/img/avatars/24.png)
+
+- After making the changes, your avatar should render as expected.
+
+![Inspector Window showing button and components](/img/avatars/25.png)
+
+<Callout type="info">
+Poiyomi shaders for URP is compatible with both PC and Android devices. 
+</Callout>
