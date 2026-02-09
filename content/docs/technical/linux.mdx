@@ -50,15 +50,19 @@ It is recommended to change your "Scripting Backend" to `IL2CPP` for better perf
 
 Then build Basis as you would normally.
 
-## Basis VR on Linux
+## Linux Native
 
-You may need to launch Basis with the `--force-OpenVRLoader` flag for it to function properly in VR:
+**VR:** You may need to launch with the `--force-OpenVRLoader` flag:
 
 ```bash
 ./basis.x86_64 --force-OpenVRLoader
 ```
 
-You do not use this when launching for Desktop.
+**Wayland**: If the application closes immediately after launch, use XWayland:
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
 
 ## Proton / Wine
 
