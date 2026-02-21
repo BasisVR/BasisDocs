@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     images: ['/img/basisvr-social-card.jpg'],
   },
   icons: {
-    icon: '/img/favicon.ico',
+    icon: '/img/BasisLogoSmall.png',
   },
 };
 
