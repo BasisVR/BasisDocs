@@ -22,56 +22,56 @@ export function UrlConverter() {
     }
   };
 
-  const extractAndConvert = (url: string) => {
-    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (match && match[1]) {
+  const buildOutputUrl = (
+    url: string,
+    password: string,
+    selectedMode: 'google-drive' | 'custom-domain' = mode
+  ) => {
+    if (!url) return '';
+
+    if (selectedMode === 'google-drive') {
+      const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (!match || !match[1]) return '';
+
       const fileId = match[1];
       let downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-      if (inputPassword && inputPassword.length > 0) {
-        const encoded = encodeBase64Utf8(inputPassword);
+      if (password && password.length > 0) {
+        const encoded = encodeBase64Utf8(password);
         if (encoded) downloadUrl = `${downloadUrl}#${encoded}`;
       }
-      setOutputUrl(downloadUrl);
       return downloadUrl;
     }
-    setOutputUrl('');
-    return null;
+
+    let customUrl = url;
+    if (password && password.length > 0) {
+      const encoded = encodeBase64Utf8(password);
+      if (encoded) customUrl = `${customUrl}#${encoded}`;
+    }
+    return customUrl;
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputUrl(value);
-    if (mode === 'google-drive') {
-      extractAndConvert(value);
-    } else {
-      // For custom domain, just update the output URL directly
-      let customUrl = value;
-      if (inputPassword && inputPassword.length > 0) {
-        const encoded = encodeBase64Utf8(inputPassword);
-        if (encoded) customUrl = `${customUrl}#${encoded}`;
-      }
-      setOutputUrl(customUrl || '');
-    }
+    setOutputUrl(buildOutputUrl(value, inputPassword));
+    setCopied(false);
+  };
+
+  const handleUrlPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (!pastedText) return;
+
+    const value = pastedText.trim();
+    e.preventDefault();
+    setInputUrl(value);
+    setOutputUrl(buildOutputUrl(value, inputPassword));
     setCopied(false);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputPassword(value);
-    // Recompute output using the existing URL and new password
-    if (inputUrl) {
-      if (mode === 'google-drive') {
-        extractAndConvert(inputUrl);
-      } else {
-        // For custom domain, recompute with new password
-        let customUrl = inputUrl;
-        if (value && value.length > 0) {
-          const encoded = encodeBase64Utf8(value);
-          if (encoded) customUrl = `${inputUrl}#${encoded}`;
-        }
-        setOutputUrl(customUrl || '');
-      }
-    }
+    setOutputUrl(buildOutputUrl(inputUrl, value));
     setCopied(false);
   };
 
@@ -125,6 +125,7 @@ export function UrlConverter() {
             type="text"
             value={inputUrl}
             onChange={handleInputChange}
+            onPaste={handleUrlPaste}
             placeholder={
               mode === 'google-drive'
                 ? 'https://drive.google.com/file/d/YOUR_FILE_ID/view?usp=sharing'
