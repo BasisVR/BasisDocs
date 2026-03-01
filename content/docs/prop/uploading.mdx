@@ -1,0 +1,30 @@
+---
+title: Uploading
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Uploading Your Prop
+
+Basis allows you to load an Prop .BEE file from a remote URL location, which is also required for other users in a networked session to also load the assets.
+
+<Callout type="info">
+You can add your prop password directly into the url for your .BEE file by `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Which you are appending `#` and Base64Encoded string of your password.
+</Callout>
+
+In order to support this, you will need to direct link to a remote location. For this example, we will use Google Drive.
+
+(Google Drive supports the direct link of files up to 100MB due to their Virus Scanning policy.)
+
+Upload the **BEE file** to Google Drive, or any hosting provider that allows direct links to files without login.
+
+- Create a Folder on your Drive and set its sharing settings to "Anyone with the link."
+
+Now when you drag your files into this Folder, you will not individually need to set that permission.
+
+- Click the Hamburger Menu on the Top Right of the asset you have just uploaded into the folder.
+- Find "Share" and click "Copy Link."
+
+We will need to look into the URL to grab the information we need for your BEE file.
