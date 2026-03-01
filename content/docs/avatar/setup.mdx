@@ -46,6 +46,15 @@ If you place your content within a new directory "Assets > _UserContent" the def
 
 ![Head mapping](/img/avatars/4.png)
 
+<Callout type="info">
+In some cases, the Unity inspector might mention that your avatar's bone mappings aren't properly assigned, or that the avatar isn't T-posed properly. To fix this, you can click on the Mapping and Pose dropdowns and select Automap or Enforce T-Pose.
+
+![Inspector window showing how to automap avatar rig](/img/avatars/4a.png)
+
+![Inspector window showing how to enforce t-pose](/img/avatars/4b.png)
+
+</Callout>
+
 ## Skinned Mesh Setup
 
 - There are currently no requirements to name your Avatar's Skinned Mesh as `Body` or other variation used on Virtual Platforms.
@@ -67,20 +76,24 @@ If you place your content within a new directory "Assets > _UserContent" the def
 
 - The steps above should automatically add an Animator component to your Avatar prefab when you pull it into the Scene.
 - On the Parent GameObject of the Avatar, click `Add Component`, and add `Basis Avatar`.
+- Enter your preferred Avatar Name and Description.
+- In `Assigned Input`, ensure an Animator is assigned. Usually, this will automatically be done for you. Additionally, assign the Skinned Mesh Renderers which contain the face and blink blendshapes for your avatar. You can also add an optional thumbnail icon for your avatar if you like.
+- In `Viseme Setup`, assign the relevant visemes and blinking for your avatars. You can also use the automatic detection buttons which will try to automatically do this for you.
+- Optionally, you can test your avatar in the editor by first entering play mode and then selecting the `Test in Editor` option.
+- Before selecting `Create Avatar Bee File`, ensure that all your shaders are compatible. The BEE file will not generate if there are incompatible shader errors on your avatar (this includes clothing and attachments). If there are any issues, the inspector will report about it so make sure to resolve them!
 
-If you're struggling to find the view ball or indicator for the Eye Position, follow these steps:
+![Inspector Window Basis Avatar Component Added with Fields Assigned](/img/avatars/6a.png)
 
-- Top Right next to XYZ, click the Eye.
-- Enable "Eye Position Gizmo" inside of the `Basis Avatar` component.
+![Inspector Window showing example of avatar blendshape movements](/img/avatars/6b.png)
 
-You should now see a green Gizmo for your eyes; move this up between your eyes and on the same plane as your eyes.
+<Callout type="info">
+In case you're new to Skinned Mesh Renderer blendshapes or uploading avatars in general, they're basically just sliders that you can control to change the morphs on your avatar.
 
-**Ensure you have assigned each of the following:**
-- Animator
-- Face Viseme
-- Face Blink
-- Avatar Name
-- Avatar Description
+![Inspector Window showing example of avatar blendshape movements](/img/avatars/6c.gif)
+</Callout>
+
+
+
 
 ## Constraints Setup
 
