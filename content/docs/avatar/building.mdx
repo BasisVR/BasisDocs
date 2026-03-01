@@ -4,16 +4,21 @@ title: Building
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
+## The Basis Encrypted Extension (BEE) File
+
+Basis stores user-generated content as a .BEE file which contains your compiled asset and metadata about it. Each generated .BEE file comes with a randomly generated password used to access it, both of which can be found in the root directory of your Unity project at: `Basis\Basis\AssetBundles`.
+
 ## Avoid Duplicate GameObjects
 
-- Basis Avatar will by default rename all duplicate name GameObjects within the avatar's hierarchy. 
+- By default, the BasisAvatar component will rename all duplicate name GameObjects within the avatar's hierarchy.
+
 <Callout type="warning">
 If you enable `Do not auto-rename bones` in the Processing Options. Ensure that there are **NO** duplicate named GameObjects within the hierarchy of your avatar, including the armature, as this will cause your avatar to fail to load after building the AssetBundle.
 </Callout>
 
 ## Build the AssetBundle
 
-- At the bottom of the Basis Avatar component on your Avatar, check that the appropriate build targets for your content are enabled (Windows, Mac, Linux etc) (NOTE: If building for Basis Framework public testing please use all possible build targets)
+- At the bottom of the Basis Avatar component on your Avatar, check that the appropriate build targets for your content are enabled. Basis supports various target platforms, including: Windows, Android, Mac, Linux and IOS.
 - Press the 'Create Avatar Bee File' button and wait for this process to complete.
 
 ![Create Avatar Bee File](/img/avatars/7.png)
@@ -22,24 +27,22 @@ If you enable `Do not auto-rename bones` in the Processing Options. Ensure that 
 
 ![Build results](/img/avatars/8.png)
 
-<Callout type="info">
-Basis uses the .BEE file extension, which contains your compiled asset and meta data, in order to simplify user generated content.
-
-The .BEE file, along with a randomly generated password to access it, is created under your Unity Project path /AssetBundles/ directory and is hidden from Unity by default.
-
-If you prefer, you can also replace the generated .BEE file name with something more easily memorable. Keep in mind that reusing the same name will result in any previous version being replaced by the new one!
-</Callout>
-
-- Each platform takes on average 2 minutes from cold/no cache build. Building for all platforms will take some time. Likely more than 10 minutes for all platforms. Hot build/cached took little over 2 mins on same avatar and specs.
+- Depending on your hardware, each platform may take an average of a minute or two to build the first time. Subsequent builds should take less time due to caching. Building for all platforms will likely take additional time and increase the overall file size.
 
 <Callout type="info">
-An avatar with 18 materials using Poiyomi URP with 120K polygons, with package size 45MB per platform, took 9m 43s on a Ryzen 7 9800x3D. Jan, 2026
+Nice to know:
+
+- You can conveniently use a custom password for your generated BEE file instead. This can make things easier to remember if you prefer a single password to use for different BEE files. 
+
+- If you prefer, you can also replace the generated .BEE file name with something more easily memorable. Keep in mind that reusing the same name will result in any previous version being replaced by the new one!
+
+
+![Create Avatar Bee File](/img/avatars/7a.png)
 </Callout>
 
-
-## Locally Test the Avatar
-
-Testing the .BEE file locally is not yet supported and will be implemented in the near future, please proceed to [Uploading Your Avatar](/docs/avatar/uploading).
+<Callout type="info">
+January 2026 Anecdote: An avatar with 18 materials using Poiyomi URP with 120K polygons, with package size 45MB per platform, took 9m 43s on a Ryzen 7 9800x3D to build for all target platforms.
+</Callout>
 
 {/* - Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
 
