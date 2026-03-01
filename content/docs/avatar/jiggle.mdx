@@ -3,15 +3,51 @@ title: Jiggle Physics
 description: Jiggle Physics allows you to add dynamic movement to parts of your avatar, such as hair, clothing, or accessories, enhancing realism and immersion.
 ---
 
-## To add Jiggle Physics
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## How To Add Jiggle Physics
 
 For each jiggle root:
-- Add a new component `Jiggle Rig`, which can be placed in a separate gameObject, but it must under the hierarchy of your Avatar root.
-- In the Jiggle Rig component, ensure to set a `Root Transform`, which is a bone in the avatar armature.
-- If you have a parent bone (for multiple chains of child bones that you wish to apply the same effect to) you can enable `Motionless Root` to only affect the child bones and not the root itself. (Optional)
-- Adjust `Settings` to your liking (activate `Advanced` to view all settings).
+- Add a new `Jiggle Rig` component either to a new GameObject, or any existing one as long it's under the hierarchy of your Avatar root. 
+
+![Inspector Window adding Jiggle Root component](/img/jiggle/1.png)
+
+- Assign the bone in the avatar armature that you want to make jiggle to the `Root Transform` in the inspector. For example, this can include things like your avatar's hair, clothing, accessories or body parts. Keep in mind that for things with a left and right side (such as left and right breasts), you'll want to add a separate `Jiggle Rig` for each one (otherwise only one side will jiggle!).
+
+<Callout type="info">
+Tip: To keep your Jiggle Rigs  organised, you can nest them under a newly created parent GameObject for example.   
+</Callout>
+
+- You can adjust the settings and test in playmode (e.g., either by just dragging the avatar around or using the `Basis Avatar` component's `Test in Editor` option) until you're satisfied. You can also place your mouse cursor over each setting option to see a description of what it does. To view all settings, you can click on `Advanced`.
+
+![Inspector Window showing organised jiggles](/img/jiggle/2.png)
+
+<Callout>
+Optionally, if you have a parent bone with multiple chains of child bones inside it and you wish to apply the same effect to them, you can enable `Motionless Root` so that it only affects the child bones and not the root itself.
+</Callout>
+
+- Below you can see an example with Jiggle Rigs applied to the hair, clothing and chest.
+
+![Window showing avatar using Jiggle Rig in playmode](/img/jiggle/3.gif)
 
 ## Collision Interaction
 
+If you want collisions by objects to drive the jiggles:
+
 - Activate `Advanced` to view all settings.
+
 - Enable `Collision` and adjust `Collision Radius` to fit the object.
+
+- Add a GameObject which you want to use for triggering collisions. Assign to it the component `Jiggle Collider Example`. 
+
+<Callout type="info">
+Make sure whatever GameObject your using has a sphere collider!
+</Callout>
+
+- In the `Jiggle Collider Transform` field, assign your colliding GameObject and select Sphere as the `Collider Type`. Note that currently only sphere colliders are supported, but the creator of the jiggle system, Naelstrof, is likely to add more in the future.
+
+![Inspector Window showing sphere with Jiggle Collider ](/img/jiggle/4.png)
+
+- Below is an example of a sphere object with the component `BasisPickupInteractable` colliding with an avatar's hair.
+
+![Inspector Window showing organised jiggles](/img/jiggle/5.gif)
