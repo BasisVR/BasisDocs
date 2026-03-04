@@ -19,13 +19,17 @@ Let's create a page to cover the available controls in BasisVR
 
 - You can use *BasisDebug.Log("\<your-log-message-here\>");* to print output to the Basis app's in-game console menu.
 
-- You can also view the `Player.log` file located in `C:\Users\<your-user>\AppData\LocalLow\Basis Unity\Basis Unity`. It provides a more comprehensive log of the exact Unity issues encountered while playing. This includes stack traces such as the exact line a nullreference error might have come up in.
+- You can also view the `Player.log` file located in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+This depends on the proton using the steamid of the selected app, building in editor will be in a different location.</Tab></Tabs> It provides a more comprehensive log of the exact Unity issues encountered while playing. This includes stack traces such as the exact line a nullreference error might have come up in.
 
 ![Basis Console Menu](/img/controls/2.png)
 
 ## Where Are Library Items Stored?
 
-- The `ItemKeyStore.json`, located in `C:\Users\<your-user>\AppData\LocalLow\Basis Unity\Basis Unity` stores a mapping of the avatars, worlds, and props currently contained in your library.
+- The `ItemKeyStore.json`, located in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+This depends on the proton using the steamid of the selected app, building in editor will be in a different location.</Tab></Tabs> stores a mapping of the avatars, worlds, and props currently contained in your library.
 
 <Callout>
 Within the codebase, you can also find there is an `EmbeddedItems` class containing library items that are embedded into the application.   
