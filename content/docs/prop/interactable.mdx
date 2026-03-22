@@ -1,0 +1,21 @@
+---
+title: Interactable
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## How to Create a Network Synced Prop
+
+Props can be network synced and generated at runtime. Below is example of how to load a network synced Pickup Interactable cube:
+
+- Add a cube object in the scene hierarchy.
+
+![Inspector Window at Cube](/img/props/2A.png)
+
+- Add a Basis Pickup Interactable component. This allows a local player to pick up and move the cube.
+
+![Inspector Window at Basis Pickup Interactable component](/img/props/2B.png)
+
+- Add a Basis Object Sync Networking component. This allows the cube to be synced for all players.
+
+![Inspector Window at Basic Object Sync Networking component](/img/props/2C.png)

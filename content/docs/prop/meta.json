@@ -1,5 +1,5 @@
 {
   "title": "Prop",
   "icon": "Rocket",
-  "pages": ["index", "setup", "building", "uploading"]
+  "pages": ["index", "setup", "interactable", "animations", "building", "uploading"]
 }
