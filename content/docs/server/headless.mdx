@@ -1,0 +1,151 @@
+---
+title: Headless Clients
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduction
+
+Basis provides headless client builds that can connect to a Basis server without rendering the full interactive client. These builds are mainly useful for load testing, connection testing, and validating server behavior under higher player counts.
+
+Linux and Windows headless client builds can also be downloaded from the GitHub artifacts for Basis. Docker is a convenient way to run many instances, but it is not required to run headless clients.
+
+Use headless clients when you want to:
+
+- Simulate multiple users joining the same server
+- Measure how your server behaves under load
+- Test passworded access before inviting real users
+- Reproduce networking issues with more controlled clients
+
+<Callout type="info" title="What this page covers">
+This page focuses on running the headless client itself. For the server-side setup, see the deployment, configuration, and monitoring pages.
+</Callout>
+
+## Getting the Headless Client
+
+You have two main ways to run headless clients:
+
+- Download the Linux or Windows headless client build from the GitHub artifacts
+- Run the published headless Docker images
+
+Docker is useful when you want repeatable containerized setups or need to scale many instances quickly. If you only need to run one or a few headless clients, downloading the platform build directly is also valid.
+
+## Before You Start
+
+Make sure the server you want to target is already reachable.
+
+- Basis traffic uses `4296/udp`
+- The default server password is `default_password` unless you changed it in `config.xml` or with environment variables
+- If you are testing a local server, use your local machine or LAN address instead of a public hostname
+
+The server documentation also notes that `config.xml` values can be overridden by environment variables. That matters here because the same pattern is used for the headless client examples below.
+
+## Docker Compose Configuration
+
+When running Docker from Docker Desktop, Docker normally uses WSL2 under the hood, so the Linux image is usually the correct choice there. If you are specifically running Windows containers, use the Windows image instead.
+
+### Linux
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+    volumes:
+      - ./config.xml:/HeadlessLinuxServer_Data/config.xml
+```
+
+### Windows
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-windows
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+    volumes:
+      - ./config.xml:/app/HeadlessWindowsServer_Data/config.xml
+```
+
+## What the Settings Mean
+
+The examples above use the minimum values needed to connect:
+
+| Variable | Purpose |
+|----------|---------|
+| `IP` | Hostname or IP address of the Basis server |
+| `Port` | UDP port the server listens on, usually `4296` |
+| `Password` | Server password required to join |
+
+If you mount a `config.xml`, treat it as the file-based fallback configuration. If you also set environment variables, the docs for the main server note that environment values override xml values, so keep one source of truth where possible to avoid confusion during testing.
+
+
+## Running at Scale
+
+Docker Compose can launch multiple headless clients from the same service definition:
+
+### `docker compose -f docker-compose.yml up -d --scale "basis-headless=10"`
+
+As a rough guideline, the existing note recommends budgeting about `1.5 GB` of memory per instance. For example, if you have around `30 GB` available, you can plan on roughly `20` instances.
+
+This is only a starting estimate. Actual limits depend on:
+
+- Available RAM
+- CPU cores
+- The server's `PeerLimit`
+- Bandwidth available between the headless clients and the server
+
+## Suggested Load Testing Workflow
+
+1. Start the Basis server and confirm it is listening.
+2. Check the server health endpoint at `http://localhost:10666/health` or the equivalent host for your deployment.
+3. Launch a small number of headless clients first.
+4. Verify they can connect with the expected `IP`, `Port`, and `Password`.
+5. Increase the scale gradually and watch server health, bandwidth, and machine resource usage.
+
+## Monitoring During Tests
+
+If the server health endpoint is exposed, you can use it to confirm that your test is having the expected effect. The monitoring docs show this example response:
+
+```json
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+During a headless load test, the most useful fields are:
+
+- `listening` to confirm the server is accepting connections
+- `visitors` to see how many clients are currently connected
+- `capacity` to compare against your configured player limit
+- `sent` and `recv` to observe traffic growth
+- `version` to confirm the expected server version
+
+<Callout type="warn" title="Version matching matters">
+The server docs explicitly note that client and server code must agree on the server version. If your headless image and your target server are built from incompatible versions, connection attempts may fail even when the network settings are correct.
+</Callout>
+
+## Troubleshooting
+
+If the headless clients do not connect, check these first:
+
+- The server address in `IP` is reachable from the container
+- The server password matches
+- `4296/udp` is open and mapped correctly
+- You are using the correct image for your container runtime
+- Your server is actually listening and healthy on startup
+- The client and server versions are compatible
+
+If you are scaling many instances and seeing instability, reduce the instance count and confirm whether the limit is memory, CPU, network bandwidth, or the server's configured `PeerLimit`.
