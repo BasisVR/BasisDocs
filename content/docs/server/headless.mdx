@@ -65,6 +65,9 @@ Make a folder for the `docker-compose.yml` and copy the example below.
 Start a Command Prompt or Powershell in that directory. When using file explorer you can launch Command Prompt by typing `cmd.exe` in the url bar or explorer.
 </Step>
 <Step>
+First download/update the docker images with `docker compose pull`
+</Step>
+<Step>
 Type the command `docker compose up -d` to start the containers
 </Step>
 <Step>
@@ -101,19 +104,31 @@ services:
       Password: default_password
       Ip: 'server1.basisvr.org'
       HealthCheckEnabled: "true"
-      HealthCheckHost: "0.0.0.0"
+      HealthCheckHost: "127.0.0.1"
       HealthCheckPort: 10666
       HealthPath: "/health"
+      AvatarFileLocation: ""
+      AvatarPassword: ""
     volumes:
       - ./Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. Optional not required
-      - "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" #If you want to use your own cache and avatar files. *Corruption possible
+      - "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. *Corruption possible
       - ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
     healthcheck:
-      test: ["CMD-SHELL","bash -lc 'exec 3<>/dev/tcp/127.0.0.1/10666 && printf \"GET /health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n\" >&3 && grep -q \"200\" <&3`"]
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 20s
+    labels:
+      autoheal-app: true
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 ```
 
 ## What the Settings Mean
@@ -129,6 +144,8 @@ The examples above use the minimum values needed to connect:
 | `HealthCheckHost` | Ip Endpoint listens on |
 | `HealthCheckPort` | Port Endpoint listens on |
 | `HealthPath` | Path for Health info |
+| `AvatarFileLocation` | Combined URL support of avatar#base64 |
+| `AvatarPassword` | Avatar password |
 
 If you mount a `config.xml`, treat it as the file-based fallback configuration. If you also set environment variables, the docs for the main server note that environment values override xml values, so keep one source of truth where possible to avoid confusion during testing.
 
