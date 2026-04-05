@@ -76,7 +76,7 @@ Use `docker ps` to see the health of all containers and wait until all say healt
 <Step>
 Use `docker compose scale "basis-headless=#` to increase the number of containers. Than go back to a step and repeat until either you out of CPU or RAM.
 
-*Replace `#` with a number in increments of 5*
+*Replace `#` with a number in increments of 5 at most, use increments of 1 on lower end/Ram limited hardware*
 
 <Callout type="info">
 You can also measure usage with `docker compose stats`
