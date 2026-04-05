@@ -65,7 +65,7 @@ Make a folder for the `docker-compose.yml` and copy the example below.
 Start a Command Prompt or Powershell in that directory. When using file explorer you can launch Command Prompt by typing `cmd.exe` in the url bar or explorer.
 </Step>
 <Step>
-First download/update the docker images with `docker compose pull`
+First download/update the docker images with `docker compose pull` *Not required if using the default `docker-compose.yml`*
 </Step>
 <Step>
 Type the command `docker compose up -d` to start the containers
@@ -76,7 +76,7 @@ Use `docker ps` to see the health of all containers and wait until all say healt
 <Step>
 Use `docker compose scale "basis-headless=#` to increase the number of containers. Than go back to a step and repeat until either you out of CPU or RAM.
 
-*Replace `#` with a number in increments of 5*
+*Replace `#` with a number in increments of 5 at most, use increments of 1 on lower end/Ram limited hardware*
 
 <Callout type="info">
 You can also measure usage with `docker compose stats`
@@ -98,7 +98,7 @@ By Default use the linux version of the docker image as its built using IL2CPP a
 services:
   basis-headless:
     image: ghcr.io/basisvr/basis-headless:nightly-linux
-    scale: 3 # You should change based on how much RAM you have. 1.5GB per instance is normally required.
+    pull_policy: always
     environment:
       Port: 4296
       Password: default_password
@@ -110,8 +110,8 @@ services:
       AvatarFileLocation: ""
       AvatarPassword: ""
     volumes:
-      - ./Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. Optional not required
-      - "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. *Corruption possible
+      - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
+      - "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
       - ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
@@ -119,6 +119,12 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M #Highest I ever saw we need to load a 500MB world file.
+        reservations:
+          memory: 1024M #Recommend amount that basis will actually need.
     labels:
       autoheal-app: true
   autoheal:
@@ -129,6 +135,8 @@ services:
       AUTOHEAL_CONTAINER_LABEL: autoheal-app
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  Basis:
 ```
 
 ## What the Settings Mean
