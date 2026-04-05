@@ -154,7 +154,7 @@ If you mount a `config.xml`, treat it as the file-based fallback configuration. 
 
 Docker Compose can launch multiple headless clients from the same service definition:
 
-<h3> `docker compose --scale "basis-headless=10"`</h3> *--scale when not set in the docker-compose.yml*
+<h3> `docker compose up --scale "basis-headless=10"`</h3> *--scale when not set in the docker-compose.yml*
 
 As a rough guideline, the existing note recommends budgeting about `1.5 GB` of memory per instance. For example, if you have around `30 GB` available, you can plan on roughly `20` instances.
 
@@ -213,3 +213,5 @@ If the headless clients do not connect, check these first:
 - The client and server versions are compatible
 
 If you are scaling many instances and seeing instability, reduce the instance count and confirm whether the limit is memory, CPU, network bandwidth, or the server's configured `PeerLimit`.
+
+It is also advisable to have a considerable amount of virtual memory available for Unity in order to run without experiencing 137 exit codes (Out of Memory) in Docker. 
