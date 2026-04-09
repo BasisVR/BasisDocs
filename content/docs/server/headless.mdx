@@ -111,8 +111,8 @@ services:
       AvatarPassword: ""
     volumes:
       - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
-      - "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
-      - ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
+      #- "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
+      #- ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
       interval: 30s
@@ -145,7 +145,7 @@ The examples above use the minimum values needed to connect:
 
 | Variable | Purpose |
 |----------|---------|
-| `IP` | Hostname or IP address of the Basis server |
+| `Ip` | Hostname or IP address of the Basis server |
 | `Port` | UDP port the server listens on, usually `4296` |
 | `Password` | Server password required to join |
 | `HealthCheckEnabled` | Enable or Disable HealthCheckEndpoint |
@@ -154,8 +154,38 @@ The examples above use the minimum values needed to connect:
 | `HealthPath` | Path for Health info |
 | `AvatarFileLocation` | Combined URL support of avatar#base64 |
 | `AvatarPassword` | Avatar password |
+| `StrictMemoryCleanupEnabled` | Remove all textures that are loaded |
 
 If you mount a `config.xml`, treat it as the file-based fallback configuration. If you also set environment variables, the docs for the main server note that environment values override xml values, so keep one source of truth where possible to avoid confusion during testing.
+
+## Optional Voice Simulation with AudioClips
+
+Headless clients can optionally simulate microphone traffic by streaming a `.wav` or `.opus` file as voice audio.
+
+Basis checks the `AudioClips` folder inside the headless player's data directory during startup. If one or more files are present, the headless client randomly picks one file, loops it, Opus-encodes it, and sends it as normal voice traffic.
+
+If the folder does not exist, Basis creates it. If the folder exists but contains no audio files, the headless client stays silent.
+
+Non-48 kHz files are resampled automatically to mono `48 kHz`.
+
+### Where to put the files
+
+For a normal extracted build, place files in the headless data folder under:
+
+- `AudioClips/`
+
+For Docker, mount a folder into the player's data directory `AudioClips` folder.
+
+Example for Linux headless:
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    volumes:
+      - ./AudioClips:/app/HeadlessLinuxServer_Data/AudioClips
+...
+```
 
 
 ## Running at Scale
