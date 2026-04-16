@@ -1,0 +1,40 @@
+---
+title: 建構
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Basis 加密擴展 (BEE) 檔案
+
+Basis 將使用者生成的內容儲存為包含編譯資產和元資料的 .BEE 檔案。每個生成的 .BEE 檔案都附帶隨機生成的密碼：`Basis\Basis\AssetBundles`。
+
+## 避免重複的 GameObject
+
+- 預設情況下，BasisAvatar 元件將重新命名虛擬形象階層中所有重複名稱的 GameObject。
+
+<Callout type="warning">
+如果您啟用 `Do not auto-rename bones`，請確保您的虛擬形象階層（包括骨架）中**沒有**重複名稱的 GameObject。
+</Callout>
+
+## 建構 AssetBundle
+
+- 在 Basis Prop 元件底部，確認是否啟用了適合您內容的建構目標：Windows、Android、Mac、Linux 和 iOS。
+- 按下「Create Prop Bee File」按鈕，等待完成。
+
+（在此插入圖片引用）
+
+- 結果將自動在新視窗中開啟。
+
+（在此插入圖片引用）
+
+- 每個平台的首次建構可能平均需要一到兩分鐘。
+
+<Callout type="info">
+了解一下：
+
+- 您可以為生成的 BEE 檔案使用自訂密碼。 
+
+- 也可以將生成的 .BEE 檔案名稱替換為更容易記憶的名稱。重複使用相同名稱將替換先前的版本！
+
+（在此插入圖片引用）
+</Callout>

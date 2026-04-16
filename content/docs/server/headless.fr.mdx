@@ -1,0 +1,255 @@
+---
+title: Clients sans affichage
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+
+## Introduction
+
+Basis fournit des builds de clients sans affichage qui peuvent se connecter à un serveur Basis sans rendre le client interactif complet. Ces builds sont principalement utiles pour les tests de charge, les tests de connexion et la validation du comportement du serveur avec un nombre de joueurs plus élevé.
+
+Des builds de clients sans affichage pour Linux et Windows peuvent également être téléchargés depuis les artefacts GitHub de Basis. Docker est une méthode pratique pour exécuter plusieurs instances, mais il n'est pas obligatoire pour les clients sans affichage.
+
+Utilisez les clients sans affichage pour :
+
+- Simuler plusieurs utilisateurs rejoignant le même serveur
+- Mesurer comment votre serveur se comporte sous charge
+- Tester l'accès protégé par mot de passe avant d'inviter de vrais utilisateurs
+- Reproduire des problèmes réseau avec des clients plus contrôlés
+
+<Callout type="info" title="Ce que cette page couvre">
+Cette page se concentre sur l'exécution du client sans affichage. Pour la configuration côté serveur, consultez les pages de déploiement, de configuration et de surveillance.
+</Callout>
+
+## Obtenir le client sans affichage
+
+Vous avez deux méthodes principales pour exécuter des clients sans affichage :
+
+- Télécharger le build de client sans affichage Linux ou Windows depuis les [artefacts GitHub](https://nightly.link/BasisVR/Basis/workflows/build-docker-server/developer?preview)
+- Exécuter les images Docker sans affichage publiées
+
+Docker est utile pour des configurations conteneurisées reproductibles ou pour mettre à l'échelle rapidement de nombreuses instances. Si vous n'avez besoin d'exécuter qu'un ou quelques clients sans affichage, le téléchargement direct du build de la plateforme est également valide.
+
+<Callout type="warn">
+Par défaut, la version Windows du headless est construite avec Mono au lieu d'IL2CPP, une limitation de l'UnityCI pour la compilation. Mono utilise environ 1,5 à 2 fois plus de mémoire qu'IL2CPP, donc utilisez la version Linux sauf si le package indique qu'il s'agit de la version IL2CPP.
+</Callout>
+
+## Avant de commencer
+
+Assurez-vous que le serveur que vous souhaitez cibler est déjà accessible.
+
+- Le trafic Basis utilise `4296/udp`
+- Le mot de passe serveur par défaut est `default_password` sauf si vous l'avez modifié dans `config.xml` ou avec des variables d'environnement
+- Si vous testez un serveur local, utilisez votre adresse de machine locale ou LAN au lieu d'un nom d'hôte public
+
+La documentation du serveur note également que les valeurs `config.xml` peuvent être remplacées par des variables d'environnement. Cela est important car le même schéma est utilisé dans les exemples de clients sans affichage ci-dessous.
+
+## Configuration de Docker Desktop
+<Steps>
+<Step>
+Ouvrez `Informations système` et vérifiez si la sécurité basée sur la virtualisation indique `En cours d'exécution` et si la sécurité basée sur la virtualisation disponible a : `Propriétés de sécurité	Support de virtualisation de base`
+
+Si ce n'est pas le cas, accédez à votre BIOS et activez AMD-Vi ou Intel VT-d selon votre CPU.
+
+Cherchez votre carte mère indiquée sous `Produit BaseBoard` pour trouver où se trouve le paramètre et quelle touche permet d'accéder au BIOS.
+</Step>
+<Step>
+Accédez à [Docker et téléchargez pour Windows](https://docs.docker.com/desktop/setup/install/windows-install/) et installez Docker Desktop.
+</Step>
+<Step>
+Créez un dossier pour le `docker-compose.yml` et copiez l'exemple ci-dessous.
+</Step>
+<Step>
+Démarrez une invite de commandes ou PowerShell dans ce répertoire. Dans l'explorateur de fichiers, vous pouvez lancer l'invite de commandes en tapant `cmd.exe` dans la barre d'URL.
+</Step>
+<Step>
+Téléchargez/mettez d'abord à jour les images Docker avec `docker compose pull` *Non requis si vous utilisez le `docker-compose.yml` par défaut*
+</Step>
+<Step>
+Tapez la commande `docker compose up -d` pour démarrer les conteneurs
+</Step>
+<Step>
+Utilisez `docker ps` pour voir l'état de tous les conteneurs et attendez que tous indiquent healthy. Cela devrait prendre environ 30 secondes à une minute.
+</Step>
+<Step>
+Utilisez `docker compose scale "basis-headless=#` pour augmenter le nombre de conteneurs. Puis revenez à une étape et répétez jusqu'à ce que vous manquiez de CPU ou de RAM.
+
+*Remplacez `#` par un nombre par incréments de 5 au maximum, utilisez des incréments de 1 sur du matériel bas de gamme/limité en RAM*
+
+<Callout type="info">
+Vous pouvez également mesurer l'utilisation avec `docker compose stats`
+</Callout>
+</Step>
+</Steps>
+
+## Configuration Docker Compose
+
+Lors de l'exécution de Docker depuis Docker Desktop, le moteur Docker utilise généralement WSL2 en coulisse, donc l'image Linux est généralement le bon choix. Si vous exécutez spécifiquement des conteneurs Windows *par exemple Windows Server 2016*, utilisez l'image Windows disponible dans le package Basis-Headless sur GitHub.
+
+<Callout type="warn">
+Par défaut, utilisez la version Linux de l'image Docker car elle est construite avec IL2CPP. Si vous obtenez des erreurs de manifeste concernant Linux, vous devez utiliser les versions `-linux`.
+</Callout>
+
+### docker-compose.yml
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    pull_policy: always
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+      HealthCheckEnabled: "true"
+      HealthCheckHost: "127.0.0.1"
+      HealthCheckPort: 10666
+      HealthPath: "/health"
+      AvatarFileLocation: ""
+      AvatarPassword: ""
+    volumes:
+      - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
+      #- "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
+      #- ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M #Highest I ever saw we need to load a 500MB world file.
+        reservations:
+          memory: 1024M #Recommend amount that basis will actually need.
+    labels:
+      autoheal-app: true
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  Basis:
+```
+
+## Signification des paramètres
+
+Les exemples ci-dessus utilisent les valeurs minimales nécessaires pour se connecter :
+
+| Variable | Utilité |
+|----------|---------|
+| `Ip` | Nom d'hôte ou adresse IP du serveur Basis |
+| `Port` | Port UDP sur lequel le serveur écoute, généralement `4296` |
+| `Password` | Mot de passe serveur requis pour rejoindre |
+| `HealthCheckEnabled` | Activer ou désactiver le point de terminaison HealthCheck |
+| `HealthCheckHost` | IP sur laquelle le point de terminaison écoute |
+| `HealthCheckPort` | Port sur lequel le point de terminaison écoute |
+| `HealthPath` | Chemin pour les informations de santé |
+| `AvatarFileLocation` | Support d'URL combinée avatar#base64 |
+| `AvatarPassword` | Mot de passe de l'avatar |
+| `StrictMemoryCleanupEnabled` | Supprimer toutes les textures chargées |
+
+Si vous montez un `config.xml`, traitez-le comme la configuration de repli basée sur fichier. Si vous définissez également des variables d'environnement, la documentation du serveur principal note que les valeurs d'environnement remplacent les valeurs XML, donc maintenez une seule source de vérité pour éviter toute confusion lors des tests.
+
+## Simulation vocale optionnelle avec des AudioClips
+
+Les clients sans affichage peuvent optionnellement simuler le trafic microphone en diffusant un fichier `.wav` ou `.opus` en tant qu'audio vocal.
+
+Basis vérifie le dossier `AudioClips` dans le répertoire de données du client sans affichage au démarrage. Si un ou plusieurs fichiers sont présents, le client sans affichage en choisit un aléatoirement, le met en boucle, l'encode en Opus et l'envoie comme trafic vocal normal.
+
+Si le dossier n'existe pas, Basis le crée. Si le dossier existe mais ne contient pas de fichiers audio, le client sans affichage reste silencieux.
+
+Les fichiers non-48 kHz sont automatiquement rééchantillonnés en mono `48 kHz`.
+
+### Où placer les fichiers
+
+Pour un build extrait normalement, placez les fichiers dans le dossier de données headless sous :
+
+- `AudioClips/`
+
+Pour Docker, montez un dossier dans le répertoire `AudioClips` des données du lecteur.
+
+Exemple pour un headless Linux :
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    volumes:
+      - ./AudioClips:/app/HeadlessLinuxServer_Data/AudioClips
+...
+```
+
+
+## Exécution à grande échelle
+
+Docker Compose peut lancer plusieurs clients sans affichage à partir de la même définition de service :
+
+<h3> `docker compose up --scale "basis-headless=10"`</h3> *--scale quand non défini dans docker-compose.yml*
+
+À titre indicatif, la note existante recommande de prévoir environ `1,5 Go` de mémoire par instance. Par exemple, si vous avez environ `30 Go` disponibles, vous pouvez prévoir environ `20` instances.
+
+<Callout type="warning" title="Charger peu à la fois">
+N'essayez pas de lancer tous les clients en même temps. Vous surchargerez la RAM de votre ordinateur, et actuellement nous n'offrons pas de script qui facilite le lancement d'instances.
+
+La meilleure façon est d'attendre que l'état de santé de tous les conteneurs lancés soit sain avant d'en ajouter d'autres.
+</Callout>
+
+Il ne s'agit que d'une estimation de départ. Les limites réelles dépendent de :
+
+- RAM disponible
+- Cœurs CPU
+- Le `PeerLimit` du serveur
+- Bande passante disponible entre les clients sans affichage et le serveur
+
+
+## Surveillance pendant les tests
+
+Si le point de terminaison de santé du serveur est exposé, vous pouvez l'utiliser pour confirmer que votre test a l'effet escompté. La documentation de surveillance montre cet exemple de réponse :
+
+```json
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+Lors d'un test de charge sans affichage, les champs les plus utiles sont :
+
+- `listening` pour confirmer que le serveur accepte les connexions
+- `visitors` pour voir combien de clients sont actuellement connectés
+- `capacity` pour comparer avec votre limite de joueurs configurée
+- `sent` et `recv` pour observer la croissance du trafic
+- `version` pour confirmer la version attendue du serveur
+
+<Callout type="warn" title="La correspondance de version est importante">
+La documentation du serveur note explicitement que le code client et serveur doit concorder sur la version du serveur. Si votre image headless et votre serveur cible sont construits à partir de versions incompatibles, les tentatives de connexion peuvent échouer même lorsque les paramètres réseau sont corrects.
+</Callout>
+
+## Dépannage
+
+Si les clients sans affichage ne se connectent pas, vérifiez d'abord :
+
+- L'adresse du serveur dans `Ip` est accessible depuis le conteneur
+- Le mot de passe du serveur correspond
+- `4296/udp` est ouvert et mappé correctement
+- Vous utilisez la bonne image pour votre runtime de conteneur
+- Votre serveur écoute réellement et est sain au démarrage
+- Les versions client et serveur sont compatibles
+
+Si vous faites évoluer de nombreuses instances et observez de l'instabilité, réduisez le nombre d'instances et déterminez si la limite est la mémoire, le CPU, la bande passante réseau ou le `PeerLimit` configuré du serveur.
+
+Il est également conseillé d'avoir une quantité considérable de mémoire virtuelle disponible pour Unity afin d'éviter les codes de sortie 137 (Out of Memory) dans Docker.

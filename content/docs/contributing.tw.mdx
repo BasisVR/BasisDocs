@@ -1,0 +1,95 @@
+---
+title: 貢獻
+description: 如何為 BasisVR 做貢獻
+icon: GitPullRequest
+---
+
+## BasisDocs 貢獻指南
+
+本頁面旨在協助希望向 BasisDocs 儲存庫貢獻文件的人。
+
+BasisDocs 使用 Fumadocs，一個現代化的文件框架。您將主要使用以下目錄：
+
+- `content/docs/` - MDX 格式的文件內容
+- `public/img/` - 靜態圖片和資產
+
+![文件結構](/img/basisdocs-contrib/1.png)
+
+## 快速入門
+
+快速了解本網站的最佳方式是熟悉：
+
+- [MDX 文件](https://mdxjs.com/) - 帶有 JSX 元件的擴展 Markdown
+- [Fumadocs 文件](https://fumadocs.vercel.app/) - 我們使用的文件框架
+
+### 可用元件
+
+您可以在文件中使用各種元件：
+
+- `<Callout type="info|warn|error">` - 用於重要說明和警告
+- `<Card>` 和 `<Cards>` - 用於導覽卡片
+- 帶語法高亮的程式碼區塊
+- 帶有適當 alt 文字的圖片
+
+## Markdown 功能
+
+支援標準 Markdown，以及擴展功能：
+
+- **表格** - 用於結構化資料
+- **程式碼區塊** - 帶有特定語言的語法高亮
+- **Admonitions** - 使用 Callout 元件
+- **連結** - 內部和外部連結
+- **圖片** - 從 `/public/img/` 正確引用
+
+## 貢獻文件
+
+1. **Fork 儲存庫**
+   
+   在 GitHub 上 Fork [BasisDocs 儲存庫](https://github.com/BasisVR/BasisDocs)。
+
+2. **複製您的 Fork**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **安裝相依性**
+   
+   ```bash
+   npm install
+   ```
+
+4. **執行開發伺服器**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **進行變更**
+   
+   編輯 `content/docs/` 中的 MDX 檔案，並將圖片新增到 `public/img/`。
+
+6. **測試變更**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **提交 Pull Request**
+   
+   推送您的變更並在 GitHub 上開啟 pull request。
+
+## 指南
+
+- 使用描述性標題和適當的標題層次結構
+- 為所有圖片新增 alt 文字
+- 使用 Callout 元件而不是純文字警告
+- 遵循現有的檔案結構和命名慣例
+- 提交前在本地測試您的變更
+
+感謝您提前做出的貢獻！
+
+### 有問題？
+
+如果您有關於貢獻的問題，請加入我們的 [Discord](https://discord.gg/aCzSPKEW2v)！

@@ -1,0 +1,54 @@
+---
+title: Introducción
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Descripción general
+
+Los props ofrecen una amplia gama de dinámicas de experiencia de VR social en un proyecto del framework Basis. Esta documentación te guiará a través de la creación, construcción, carga y personalización de tus propios props usando Unity y el SDK de Basis.
+
+Basis usa el formato de archivo `.BEE` para los props, que empaqueta tus recursos compilados y metadatos en un único archivo fácil de compartir. Los props admiten blend shapes, materiales y scripting.
+
+## Guía de inicio rápido
+
+<Cards>
+  <Card
+    title="Configuración"
+    description="Configurar Unity y preparar tu prop"
+    href="/es/docs/prop/setup"
+  />
+  <Card
+    title="Construcción"
+    description="Construir tu prop en un archivo .BEE"
+    href="/es/docs/prop/building"
+  />
+  <Card
+    title="Carga"
+    description="Cargar y cargar tu prop en Basis"
+    href="/es/docs/prop/uploading"
+  />
+</Cards>
+
+## Características principales
+
+- **Soporte de rig humanoide**: Rigs humanoides estándar de Unity con mapeo automático de huesos
+- **Blend Shapes**: Soporte completo para expresiones faciales y visemas
+- **Multiplataforma**: Construir para Windows, Linux, Mac, Android e iOS
+- **Shaders URP**: Compatible con el Universal Render Pipeline de Unity
+
+## Requisitos
+
+- **Unity**: Unity 6 (última versión compatible)
+- **Formato del modelo**: FBX con rig humanoide
+- **Shader**: Shaders compatibles con URP (Lit, Poiyomi, lilToon, etc.)
+- **Alojamiento**: Alojamiento de URL remota para archivos .BEE (máx. 100 MB para Google Drive)
+
+## Descripción del flujo de trabajo
+
+1. **Importar** tu modelo de avatar en Unity
+2. **Configurar** el rig y las skinned meshes
+3. **Añadir** el componente Basis Avatar
+4. **Construir** el archivo .BEE para tus plataformas de destino
+5. **Subir** a un servicio de alojamiento
+6. **Cargar** en Basis usando la URL y la contraseña

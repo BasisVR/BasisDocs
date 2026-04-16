@@ -1,0 +1,90 @@
+---
+title: Téléversement
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Téléverser votre Prop
+
+Basis vous permet de charger un fichier Prop .BEE depuis une URL distante, ce qui est également requis pour que les autres utilisateurs dans une session réseau puissent charger les ressources.
+
+<Callout type="info">
+Vous pouvez ajouter votre mot de passe de prop directement dans l'URL de votre fichier .BEE par `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Ce qui revient à ajouter `#` et une chaîne encodée en Base64 de votre mot de passe.
+</Callout>
+
+Pour cela, vous devrez disposer d'un lien direct vers un emplacement distant. Pour cet exemple, nous utiliserons Google Drive.
+
+Téléversez le **fichier BEE** sur Google Drive, ou tout hébergeur permettant des liens directs vers des fichiers sans connexion.
+
+- Créez un dossier sur votre Drive et définissez ses paramètres de partage sur « Toute personne avec le lien ».
+- Cliquez sur le menu Hamburger en haut à droite et « Copier le lien ».
+
+Exemple :
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NE TÉLÉVERSEZ PAS VOTRE FICHIER DE MOT DE PASSE GÉNÉRÉ ET NE LE PARTAGEZ PAS**
+</Callout>
+
+## Chargement dans Basis
+<Steps>
+
+<Step>
+Lancez Basis, ouvrez le menu et sélectionnez Bibliothèque.
+
+![Menu Basis](/img/props/8.png)
+</Step>
+
+<Step>
+Sélectionnez « Ajouter du nouveau contenu » près du coin supérieur droit.
+
+![Bouton Ajouter du nouveau contenu](/img/props/9.png)
+</Step>
+
+<Step>
+Collez l'**URL du fichier BEE** et le **MOT DE PASSE SUPER SECRET CHIFFRÉ** puis cliquez sur « Ajouter ».
+
+![URL et mot de passe du fichier BEE](/img/props/10.png)
+</Step>
+
+<Step>
+Le contenu du fichier BEE sera validé avant d'être ajouté à votre bibliothèque.
+
+![Bouton Ajouter un fichier BEE](/img/props/11.png)
+</Step>
+</Steps>
+
+## Gestion des props
+
+Vous pouvez trouver le prop récemment ajouté dans la Bibliothèque.
+
+![Nouveau Prop dans la bibliothèque](/img/props/12.png)
+
+Les props peuvent être générés, supprimés ou partagés avec d'autres dans le monde.
+
+![Détails du Prop](/img/props/13.png)
+
+Panneaux d'informations utiles :
+
+- **(1) Informations sur le Prop** - Horodatage de compilation, titre et description
+- **(2) Compatibilité de plateforme** - Plateformes OS prises en charge
+- **(3) Statistiques** - Comptages de triangles, matériaux et os
+- **(4) Caractéristiques** - Comportement réseau et persistance du prop
+- **(5) Épingler** - Épingler ce Prop en haut du menu principal
+
+![Boîte englobante de génération](/img/props/14.png)
+
+En cliquant sur le bouton « Générer », vous pouvez localiser l'emplacement exact où générer le Prop dans le monde.
+
+![Prop généré](/img/props/15.png)
+
+Après un bref moment, la ressource apparaîtra, localement ou en réseau, selon les caractéristiques du prop.

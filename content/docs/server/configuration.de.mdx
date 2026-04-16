@@ -1,0 +1,139 @@
+---
+title: Konfiguration
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## Einführung
+
+Der Fokus liegt hier auf der Basis-Server-spezifischen Konfiguration.
+
+Dieses Dokument gilt für einen unmodifizierten Basis Server: Version 6, LTS-Branch, Mai 2025.
+*/}
+
+### Kompilieren und unter Linux ausführen
+
+#### Voraussetzungen für Debian/Ubuntu
+
+Für Ubuntu 22.04:
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Für Debian oder andere Setups:
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Dann Installation fortsetzen:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Basis herunterladen
+
+Wechseln Sie in den gewünschten Ordner und führen Sie aus:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Basis Server kompilieren
+
+Öffnen Sie ein Terminal und wechseln Sie ins Verzeichnis: `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Dann kompilieren:
+
+`dotnet build` (für Debug)
+
+oder
+
+`dotnet build --configuration Release` (für Release)
+
+#### Ausführen
+
+Navigieren Sie zum BasisServerConsole-Verzeichnis und führen Sie aus:
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip Für ein gezieltes Linux-Release
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+Aus `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole` führen Sie `./BasisNetworkConsole` aus.
+
+:::
+
+## Firewall
+
+Möglicherweise möchten Sie Ports öffnen:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## Konfigurationsdateien
+
+Beim ersten Ausführen des Servers werden verschiedene Konfigurationsdateien und Strukturen im Verzeichnis der Server-Exe erstellt.
+
+| Datei/Ordner             | Beschreibung                                |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | Hauptkonfigurationsdatei des Servers.       |
+| `initialresources/`      | Enthält Welt- und Objektdateien, die der Server auf Anfrage lädt. |
+| `Log/`                   | Ordner für Server-Logs.                     |
+| `admins.xml`             | Liste der Benutzer mit Admin-Rechten.       |
+| `banned_players.xml`     | Liste der gesperrten Spielerkonten.         |
+
+## Config.xml
+
+| Variable                 | Standard              | Beschreibung |
+|--------------------------|------------------------|-------------|
+| `PeerLimit`              | 1024                   | Maximale Anzahl der Spieler auf dem Server. |
+| `SetPort`                | 4296                   | Netzwerkport, auf dem der Server lauscht. |
+| `Password`               | default_password       | Standard-Zugangspasswort des Servers. |
+| `HealthCheckHost`        | localhost              | Hostname für Gesundheitschecks. `*` für alle Interfaces. |
+| `HealthCheckPort`        | 10666                  | Port für Gesundheitschecks. |
+| `UseAuth`                | true                   | Server-Authentifizierung aktivieren/deaktivieren. |
+| `UseAuthIdentity`        | true                   | DID-Identitätsverifizierung verwenden. |
+
+<small>Das Low-Level-Networking wird von einer Drittanbieter-Bibliothek namens <strong>LiteNetLib</strong> verwaltet. Konfigurationsvariablen für diesen Code sind mit <code>LNL</code> markiert.</small>
+
+### Beispiel Config.xml
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## Ladbare Konfigurationsdateien
+
+Sie können Welt- und Objektdateien für das Laden auf Anfrage konfigurieren.
+Diese Dateien werden im Ordner `InitialResources` abgelegt.
+
+<Callout type="warn">
+Die verwendeten Remote-URLs müssen von einem Server bereitgestellt werden, der Chunking unterstützt.
+</Callout>
+
+<Callout type="info" title="Um etwas hochzuladen">
+Erstellen Sie eine Szene in Unity, exportieren Sie sie als BEE-Datei, laden Sie sie auf einen HTTP-Server hoch, dann setzen Sie die URL in `CombinedURL` und das Passwort in `UnlockPassword`.
+</Callout>
+
+| Variable         | Definition |
+|------------------|------------|
+| `Mode`           | Modus der Konfiguration: `0` = Spielobjekt, `1` = Szene. |
+| `LoadedNetID`    | Eine Netzwerk-ID als Referenz. |
+| `UnlockPassword` | Passwort für den Zugriff auf die Ressource. |
+| `CombinedURL`    | URL zur `.BEE`-Datei |
+| `IsLocalLoad`    | Gibt an, ob die Ressource lokal oder aus dem Internet geladen wird. |
+| `Persist`        | Besteht das Objekt weiter, wenn der Spieler, der es gespawnt hat, den Server verlässt? |

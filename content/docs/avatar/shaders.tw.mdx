@@ -1,0 +1,71 @@
+---
+title: 虛擬形象著色器
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## URP 相容虛擬形象著色器
+
+### Universal Render Pipeline/Lit（Unity 授權）
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![URP Lit 著色器](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [免費版]（MIT 授權）by Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Poiyomi 著色器](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader（MIT 授權）by s-ilent
+
+- https://github.com/s-ilent/scss 或 https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shading 著色器](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon（MIT 授權）by lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![lilToon 著色器](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon（MIT 授權）by UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![MToon 著色器](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader（訂閱制）by Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakura 著色器](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+這些在最新文件更新時已知可以正常運作/相容。
+</Callout>
+
+## 如何使使用 Poiyomi 著色器的虛擬形象在 BasisVR/URP 中運作
+
+許多虛擬形象使用 Poiyomi 著色器，這些著色器最初僅適用於 Unity 的內建渲染管線（BIRP）。但是，現在 Poiyomi 著色器也支援 Unity 的通用渲染管線（URP），這是 BasisVR 使用的渲染管線。
+
+Poiyomi 著色器對 URP 的支援仍處於測試階段。如果您的虛擬形象最初是使用 BIRP Poiyomi 著色器設計的，您可以按照以下步驟輕鬆將其轉換為 URP 相容版本。為了演示，此範例使用 [Tomarudo 的初音未來](https://boothplorer.com/avatar/3226395)。
+
+- 從 https://discord.gg/poiyomi #urp-release 下載最新版本。
+
+- 將您的角色匯入 Unity 場景。如果著色器看起來與預期不同（例如，顏色丟失或由於著色器缺失導致顯示洋紅色），您需要進行一些小調整來修復問題。
+
+![顯示按鈕和元件的檢查器視窗](/img/avatars/23.png)
+
+- 選擇虛擬形象資料夾中的每個材質，並將其著色器更改為 Poiyomi Pro URP。
+
+![顯示按鈕和元件的檢查器視窗](/img/avatars/24.png)
+
+- 進行更改後，您的虛擬形象應該可以正常渲染。
+
+![顯示按鈕和元件的檢查器視窗](/img/avatars/25.png)
+
+<Callout type="info">
+URP 的 Poiyomi 著色器與 PC 和 Android 裝置相容。 
+</Callout>

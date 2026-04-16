@@ -1,0 +1,71 @@
+---
+title: 虚拟形象着色器
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## URP 兼容虚拟形象着色器
+
+### Universal Render Pipeline/Lit（Unity 许可证）
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![URP Lit 着色器](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [免费版]（MIT 许可证）by Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Poiyomi 着色器](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader（MIT 许可证）by s-ilent
+
+- https://github.com/s-ilent/scss 或 https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shading 着色器](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon（MIT 许可证）by lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![lilToon 着色器](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon（MIT 许可证）by UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![MToon 着色器](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader（订阅制）by Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakura 着色器](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+这些在最新文档更新时已知可以正常工作/兼容。
+</Callout>
+
+## 如何使使用 Poiyomi 着色器的虚拟形象在 BasisVR/URP 中工作
+
+许多虚拟形象使用 Poiyomi 着色器，这些着色器最初仅适用于 Unity 的内置渲染管线（BIRP）。但是，现在 Poiyomi 着色器也支持 Unity 的通用渲染管线（URP），这是 BasisVR 使用的渲染管线。
+
+Poiyomi 着色器对 URP 的支持仍处于测试阶段。如果您的虚拟形象最初是使用 BIRP Poiyomi 着色器设计的，您可以按照以下步骤轻松将其转换为 URP 兼容版本。为了演示，此示例使用 [Tomarudo 的初音未来](https://boothplorer.com/avatar/3226395)。
+
+- 从 https://discord.gg/poiyomi #urp-release 下载最新版本。
+
+- 将您的角色导入 Unity 场景。如果着色器看起来与预期不同（例如，颜色丢失或由于着色器缺失导致显示洋红色），您需要进行一些小调整来修复问题。
+
+![显示按钮和组件的检查器窗口](/img/avatars/23.png)
+
+- 选择虚拟形象文件夹中的每个材质，并将其着色器更改为 Poiyomi Pro URP。
+
+![显示按钮和组件的检查器窗口](/img/avatars/24.png)
+
+- 进行更改后，您的虚拟形象应该可以正常渲染。
+
+![显示按钮和组件的检查器窗口](/img/avatars/25.png)
+
+<Callout type="info">
+URP 的 Poiyomi 着色器与 PC 和 Android 设备兼容。 
+</Callout>

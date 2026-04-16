@@ -1,0 +1,19 @@
+---
+title: 高级配置
+---
+
+## 服务器减少系统
+
+随着服务器上玩家数量的增加，带宽需求迅速增长。SRS 系统尝试通过根据距离减慢向玩家发送运动数据的频率来减少网络负载并提高性能。
+
+控制服务器根据距离向用户发送运动数据所需时间的方程：
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+本节的其余部分将稍后发布。
+
+## 客户端减少系统
+
+本节将稍后发布。

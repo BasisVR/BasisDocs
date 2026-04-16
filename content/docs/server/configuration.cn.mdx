@@ -1,0 +1,137 @@
+---
+title: 配置
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## 介绍
+
+本文档适用于 LTS 分支的未修改 Basis 服务器第 6 版（2025 年 5 月）。
+*/}
+
+### 在 Linux 上编译和运行
+
+#### Debian/Ubuntu 的先决条件
+
+对于 Ubuntu 22.04：
+`sudo add-apt-repository ppa:dotnet/backports`
+
+对于 Debian 或其他特殊设置：
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+然后继续安装：
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### 获取 Basis
+
+切换到所需文件夹并执行：
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### 构建 Basis 服务器
+
+打开终端并进入目录：`cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+然后构建：
+
+`dotnet build`（用于调试）
+
+或
+
+`dotnet build --configuration Release`（用于发布）
+
+#### 执行
+
+导航到 BasisServerConsole 目录并运行：
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip 用于更精确的 Linux 发布版本
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+从 `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole` 运行 `./BasisNetworkConsole`。
+
+:::
+
+## 防火墙
+
+您可能需要开放以下端口：
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## 配置文件
+
+第一次运行服务器时，会在服务器 exe 所在目录中创建各种配置文件和结构。
+
+| 文件/文件夹              | 描述                                        |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | 服务器的主配置文件。                        |
+| `initialresources/`      | 包含服务器将按请求加载的世界和对象文件。    |
+| `Log/`                   | 存储服务器日志的文件夹。                    |
+| `admins.xml`             | 具有管理员权限的用户列表。                  |
+| `banned_players.xml`     | 被封禁的玩家账户列表。                      |
+
+## Config.xml
+
+| 变量                     | 默认值                | 描述 |
+|--------------------------|------------------------|-------------|
+| `PeerLimit`              | 1024                   | 服务器允许的最大玩家数量。 |
+| `SetPort`                | 4296                   | 服务器监听的网络端口。 |
+| `Password`               | default_password       | 默认服务器访问密码。 |
+| `HealthCheckHost`        | localhost              | 健康检查使用的主机名。使用 `*` 绑定到任何接口。 |
+| `HealthCheckPort`        | 10666                  | 健康检查使用的端口。 |
+| `UseAuth`                | true                   | 启用或禁用服务器身份验证。 |
+| `UseAuthIdentity`        | true                   | 认证开启时使用 DID 身份验证。 |
+
+<small>底层网络由名为 <strong>LiteNetLib</strong> 的第三方库处理。与此代码相关的配置变量标记为 <code>LNL</code>。</small>
+
+### Config.xml 示例
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## 可加载配置文件
+
+您可以设置世界和对象文件以按需加载。
+这些文件放置在 `InitialResources` 文件夹中。
+
+<Callout type="warn">
+使用的远程 URL 必须从支持分块的适当服务器提供。
+</Callout>
+
+<Callout type="info" title="上传内容">
+在 Unity 中创建场景，将其导出为 BEE 文件，上传到 HTTP 服务器，然后将 URL 放入 `CombinedURL`，将密码放入 `UnlockPassword`。
+</Callout>
+
+| 变量             | 定义 |
+|------------------|------------|
+| `Mode`           | 配置模式：`0` = 游戏对象，`1` = 场景。 |
+| `LoadedNetID`    | 作为引用的网络 ID。 |
+| `UnlockPassword` | 访问资源所需的密码。 |
+| `CombinedURL`    | 指向 `.BEE` 文件的 URL |
+| `IsLocalLoad`    | 指示资源是从本地加载还是从互联网加载。 |
+| `Persist`        | 如果生成该对象的玩家离开服务器，对象是否继续存在？ |

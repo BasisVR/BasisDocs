@@ -1,0 +1,55 @@
+---
+title: Introducción
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Descripción general
+
+Los mundos son los entornos donde tienen lugar las experiencias de VR social en Basis. Esta documentación le guiará en la configuración, creación y prueba de sus propios mundos personalizados con Unity y el SDK de Basis.
+
+Basis utiliza el formato de archivo `.BEE` para los mundos, que empaqueta su escena compilada y metadatos en un solo archivo. Los mundos admiten mallas, materiales, iluminación y puntos de aparición personalizados, y pueden alojarse de forma remota para experiencias multijugador.
+
+## Guía de inicio rápido
+
+<Cards>
+  <Card
+    title="Configuración"
+    description="Configura Unity e importa tus assets del mundo"
+    href="/es/docs/world/setup"
+  />
+  <Card
+    title="Compilación"
+    description="Configura los componentes de escena y compila el archivo .BEE"
+    href="/es/docs/world/building"
+  />
+  <Card
+    title="Pruebas"
+    description="Prueba tu mundo localmente en Basis"
+    href="/es/docs/world/testing"
+  />
+</Cards>
+
+## Características principales
+
+- **Entornos personalizados**: Importa cualquier malla 3D, materiales y texturas
+- **Puntos de aparición**: Define dónde entran los jugadores a tu mundo
+- **Multi-plataforma**: Compila para Windows, Linux y Android
+- **Listo para red**: Diseñado para experiencias multijugador
+- **Formato BEE**: Empaquetado simple para fácil distribución
+
+## Requisitos
+
+- **Unity**: Unity 6 (última versión compatible)
+- **Assets**: Mallas 3D con colisionadores para la navegación
+- **Componentes**: Componente Basis Scene para la configuración de escena
+- **Alojamiento**: URL remota para multijugador (opcional para pruebas locales)
+
+## Resumen del flujo de trabajo
+
+1. **Importar** tus assets del mundo en Unity
+2. **Configurar** el componente Basis Scene y los puntos de aparición
+3. **Compilar** el archivo .BEE para tus plataformas objetivo
+4. **Probar** localmente usando el prefab BasisFramework
+5. **Subir** a un servicio de alojamiento para multijugador (opcional)
+6. **Cargar** en Basis usando la URL y contraseña

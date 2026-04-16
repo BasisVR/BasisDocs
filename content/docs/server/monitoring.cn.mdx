@@ -1,0 +1,32 @@
+---
+title: 监控
+---
+
+## 健康检查端点
+
+在本地运行服务器时，您可以通过访问健康检查端点来检查服务器状态：
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| 变量          | 定义                                |
+|---------------|--------------------------------------|
+| `listening`   | 服务器是否正在监听连接 |
+| `visitors`    | 当前连接的玩家数量 |
+| `capacity`    | 服务器允许的最大玩家数量 |
+| `sent`        | 已发送数据的总量（字节？）|
+| `recv`        | 已接收数据的总量（字节？）|
+| `currentTime` | ISO 8601 格式的当前服务器时间 |
+| `startTime`   | ISO 8601 格式的服务器启动时间 |
+| `version`     | 服务器版本号。重要：客户端代码必须与预期的 ServerVersion 匹配 |

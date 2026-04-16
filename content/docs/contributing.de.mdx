@@ -1,0 +1,95 @@
+---
+title: Beitragen
+description: Wie man zu BasisVR beiträgt
+icon: GitPullRequest
+---
+
+## BasisDocs-Beitragsleitfaden
+
+Diese Seite wurde erstellt, um denjenigen zu helfen, die zur Dokumentation des BasisDocs-Repositories beitragen möchten.
+
+BasisDocs verwendet Fumadocs, ein modernes Dokumentations-Framework. Die Hauptverzeichnisse, mit denen Sie arbeiten werden, sind:
+
+- `content/docs/` - Dokumentationsinhalt im MDX-Format
+- `public/img/` - Statische Bilder und Assets
+
+![Dokumentationsstruktur](/img/basisdocs-contrib/1.png)
+
+## Erste Schritte
+
+Der schnellste Weg, sich mit dieser Website vertraut zu machen, ist sich mit folgendem zu befassen:
+
+- [MDX-Dokumentation](https://mdxjs.com/) - Erweitertes Markdown mit JSX-Komponenten
+- [Fumadocs-Dokumentation](https://fumadocs.vercel.app/) - Das Dokumentations-Framework, das wir verwenden
+
+### Verfügbare Komponenten
+
+Sie können verschiedene Komponenten in Ihrer Dokumentation verwenden:
+
+- `<Callout type="info|warn|error">` - Für wichtige Hinweise und Warnungen
+- `<Card>` und `<Cards>` - Für Navigationskarten
+- Code-Blöcke mit Syntaxhervorhebung
+- Bilder mit geeignetem Alt-Text
+
+## Markdown-Funktionen
+
+Standard-Markdown wird unterstützt, zusammen mit erweiterten Funktionen:
+
+- **Tabellen** - Für strukturierte Daten
+- **Code-Blöcke** - Mit sprachspezifischer Syntaxhervorhebung
+- **Admonitions** - Unter Verwendung von Callout-Komponenten
+- **Links** - Intern und extern
+- **Bilder** - Richtig referenziert von `/public/img/`
+
+## Zur Dokumentation beitragen
+
+1. **Repository forken**
+   
+   Forken Sie das [BasisDocs-Repository](https://github.com/BasisVR/BasisDocs) auf GitHub.
+
+2. **Ihren Fork klonen**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **Abhängigkeiten installieren**
+   
+   ```bash
+   npm install
+   ```
+
+4. **Entwicklungsserver starten**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **Ihre Änderungen vornehmen**
+   
+   Bearbeiten Sie MDX-Dateien in `content/docs/` und fügen Sie Bilder zu `public/img/` hinzu.
+
+6. **Ihre Änderungen testen**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **Pull Request einreichen**
+   
+   Pushen Sie Ihre Änderungen und öffnen Sie einen Pull Request auf GitHub.
+
+## Richtlinien
+
+- Verwenden Sie beschreibende Titel und eine ordnungsgemäße Überschriftenhierarchie
+- Fügen Sie Alt-Text zu allen Bildern hinzu
+- Verwenden Sie Callout-Komponenten anstelle von einfachen Textwarnungen
+- Folgen Sie der bestehenden Dateistruktur und den Namenskonventionen
+- Testen Sie Ihre Änderungen lokal, bevor Sie sie einreichen
+
+Vielen Dank im Voraus für Ihre Beiträge!
+
+### Fragen?
+
+Treten Sie unserem [Discord](https://discord.gg/aCzSPKEW2v) bei, wenn Sie Fragen zur Mitarbeit haben!

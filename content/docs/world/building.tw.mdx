@@ -1,0 +1,40 @@
+---
+title: 建置
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 功能性 Basis 場景的最低要求
+
+- 匯入您的世界網格或建立新的 3D 物件，例如 Plane 或 Cube。確保存在 Collider。
+- 建立一個 gameObject，給它起一個合適的名稱，在 Inspector 中點擊 `Add Component`，找到並選擇 Basis Scene 元件。
+
+![Add Component 選單](/img/worlds/1.png)
+
+![Basis Scene 元件](/img/worlds/2.png)
+
+- 此時您可以建立另一個 gameObject，將其命名為 Spawn，並將其放置在世界中您希望玩家出生的位置，或者直接使用為 Basis Scene 元件建立的同一個 gameObject。
+
+![場景中的出生點](/img/worlds/3.png)
+
+- 無論如何，請確保將您選擇的出生位置的 gameObject 放入 `Spawn Point` 欄位，它將使用該 gameObject 的變換。
+
+![Spawn Point 欄位](/img/worlds/4.png)
+
+## 建置 AssetBundle
+
+- 在 `Basis Scene` 元件上，按下 `Create Scene Bee File` 按鈕。
+
+![Create Scene Bee File 按鈕](/img/worlds/5.png)
+
+- 結果將如下圖所示自動開啟。
+
+![建置結果](/img/worlds/6.png)
+
+<Callout type="info">
+Basis 使用 .BEE 檔案副檔名，其中包含您編譯的資源和元資料，以簡化使用者產生的內容。
+
+.BEE 檔案連同隨機產生的存取密碼，會在您的 Unity 專案路徑 /AssetBundles/ 目錄下建立，並且預設對 Unity 隱藏。
+
+如果您願意，也可以將產生的 .BEE 檔案名稱替換為更容易記住的名稱。請注意，重複使用相同名稱將導致先前的版本被新版本取代！
+</Callout>

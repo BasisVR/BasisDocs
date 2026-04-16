@@ -1,0 +1,71 @@
+---
+title: Szenen-Props
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Wie man ein Prop mit einem Szenen-Button erscheinen lässt
+
+Die Runtime Loader-Komponente generiert alle Props in *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources* zur Laufzeit. Es ist auch möglich, einen Button in einer Szene zu verwenden, um Props zu erzeugen. Gehen Sie dazu wie folgt vor:
+
+- Fügen Sie Ihrer Szene ein Canvas-Objekt hinzu. Achten Sie darauf, die relevanten Komponenten ähnlich wie in den vorherigen Abschnitten gezeigt anzuhängen. Vergessen Sie nicht, eine Basis Prop-Komponente hinzuzufügen, um eine .bee-Datei für Ihr Prop zu erstellen und es auf einen Remote-Server hochzuladen.
+
+![Inspector-Fenster mit Canvas und Komponenten](/img/props/6A.png)
+
+- Erstellen Sie einen TMP-Button.
+
+![Inspector-Fenster mit Button und Komponenten](/img/props/6B.png)
+
+- Fügen Sie eine Basis Prop-Komponente hinzu, geben Sie einen Asset Bundle-Namen ein und drücken Sie die Schaltfläche 'Create Prop Bee File'. Die generierten .bee-Dateien werden vom Basis Runtime Loader verwendet, um das Prop in eine Szene zu laden. Für dieses Beispiel verwenden wir erneut den netzwerksynchronisierten Würfel aus dem vorherigen Abschnitt.
+
+![Inspector-Fenster mit synchronisiertem Würfel und Komponenten](/img/props/6B-.png)
+
+- Erstellen Sie ein leeres GameObject und hängen Sie eine Runtime Loader-Komponente daran an. Diese wird verwendet, um das Prop zu erschaffen. Um zu verhindern, dass Props beim Szenenstart generiert werden, deaktivieren Sie die Komponente im Inspector.
+
+![Inspector-Fenster mit deaktiviertem Runtime Loader](/img/props/6C.png)
+
+<Callout type="info">
+Wenn Sie möchten, dass Ihr Prop netzwerksynchronisiert ist, fügen Sie ihm eine Netzwerksynchronisierungskomponente hinzu. Sie können beispielsweise die Basis Object Network Syncing-Komponente verwenden, wie zuvor gezeigt, um die Prop-Bewegung zu synchronisieren.
+
+Sie können auch Ihren eigenen Netzwerksynchronisierungscode erstellen. Zur Inspiration und für den Einstieg können Sie die Beispielpakete *Basis Ported Pooltable* und *Basis Vehicles* im Projekt einsehen.
+</Callout>
+
+- Wählen Sie Ihren Button aus und fügen Sie ihm ein onClick()-Ereignis hinzu. Weisen Sie Ihr Runtime Loader-GameObject zu und stellen Sie sicher, dass BasisRuntimeLoader.LoadNow als Methode ausgewählt ist, die Ihr Button beim Klicken aufruft.
+
+![Inspector-Fenster mit Button-Ereignis, das RuntimeLoader aufruft](/img/props/6D.png)
+
+- Öffnen Sie den Load Config-Editor.
+
+- Geben Sie das generierte Prop-Passwort und die .bee-URL ein.
+
+- Stellen Sie sicher, dass Persistent ausgewählt ist, damit synchronisierte Änderungen für später beitretende Spieler erhalten bleiben.
+
+- Klicken Sie auf Save XML.
+
+![Inspector-Fenster mit Load Config](/img/props/6E.png)
+
+- Falls noch nicht geschehen, erstellen Sie ein leeres GameObject und hängen Sie eine Basis Scene-Komponente an, und füllen Sie die relevanten Felder aus. Klicken Sie anschließend auf 'Create Scene Bee File'.
+
+![Inspector-Fenster mit Basis Scene](/img/props/6F.png)
+
+- Öffnen Sie den Load Config-Editor erneut.
+
+- Geben Sie das generierte Szenen-Passwort und die .bee-URL ein.
+
+- Stellen Sie sicher, dass Persistent ausgewählt ist, damit synchronisierte Änderungen für später beitretende Spieler erhalten bleiben.
+
+- Klicken Sie auf Save XML.
+
+![Inspector-Fenster mit Button und Komponenten](/img/props/6G.png)
+
+- Öffnen Sie die 'Initialization'-Szene und drücken Sie Play. Dies initialisiert die erstellte Szene und die Netzwerkobjekte. Wenn Sie die Szene das nächste Mal über den Server laden, während die Basis-Anwendung läuft, sollten Sie Ihr Prop über einen Button erschaffen können.
+
+![Inspector-Fenster mit Button und Komponenten](/img/props/6H.png)
+
+<Callout type="info">
+Hinweis: Sowohl lokale als auch Remote-Spieler können Würfel erschaffen!
+</Callout>
+
+<Callout type="info">
+Doppelter Hinweis: Sie können auch über Steam auf Basis VR zugreifen. Um einen Zugangscode zu erhalten, [treten Sie dem Discord bei](https://discord.gg/v6ve6WT562)!
+</Callout>

@@ -1,0 +1,40 @@
+---
+title: Construcción
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## El archivo Basis Encrypted Extension (BEE)
+
+Basis almacena el contenido generado por usuarios como un archivo .BEE que contiene tu recurso compilado y metadatos. Cada archivo .BEE generado viene con una contraseña generada aleatoriamente: `Basis\Basis\AssetBundles`.
+
+## Evitar GameObjects duplicados
+
+- Por defecto, el componente BasisAvatar renombrará todos los GameObjects con nombres duplicados dentro de la jerarquía del avatar.
+
+<Callout type="warning">
+Si habilitas `Do not auto-rename bones` en las Opciones de procesamiento, asegúrate de que **NO** haya GameObjects con nombres duplicados dentro de la jerarquía de tu avatar, incluida la armadura.
+</Callout>
+
+## Construir el AssetBundle
+
+- En la parte inferior del componente Basis Prop, verifica que los objetivos de construcción apropiados estén habilitados. Basis admite: Windows, Android, Mac, Linux e IOS.
+- Presiona el botón 'Create Prop Bee File' y espera.
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+- Los resultados se abrirán automáticamente en una nueva ventana.
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+- Cada plataforma puede tardar un promedio de uno o dos minutos en construirse la primera vez.
+
+<Callout type="info">
+Agradable de saber:
+
+- Puedes usar una contraseña personalizada para tu archivo BEE generado. 
+
+- También puedes reemplazar el nombre del archivo .BEE generado con algo más fácil de recordar. ¡Reutilizar el mismo nombre reemplazará la versión anterior!
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+</Callout>

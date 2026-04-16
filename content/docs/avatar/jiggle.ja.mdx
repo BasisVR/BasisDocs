@@ -1,0 +1,53 @@
+---
+title: ジグル物理演算
+description: ジグル物理演算を使用すると、髪、衣服、アクセサリーなどのアバターの部分に動的な動きを追加でき、リアリズムと没入感を高めます。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## ジグル物理演算の追加方法
+
+各ジグルルートについて：
+- アバタールートの階層下にある新しいGameObjectまたは既存のGameObjectに、新しい`Jiggle Rig`コンポーネントを追加します。 
+
+![Jiggle Rootコンポーネントを追加するインスペクターウィンドウ](/img/jiggle/1.png)
+
+- インスペクターの`Root Transform`に、ジグルさせたいアバターアーマチュアのボーンを割り当てます。これには、アバターの髪、衣服、アクセサリー、身体部分などが含まれます。左右がある部分（左右の胸など）の場合、それぞれに別々の`Jiggle Rig`を追加する必要があります（そうしないと片側だけがジグルします！）。
+
+<Callout type="info">
+ヒント：Jiggle Rigsを整理して管理するために、例えば新しく作成した親GameObjectの下にネストすることができます。   
+</Callout>
+
+- 設定を調整して、満足するまでプレイモードでテストできます（例えば、アバターをドラッグするか、`Basis Avatar`コンポーネントの`Test in Editor`オプションを使用します）。各設定オプションにマウスカーソルを置いて、その説明を確認することもできます。すべての設定を表示するには、`Advanced`をクリックします。
+
+![整理されたジグルを示すインスペクターウィンドウ](/img/jiggle/2.png)
+
+<Callout>
+オプションとして、複数の子ボーンチェーンを持つ親ボーンがあり、同じエフェクトをすべてに適用したい場合は、`Motionless Root`を有効にして、ルート自体ではなく子ボーンにのみ影響を与えることができます。
+</Callout>
+
+- 以下は、髪、衣服、胸にJiggle Rigsを適用した例です。
+
+![プレイモードでJiggle Rigを使用するアバターを示すウィンドウ](/img/jiggle/3.gif)
+
+## 衝突インタラクション
+
+オブジェクトとの衝突でジグルを駆動させたい場合：
+
+- `Advanced`をクリックしてすべての設定を表示します。
+
+- `Collision`を有効にして、オブジェクトに合わせて`Collision Radius`を調整します。
+
+- 衝突をトリガーするために使用するGameObjectを追加します。それに`Jiggle Collider Example`コンポーネントを割り当てます。 
+
+<Callout type="info">
+使用するGameObjectにスフィアコライダーがあることを確認してください！
+</Callout>
+
+- `Jiggle Collider Transform`フィールドに衝突するGameObjectを割り当て、`Collider Type`としてSphereを選択します。現在はスフィアコライダーのみがサポートされていますが、ジグルシステムの作者であるNaelstrofが将来的に追加する可能性があります。
+
+![Jiggle Colliderを持つスフィアを示すインスペクターウィンドウ](/img/jiggle/4.png)
+
+- 以下は`BasisPickupInteractable`コンポーネントを持つスフィアオブジェクトがアバターの髪と衝突している例です。
+
+![整理されたジグルを示すインスペクターウィンドウ](/img/jiggle/5.gif)

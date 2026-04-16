@@ -1,0 +1,104 @@
+---
+title: 動畫
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 添加網路同步動畫
+
+為道具、世界和虛擬形象添加網路動畫非常簡單，因為可以使用 Unity `Animator` 建立。
+
+以下範例代碼展示了網路同步的 Opticor 步槍以及它使用的對應 Animator 狀態機和觸發器：
+
+```
+using UnityEngine;
+using System.Collections;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Shims;
+using Basis.Network.Core;
+using Basis;
+
+[Cilboxable]
+public class OpticorShooting : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+    private BasisNetworkShim network;
+    private Animator animator;
+    public AudioSource audioSource;
+    public AudioClip audioClipCharge;
+    public AudioClip audioClipMisfire;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+        this.network = Basis.SafeUtil.MakeNetworkable(this);
+        this.network.NetworkMessageReceived = OnNetworkMessage;
+        this.animator = GetComponent<Animator>();
+    }
+
+    public void OnNetworkMessage(ushort PlayerID, byte[] buffer, DeliveryMethod DeliveryMethod)
+    {
+        Debug.Log("Opticor: Received network message!, PlayerID: " + PlayerID + ", buffer length: " + buffer.Length + ", DeliveryMethod: " + DeliveryMethod);
+        if(buffer.Length < 1) return;
+        if(buffer[0] == 1) { CheckShoot(); }
+        else if(buffer[0] == 2) { StopShoot(); }
+    }
+
+    private void OnPickup(BasisInput input) { }
+    private void OnDrop(BasisInput input) { }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                this.CheckShoot();
+                this.network.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableSequenced);
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                this.StopShoot();
+                this.network.SendCustomNetworkEvent(new byte[] { 2 }, DeliveryMethod.ReliableSequenced);
+                break;
+        }
+    }
+
+    private void CheckShoot()
+    {
+        animator.SetBool("GunTrigger", true);
+        if (this.animator.GetCurrentAnimatorStateInfo(0).IsName("Firing") || this.animator.GetCurrentAnimatorStateInfo(0).IsName("Misfire"))
+            return;
+        else CheckIdleState();
+
+        void CheckIdleState()
+        {
+            if (this.animator.GetCurrentAnimatorStateInfo(0).IsName("Idle Overheated"))
+            {
+                this.animator.SetTrigger("GunMisfire");
+                audioSource.PlayOneShot(audioClipMisfire);
+            }
+            else
+            {
+                this.animator.SetTrigger("GunShoot");
+                audioSource.PlayOneShot(audioClipCharge);
+            }
+        }
+    }
+
+    private void StopShoot()
+    {
+        this.animator.SetBool("GunTrigger", false);
+    }
+}
+```
+
+<Callout type="info">
+`BasisNetworkShim` 用於允許 Cilbox 腳本具有網路功能。
+</Callout>
+
+![顯示按鈕和元件的檢查器視窗](/img/props/7A.png)
+
+![顯示按鈕和元件的檢查器視窗](/img/props/7B.png)

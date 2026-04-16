@@ -1,0 +1,137 @@
+---
+title: Конфигурация
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## Введение
+
+Данный документ применим к немодифицированному серверу Basis: Версия 6, ветка LTS, май 2025 года.
+*/}
+
+### Компиляция и запуск на Linux
+
+#### Предварительные требования для Debian/Ubuntu
+
+Для Ubuntu 22.04:
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Для Debian или других конфигураций:
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Продолжите установку:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Получение Basis
+
+Перейдите в нужную папку и выполните:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Сборка сервера Basis
+
+Откройте терминал и перейдите в директорию: `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Выполните сборку:
+
+`dotnet build` (для отладки)
+
+или
+
+`dotnet build --configuration Release` (для релиза)
+
+#### Выполнение
+
+Перейдите в директорию BasisServerConsole и запустите:
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip Для специализированного Linux-релиза
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+Из `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole` запустите `./BasisNetworkConsole`.
+
+:::
+
+## Брандмауэр
+
+Возможно, потребуется открыть порты:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## Файлы конфигурации
+
+При первом запуске сервера в каталоге с exe-файлом создаются различные конфигурационные файлы.
+
+| Файл/Папка               | Описание                                    |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | Основной конфигурационный файл сервера.     |
+| `initialresources/`      | Содержит файлы миров и объектов для загрузки по запросу. |
+| `Log/`                   | Папка с логами сервера.                     |
+| `admins.xml`             | Список пользователей с правами администратора. |
+| `banned_players.xml`     | Список заблокированных аккаунтов игроков.   |
+
+## Config.xml
+
+| Переменная               | По умолчанию          | Описание |
+|--------------------------|------------------------|-------------|
+| `PeerLimit`              | 1024                   | Максимальное количество игроков на сервере. |
+| `SetPort`                | 4296                   | Сетевой порт, на котором слушает сервер. |
+| `Password`               | default_password       | Пароль доступа к серверу по умолчанию. |
+| `HealthCheckHost`        | localhost              | Хост для проверок состояния. `*` для привязки к любому интерфейсу. |
+| `HealthCheckPort`        | 10666                  | Порт для проверок состояния. |
+| `UseAuth`                | true                   | Включить или отключить аутентификацию сервера. |
+| `UseAuthIdentity`        | true                   | Использовать верификацию DID при включённой аутентификации. |
+
+<small>Низкоуровневое сетевое взаимодействие обрабатывается сторонней библиотекой <strong>LiteNetLib</strong>. Переменные конфигурации, связанные с этим кодом, отмечены <code>LNL</code>.</small>
+
+### Пример Config.xml
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## Загружаемые конфигурационные файлы
+
+Можно настроить файлы мира и объектов для загрузки по запросу.
+Они размещаются в папке `InitialResources`.
+
+<Callout type="warn">
+Используемые удалённые URL должны обслуживаться сервером с поддержкой чанкинга.
+</Callout>
+
+<Callout type="info" title="Для загрузки чего-либо">
+Создайте сцену в Unity, экспортируйте как BEE-файл, загрузите на HTTP-сервер, затем поместите URL в `CombinedURL` и пароль в `UnlockPassword`.
+</Callout>
+
+| Переменная       | Определение |
+|------------------|------------|
+| `Mode`           | Режим конфигурации: `0` = Игровой объект, `1` = Сцена. |
+| `LoadedNetID`    | Сетевой ID для ссылки. |
+| `UnlockPassword` | Пароль для доступа к ресурсу. |
+| `CombinedURL`    | URL к файлу `.BEE` |
+| `IsLocalLoad`    | Указывает, загружается ли ресурс локально или из интернета. |
+| `Persist`        | Продолжает ли объект существовать, если покинувший сервер игрок, создавший его, выходит? |

@@ -1,0 +1,94 @@
+---
+title: Téléversement
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Téléverser votre avatar
+
+Basis vous permet de charger un fichier Avatar .BEE depuis une URL distante, ce qui est également requis pour que les autres utilisateurs dans une session réseau puissent charger les ressources.
+
+<Callout type="info">
+Vous pouvez ajouter votre mot de passe d'avatar directement dans l'URL de votre fichier .BEE par `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Ce qui revient à ajouter `#` et une chaîne encodée en Base64 de votre mot de passe.
+</Callout>
+
+Pour cela, vous devrez disposer d'un lien direct vers un emplacement distant. Pour cet exemple, nous utiliserons Google Drive.
+
+(Google Drive prend en charge le lien direct de fichiers jusqu'à 100 Mo en raison de sa politique d'analyse antivirus.)
+
+Téléversez le **fichier BEE** sur Google Drive, ou tout hébergeur permettant des liens directs vers des fichiers sans connexion.
+
+- Créez un dossier sur votre Drive et définissez ses paramètres de partage sur « Toute personne avec le lien ».
+
+Désormais, lorsque vous faites glisser vos fichiers dans ce dossier, vous n'aurez pas besoin de définir cette autorisation individuellement.
+
+- Cliquez sur le menu Hamburger en haut à droite de la ressource que vous venez de téléverser dans le dossier.
+- Trouvez « Partager » et cliquez sur « Copier le lien ».
+
+Nous devrons examiner l'URL pour obtenir les informations nécessaires pour votre fichier BEE.
+
+Exemple :
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+Nous voulons copier l'identifiant unique dans l'URL et l'ajouter à ce qui suit :
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Exemple :
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NE TÉLÉVERSEZ PAS VOTRE FICHIER DE MOT DE PASSE GÉNÉRÉ ET NE LE PARTAGEZ PAS**
+</Callout>
+
+## Chargement dans Basis
+<Steps>
+
+<Step>
+Lancez Basis, ouvrez le menu et sélectionnez Bibliothèque.
+
+![Menu Basis](/img/avatars/11.png)
+</Step>
+
+<Step>
+Dans le menu Bibliothèque, sélectionnez « Ajouter du nouveau contenu » près du coin supérieur droit de la fenêtre.
+
+![Bouton Ajouter un avatar](/img/avatars/12.png)
+</Step>
+
+<Step>
+Collez l'**URL du fichier BEE** dans le champ URL du fichier BEE et le **MOT DE PASSE SUPER SECRET CHIFFRÉ** dans le champ Mot de passe du fichier BEE, puis cliquez sur « Ajouter » ci-dessous.
+
+![URL et mot de passe du fichier BEE](/img/avatars/13.png)
+</Step>
+
+<Step>
+Le contenu du fichier BEE sera validé avant d'être ajouté à votre bibliothèque.
+
+![Bouton Ajouter un fichier BEE](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## Gestion des avatars
+
+Vous pouvez trouver l'avatar récemment ajouté dans la Bibliothèque.
+
+![Nouvel avatar dans la bibliothèque](/img/avatars/15.png)
+
+Les avatars peuvent être chargés, supprimés ou partagés avec d'autres dans le monde, en cliquant sur les boutons correspondants en bas de la fenêtre.
+
+![Détails de l'avatar](/img/avatars/16.png)
+
+De plus, vous verrez également ici plusieurs panneaux d'informations utiles :
+
+- **(1) Informations sur l'avatar** - Le panneau de détails affiche l'horodatage de compilation, le titre et la description
+- **(2) Compatibilité de plateforme** - Les icônes indiquent les plateformes OS qui prennent en charge cet avatar
+- **(3) Statistiques** - Affiche les comptages de triangles, de matériaux et d'os

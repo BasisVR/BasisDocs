@@ -1,0 +1,20 @@
+{
+  "title": "文件",
+  "pages": [
+    "---簡介---",
+    "index",
+    "faq",
+    "contributing",
+    "---指南---",
+    "controls",
+    "avatar",
+    "prop",
+    "world",
+    "scripting",
+    "server",
+    "---技術---",
+    "...technical",
+    "---API 參考---",
+    "...reference"
+  ]
+}

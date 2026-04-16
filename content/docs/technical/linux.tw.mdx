@@ -1,0 +1,80 @@
+---
+title: 從 Linux 建置
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Linux 支援是實驗性的，可能存在額外問題。
+</Callout>
+
+<Callout type="info">
+目前不建議從 Linux 建置 Windows 或 Android 版本，因為它們可能缺少功能或完全無法運作。
+</Callout>
+
+本頁假設您已先閱讀[入門](/tw/docs)指南。
+
+## Linux 前提條件
+
+<Callout type="error">
+**不要提交刪除本頁面列出的實用工具的操作！**
+建置 Windows 和 Android 用戶端需要它們！
+</Callout>
+
+要在 Linux 下建置任何 Basis 內容，您需要透過 [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html) 刪除 `com.meta.xr.sdk.core` "Meta XR Core SDK" 和 `com.unity.xr.openxr` "OpenXR Plugin"。
+
+您可能需要安裝 `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64"，但 Unity 應該會自動為您安裝。
+
+![Unity Package Manager](/img/linux/1.png)
+![刪除套件](/img/linux/2.png)
+
+## 從 Linux 建置 .BEE 檔案
+
+要從 Linux 編輯器建置 Windows 和 Android 的 .bee 檔案，您需要刪除 `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` 檔案，並在 `Edit > Project Settings > Player > Configuration > Scripting Backend` 下將「Scripting Backend」設定為 `Mono`。
+
+![專案設定](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## 從 Linux 建置原生 Linux 用戶端
+
+<Callout type="info">
+建議將「Scripting Backend」更改為 `IL2CPP` 以獲得更好的效能。
+
+![專案設定](/img/linux/3.png)
+![IL2CPP 後端](/img/linux/5.png)
+</Callout>
+
+- 確保先[移除不支援的套件](#linux-prerequisites)。
+- 確保在[世界測試](/tw/docs/world#test-the-scene)中*沒有*勾選 `Use Scene Provided Here`。
+- 確保 `Packages/com.basis.sdk/Scenes/Initialization` 場景已開啟。
+
+然後像平常一樣建置 Basis。
+
+## Linux 原生
+
+**VR：** 您可能需要使用 `--force-OpenVRLoader` 旗標啟動：
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**：如果應用程式在啟動後立即關閉，請使用 XWayland：
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+如果您希望在 Proton / Wine 下使用 OpenXR 執行 Windows 版本，可以新增：
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+到您的 Steam 啟動參數。
+
+## 其他資訊
+
+- 最後在分支 `#developer` 提交 `102765e5b05663ce9ce2967f3d09021d5216ec51` 上測試正常
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

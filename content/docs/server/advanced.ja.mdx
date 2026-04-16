@@ -1,0 +1,19 @@
+---
+title: 高度な設定
+---
+
+## サーバーリダクションシステム
+
+サーバー上のプレイヤー数が増えるにつれ、帯域幅の要件が急速に増大します。SRSシステムは、距離に基づいてプレイヤーへのモーションデータの送信頻度を下げることで、ネットワーク負荷を軽減しパフォーマンスを向上させようとします。
+
+距離に基づいてサーバーがユーザーにモーションデータを送信するまでの時間を延長する方程式：
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+このセクションの残りは後で公開されます。
+
+## クライアントリダクションシステム
+
+このセクションは後で公開されます。

@@ -1,0 +1,63 @@
+---
+title: はじめに
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 概要
+
+BasisサーバーはソーシャルVR体験のためのネットワークの基盤です。このドキュメントでは、独自のBasisサーバーインスタンスのセットアップ、設定、管理について説明します。
+
+サーバーは.NET 9.0上に構築され、低レベルネットワーキングにLiteNetLibを使用しています。効率的な帯域幅使用で複数の同時プレイヤーを処理するよう設計されており、DockerデプロイメントとWindowsおよびLinuxでのネイティブコンパイルの両方をサポートしています。
+
+## クイックスタートガイド
+
+<Cards>
+  <Card
+    title="デプロイメント"
+    description="Docker、Windows、またはLinuxを使用したサーバーのデプロイ方法"
+    href="/ja/docs/server/deployment"
+  />
+  <Card
+    title="設定"
+    description="config.xmlと読み込み可能なリソースでサーバーを設定する"
+    href="/ja/docs/server/configuration"
+  />
+  <Card
+    title="モニタリング"
+    description="サーバーの健全性とパフォーマンスメトリクスの監視"
+    href="/ja/docs/server/monitoring"
+  />
+  <Card
+    title="高度な設定"
+    description="リダクションシステムでサーバーパフォーマンスを最適化する"
+    href="/ja/docs/server/advanced"
+  />
+</Cards>
+
+## 主な機能
+
+- **マルチスレッドパフォーマンス**: 2コアでも動作し、コア数が増えるにつれてスケールします
+- **柔軟なデプロイメント**: Docker、Windows、Linuxをサポート
+- **認証**: DIDベースのID検証
+- **帯域幅最適化**: サーバーとクライアントのリダクションシステム
+- **ヘルスモニタリング**: 内蔵HTTPヘルスチェックエンドポイント
+- **読み込み可能なリソース**: ダイナミックなワールドとオブジェクトの読み込み
+
+## 要件
+
+- **CPU**: 最低2コア（コア数が多いほどパフォーマンスが向上）
+- **ネットワーク**: ソーシャルVR向けに高帯域幅を推奨
+- **ポート**:
+  - 4296/udp (Basisプロトコル)
+  - 10666/tcp (ヘルスチェック)
+  - 1234/tcp (Prometheusメトリクス)
+
+## サーバーバージョン
+
+このドキュメントはLTSブランチ（2025年5月）の**Basis Server Version 6**を対象としています。
+
+<Callout type="warn">
+クライアントとサーバーのコードはバージョン番号が**一致**している必要があります。`ServerVersion`は`BasisNetworkCore\BasisNetworkVersion.cs`で確認できます。
+</Callout>

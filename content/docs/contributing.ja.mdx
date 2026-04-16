@@ -1,0 +1,95 @@
+---
+title: 貢献する
+description: BasisVRへの貢献方法
+icon: GitPullRequest
+---
+
+## BasisDocsコントリビューションガイド
+
+このページは、BasisDocsリポジトリにドキュメントを貢献しようとしている方を支援するために作成されました。
+
+BasisDocsはFumadocs、モダンなドキュメントフレームワークを使用しています。作業する主なディレクトリは：
+
+- `content/docs/` - MDX形式のドキュメントコンテンツ
+- `public/img/` - 静的な画像とアセット
+
+![ドキュメント構造](/img/basisdocs-contrib/1.png)
+
+## はじめに
+
+このサイトをすぐに把握するには、以下に慣れ親しむことが最善です：
+
+- [MDXドキュメント](https://mdxjs.com/) - JSXコンポーネントを含む拡張Markdown
+- [Fumadocsドキュメント](https://fumadocs.vercel.app/) - 使用しているドキュメントフレームワーク
+
+### 利用可能なコンポーネント
+
+ドキュメントでさまざまなコンポーネントを使用できます：
+
+- `<Callout type="info|warn|error">` - 重要な注意事項や警告用
+- `<Card>` と `<Cards>` - ナビゲーションカード用
+- 構文ハイライト付きコードブロック
+- 適切な代替テキスト付き画像
+
+## Markdownの機能
+
+標準のMarkdownに加え、拡張機能もサポートしています：
+
+- **テーブル** - 構造化されたデータ用
+- **コードブロック** - 言語固有の構文ハイライト付き
+- **Admonitions** - Calloutコンポーネントを使用
+- **リンク** - 内部および外部
+- **画像** - `/public/img/` から適切に参照
+
+## ドキュメントへの貢献
+
+1. **リポジトリをフォーク**
+   
+   GitHubで[BasisDocsリポジトリ](https://github.com/BasisVR/BasisDocs)をフォークします。
+
+2. **フォークをクローン**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **依存関係のインストール**
+   
+   ```bash
+   npm install
+   ```
+
+4. **開発サーバーの起動**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **変更を加える**
+   
+   `content/docs/` のMDXファイルを編集し、`public/img/` に画像を追加します。
+
+6. **変更のテスト**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **プルリクエストを提出**
+   
+   変更をプッシュしてGitHubでプルリクエストを開きます。
+
+## ガイドライン
+
+- 説明的なタイトルと適切な見出し階層を使用する
+- すべての画像に代替テキストを追加する
+- 平文の警告の代わりにCalloutコンポーネントを使用する
+- 既存のファイル構造と命名規則に従う
+- 提出前にローカルで変更をテストする
+
+ご貢献いただきありがとうございます！
+
+### ご質問は？
+
+貢献についてご質問がある場合は、[Discord](https://discord.gg/aCzSPKEW2v)にご参加ください！

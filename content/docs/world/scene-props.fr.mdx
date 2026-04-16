@@ -1,0 +1,71 @@
+---
+title: Props de scène
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Comment faire apparaître un prop avec un bouton de scène
+
+Le composant Runtime Loader génèrera tous les props situés dans *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources* au moment de l'exécution. Il est également possible d'utiliser un bouton dans une scène pour générer des props. Pour ce faire :
+
+- Ajoutez un objet canvas à votre scène. Assurez-vous d'attacher les composants pertinents similaires à ce qui a été montré dans les sections précédentes. N'oubliez pas d'ajouter un composant Basis Prop pour générer un fichier .bee pour votre prop et le télécharger sur un serveur distant.
+
+![Fenêtre Inspector montrant le canvas et les composants](/img/props/6A.png)
+
+- Créez un bouton TMP.
+
+![Fenêtre Inspector montrant le bouton et les composants](/img/props/6B.png)
+
+- Ajoutez un composant Basis Prop, entrez un nom d'Asset Bundle et appuyez sur le bouton 'Create Prop Bee File'. Les fichiers .bee générés seront utilisés par le Basis Runtime Loader pour charger le prop dans une scène. Pour cet exemple, nous utiliserons à nouveau le cube synchronisé en réseau de la section précédente.
+
+![Fenêtre Inspector montrant le cube synchronisé et les composants](/img/props/6B-.png)
+
+- Créez un GameObject vide et attachez-y un composant Runtime Loader. Ceci sera utilisé pour faire apparaître le prop. Pour éviter que les props soient générés au démarrage de la scène, désactivez le composant dans l'inspecteur.
+
+![Fenêtre Inspector montrant le Runtime Loader désactivé](/img/props/6C.png)
+
+<Callout type="info">
+Si vous voulez que votre prop soit synchronisé en réseau, ajoutez-y un composant de synchronisation réseau. Par exemple, vous pouvez utiliser le composant Basis Object Network Syncing, comme indiqué précédemment, pour synchroniser le mouvement du prop.
+
+Vous pouvez également créer votre propre code de synchronisation réseau. Pour vous inspirer et commencer, vous pouvez consulter les exemples de packages *Basis Ported Pooltable* et *Basis Vehicles* que vous pouvez trouver dans le projet.
+</Callout>
+
+- Sélectionnez votre bouton et ajoutez-y un événement onClick(). Assignez votre GameObject Runtime Loader, en vous assurant de sélectionner BasisRuntimeLoader.LoadNow comme méthode que votre bouton appellera lors d'un clic.
+
+![Fenêtre Inspector montrant l'événement du bouton appelant RuntimeLoader](/img/props/6D.png)
+
+- Ouvrez l'éditeur Load Config.
+
+- Entrez le mot de passe et l'URL .bee générés pour votre prop.
+
+- Assurez-vous que Persistent est sélectionné pour que les modifications synchronisées persistent pour les joueurs qui rejoignent en cours de partie.
+
+- Cliquez sur Save XML.
+
+![Fenêtre Inspector montrant la configuration de chargement](/img/props/6E.png)
+
+- Si ce n'est pas déjà fait, créez un GameObject vide et attachez-y un composant Basis Scene en remplissant les champs pertinents. Une fois configuré, cliquez sur 'Create Scene Bee File'.
+
+![Fenêtre Inspector montrant la scène Basis](/img/props/6F.png)
+
+- Ouvrez à nouveau l'éditeur Load Config.
+
+- Entrez le mot de passe et l'URL .bee générés pour votre scène.
+
+- Assurez-vous que Persistent est sélectionné pour que les modifications synchronisées persistent pour les joueurs qui rejoignent en cours de partie.
+
+- Cliquez sur Save XML.
+
+![Fenêtre Inspector montrant le bouton et les composants](/img/props/6G.png)
+
+- Ouvrez la scène 'Initialization' et appuyez sur Play. Cela initialise la scène créée et les objets réseau. La prochaine fois que vous chargerez la scène via le serveur pendant l'exécution de l'application Basis, vous devriez pouvoir faire apparaître votre prop via un bouton.
+
+![Fenêtre Inspector montrant le bouton et les composants](/img/props/6H.png)
+
+<Callout type="info">
+Remarque : Les joueurs locaux et distants peuvent faire apparaître des cubes !
+</Callout>
+
+<Callout type="info">
+Double remarque : Vous pouvez également accéder à Basis VR via Steam. Pour obtenir une clé d'accès, [rejoignez le Discord](https://discord.gg/v6ve6WT562) !
+</Callout>

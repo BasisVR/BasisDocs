@@ -1,0 +1,39 @@
+---
+title: Canvas UI
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## キャンバスの追加方法
+
+- シーンの階層にキャンバスを追加し、適切な名前を付けます。
+
+![BasisFramework UIキャンバスのコンテキストウィンドウ](/img/ui-canvas/1.png)
+
+<Callout type="info">
+注意：World Spaceキャンバスを作成する場合、X、Y、Zのスケールを0.001にするのが通常良い開始値です。
+</Callout>
+
+- Graphic Raycasterコンポーネントが存在する場合は削除します。Basisは独自のグラフィックスレイキャスターを提供しています。
+
+![BasisFramework UIキャンバスのGraphic Raycaster削除](/img/ui-canvas/2.png)
+
+- Basis Graphics UI Ray Casterコンポーネントを追加し、インスペクターのCanvasフィールドにキャンバスオブジェクトを付けます。
+
+![BasisFramework UIキャンバスへのBasis Graphic Raycaster追加](/img/ui-canvas/3.png)
+
+- キャンバスのレイヤーをOverlayUIに変更します。
+
+![BasisFramework UIキャンバスのOverlayUIレイヤー](/img/ui-canvas/6.png)
+
+<Callout type="info">
+シーンにEventSystemオブジェクトがないことを確認してください。そうでないと、キャンバスに追加されたUIアイテムを操作できなくなります。
+</Callout>
+
+以下はパネル、トグル、ボタン、ドロップダウン、スライダー、入力フィールドを含むキャンバスの例です。
+
+![BasisFramework UIキャンバスのOverlayUIレイヤー](/img/ui-canvas/7.png)
+
+<Callout type="info">
+注意：UIアイテムを見ているとき、レイキャストポインターまたはカーソルが青い円に変わります。
+</Callout>

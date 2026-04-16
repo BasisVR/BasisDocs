@@ -1,0 +1,150 @@
+---
+title: Configuration
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## Introduction
+
+L'objectif ici est la configuration spécifique au serveur Basis, et non les nombreuses façons d'héberger des serveurs de jeux dans le cloud.
+
+Le multithreading du serveur fonctionne mieux avec plus de cœurs disponibles, mais il a été démontré qu'il fonctionne bien avec aussi peu que deux cœurs. La VR sociale demande beaucoup de bande passante.
+
+Ce document s'applique à un serveur Basis non modifié : Version 6 de la branche LTS, mai 2025
+
+:::tip Conseil sur la version du serveur
+Le **ServerVersion** se trouve dans le code cloné depuis le dépôt.
+```csharp
+BasisNetworkCore\BasisNetworkVersion.cs
+5:        public static ushort ServerVersion = 6;
+```
+:::
+*/}
+
+### Compiler et exécuter sur Linux
+
+#### Prérequis pour Debian/Ubuntu
+
+Pour Ubuntu 22.04 :
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Pour Debian ou configurations particulières :
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Puis poursuivez l'installation :
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Obtenir Basis
+
+Accédez au dossier souhaité et exécutez :
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Compiler le serveur Basis
+
+Ouvrez un terminal et accédez au répertoire Basis Server : `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Puis compilez :
+
+`dotnet build` (pour le débogage)
+
+ou
+
+`dotnet build --configuration Release` (pour la release)
+
+#### Exécuter
+
+Accédez au répertoire BasisServerConsole et exécutez :
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip Pour une version Linux plus ciblée
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+Depuis `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`, exécutez `./BasisNetworkConsole`.
+
+:::
+
+## Pare-feu
+
+Vous pourriez vouloir ouvrir les ports :
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## Fichiers de configuration
+
+La première fois que vous exécutez le serveur, une variété de fichiers de configuration et de structures seront créés dans le répertoire où se trouve l'exe du serveur.
+
+| Fichier/Dossier          | Description                                 |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | Fichier de configuration principal du serveur. |
+| `initialresources/`      | Ce répertoire contient les fichiers de monde et d'objet que le serveur chargera à la demande. |
+| `Log/`                   | Dossier où les journaux du serveur sont stockés. |
+| `admins.xml`             | Liste des utilisateurs avec des privilèges admin. |
+| `banned_players.xml`     | Liste des comptes de joueurs bannis. |
+
+## Config.xml
+
+| Variable                            | Défaut               | Description |
+|-------------------------------------|------------------------|-------------|
+| `PeerLimit`                         | 1024                   | Nombre maximum de joueurs autorisés sur le serveur. |
+| `SetPort`                           | 4296                   | Port réseau sur lequel le serveur écoute. |
+| `Password`                          | default_password       | Mot de passe d'accès au serveur par défaut. |
+| `HealthCheckHost`                   | localhost              | Nom d'hôte pour les vérifications de santé. Utilisez `*` pour lier à toute interface. |
+| `HealthCheckPort`                   | 10666                  | Port pour les vérifications de santé. |
+| `UseAuth`                           | true                   | Activer ou désactiver l'authentification du serveur. |
+| `UseAuthIdentity`                   | true                   | Utiliser la vérification d'identité DID lorsque l'auth est activée. |
+
+<small>Le réseau de bas niveau est géré par une bibliothèque tierce appelée <strong>LiteNetLib</strong>. Les variables de configuration liées à ce code sont marquées <code>LNL</code>.</small>
+
+### Exemple Config.xml
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## Fichiers de configuration chargeables
+
+Vous pouvez configurer des fichiers de monde et d'objet à charger à la demande.
+Ces fichiers sont placés dans le dossier `InitialResources`.
+
+<Callout type="warn">
+Les URLs distantes utilisées doivent être servies depuis un serveur approprié qui supporte le chunking.
+Tout serveur moderne devrait le faire, mais les serveurs de développement locaux simples peuvent ne pas le faire.
+</Callout>
+
+<Callout type="info" title="Pour télécharger quelque chose">
+Vous pouvez créer une scène dans Unity, l'exporter en tant que fichier BEE, la télécharger sur un serveur HTTP, puis placer l'URL dans `CombinedURL` et le mot de passe dans `UnlockPassword`.
+</Callout>
+
+| Variable         | Définition |
+|------------------|------------|
+| `Mode`           | Mode de la configuration : `0` = Objet de jeu, `1` = Scène. |
+| `LoadedNetID`    | Un ID réseau de référence. |
+| `UnlockPassword` | Mot de passe requis pour accéder à la ressource. |
+| `CombinedURL`    | URL vers le fichier `.BEE` |
+| `IsLocalLoad`    | Indique si la ressource est chargée localement ou depuis Internet. |
+| `Persist`        | L'objet continue-t-il d'exister si le joueur qui l'a créé quitte le serveur ? |

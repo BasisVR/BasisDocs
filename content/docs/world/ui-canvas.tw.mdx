@@ -1,0 +1,39 @@
+---
+title: Canvas UI
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 如何新增 Canvas
+
+- 在場景層級中新增一個 canvas 並給它起一個合適的名稱。
+
+![BasisFramework UI canvas 上下文視窗](/img/ui-canvas/1.png)
+
+<Callout type="info">
+注意：如果您正在建立 World Space canvas，X、Y、Z 比例為 0.001 通常是一個好的起始值。
+</Callout>
+
+- 如果存在 Graphic Raycaster 元件，請將其移除。Basis 提供了自己的圖形射線投射器。
+
+![BasisFramework UI canvas 移除 Graphic Raycaster](/img/ui-canvas/2.png)
+
+- 新增 Basis Graphics UI Ray Caster 元件，並在 inspector 中將您的 canvas 物件附加到其 Canvas 欄位。
+
+![BasisFramework UI canvas 新增 Basis Graphic Raycaster](/img/ui-canvas/3.png)
+
+- 將 canvas 層更改為 OverlayUI。
+
+![BasisFramework UI canvas 層 OverlayUI](/img/ui-canvas/6.png)
+
+<Callout type="info">
+確保場景中沒有 EventSystem 物件，否則新增到 canvas 的任何 UI 項目將無法進行互動。
+</Callout>
+
+以下是包含面板、切換按鈕、按鈕、下拉選單、滑桿和輸入欄位的 canvas 範例圖像。
+
+![BasisFramework UI canvas 層 OverlayUI](/img/ui-canvas/7.png)
+
+<Callout type="info">
+注意：當查看 UI 項目時，您的射線投射指標或游標會變成藍色圓圈。
+</Callout>

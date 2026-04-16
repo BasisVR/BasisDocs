@@ -1,0 +1,21 @@
+---
+title: セットアップ
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Unityエディターのセットアップ
+
+- [はじめに](/ja/docs#installing-unity)セクションに従って、最新のサポート対象Unityエディターバージョンをインストールし、Basisフレームワークを取得してください。
+- Unity Hubを開き、既存のプロジェクトを追加して、抽出/クローンされたBasisプロジェクトフォルダーを選択します。
+- Unityプロジェクトが読み込まれたら、ワールドファイルを読み込むことができます：
+- いずれかの方法で、
+  - プロジェクト階層で`Assets`を見つけ、`Assets`内の空きスペースを右クリックして`Show in Explorer`を選択します。
+  - ワールドファイル [メッシュ/マテリアル/テクスチャなど] をコピーします。
+- または
+  - Assetsメニューから`Import Package > Custom Package`を使って、ファイルを含む.unityパッケージをインポートします。
+- Unityウィンドウに戻り、インポートプロセスが完了するまで待ちます。
+
+<Callout type="info">
+コンテンツを新しいディレクトリ "Assets > _UserContent" に配置すると、プロジェクトのデフォルト .gitignore ファイルがこのフォルダーの git 変更を非表示にします。
+</Callout>

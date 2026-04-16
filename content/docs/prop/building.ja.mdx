@@ -1,0 +1,40 @@
+---
+title: ビルド
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Basis Encrypted Extension (BEE) ファイル
+
+Basisはコンパイルされたアセットとメタデータを含む.BEEファイルとしてコンテンツを保存します。各.BEEファイルにはランダム生成パスワードが付属します：`Basis\Basis\AssetBundles`。
+
+## 重複GameObjectの回避
+
+- デフォルトでは、BasisAvatarコンポーネントはアバターの階層内の重複した名前のGameObjectをリネームします。
+
+<Callout type="warning">
+`Do not auto-rename bones`を有効にした場合、アーマチュアを含むアバターの階層内に重複した名前のGameObjectが**ない**ことを確認してください。
+</Callout>
+
+## AssetBundleのビルド
+
+- Basis Propコンポーネントの下部で、適切なビルドターゲットが有効になっていることを確認します：Windows、Android、Mac、Linux、iOS。
+- 「Create Prop Bee File」ボタンを押して待ちます。
+
+（ここに画像参照を挿入）
+
+- 結果が自動的に新しいウィンドウで開かれます。
+
+（ここに画像参照を挿入）
+
+- 最初のビルドに各プラットフォームで平均1〜2分かかる場合があります。
+
+<Callout type="info">
+知っておくと便利：
+
+- 生成されたBEEファイルにカスタムパスワードを使用できます。 
+
+- 生成された.BEEファイル名をより覚えやすいものに置き換えることもできます。同じ名前を再使用すると以前のバージョンが置き換えられます！
+
+（ここに画像参照を挿入）
+</Callout>

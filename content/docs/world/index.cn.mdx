@@ -1,0 +1,55 @@
+---
+title: 介绍
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概述
+
+世界是 Basis 中社交 VR 体验发生的环境。本文档将引导您使用 Unity 和 Basis SDK 设置、构建和测试您自己的自定义世界。
+
+Basis 使用 `.BEE` 文件格式来存储世界，将编译后的场景和元数据打包成单个文件。世界支持自定义网格、材质、光照和出生点，可以远程托管以提供多人游戏体验。
+
+## 快速入门指南
+
+<Cards>
+  <Card
+    title="设置"
+    description="设置 Unity 并导入世界资源"
+    href="/cn/docs/world/setup"
+  />
+  <Card
+    title="构建"
+    description="配置场景组件并构建 .BEE 文件"
+    href="/cn/docs/world/building"
+  />
+  <Card
+    title="测试"
+    description="在 Basis 中本地测试您的世界"
+    href="/cn/docs/world/testing"
+  />
+</Cards>
+
+## 主要功能
+
+- **自定义环境**：导入任何 3D 网格、材质和纹理
+- **出生点**：定义玩家进入世界的位置
+- **多平台**：为 Windows、Linux 和 Android 构建
+- **网络就绪**：专为多人游戏体验设计
+- **BEE 格式**：简单打包，便于分发
+
+## 要求
+
+- **Unity**：Unity 6（最新支持版本）
+- **资源**：带碰撞体的 3D 网格用于导航
+- **组件**：用于场景配置的 Basis Scene 组件
+- **托管**：多人游戏的远程 URL 托管（本地测试可选）
+
+## 工作流程概述
+
+1. 将世界资源**导入** Unity
+2. **配置** Basis Scene 组件和出生点
+3. 为目标平台**构建** .BEE 文件
+4. 使用 BasisFramework 预制体进行本地**测试**
+5. **上传**到托管服务用于多人游戏（可选）
+6. 使用 URL 和密码在 Basis 中**加载**

@@ -1,0 +1,88 @@
+---
+title: Ограничения
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis в настоящее время использует пакет Animation Rigging для предоставления ограничений. 
+
+<Callout type="info">
+Этот пакет используется из-за отсутствия реализации многопоточной системы ограничений с открытым исходным кодом. Если у кого-то есть время или желание разработать её, вклады или новые проекты будут очень приветствоваться.
+</Callout>
+
+Документацию по всем ограничениям, предоставляемым Animation Rigging, можно найти [здесь](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Настройка для пакетов Animation Rigging
+<Steps>
+
+<Step>
+**Добавление Rig Builder**: Добавьте компонент `Rig Builder` и компонент `Animator` к GameObject `Armature`. 
+
+![Окно инспектора на GameObject Armature](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis использует Animator корневого/аватарного GameObject для анимации и риггинга*. 
+</Callout>
+
+<Callout type="warning">
+**Нельзя использовать Animator корня для Rig Builder — это сломает анимацию и загрузчик арматуры Basis.**
+</Callout>
+</Step>
+<Step>
+**Создание Rig Setup**: Создайте пустой GameObject с именем "Rig Setup" и добавьте к нему компонент `Rig`.
+
+![Окно инспектора для GameObject Rig Setup](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Назначение Rig Setup**: Назначьте GameObject "Rig Setup" компоненту `Rig Builder` арматуры.
+
+![Окно инспектора арматуры после назначения](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Заметки о Jiggle Bones
+
+Если Jiggle Bones влияет на какие-либо ограничения, необходимо добавить `Rig Transform` ко всем родительским костям кости с ограничением.
+
+Пример: у вас есть лазер, направленный в сторону головы аватара. Необходимо добавить компоненты `Rig Transform` начиная с родителя лазера, двигаясь вверх, пока не встретится кость арматуры/гуманоида.
+<Callout type="info">
+Это включает все исходные кости, не являющиеся частью гуманоида. Пример: Крылья, подверженные влиянию Jiggle Bones, требуют компонентов `Rig Transform`, если у вас есть ограничение, которое на них ссылается.
+</Callout>
+<Accordions type="single">
+<Accordion title="Пример Jiggle Bone">
+![Пример Jiggle Bones](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## Ограничения вращения
+<Steps>
+
+<Step>
+
+Сначала выполните [Настройку](#setup-for-animation-rigging-packages), затем продолжайте с инструкциями по настройке ограничений вращения.
+
+</Step>
+
+<Step>
+
+Добавьте компонент `Multi-Rotation Constraint` к GameObject, являющемуся дочерним объектом `Rig Setup`.
+
+![Компонент Twist в окне инспектора](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Назначьте кость, на которую нужно воздействовать, в поле Constrained Object. Можно использовать один или несколько исходных объектов.
+<Callout type="info">
+Вы можете перетаскивать исходные кости/GameObjects в область, выделенную красным.
+На каждый GameObject можно добавить только один `Multi-Rotation Constraint`.
+</Callout>
+![Компонент Twist в окне инспектора](/img/avatars/22.png)
+</Step>
+
+</Steps>

@@ -1,0 +1,71 @@
+---
+title: 場景道具
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 如何使用場景按鈕生成道具
+
+Runtime Loader 元件將在執行時生成位於 *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources* 中的所有道具。也可以在場景中使用按鈕生成道具。為此：
+
+- 在場景中新增一個畫布物件。確保附加與前幾節中所示類似的相關元件。記得新增 Basis Prop 元件來為您的道具生成 .bee 檔案並將其上傳到遠端伺服器。
+
+![顯示畫布和元件的 Inspector 視窗](/img/props/6A.png)
+
+- 建立一個 TMP 按鈕。
+
+![顯示按鈕和元件的 Inspector 視窗](/img/props/6B.png)
+
+- 新增 Basis Prop 元件，輸入 Asset Bundle 名稱並按「Create Prop Bee File」按鈕。生成的 .bee 檔案將由 Basis Runtime Loader 用於將道具載入場景中。在本例中，我們將再次使用上一節中的網路同步立方體。
+
+![顯示同步立方體和元件的 Inspector 視窗](/img/props/6B-.png)
+
+- 建立一個空 Gameobject 並為其附加 Runtime Loader 元件。這將用於生成道具。為避免在場景啟動時生成道具，請在 inspector 中停用該元件。
+
+![顯示已停用 Runtime Loader 的 Inspector 視窗](/img/props/6C.png)
+
+<Callout type="info">
+如果您希望道具進行網路同步，請為其新增網路同步元件。例如，您可以使用 Basis Object Network Syncing 元件（如前所示）來同步道具移動。
+
+您也可以建立自己的網路同步程式碼。為了獲得靈感並快速入門，您可以參考專案中的範例套件 *Basis Ported Pooltable* 和 *Basis Vehicles*。
+</Callout>
+
+- 選擇您的按鈕並為其新增 onClick() 事件。指派您的 Runtime Loader Gameobject，確保選擇 BasisRuntimeLoader.LoadNow 作為按鈕點擊時呼叫的方法。
+
+![顯示按鈕事件呼叫 RuntimeLoader 的 Inspector 視窗](/img/props/6D.png)
+
+- 開啟 Load Config 編輯器。
+
+- 輸入生成的道具密碼和 .bee URL。
+
+- 確保選取 Persistent，以使同步變更對後來加入的玩家持續生效。
+
+- 點擊 Save XML。
+
+![顯示載入設定的 Inspector 視窗](/img/props/6E.png)
+
+- 如果還沒有，建立一個空 Gamebject 並附加 Basis Scene 元件，填寫相關欄位。設定完成後，點擊「Create Scene Bee File」。
+
+![顯示 Basis 場景的 Inspector 視窗](/img/props/6F.png)
+
+- 再次開啟 Load Config 編輯器。
+
+- 輸入生成的場景密碼和 .bee URL。
+
+- 確保選取 Persistent，以使同步變更對後來加入的玩家持續生效。
+
+- 點擊 Save XML。
+
+![顯示按鈕和元件的 Inspector 視窗](/img/props/6G.png)
+
+- 開啟「Initialization」場景並按 Play。這將初始化建立的場景和網路物件。下次在執行 Basis 應用程式時透過伺服器載入場景時，您應該能夠透過按鈕生成道具。
+
+![顯示按鈕和元件的 Inspector 視窗](/img/props/6H.png)
+
+<Callout type="info">
+注意：本地玩家和遠端玩家都可以生成立方體！
+</Callout>
+
+<Callout type="info">
+補充說明：您也可以透過 Steam 存取 Basis VR。要獲取存取金鑰，請[加入 Discord](https://discord.gg/v6ve6WT562)！
+</Callout>

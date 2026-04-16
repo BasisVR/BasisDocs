@@ -1,0 +1,71 @@
+---
+title: Шейдеры для аватаров
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## URP-совместимые шейдеры для аватаров
+
+### Universal Render Pipeline/Lit (лицензия Unity)
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![URP Lit Shader](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [Бесплатная версия](лицензия MIT) от Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Poiyomi Shader](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader (лицензия MIT) от s-ilent
+
+- https://github.com/s-ilent/scss или https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shading Shader](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon (лицензия MIT) от lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![lilToon Shader](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon (лицензия MIT) от UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![MToon Shader](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader (по подписке) от Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakura Shader](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+Перечисленные шейдеры были проверены и являются рабочими/совместимыми на момент последнего обновления документации.
+</Callout>
+
+## Как заставить аватары с шейдерами Poiyomi работать в BasisVR/URP
+
+Многие аватары используют шейдеры Poiyomi, которые изначально работали только со встроенным конвейером рендеринга Unity (BIRP). Однако теперь шейдеры Poiyomi также поддерживают Universal Render Pipeline (URP) Unity, который используется в BasisVR.
+
+Поддержка шейдеров Poiyomi для URP пока находится в стадии бета-тестирования. Если у вас есть аватар, изначально созданный с BIRP-шейдерами Poiyomi, вы можете легко конвертировать его для совместимости с URP, следуя приведённым ниже шагам. Для демонстрации используется [Hatsune Miku от Tomarudo](https://boothplorer.com/avatar/3226395).
+
+- Загрузите последний релиз с https://discord.gg/poiyomi #urp-release.
+
+- Импортируйте персонажа в сцену Unity. Если шейдер выглядит иначе, чем ожидается (например, цвета отсутствуют или отображается пурпурный цвет из-за отсутствующих шейдеров), потребуется внести несколько небольших корректировок.
+
+![Окно инспектора с кнопкой и компонентами](/img/avatars/23.png)
+
+- Выберите каждый материал в папке вашего аватара и измените его шейдер на Poiyomi Pro URP.
+
+![Окно инспектора с кнопкой и компонентами](/img/avatars/24.png)
+
+- После внесения изменений аватар должен отображаться как ожидается.
+
+![Окно инспектора с кнопкой и компонентами](/img/avatars/25.png)
+
+<Callout type="info">
+Шейдеры Poiyomi для URP совместимы как с ПК, так и с устройствами Android. 
+</Callout>

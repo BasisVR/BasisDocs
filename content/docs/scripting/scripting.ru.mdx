@@ -1,0 +1,297 @@
+---
+title: Скриптинг
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+По техническим причинам пользовательский код должен быть либо сгенерирован путём пересборки клиента (т. е. проекта Unity), либо через Cilbox (песочница CIL).
+
+## Как добавить скрипты через сборку Unity-клиента
+
+<Callout type="info">
+
+Если вы разрабатываете игру или приложение с использованием фреймворка и поддержка пользовательского контента (сцен, аватаров или пропов) не является приоритетом, вы можете предпочесть нативную компиляцию скриптов MonoBehaviour вместо Cilbox.
+
+Это связано с тем, что Cilbox является интерпретатором CIL, что влечёт значительное снижение производительности и может поддерживать лишь подмножество доступных языковых функций.
+</Callout>
+
+- Создайте объект canvas с кнопкой внутри.
+
+- Добавьте скрипт к объекту кнопки. В качестве простого примера создадим скрипт, обновляющий объект текста TMP с именем TestButton.
+
+- Создайте объект текста TMP и назначьте его в поле Button Text в инспекторе.
+
+![Окно инспектора с компонентом Test Button](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- Выберите кнопку и добавьте событие onClick(). Назначьте Gameobject Test Button, выбрав TestButton.OnButtonClick в качестве метода, который будет вызываться при нажатии.
+
+![Окно инспектора с обработчиком события кнопки и назначенным TMP текстом](/img/scripting/2.png)
+
+- Добавьте компонент Basis Prop к Gameobject canvas, введите имя Asset Bundle и нажмите кнопку «Create Prop Bee File». Используйте Loadable Config Editor для создания XML-файла.
+
+![Окно инспектора с кнопкой и Basis Prop](/img/scripting/3.png)
+
+- Откройте префаб BasisFramework. В компоненте Bundled Content Folder добавьте сгенерированный пароль .bee и URL.
+
+![Окно инспектора с префабом BasisFramework](/img/scripting/4.png)
+
+![Окно инспектора с префабом BasisFramework](/img/scripting/5.png)
+
+- Запустите сцену инициализации.
+
+![Окно с запущенной сценой инициализации](/img/scripting/6.png)
+
+- Соберите Unity-клиент. Ваш пользовательский скрипт будет включён в сборку.
+
+![Окно с профилями сборки Unity-клиента](/img/scripting/7.png)
+
+- Нажмите кнопку, и объект текста TMP должен обновиться, показав «Clicked!».
+
+![Окно с работающим пользовательским скриптом](/img/scripting/8.png)
+
+## Как добавить скрипты сетевой синхронизации через сборку Unity-клиента
+
+- Создайте объект canvas с кнопкой внутри.
+
+![Окно инспектора с canvas](/img/scripting/9.png)
+
+- Добавьте скрипт к объекту кнопки. В качестве простого примера создадим скрипт SCNE (сокращение от Send Custom Network Events), который обновляет объект текста TMP с количеством нажатий на кнопку.
+
+- Создайте объект текста TMP и назначьте его в поле Button Text в инспекторе.
+
+- Выберите кнопку и добавьте событие onClick(). Назначьте Gameobject кнопки, выбрав SCNE.IncrementCounter в качестве метода.
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![Окно инспектора с кнопкой и скриптом SCNE](/img/scripting/10.png)
+
+<Callout type="info">
+Переопределённый **OnPlayerJoined()** используется потому, что без него новые игроки не будут видеть обновлённый счётчик.
+
+**TakeOwnership()** используется для предотвращения рассинхронизации, например сброса значения счётчика при нажатии кнопки вновь присоединившимся игроком.
+</Callout>
+
+- Добавьте компонент Basis Prop к Gameobject canvas, введите имя Asset Bundle и нажмите кнопку «Create Prop Bee File». Используйте Loadable Config Editor для создания XML-файла.
+
+![Окно инспектора с кнопкой и Basis Prop](/img/scripting/11.png)
+
+![Окно инспектора с префабом BasisFramework](/img/scripting/13.png)
+
+- Откройте ассет PropContentPoliceSelector и добавьте скрипт SCNE в список разрешённых компонентов. Это гарантирует, что скрипт не будет удалён во время выполнения.
+
+![Окно инспектора с префабом BasisFramework](/img/scripting/13.5.png)
+
+- Добавьте компонент Basis Scene к пустому Gameobject, введите имя Asset Bundle и нажмите кнопку «Create Scene Bee File». Сохраните его на удалённом сервере.
+
+<Callout type="info">
+Следует отключить или удалить объект canvas из сцены. Оставив его активным, вы получите две копии в сцене: одну из самой сцены и ещё одну, сгенерированную из XML.
+</Callout>
+
+![Окно инспектора с компонентом Basis Scene](/img/scripting/12.png)
+
+- Откройте префаб BasisFramework. В компоненте Bundled Content Folder добавьте сгенерированный пароль .bee и URL.
+
+![Окно инспектора с префабом BasisFramework](/img/scripting/14.png)
+
+- Запустите сцену инициализации.
+
+![Окно с запущенной сценой инициализации](/img/scripting/6.png)
+
+- Соберите Unity-клиент. Ваш пользовательский скрипт будет включён в сборку.
+
+![Окно с профилями сборки Unity-клиента](/img/scripting/7.png)
+
+- Нажмите кнопку, и объект текста TMP должен обновлять счётчик после каждого нажатия для локальных и удалённых игроков.
+
+![Окно инспектора с запущенной в клиенте сценой](/img/scripting/15.png)
+
+## Как добавить скрипты сетевой синхронизации через Cilbox
+
+Cilbox — это система скриптинга, служащая связующим звеном для реализации минимальной игровой логики, обеспечивающей переносимость базовых поведений в пользовательском контенте: пропах, аватарах и сценах. Её можно использовать для создания скриптов, работающих во время выполнения.
+
+На данный момент Cilbox всё ещё очень экспериментален. Следующий пример показывает, как создать скрипт для вращения куба с помощью Cilbox.
+
+<Callout type="info">
+Примечание: Cilbox особенно полезен при разработке приложения или игры, загружающей пользовательский контент, если вы хотите поддерживать скриптинг этого контента. Он позволяет поставлять скрипты наподобие DLC вместе с остальным контентом, обеспечивая при этом более безопасную песочницу для выполнения кода и предотвращая запуск скриптов с вредоносным или нежелательным поведением.
+</Callout>
+
+- Создайте объект куба и компонент ObjectRotator для прикрепления к нему. Обязательно добавьте [Cilboxable] над своим классом.
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![Окно инспектора с кубом и прикреплённым скриптом вращения](/img/scripting/16.png)
+
+- Создайте пустой Gameobject и прикрепите к нему компонент Cilbox Basis Scene. Cilbox Basis Scene становится cilbox, в котором выполняются все ваши скрипты.
+
+<Callout type="info">
+Примечание: Если ваш редактор не может обнаружить пространство имён Cilbox, создайте собственный файл .asmdef и укажите ссылку на Cilbox, либо откройте asmdef Cilbox и выберите *Auto Referenced*.
+
+![Окно инспектора с кубом и прикреплённым скриптом вращения](/img/scripting/16.5.png)
+</Callout>
+
+![Окно инспектора с компонентом CilboxSceneBasis](/img/scripting/17.png)
+
+- Добавьте компонент Basis Scene к пустому Gameobject, введите имя Asset Bundle и нажмите кнопку «Create Scene Bee File». Сохраните его на удалённом сервере.
+
+![Окно инспектора с компонентом Basis Scene](/img/scripting/18.png)
+
+![Инспектор Load Config](/img/scripting/19.png)
+
+- При запуске сцены в режиме воспроизведения созданный скрипт компилируется Unity в обычном режиме. Однако перед началом воспроизведения скрипты заменяются компонентом Cilbox Proxy. Именно они выполняются в качестве компонентов во время выполнения. Basis использует собственную копию Cilbox Proxy и Cilbox Basis Scene вместо ваших, но ваши данные сериализуются.
+
+![Окно инспектора с созданным компонентом Cilbox Proxy](/img/scripting/20.png)
+
+![Окно инспектора с обновлённым в режиме воспроизведения компонентом Cilbox Scene Basis](/img/scripting/21.png)
+
+![Окно с режимом воспроизведения](/img/scripting/22.png)
+
+- Запустите сцену инициализации и протестируйте скрипт Cilbox в приложении. Куб должен вращаться.
+
+![Окно с демонстрацией вращающегося куба Cilbox в приложении](/img/scripting/23.png)
+
+Ниже представлены дополнительные примеры скриптов для изучения.
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+Вместо BasisNetworkBehaviour можно наследовать BasisNetworkShim для создания сетевых скриптов.
+</Callout>

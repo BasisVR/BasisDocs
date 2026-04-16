@@ -1,0 +1,255 @@
+---
+title: ヘッドレスクライアント
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+
+## はじめに
+
+Basisは、完全なインタラクティブクライアントをレンダリングせずにBasisサーバーに接続できるヘッドレスクライアントビルドを提供します。これらのビルドは、負荷テスト、接続テスト、より多くのプレイヤー数でのサーバー動作の検証に主に役立ちます。
+
+LinuxとWindowsのヘッドレスクライアントビルドは、BasisのGitHubアーティファクトからダウンロードすることもできます。Dockerは多くのインスタンスを実行するための便利な方法ですが、ヘッドレスクライアントの実行に必須ではありません。
+
+次の場合にヘッドレスクライアントを使用します：
+
+- 同じサーバーに参加する複数のユーザーをシミュレートする
+- 負荷時のサーバーの動作を測定する
+- 実際のユーザーを招待する前にパスワード保護されたアクセスをテストする
+- より制御されたクライアントでネットワーク問題を再現する
+
+<Callout type="info" title="このページで扱う内容">
+このページはヘッドレスクライアント自体の実行に焦点を当てています。サーバー側のセットアップについては、デプロイメント、設定、モニタリングのページを参照してください。
+</Callout>
+
+## ヘッドレスクライアントの取得
+
+ヘッドレスクライアントを実行するには2つの主な方法があります：
+
+- [GitHubアーティファクト](https://nightly.link/BasisVR/Basis/workflows/build-docker-server/developer?preview)からLinuxまたはWindowsのヘッドレスクライアントビルドをダウンロードする
+- 公開されているヘッドレスDockerイメージを実行する
+
+Dockerは再現可能なコンテナ化されたセットアップが必要な場合や、多くのインスタンスを素早くスケールする必要がある場合に便利です。1つまたはいくつかのヘッドレスクライアントだけを実行する必要がある場合は、プラットフォームビルドを直接ダウンロードすることも有効です。
+
+<Callout type="warn">
+デフォルトでは、WindowsバージョンのヘッドレスはIL2CPPの代わりにMonoで構築されており、これはUnityCI構築の制限です。MonoはIL2CPPより約1.5〜2倍多くのメモリを使用するため、パッケージにIL2CPPバージョンと記載されていない限りLinuxバージョンを使用してください。
+</Callout>
+
+## 開始前の確認
+
+ターゲットにするサーバーがすでに到達可能であることを確認してください。
+
+- Basisトラフィックは`4296/udp`を使用します
+- デフォルトのサーバーパスワードは`default_password`です（`config.xml`または環境変数で変更していない限り）
+- ローカルサーバーをテストしている場合は、パブリックホスト名の代わりにローカルマシンまたはLANアドレスを使用してください
+
+サーバーのドキュメントでは、`config.xml`の値を環境変数で上書きできることも記載されています。以下のヘッドレスクライアントの例でも同じパターンが使用されているため、これは重要です。
+
+## Docker Desktopのセットアップ
+<Steps>
+<Step>
+`システム情報`を開き、仮想化ベースのセキュリティが`実行中`と表示されているか、および仮想化ベースのセキュリティ利用可能に`セキュリティプロパティ 基本仮想化サポート`があるかを確認してください。
+
+ない場合はBIOSに入り、CPUに応じてAMD-ViまたはIntel VT-dを有効にしてください。
+
+`BaseBoard製品`に記載されているマザーボードを検索して、設定の場所とBIOSを開くキーを見つけてください。
+</Step>
+<Step>
+[DockerのWindowsダウンロード](https://docs.docker.com/desktop/setup/install/windows-install/)にアクセスし、Docker Desktopをインストールします。
+</Step>
+<Step>
+`docker-compose.yml`用のフォルダを作成し、以下の例をコピーします。
+</Step>
+<Step>
+そのディレクトリでコマンドプロンプトまたはPowershellを起動します。ファイルエクスプローラーでURLバーに`cmd.exe`と入力することでコマンドプロンプトを起動できます。
+</Step>
+<Step>
+まず`docker compose pull`でDockerイメージをダウンロード/更新します *デフォルトの`docker-compose.yml`を使用している場合は不要*
+</Step>
+<Step>
+`docker compose up -d`コマンドを入力してコンテナを起動します
+</Step>
+<Step>
+`docker ps`を使用してすべてのコンテナの状態を確認し、すべてがhealthyと表示されるまで待ちます。約30秒から1分かかります。
+</Step>
+<Step>
+`docker compose scale "basis-headless=#`を使用してコンテナ数を増やします。その後前のステップに戻り、CPUかRAMが不足するまで繰り返します。
+
+*`#`は最大5単位の増分の数値に置き換えます。低スペック/RAM制限ハードウェアでは1単位の増分を使用してください*
+
+<Callout type="info">
+`docker compose stats`で使用量を測定することもできます
+</Callout>
+</Step>
+</Steps>
+
+## Docker Compose設定
+
+Docker DesktopからDockerを実行する場合、Dockerエンジンは通常内部でWSL2を使用するため、通常Linuxイメージが正しい選択です。特にWindowsコンテナ（例：Windows Server 2016）を実行している場合は、GitHubのBasis-HeadlessパッケージにあるWindowsイメージを使用してください。
+
+<Callout type="warn">
+IL2CPPでビルドされているため、デフォルトでDockerイメージのLinuxバージョンを使用してください。Linuxに関するマニフェストエラーが発生する場合は、`-linux`バージョンを使用する必要があります。
+</Callout>
+
+### docker-compose.yml
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    pull_policy: always
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+      HealthCheckEnabled: "true"
+      HealthCheckHost: "127.0.0.1"
+      HealthCheckPort: 10666
+      HealthPath: "/health"
+      AvatarFileLocation: ""
+      AvatarPassword: ""
+    volumes:
+      - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
+      #- "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
+      #- ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M #Highest I ever saw we need to load a 500MB world file.
+        reservations:
+          memory: 1024M #Recommend amount that basis will actually need.
+    labels:
+      autoheal-app: true
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  Basis:
+```
+
+## 設定の意味
+
+上記の例は接続に必要な最小値を使用しています：
+
+| 変数 | 用途 |
+|----------|---------|
+| `Ip` | Basisサーバーのホスト名またはIPアドレス |
+| `Port` | サーバーが待ち受けるUDPポート、通常は`4296` |
+| `Password` | 参加に必要なサーバーパスワード |
+| `HealthCheckEnabled` | HealthCheckエンドポイントの有効/無効 |
+| `HealthCheckHost` | エンドポイントが待ち受けるIP |
+| `HealthCheckPort` | エンドポイントが待ち受けるポート |
+| `HealthPath` | ヘルス情報のパス |
+| `AvatarFileLocation` | avatar#base64の結合URL対応 |
+| `AvatarPassword` | アバターパスワード |
+| `StrictMemoryCleanupEnabled` | 読み込まれたすべてのテクスチャを削除 |
+
+`config.xml`をマウントする場合、それをファイルベースのフォールバック設定として扱ってください。環境変数も設定する場合、メインサーバーのドキュメントでは環境値がXML値を上書きすることが記載されています。
+
+## AudioClipsを使用したオプションの音声シミュレーション
+
+ヘッドレスクライアントは、`.wav`または`.opus`ファイルを音声オーディオとしてストリーミングすることで、オプションでマイクトラフィックをシミュレートできます。
+
+Basisは起動時にヘッドレスプレイヤーのデータディレクトリ内の`AudioClips`フォルダを確認します。1つ以上のファイルがある場合、ヘッドレスクライアントはランダムに1つのファイルを選択し、ループし、Opusエンコードし、通常の音声トラフィックとして送信します。
+
+フォルダが存在しない場合、Basisが作成します。フォルダが存在するがオーディオファイルがない場合、ヘッドレスクライアントは無音のままです。
+
+非48kHzファイルは自動的にモノラル`48 kHz`にリサンプルされます。
+
+### ファイルの配置場所
+
+通常の展開ビルドの場合、ヘッドレスデータフォルダの下に配置します：
+
+- `AudioClips/`
+
+Dockerの場合、プレイヤーのデータディレクトリの`AudioClips`フォルダにフォルダをマウントします。
+
+Linux headlessの例：
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    volumes:
+      - ./AudioClips:/app/HeadlessLinuxServer_Data/AudioClips
+...
+```
+
+
+## 大規模での実行
+
+Docker Composeは同じサービス定義から複数のヘッドレスクライアントを起動できます：
+
+<h3> `docker compose up --scale "basis-headless=10"`</h3> *docker-compose.ymlで設定されていない場合の--scale*
+
+大まかな目安として、既存のメモはインスタンスあたり約`1.5 GB`のメモリを確保することを推奨しています。例えば、約`30 GB`が利用可能な場合、約`20`インスタンスを計画できます。
+
+<Callout type="warning" title="少数ずつ読み込む">
+一度にすべてのクライアントを起動しないでください。コンピューターのRAMを過負荷にしてしまいます。現在、インスタンスの起動を簡単にするスクリプトは提供していません。
+
+起動したすべてのコンテナのヘルスステータスがhealthyになるまで待ってから追加するのが最善です。
+</Callout>
+
+これはあくまで初期推定値です。実際の限界は以下に依存します：
+
+- 利用可能なRAM
+- CPUコア数
+- サーバーの`PeerLimit`
+- ヘッドレスクライアントとサーバー間の利用可能な帯域幅
+
+
+## テスト中のモニタリング
+
+サーバーのヘルスエンドポイントが公開されている場合、テストが期待通りの効果を持っていることを確認するために使用できます。モニタリングドキュメントにはこのサンプルレスポンスが示されています：
+
+```json
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+ヘッドレス負荷テスト中に最も役立つフィールドは：
+
+- `listening` - サーバーが接続を受け入れていることを確認
+- `visitors` - 現在何人のクライアントが接続しているかを確認
+- `capacity` - 設定されたプレイヤー制限と比較
+- `sent`と`recv` - トラフィックの増加を観察
+- `version` - 期待されるサーバーバージョンを確認
+
+<Callout type="warn" title="バージョン一致が重要">
+サーバードキュメントでは、クライアントとサーバーのコードがサーバーバージョンで一致する必要があることが明示されています。ヘッドレスイメージとターゲットサーバーが互換性のないバージョンから構築されている場合、ネットワーク設定が正しくても接続試行が失敗する可能性があります。
+</Callout>
+
+## トラブルシューティング
+
+ヘッドレスクライアントが接続しない場合は、まず確認してください：
+
+- `Ip`のサーバーアドレスはコンテナから到達可能か
+- サーバーパスワードが一致しているか
+- `4296/udp`が開いていて正しくマップされているか
+- コンテナランタイムに適切なイメージを使用しているか
+- サーバーが実際に起動時に待ち受けており正常か
+- クライアントとサーバーのバージョンが互換性があるか
+
+多くのインスタンスをスケールしていて不安定さが見られる場合は、インスタンス数を減らし、制限がメモリ、CPU、ネットワーク帯域幅、またはサーバーの設定された`PeerLimit`のいずれかであるかを確認してください。
+
+また、Docker内で137終了コード（メモリ不足）が発生しないように、Unityに十分な量の仮想メモリを確保することも推奨されます。

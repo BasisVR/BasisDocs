@@ -1,0 +1,32 @@
+---
+title: Surveillance
+---
+
+## Point de terminaison de vérification de santé
+
+Lors de l'exécution locale du serveur, vous pouvez vérifier son état en visitant le point de terminaison de vérification de santé à l'adresse :
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| Variable      | Définition                          |
+|---------------|--------------------------------------|
+| `listening`   | Le serveur est-il à l'écoute des connexions |
+| `visitors`    | Le nombre de joueurs actuellement connectés |
+| `capacity`    | Nombre maximum de joueurs autorisés sur le serveur |
+| `sent`        | Quantité totale de données envoyées (en octets ?) |
+| `recv`        | Quantité totale de données reçues (en octets ?) |
+| `currentTime` | L'heure actuelle du serveur au format ISO 8601 |
+| `startTime`   | L'heure de démarrage du serveur au format ISO 8601 |
+| `version`     | Le numéro de version du serveur. Important : le code client doit correspondre au ServerVersion attendu |

@@ -1,0 +1,166 @@
+---
+title: Deployment
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Einführung
+
+Der Fokus liegt hier auf der Basis-Server-spezifischen Konfiguration und nicht auf den vielen Möglichkeiten, Spielserver in der Cloud zu hosten.
+
+Das Multithreading auf dem Server läuft besser, je mehr Kerne verfügbar sind, aber es wurde gezeigt, dass es mit nur zwei Kernen gut funktioniert. Social VR erfordert viel Bandbreite, also beachten Sie das bei der Wahl Ihres Dienstanbieters.
+
+Dieses Dokument gilt für einen unmodifizierten Basis Server: Version 6 aus dem LTS-Branch, Stand Mai 2025 {/* `commit 672035f0afe87b2fbe4e36bbd7f6cd340059d976` des lts-Branches */}
+
+<Callout type="info" title="Hilfreicher Tipp zur Server-Version">
+Sie können die **ServerVersion** im Code finden, den Sie aus dem Repository geklont haben.  
+Client- und Servercode **müssen** bei der Version übereinstimmen.
+
+```csharp
+BasisNetworkCore\BasisNetworkVersion.cs
+5:        public static ushort ServerVersion = 6;
+```
+</Callout>
+
+## Mit Docker ausführen
+
+Die Verwendung von docker-compose ist der einfachste und schnellste Weg, einen Basis-Server zu starten. Docker-Images des Servers werden auf GitHub sowohl für den `long-term-support`- als auch den `developer`-Branch unter `latest` bzw. `nightly` veröffentlicht.
+
+```yml
+services:
+  basis-server:
+    image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
+    container_name: basis-server
+    init: true 					 # handle process termination
+    restart: unless-stopped
+    environment:
+      SetPort: 4296               # basis port
+      HealthCheckPort: 10666      # http healthcheck port
+      PromethusPort: 1234         # exists but is unused
+      Password: default_password
+      PeerLimit: 1024             # 1024 is the maximum supported
+      EnableStatistics: true
+      EnableConsole: false
+    ports:
+      - "4296:4296/udp"
+      - "10666:10666/tcp"
+      - "1234:1234/tcp" # unused
+    volumes:
+      - ./initialresources:/app/initialresources:ro
+      - ./config:/app/config
+      - ./logs:/app/logs
+    # exercise health endpoint (optional)
+    healthcheck:
+      # http GET request
+      test: ["CMD", "curl", "-f", "http://localhost:10666/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2s
+``` 
+Einmal ausführen, um `config.xml` zu erstellen (unter `./config` im Beispiel). XML-Einstellungen werden durch Umgebungsvariablen überschrieben.
+
+## Kompilieren und auf Windows ausführen
+
+Unter der Annahme, dass Sie den LTS-Branch des Repos geklont haben.
+`git clone -b long-term-support https://github.com/BasisVR/Basis.git`
+
+Die Visual Studio Solution-Datei (sln) finden Sie im Verzeichnis `Basis Server`.
+Diese Schritte setzen Windows 11 mit Microsoft Visual Studio Community 2022 (64-Bit) - Version 17.12.3 voraus.
+
+BasisNetworkConsole ist das csproj, das Sie für die Kompilierung auswählen müssen.
+Sie sollten dieses Projekt im Startup-Element-Menü oben auswählen können.
+Nach der Auswahl klicken Sie auf den grünen Pfeil zum Kompilieren.
+
+Nach der Kompilierung navigieren Sie zu `\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\`,
+um die Server-Exe und kompilierte Abhängigkeiten zu finden.
+
+Um den Server lokal unter Windows auszuführen, öffnen Sie eine Befehlsshell in diesem Verzeichnis und führen Sie `.\BasisNetworkConsole.exe` aus.
+
+`\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0> .\BasisNetworkConsole.exe`
+
+Dies sollte eine Konsole öffnen und etwas Ähnliches wie folgendes anzeigen:
+
+```txt title="Beispiel für Server-Konsolenausgabe"
+[20:07] [INFO] Logs are saved to C:\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\Logs\2025-05-10.log
+[20:07] [INFO] Server Booting
+[20:07] [INFO] HTTP health check started at 'http://localhost:10666/health'
+[20:07] [INFO] Loaded Admins 0
+[20:07] [INFO] DidAuthIdentity initialized.
+[20:07] [INFO] Server Wiring up SetPort 4296
+[20:07] [INFO] Server Worker Threads Booted
+[20:07] [INFO] CombinedURL: https://example.com/502c8e6c8405d50418.BEE, LoadAssetPassword: c661cfeaf9757e
+[20:07] [INFO] Adding Object world
+```
+
+Stellen Sie sicher, dass Sie beim Ausführen des Basis Demo Clients auf `localhost` zeigen. Die Option befindet sich im erweiterten Panel beim ersten Start des Clients.
+
+## Kompilieren und auf Linux ausführen
+
+### Voraussetzungen für Debian/Ubuntu
+
+Für Ubuntu 22.04:
+
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Für Debian oder andere besondere Setups:
+
+```bash
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Dann Installation fortsetzen:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+### Basis herunterladen
+
+Wechseln Sie in den Ordner, in den Sie Basis herunterladen möchten, und führen Sie folgenden Befehl aus:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+### Basis Server kompilieren
+
+Öffnen Sie ein neues Terminal und wechseln Sie zum Verzeichnis mit Basis Server: `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Dann kompilieren mit:
+
+`dotnet build` (für Debug)
+
+oder
+
+`dotnet build --configuration Release` (für Release)
+
+### Ausführen
+
+Navigieren Sie zum BasisServerConsole-Verzeichnis (etwa `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`)
+und führen Sie aus:
+
+`dotnet .\.BasisNetworkConsole.dll`
+
+<Callout type="info" title="Für ein gezieltes Linux-Release">
+
+Sie können mit Folgendem kompilieren:
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+Der `--self-contained`-Schalter wird hinzugefügt, um die Ausführung auf einem OS ohne dotnet-Installation zu ermöglichen.
+
+Wenn Sie auf diese Weise kompilieren (oder Ihr Build auf das System ausgerichtet war), sollten Sie ausführen können:
+
+`./BasisNetworkConsole`
+
+aus `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`.
+
+</Callout>
+
+## Firewall
+
+Möglicherweise möchten Sie Ports öffnen:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp

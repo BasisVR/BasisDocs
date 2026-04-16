@@ -1,0 +1,20 @@
+{
+  "title": "Документация",
+  "pages": [
+    "---Введение---",
+    "index",
+    "faq",
+    "contributing",
+    "---Руководства---",
+    "controls",
+    "avatar",
+    "prop",
+    "world",
+    "scripting",
+    "server",
+    "---Техническое---",
+    "...technical",
+    "---Справочник API---",
+    "...reference"
+  ]
+}

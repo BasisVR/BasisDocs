@@ -1,0 +1,55 @@
+---
+title: Einführung
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Übersicht
+
+Welten sind die Umgebungen, in denen soziale VR-Erfahrungen in Basis stattfinden. Diese Dokumentation führt Sie durch die Einrichtung, den Aufbau und das Testen eigener benutzerdefinierter Welten mit Unity und dem Basis SDK.
+
+Basis verwendet das `.BEE`-Dateiformat für Welten, das Ihre kompilierte Szene und Metadaten in einer einzigen Datei zusammenfasst. Welten unterstützen benutzerdefinierte Meshes, Materialien, Beleuchtung und Spawn-Punkte und können für Mehrspielererfahrungen remote gehostet werden.
+
+## Schnellstartanleitung
+
+<Cards>
+  <Card
+    title="Einrichtung"
+    description="Unity einrichten und Welt-Assets importieren"
+    href="/de/docs/world/setup"
+  />
+  <Card
+    title="Kompilierung"
+    description="Szenenkomponenten konfigurieren und .BEE-Datei erstellen"
+    href="/de/docs/world/building"
+  />
+  <Card
+    title="Testen"
+    description="Ihre Welt lokal in Basis testen"
+    href="/de/docs/world/testing"
+  />
+</Cards>
+
+## Hauptfunktionen
+
+- **Benutzerdefinierte Umgebungen**: Beliebige 3D-Meshes, Materialien und Texturen importieren
+- **Spawn-Punkte**: Definieren Sie, wo Spieler Ihre Welt betreten
+- **Multi-Plattform**: Kompilierung für Windows, Linux und Android
+- **Netzwerkbereit**: Für Mehrspielererfahrungen konzipiert
+- **BEE-Format**: Einfaches Packaging für einfache Distribution
+
+## Anforderungen
+
+- **Unity**: Unity 6 (neueste unterstützte Version)
+- **Assets**: 3D-Meshes mit Collidern für die Navigation
+- **Komponenten**: Basis-Scene-Komponente für die Szenenkonfiguration
+- **Hosting**: Remote-URL-Hosting für Mehrspieler (optional für lokale Tests)
+
+## Workflow-Übersicht
+
+1. **Importieren** Sie Ihre Welt-Assets in Unity
+2. **Konfigurieren** Sie die Basis-Scene-Komponente und Spawn-Punkte
+3. **Kompilieren** Sie die .BEE-Datei für Ihre Zielplattformen
+4. **Testen** Sie lokal mit dem BasisFramework-Prefab
+5. **Hochladen** zu einem Hosting-Service für Mehrspieler (optional)
+6. **Laden** in Basis mit URL und Passwort

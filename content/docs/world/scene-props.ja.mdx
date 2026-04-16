@@ -1,0 +1,71 @@
+---
+title: シーンプロップ
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## シーンボタンを使ってプロップをスポーンする方法
+
+Runtime Loaderコンポーネントは、実行時に *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources* にあるすべてのプロップを生成します。シーン内のボタンを使用してプロップを生成することも可能です。そのためには：
+
+- シーンにキャンバスオブジェクトを追加します。前のセクションで示したものと同様の関連コンポーネントを付けることを忘れずに。プロップの .bee ファイルを生成してリモートサーバーにアップロードするために、Basis Propコンポーネントを追加することを忘れないでください。
+
+![キャンバスとコンポーネントを表示するInspectorウィンドウ](/img/props/6A.png)
+
+- TMPボタンを作成します。
+
+![ボタンとコンポーネントを表示するInspectorウィンドウ](/img/props/6B.png)
+
+- Basis Propコンポーネントを追加し、Asset Bundle Nameを入力して「Create Prop Bee File」ボタンを押します。生成された .bee ファイルは、Basis Runtime Loaderがプロップをシーンに読み込むために使用されます。この例では、前のセクションのネットワーク同期キューブを再び使用します。
+
+![同期キューブとコンポーネントを表示するInspectorウィンドウ](/img/props/6B-.png)
+
+- 空のGameobjectを作成してRuntime Loaderコンポーネントを付けます。これはプロップをスポーンするために使用されます。シーン開始時にプロップが生成されないようにするため、インスペクターでコンポーネントを無効にします。
+
+![無効化されたRuntime Loaderを表示するInspectorウィンドウ](/img/props/6C.png)
+
+<Callout type="info">
+プロップをネットワーク同期させたい場合は、ネットワーク同期コンポーネントを追加してください。例えば、以前に示したように、Basis Object Network Syncingコンポーネントを使用してプロップの動きを同期させることができます。
+
+独自のネットワーク同期コードを作成することもできます。インスピレーションを得るために、プロジェクト内にある *Basis Ported Pooltable* と *Basis Vehicles* のサンプルパッケージを参照してください。
+</Callout>
+
+- ボタンを選択してonClick()イベントを追加します。Runtime Loader GameObjectを割り当て、ボタンがクリックされたときに呼び出すメソッドとして BasisRuntimeLoader.LoadNow を選択してください。
+
+![RuntimeLoaderを呼び出すボタンイベントを表示するInspectorウィンドウ](/img/props/6D.png)
+
+- Load Configエディターを開きます。
+
+- 生成されたプロップのパスワードと .bee URLを入力します。
+
+- 後から参加するプレイヤーに対しても同期された変更が持続するよう、Persistentが選択されていることを確認します。
+
+- Save XMLをクリックします。
+
+![ロード設定を表示するInspectorウィンドウ](/img/props/6E.png)
+
+- まだの場合は、空のGameobjectを作成してBasis Sceneコンポーネントを付け、関連フィールドを入力します。設定が完了したら「Create Scene Bee File」をクリックします。
+
+![Basis Sceneを表示するInspectorウィンドウ](/img/props/6F.png)
+
+- Load Configエディターを再度開きます。
+
+- 生成されたシーンのパスワードと .bee URLを入力します。
+
+- 後から参加するプレイヤーに対しても同期された変更が持続するよう、Persistentが選択されていることを確認します。
+
+- Save XMLをクリックします。
+
+![ボタンとコンポーネントを表示するInspectorウィンドウ](/img/props/6G.png)
+
+- 「Initialization」シーンを開いてPlayを押します。これにより、作成したシーンとネットワークオブジェクトが初期化されます。次回Basisアプリケーション実行中にサーバー経由でシーンを読み込む際、ボタンでプロップをスポーンできるようになります。
+
+![ボタンとコンポーネントを表示するInspectorウィンドウ](/img/props/6H.png)
+
+<Callout type="info">
+注意：ローカルプレイヤーもリモートプレイヤーもキューブをスポーンできます！
+</Callout>
+
+<Callout type="info">
+補足：SteamからもBasis VRにアクセスできます。アクセスキーを取得するには、[Discordに参加してください](https://discord.gg/v6ve6WT562)！
+</Callout>

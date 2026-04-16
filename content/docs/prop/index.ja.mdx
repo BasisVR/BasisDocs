@@ -1,0 +1,54 @@
+---
+title: はじめに
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概要
+
+プロップはBasisフレームワークプロジェクトにおけるソーシャルVR体験のダイナミクスに多様性をもたらします。このドキュメントでは、UnityとBasis SDKを使用して独自のプロップを作成、ビルド、アップロード、カスタマイズする方法を説明します。
+
+Basisはプロップに`.BEE`ファイル形式を使用しており、コンパイルされたアセットとメタデータを単一の共有しやすいファイルにパッケージ化します。プロップはブレンドシェイプ、マテリアル、スクリプティングをサポートしています。
+
+## クイックスタートガイド
+
+<Cards>
+  <Card
+    title="セットアップ"
+    description="Unityをセットアップしてプロップを準備する"
+    href="/ja/docs/prop/setup"
+  />
+  <Card
+    title="ビルド"
+    description="プロップを.BEEファイルにビルドする"
+    href="/ja/docs/prop/building"
+  />
+  <Card
+    title="アップロード"
+    description="プロップをアップロードしてBasisで読み込む"
+    href="/ja/docs/prop/uploading"
+  />
+</Cards>
+
+## 主な機能
+
+- **ヒューマノイドリグサポート**: 自動ボーンマッピングを備えた標準Unityヒューマノイドリグ
+- **ブレンドシェイプ**: 表情とビジームの完全サポート
+- **マルチプラットフォーム**: Windows、Linux、Mac、Android、iOSでのビルド
+- **URPシェーダー**: UnityのUniversal Render Pipelineと互換
+
+## 必要条件
+
+- **Unity**: Unity 6（最新サポートバージョン）
+- **モデル形式**: ヒューマノイドリグを持つFBX
+- **シェーダー**: URP互換シェーダー（Lit、Poiyomi、lilToonなど）
+- **ホスティング**: .BEEファイル用のリモートURLホスティング（Google Driveは最大100MB）
+
+## ワークフロー概要
+
+1. アバターモデルをUnityに**インポート**する
+2. リグとスキンドメッシュを**設定**する
+3. Basis Avatarコンポーネントを**追加**する
+4. ターゲットプラットフォーム用に.BEEファイルを**ビルド**する
+5. ホスティングサービスに**アップロード**する
+6. URLとパスワードを使ってBasisで**読み込む**

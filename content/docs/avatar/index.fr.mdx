@@ -1,0 +1,71 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Vue d'ensemble
+
+Les avatars sont au cœur de votre expérience sociale en VR dans Basis. Cette documentation vous guidera à travers la création, la construction, le téléversement et la personnalisation de vos propres avatars en utilisant Unity et le SDK Basis.
+
+Basis utilise le format de fichier `.BEE` pour les avatars, qui regroupe vos ressources compilées et métadonnées dans un fichier unique et facile à partager. Les avatars prennent en charge les rigs humanoïdes, les blend shapes, les matériaux, la physique jiggle et le suivi facial.
+
+## Guide de démarrage rapide
+
+<Cards>
+  <Card
+    title="Configuration"
+    description="Configurer Unity et préparer votre modèle d'avatar"
+    href="/fr/docs/avatar/setup"
+  />
+  <Card
+    title="Construction"
+    description="Construire votre avatar en fichier .BEE"
+    href="/fr/docs/avatar/building"
+  />
+  <Card
+    title="Téléversement"
+    description="Téléverser et charger votre avatar dans Basis"
+    href="/fr/docs/avatar/uploading"
+  />
+  <Card
+    title="Physique Jiggle"
+    description="Ajouter une physique dynamique à votre avatar"
+    href="/fr/docs/avatar/jiggle"
+  />
+  <Card
+    title="Suivi facial"
+    description="Ajouter la prise en charge du suivi oculaire et facial"
+    href="/fr/docs/avatar/face-tracking"
+  />
+  <Card
+    title="Shaders"
+    description="Shaders URP compatibles pour les avatars"
+    href="/fr/docs/avatar/shaders"
+  />
+</Cards>
+
+## Fonctionnalités clés
+
+- **Prise en charge du rig humanoïde** : Rigs humanoïdes Unity standard avec mappage automatique des os
+- **Blend Shapes** : Prise en charge complète des expressions faciales et des visèmes
+- **Multi-plateforme** : Construction pour Windows, Linux, Mac, Android et iOS
+- **Physique Jiggle** : Simulation physique optionnelle pour les éléments dynamiques
+- **Suivi facial** : Prise en charge optionnelle du suivi oculaire et facial
+- **Shaders URP** : Compatible avec le Universal Render Pipeline d'Unity
+
+## Prérequis
+
+- **Unity** : Unity 6 (dernière version prise en charge)
+- **Format du modèle** : FBX avec rig humanoïde
+- **Shader** : Shaders compatibles URP (Lit, Poiyomi, lilToon, etc.)
+- **Hébergement** : Hébergement d'URL distante pour les fichiers .BEE (max 100 Mo pour Google Drive)
+
+## Aperçu du flux de travail
+
+1. **Importer** votre modèle d'avatar dans Unity
+2. **Configurer** le rig et les skinned meshes
+3. **Ajouter** le composant Basis Avatar
+4. **Construire** le fichier .BEE pour vos plateformes cibles
+5. **Téléverser** vers un service d'hébergement
+6. **Charger** dans Basis en utilisant l'URL et le mot de passe

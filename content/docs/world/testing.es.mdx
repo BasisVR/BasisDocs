@@ -1,0 +1,31 @@
+---
+title: Pruebas
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Probar la escena
+
+<Callout type="warn">
+Selecciona el asset .prefab `BasisFramework` en los archivos del proyecto, **¡No instancies este prefab en la escena actual! ¡El SDK de Basis lo hace automáticamente!**
+</Callout>
+
+- Una vez creado el AssetBundle, puedes cargarlo a través del prefab `BasisFramework` que se encuentra en `Packages > Basis SDK > Prefabs > Boot`.
+
+![Ubicación del prefab BasisFramework](/img/worlds/7.png)
+
+- Puedes colocar la ubicación del nuevo AssetBundle en el campo `Remote BEE File Location`, junto con el `Unlock Password` proporcionado en el archivo `dontuploadmepassword.txt` generado en el directorio `/AssetBundles/`, luego activa `Use Scene Provided Here`.
+
+![Configuración de BasisFramework](/img/worlds/8.png)
+
+<Callout type="info">
+Nota: Si está activada, la propiedad del inspector *Use Scene Provided Here* cargará la escena indicada en *Remote Bee File Location*. Cuando está desactivada, carga una escena XML generada a través del Basis Config Loader (si existe una).
+</Callout>
+
+- Carga la escena `Initialization` desde `Packages > Basis SDK > Scenes`, y luego pulsa Play.
+
+![Escena Initialization](/img/worlds/9.png)
+
+- Ingresa un nombre de usuario y presiona "Connect". localhost puede usarse *si* se ha iniciado un [Servidor](/es/docs/server) en la máquina local.
+
+- Luego deberías aparecer en el punto de aparición de tu mundo o del servidor al que te conectas.

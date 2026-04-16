@@ -1,0 +1,22 @@
+---
+title: 進階功能
+---
+
+## 抖動（可選）
+
+**新增抖動物理的方法：**
+
+對於每個抖動根節點：
+- 新增新元件 `Jiggle Rig`，可以放置在單獨的 gameObject 中，但必須位於您的虛擬形象根節點的階層下。
+- 在 Jiggle Rig 元件中，確保設定一個 `Root Transform`，即虛擬形象骨架中的一根骨骼。
+- 如果您有一個父骨骼（用於多條您希望套用相同效果的子骨骼鏈），可以啟用 `Motionless Root` 以僅影響子骨骼而不影響根節點本身。（可選）
+- 根據您的喜好調整 `Settings`（啟用 `Advanced` 可查看所有設定）。
+
+**碰撞互動：**
+- 啟用 `Advanced` 查看所有設定。
+- 啟用 `Collision` 並調整 `Collision Radius` 以適合物件。
+
+## 眼部和臉部追蹤（可選）
+
+- Hai 建立了一份關於如何在 Basis 專案中為虛擬形象新增 Automatic Face Tracking 元件的完整指南
+- 您可以點擊[這裡](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-tracking)的連結，取得有關其工作原理的說明。

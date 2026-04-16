@@ -1,0 +1,53 @@
+---
+title: 抖動物理
+description: 抖動物理允許您為虛擬形象的部件添加動態運動，例如頭髮、服裝或配件，從而增強真實感和沉浸感。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 如何添加抖動物理
+
+對於每個抖動根節點：
+- 向新建的 GameObject 或任何現有的 GameObject 新增 `Jiggle Rig` 元件，只要它位於您的虛擬形象根節點的階層下即可。 
+
+![新增 Jiggle Root 元件的檢查器視窗](/img/jiggle/1.png)
+
+- 在檢查器中將您想要使其抖動的骨架骨骼分配給 `Root Transform`。這可以包括虛擬形象的頭髮、服裝、配件或身體部位等。請注意，對於具有左右兩側的部位（例如左右胸部），您需要為每側分別新增一個 `Jiggle Rig`（否則只有一側會抖動！）。
+
+<Callout type="info">
+提示：為了保持 Jiggle Rigs 的有序排列，您可以將它們巢狀嵌入新建的父 GameObject 下。   
+</Callout>
+
+- 您可以調整設定並在遊戲模式下進行測試（例如，透過拖動虛擬形象或使用 `Basis Avatar` 元件的 `Test in Editor` 選項），直到滿意為止。您還可以將滑鼠游標懸停在每個設定選項上，查看其功能描述。要查看所有設定，可以點擊 `Advanced`。
+
+![顯示有序排列抖動的檢查器視窗](/img/jiggle/2.png)
+
+<Callout>
+可選地，如果您有一個具有多條子骨骼鏈的父骨骼，並希望對所有子骨骼套用相同的效果，可以啟用 `Motionless Root`，這樣它只會影響子骨骼而不影響根節點本身。
+</Callout>
+
+- 下面是將 Jiggle Rigs 套用於頭髮、服裝和胸部的範例。
+
+![顯示虛擬形象在遊戲模式下使用 Jiggle Rig 的視窗](/img/jiggle/3.gif)
+
+## 碰撞互動
+
+如果您希望物件碰撞驅動抖動效果：
+
+- 啟用 `Advanced` 查看所有設定。
+
+- 啟用 `Collision` 並調整 `Collision Radius` 以適合物件。
+
+- 新增一個您想用於觸發碰撞的 GameObject。為其分配 `Jiggle Collider Example` 元件。 
+
+<Callout type="info">
+確保您使用的 GameObject 有一個球形碰撞體！
+</Callout>
+
+- 在 `Jiggle Collider Transform` 欄位中，分配您的碰撞 GameObject，並選擇 Sphere 作為 `Collider Type`。請注意，目前只支援球形碰撞體，但抖動系統的創建者 Naelstrof 將來可能會新增更多支援。
+
+![顯示帶有 Jiggle Collider 的球體的檢查器視窗](/img/jiggle/4.png)
+
+- 下面是一個具有 `BasisPickupInteractable` 元件的球體物件與虛擬形象頭髮發生碰撞的範例。
+
+![顯示有序排列抖動的檢查器視窗](/img/jiggle/5.gif)

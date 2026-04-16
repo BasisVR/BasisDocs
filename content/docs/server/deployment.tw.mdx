@@ -1,0 +1,166 @@
+---
+title: 部署
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 介紹
+
+這裡的重點是 Basis 伺服器特定配置，而不是在雲端託管遊戲伺服器的多種方式。
+
+伺服器上的多執行緒在可用核心越多時運行越好，但已證明在只有兩個核心的情況下也能良好運行。社交 VR 對頻寬要求很高，因此在選擇服務提供商時請牢記這一點。
+
+本文件適用於未修改的 Basis 伺服器：截至 2025 年 5 月的 LTS 分支第 6 版 {/* `commit 672035f0afe87b2fbe4e36bbd7f6cd340059d976` of lts branch */}
+
+<Callout type="info" title="關於伺服器版本的有用提示">
+您可以在從儲存庫克隆的程式碼中找到 **ServerVersion**。  
+客戶端和伺服器程式碼的版本**必須一致**。
+
+```csharp
+BasisNetworkCore\BasisNetworkVersion.cs
+5:        public static ushort ServerVersion = 6;
+```
+</Callout>
+
+## 使用 Docker 執行
+
+使用 docker-compose 是啟動 Basis 伺服器最簡單快捷的方式。伺服器的 Docker 映像在 GitHub 上同時發布在 `long-term-support` 和 `developer` 分支，分別以 `latest` 和 `nightly` 標識。
+
+```yml
+services:
+  basis-server:
+    image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
+    container_name: basis-server
+    init: true 					 # handle process termination
+    restart: unless-stopped
+    environment:
+      SetPort: 4296               # basis port
+      HealthCheckPort: 10666      # http healthcheck port
+      PromethusPort: 1234         # exists but is unused
+      Password: default_password
+      PeerLimit: 1024             # 1024 is the maximum supported
+      EnableStatistics: true
+      EnableConsole: false
+    ports:
+      - "4296:4296/udp"
+      - "10666:10666/tcp"
+      - "1234:1234/tcp" # unused
+    volumes:
+      - ./initialresources:/app/initialresources:ro
+      - ./config:/app/config
+      - ./logs:/app/logs
+    # exercise health endpoint (optional)
+    healthcheck:
+      # http GET request
+      test: ["CMD", "curl", "-f", "http://localhost:10666/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2s
+``` 
+執行一次以建立 `config.xml`（在範例中的 `./config` 下）。XML 中的設定將被環境變數覆蓋。
+
+## 在 Windows 上編譯和執行
+
+假設您已克隆儲存庫的 LTS 分支。
+`git clone -b long-term-support https://github.com/BasisVR/Basis.git`
+
+您將在 `Basis Server` 目錄中找到 Visual Studio 解決方案檔案 (sln)。
+這些步驟假設使用 Windows 11 和 Microsoft Visual Studio Community 2022 (64 位元) - 版本 17.12.3。
+
+BasisNetworkConsole 是您編譯時需要的 csproj。
+您應該能夠從頂部的啟動項目選單中選擇該專案。
+選中後點擊綠色箭頭進行建置。
+
+編譯完成後，導覽至 `\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\`
+以找到伺服器 exe 和編譯的相依性。
+
+要在 Windows 本地執行伺服器，在此目錄中開啟命令 shell 並執行 `.\BasisNetworkConsole.exe`
+
+`\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0> .\BasisNetworkConsole.exe`
+
+這應該會開啟一個主控台並顯示類似以下內容：
+
+```txt title="伺服器主控台輸出範例"
+[20:07] [INFO] Logs are saved to C:\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\Logs\2025-05-10.log
+[20:07] [INFO] Server Booting
+[20:07] [INFO] HTTP health check started at 'http://localhost:10666/health'
+[20:07] [INFO] Loaded Admins 0
+[20:07] [INFO] DidAuthIdentity initialized.
+[20:07] [INFO] Server Wiring up SetPort 4296
+[20:07] [INFO] Server Worker Threads Booted
+[20:07] [INFO] CombinedURL: https://example.com/502c8e6c8405d50418.BEE, LoadAssetPassword: c661cfeaf9757e
+[20:07] [INFO] Adding Object world
+```
+
+執行 Basis 示範客戶端時，請確保指向 `localhost`。該選項在客戶端首次啟動時的進階面板中。
+
+## 在 Linux 上編譯和執行
+
+### Debian/Ubuntu 的先決條件
+
+對於 Ubuntu 22.04：
+
+`sudo add-apt-repository ppa:dotnet/backports`
+
+對於 Debian 或其他特殊設定：
+
+```bash
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+然後繼續安裝：
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+### 取得 Basis
+
+切換到您希望下載 Basis 的資料夾，然後執行以下命令：
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+### 建置 Basis 伺服器
+
+開啟新終端並 cd 到 Basis Server 目錄：`cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+然後使用以下任一方式建置：
+
+`dotnet build`（用於除錯）
+
+或
+
+`dotnet build --configuration Release`（用於發布）
+
+### 執行
+
+導覽至 BasisServerConsole 目錄（類似 `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`）
+並執行：
+
+`dotnet .\.BasisNetworkConsole.dll`
+
+<Callout type="info" title="用於更精確的 Linux 發布版本">
+
+您可以使用以下方式編譯：
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+添加 `--self-contained` 開關是為了允許在沒有安裝 dotnet 的作業系統上執行。
+
+如果您透過此方法編譯（或您的建置針對系統），您應該能夠執行：
+
+`./BasisNetworkConsole`
+
+從 `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`。
+
+</Callout>
+
+## 防火牆
+
+您可能需要開放以下連接埠：
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp

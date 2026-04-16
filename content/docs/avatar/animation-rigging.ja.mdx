@@ -1,0 +1,88 @@
+---
+title: コンストレイント
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basisは現在、コンストレイントを提供するためにAnimation Riggingパッケージを使用しています。 
+
+<Callout type="info">
+このパッケージは、マルチスレッドコンストレイントシステムのオープンソース実装がないため使用されています。開発する時間や興味のある方は、貢献や新しいプロジェクトを歓迎します。
+</Callout>
+
+Animation Riggingが提供するすべてのコンストレイントのドキュメントは[こちら](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)をご覧ください。
+
+## Animation Riggingパッケージのセットアップ
+<Steps>
+
+<Step>
+**Rig Builderの追加**: `Armature` GameObjectに`Rig Builder`コンポーネントと`Animator`コンポーネントを追加します。 
+
+![ArmatureGameObjectのインスペクターウィンドウ](/img/avatars/17.png)
+
+<Callout type="info">
+*Basisはアニメーションとリギングにルート/アバターのGameObjectのAnimatorを使用します*。 
+</Callout>
+
+<Callout type="warning">
+**Rig BuilderにルートのAnimatorを使用することはできません。アニメーションとBasisアーマチュアローダーが壊れます。**
+</Callout>
+</Step>
+<Step>
+**リグセットアップの作成**: "Rig Setup"という空のGameObjectを作成し、`Rig`コンポーネントを追加します。
+
+![Rig Setup GameObjectのインスペクターウィンドウ](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**リグセットアップの割り当て**: "Rig Setup" GameObjectを`Armature`の`Rig Builder`コンポーネントに割り当てます。
+
+![割り当て後のArmatureのインスペクターウィンドウ](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## ジグルボーンに関する注意事項
+
+ジグルボーンがコンストレイントに影響している場合、コンストレイントボーンのすべての親ボーンに`Rig Transform`を追加する必要があります。
+
+例：アバターの頭の方向を向くようにコンストレイントされたレーザーがある場合。レーザーの親から始め、アーマチュア/ヒューマノイドボーンに達するまで`Rig Transform`コンポーネントを追加する必要があります。
+<Callout type="info">
+これにはヒューマノイドの一部でないすべてのソースボーンが含まれます。例：コンストレイントで参照されているジグルボーンの影響を受ける翼には`Rig Transform`コンポーネントが必要です。
+</Callout>
+<Accordions type="single">
+<Accordion title="ジグルボーンの例">
+![ジグルボーンの例](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## 回転コンストレイント
+<Steps>
+
+<Step>
+
+まず[セットアップ](#setup-for-animation-rigging-packages)を行い、回転コンストレイントの設定手順に進みます。
+
+</Step>
+
+<Step>
+
+`Rig Setup` GameObjectの子GameObjectに`Multi-Rotation Constraint`コンポーネントを追加します。
+
+![インスペクターウィンドウのTwistコンポーネント](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Constrained Objectフィールドに影響を与えたいボーンを割り当てます。1つ以上のソースオブジェクトを使用できます。
+<Callout type="info">
+ソースボーン/GameObjectsを赤でハイライトされたエリアにドラッグ&ドロップできます。
+GameObjectごとに1つの`Multi-Rotation Constraint`しか追加できません。
+</Callout>
+![インスペクターウィンドウのTwistコンポーネント](/img/avatars/22.png)
+</Step>
+
+</Steps>

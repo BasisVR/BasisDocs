@@ -1,0 +1,55 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Vue d'ensemble
+
+Les mondes sont les environnements où se déroulent les expériences de VR sociale dans Basis. Cette documentation vous guidera dans la configuration, la création et le test de vos propres mondes personnalisés avec Unity et le SDK Basis.
+
+Basis utilise le format de fichier `.BEE` pour les mondes, qui regroupe votre scène compilée et vos métadonnées dans un seul fichier. Les mondes supportent des maillages, matériaux, éclairages et points d'apparition personnalisés, et peuvent être hébergés à distance pour les expériences multijoueurs.
+
+## Guide de démarrage rapide
+
+<Cards>
+  <Card
+    title="Configuration"
+    description="Configurez Unity et importez vos assets de monde"
+    href="/fr/docs/world/setup"
+  />
+  <Card
+    title="Compilation"
+    description="Configurez les composants de scène et compilez le fichier .BEE"
+    href="/fr/docs/world/building"
+  />
+  <Card
+    title="Test"
+    description="Testez votre monde localement dans Basis"
+    href="/fr/docs/world/testing"
+  />
+</Cards>
+
+## Fonctionnalités clés
+
+- **Environnements personnalisés** : Importez des maillages 3D, matériaux et textures
+- **Points d'apparition** : Définissez où les joueurs entrent dans votre monde
+- **Multi-plateformes** : Compilation pour Windows, Linux et Android
+- **Prêt pour le réseau** : Conçu pour les expériences multijoueurs
+- **Format BEE** : Emballage simple pour une distribution facile
+
+## Configuration requise
+
+- **Unity** : Unity 6 (dernière version supportée)
+- **Assets** : Maillages 3D avec des colliders pour la navigation
+- **Composants** : Composant Basis Scene pour la configuration de scène
+- **Hébergement** : URL distante pour le multijoueur (optionnel pour les tests locaux)
+
+## Aperçu du flux de travail
+
+1. **Importer** vos assets de monde dans Unity
+2. **Configurer** le composant Basis Scene et les points d'apparition
+3. **Compiler** le fichier .BEE pour vos plateformes cibles
+4. **Tester** localement avec le prefab BasisFramework
+5. **Télécharger** vers un service d'hébergement pour le multijoueur (optionnel)
+6. **Charger** dans Basis en utilisant l'URL et le mot de passe

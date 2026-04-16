@@ -1,0 +1,32 @@
+---
+title: 監控
+---
+
+## 健康檢查端點
+
+在本地執行伺服器時，您可以透過造訪健康檢查端點來檢查伺服器狀態：
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| 變數          | 定義                                |
+|---------------|--------------------------------------|
+| `listening`   | 伺服器是否正在監聽連線 |
+| `visitors`    | 當前連線的玩家數量 |
+| `capacity`    | 伺服器允許的最大玩家數量 |
+| `sent`        | 已發送資料的總量（位元組？）|
+| `recv`        | 已接收資料的總量（位元組？）|
+| `currentTime` | ISO 8601 格式的當前伺服器時間 |
+| `startTime`   | ISO 8601 格式的伺服器啟動時間 |
+| `version`     | 伺服器版本號。重要：客戶端程式碼必須與預期的 ServerVersion 匹配 |

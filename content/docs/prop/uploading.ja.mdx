@@ -1,0 +1,88 @@
+---
+title: アップロード
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## プロップのアップロード
+
+Basisでは、リモートURLからプロップ.BEEファイルを読み込めます。ネットワークセッションの他のユーザーもアセットを読み込むために必要です。
+
+<Callout type="info">
+`https://locationofBeefile.BEE#(Base64Encode(Password))`のように、プロップパスワードを直接URLに追加できます。<br />
+`#`とパスワードのBase64エンコード文字列を追加します。
+</Callout>
+
+**BEEファイル**をGoogle Driveまたはログインなしでファイルへの直接リンクを許可する任意のホスティングプロバイダーにアップロードします。
+
+- 共有設定を「リンクを知っている全員」に設定したフォルダーを作成します。
+- ハンバーガーメニューから「リンクをコピー」をクリックします。
+
+例：
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**生成されたパスワードファイルをアップロードまたは共有しないでください**
+</Callout>
+
+## Basisで読み込む
+<Steps>
+
+<Step>
+Basisを起動し、メニューを開いて「ライブラリ」を選択します。
+
+![Basisメニュー](/img/props/8.png)
+</Step>
+
+<Step>
+「新しいコンテンツを追加」を選択します。
+
+![新しいコンテンツを追加ボタン](/img/props/9.png)
+</Step>
+
+<Step>
+**BEEファイルURL**と**超秘密暗号化パスワード**を貼り付けて「追加」をクリックします。
+
+![BEEファイルのURLとパスワード](/img/props/10.png)
+</Step>
+
+<Step>
+BEEファイルの内容はライブラリに追加される前に検証されます。
+
+![BEEファイル追加ボタン](/img/props/11.png)
+</Step>
+</Steps>
+
+## プロップ管理
+
+ライブラリに最近追加されたプロップを確認できます。
+
+![ライブラリ内の新しいプロップ](/img/props/12.png)
+
+プロップはワールド内でスポーン、削除、または他のユーザーと共有できます。
+
+![プロップの詳細](/img/props/13.png)
+
+有用な情報パネル：
+
+- **(1) プロップ情報** - コンパイルタイムスタンプ、タイトル、説明
+- **(2) プラットフォーム互換性** - サポートされるOSプラットフォーム
+- **(3) 統計** - 三角形、マテリアル、ボーンの数
+- **(4) 特性** - プロップのネットワーク動作と永続性
+- **(5) ピン** - このプロップをメインメニューの上部にピン留め
+
+![スポーンバウンディングボックス](/img/props/14.png)
+
+「Spawn」ボタンをクリックすると、ワールドにプロップをスポーンする正確な位置を指定できます。
+
+![プロップのスポーン](/img/props/15.png)
+
+しばらくすると、プロップの特性に応じてローカルまたはネットワーク上にアセットが表示されます。

@@ -1,0 +1,71 @@
+---
+title: 簡介
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概述
+
+在 Basis 中，虛擬形象是您社交 VR 體驗的核心。本文件將引導您使用 Unity 和 Basis SDK 建立、構建、上傳和自訂您自己的虛擬形象。
+
+Basis 使用 `.BEE` 檔案格式儲存虛擬形象，將編譯後的資產和元資料打包成一個易於共享的單一檔案。虛擬形象支援人形骨骼、混合形狀、材質、抖動物理和臉部追蹤。
+
+## 快速入門指南
+
+<Cards>
+  <Card
+    title="設定"
+    description="設定 Unity 並準備您的虛擬形象模型"
+    href="/tw/docs/avatar/setup"
+  />
+  <Card
+    title="建構"
+    description="將您的虛擬形象建構為 .BEE 檔案"
+    href="/tw/docs/avatar/building"
+  />
+  <Card
+    title="上傳"
+    description="上傳並在 Basis 中載入您的虛擬形象"
+    href="/tw/docs/avatar/uploading"
+  />
+  <Card
+    title="抖動物理"
+    description="為您的虛擬形象添加動態物理效果"
+    href="/tw/docs/avatar/jiggle"
+  />
+  <Card
+    title="臉部追蹤"
+    description="添加眼部和臉部追蹤支援"
+    href="/tw/docs/avatar/face-tracking"
+  />
+  <Card
+    title="著色器"
+    description="適用於虛擬形象的相容 URP 著色器"
+    href="/tw/docs/avatar/shaders"
+  />
+</Cards>
+
+## 主要功能
+
+- **人形骨骼支援**：標準 Unity 人形骨骼，支援自動骨骼映射
+- **混合形狀**：完整支援面部表情和口型同步
+- **多平台**：支援 Windows、Linux、Mac、Android 和 iOS 建構
+- **抖動物理**：為動態元素提供可選的物理模擬
+- **臉部追蹤**：可選的眼部和臉部追蹤支援
+- **URP 著色器**：與 Unity 的通用渲染管線相容
+
+## 需求
+
+- **Unity**：Unity 6（最新支援版本）
+- **模型格式**：帶人形骨骼的 FBX
+- **著色器**：URP 相容著色器（Lit、Poiyomi、lilToon 等）
+- **託管**：.BEE 檔案的遠端 URL 託管（Google Drive 最大 100MB）
+
+## 工作流程概述
+
+1. 將虛擬形象模型**匯入** Unity
+2. **設定**骨骼和蒙皮網格
+3. **新增** Basis Avatar 元件
+4. 為目標平台**建構** .BEE 檔案
+5. **上傳**到託管服務
+6. 使用 URL 和密碼在 Basis 中**載入**

@@ -1,0 +1,54 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Vue d'ensemble
+
+Les props offrent une vaste gamme de dynamiques d'expérience VR sociale dans un projet du framework Basis. Cette documentation vous guidera à travers la création, la construction, le téléversement et la personnalisation de vos propres props en utilisant Unity et le SDK Basis.
+
+Basis utilise le format de fichier `.BEE` pour les props, qui regroupe vos ressources compilées et métadonnées dans un fichier unique et facile à partager. Les props prennent en charge les blend shapes, les matériaux et les scripts.
+
+## Guide de démarrage rapide
+
+<Cards>
+  <Card
+    title="Configuration"
+    description="Configurer Unity et préparer votre prop"
+    href="/fr/docs/prop/setup"
+  />
+  <Card
+    title="Construction"
+    description="Construire votre prop en fichier .BEE"
+    href="/fr/docs/prop/building"
+  />
+  <Card
+    title="Téléversement"
+    description="Téléverser et charger votre prop dans Basis"
+    href="/fr/docs/prop/uploading"
+  />
+</Cards>
+
+## Fonctionnalités clés
+
+- **Prise en charge du rig humanoïde** : Rigs humanoïdes Unity standard avec mappage automatique des os
+- **Blend Shapes** : Prise en charge complète des expressions faciales et des visèmes
+- **Multi-plateforme** : Construction pour Windows, Linux, Mac, Android et iOS
+- **Shaders URP** : Compatible avec le Universal Render Pipeline d'Unity
+
+## Prérequis
+
+- **Unity** : Unity 6 (dernière version prise en charge)
+- **Format du modèle** : FBX avec rig humanoïde
+- **Shader** : Shaders compatibles URP (Lit, Poiyomi, lilToon, etc.)
+- **Hébergement** : Hébergement d'URL distante pour les fichiers .BEE (max 100 Mo pour Google Drive)
+
+## Aperçu du flux de travail
+
+1. **Importer** votre modèle d'avatar dans Unity
+2. **Configurer** le rig et les skinned meshes
+3. **Ajouter** le composant Basis Avatar
+4. **Construire** le fichier .BEE pour vos plateformes cibles
+5. **Téléverser** vers un service d'hébergement
+6. **Charger** dans Basis en utilisant l'URL et le mot de passe

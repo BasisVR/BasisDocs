@@ -1,0 +1,35 @@
+---
+title: 設定與控制
+---
+
+## 控制
+
+讓我們建立一個頁面來介紹 BasisVR 中可用的控制。
+
+## 鍵盤快捷鍵
+
+- F9：切換到桌面模式
+
+- F10：切換到 OpenXR
+
+- F11：切換到 OpenVR
+
+## 除錯幫助
+
+- 您可以使用 *BasisDebug.Log("\<您的日誌訊息\>");* 將輸出列印到 Basis 應用程式的遊戲內控制台選單。
+
+- 您還可以查看 `Player.log` 檔案，位於 <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+這取決於使用所選應用程式 steamid 的 proton，在編輯器中建構時位置會有所不同。</Tab></Tabs> 它提供了遊戲過程中遇到的確切 Unity 問題的更全面日誌，包括堆疊追蹤，例如可能出現空引用錯誤的確切行。
+
+![Basis 控制台選單](/img/controls/2.png)
+
+## 函式庫項目儲存在哪裡？
+
+- `ItemKeyStore.json` 檔案，位於 <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+這取決於使用所選應用程式 steamid 的 proton，在編輯器中建構時位置會有所不同。</Tab></Tabs> 儲存目前函式庫中虛擬形象、世界和道具的映射。
+
+<Callout>
+在程式碼庫中，您還可以找到包含嵌入到應用程式中的函式庫項目的 `EmbeddedItems` 類別。   
+</Callout>
