@@ -46,6 +46,7 @@ export default async function LangLayout({
 
   return (
     <RootProvider
+      locale={lang}
       i18n={{
         locale: lang,
         locales: i18n.languages.map((l) => ({
