@@ -2,6 +2,7 @@ import { getPageImage, source } from '@/lib/source';
 import { notFound } from 'next/navigation';
 import { ImageResponse } from 'next/og';
 import { generate as DefaultImage } from 'fumadocs-ui/og';
+import { i18n } from '@/lib/i18n';
 
 export const revalidate = false;
 
@@ -28,8 +29,9 @@ export async function GET(
 }
 
 export function generateStaticParams() {
-  return source.getPages().map((page) => ({
-    lang: page.locale,
-    slug: getPageImage(page).segments,
-  }));
+  return i18n.languages.flatMap((lang) =>
+    source.getPages(lang).map((page) => ({
+      slug: getPageImage(page).segments,
+    })),
+  );
 }
