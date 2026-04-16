@@ -1,0 +1,89 @@
+---
+title: Vincoli
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis utilizza attualmente il pacchetto Animation Rigging per fornire i vincoli.
+
+<Callout type="info">
+Questo pacchetto viene utilizzato a causa della mancanza di un'implementazione open-source di un sistema di vincoli multi-thread. Se qualcuno ha il tempo o l'interesse a svilupparne uno, i contributi o i nuovi progetti sarebbero molto benvenuti.
+</Callout>
+
+La documentazione per tutti i Vincoli che fornisce Animation Rigging può essere trovata [qui](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Configurazione per i pacchetti Animation Rigging
+<Steps>
+
+<Step>
+**Aggiungere Rig Builder**: Aggiungi un componente `Rig Builder` e un componente `Animator` sul GameObject `Armature`.
+
+![Finestra Inspector al GameObject Armature](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis utilizza l'animator del GameObject radice/Avatar per l'animazione e il rigging*.
+</Callout>
+
+<Callout type="warning">
+**Non puoi usare l'animator della radice per il Rig Builder, in quanto questo romperà l'animazione e il caricatore dell'armature Basis.**
+</Callout>
+</Step>
+<Step>
+**Creare il Rig Setup**: Crea un GameObject vuoto denominato "Rig Setup" e aggiungi il componente `Rig`.
+
+![Finestra Inspector per il GameObject Rig Setup](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Assegnare il Rig Setup**: Assegna il GameObject "Rig Setup" al componente `Rig Builder` dell'`Armature`.
+
+![Finestra Inspector per l'Armature dopo l'assegnazione](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Note sulle Jiggle Bones
+
+Se Jiggle Bones influenza qualsiasi vincolo, devi aggiungere il `Rig Transform` a tutte le ossa padre dell'osso vincolato.
+
+Es.: Hai un laser vincolato a puntare nella direzione della testa del tuo avatar. Devi risalire dal padre del laser aggiungendo componenti `Rig Transform` finché non raggiungi un osso Armature/Umanoid.
+<Callout type="info">
+Questo include tutte le ossa sorgente se non fanno parte dell'umanoide. Es.: Le ali influenzate da Jiggle Bones necessitano di componenti `Rig Transform` se hai un vincolo che le referenzia.
+</Callout>
+<Accordions type="single">
+<Accordion title="Esempio di Jiggle Bone">
+![Esempio di Jiggle Bones](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+
+## Vincoli di Rotazione
+<Steps>
+
+<Step>
+
+Prima esegui la [Configurazione](#setup-for-animation-rigging-packages) e poi continua con le istruzioni per configurare i Vincoli di Rotazione.
+
+</Step>
+
+<Step>
+
+Aggiungi il componente `Multi-Rotation Constraint` su un gameobject che è un figlio del GameObject `Rig Setup`.
+
+![Componente Twist nella finestra Inspector](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Assegna l'osso che vuoi vincolare nel campo Constrained Object. È possibile utilizzare uno o più oggetti sorgente.
+<Callout type="info">
+Puoi trascinare le ossa/GameObject sorgente sull'area Source Objects evidenziata in rosso.
+Puoi aggiungere solo un `Multi-Rotation Constraint` per gameObject.
+</Callout>
+![Componente Twist nella finestra Inspector](/img/avatars/22.png)
+</Step>
+
+</Steps>

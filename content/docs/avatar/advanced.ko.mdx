@@ -1,0 +1,22 @@
+---
+title: 고급 기능
+---
+
+## 지글 (선택사항)
+
+**지글 물리 추가 방법:**
+
+각 지글 루트에 대해:
+- 아바타 루트의 계층 아래에 있어야 하지만 별도의 gameObject에 배치할 수 있는 새 컴포넌트 `Jiggle Rig`를 추가합니다.
+- Jiggle Rig 컴포넌트에서 아바타 armature의 본인 `Root Transform`을 반드시 설정합니다.
+- 같은 효과를 적용하려는 여러 자식 본 체인이 있는 부모 본이 있으면 `Motionless Root`를 활성화하여 루트 자체가 아닌 자식 본에만 영향을 줄 수 있습니다. (선택사항)
+- 원하는 대로 `Settings`를 조정합니다(`Advanced`를 활성화하여 모든 설정 보기).
+
+**충돌 상호작용:**
+- `Advanced`를 활성화하여 모든 설정을 봅니다.
+- `Collision`을 활성화하고 오브젝트에 맞게 `Collision Radius`를 조정합니다.
+
+## 눈 및 안면 추적 (선택사항)
+
+- Hai가 Basis 프로젝트에서 아바타에 자동 안면 추적 컴포넌트를 추가하는 방법에 대한 포괄적인 가이드를 작성했습니다.
+- 작동 방식에 대한 지침은 [여기](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-tracking) 링크를 따라가세요.

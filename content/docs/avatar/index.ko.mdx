@@ -1,0 +1,71 @@
+---
+title: 소개
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 개요
+
+아바타는 Basis에서 소셜 VR 경험의 핵심입니다. 이 문서는 Unity와 Basis SDK를 사용하여 자신만의 아바타를 생성, 빌드, 업로드 및 커스터마이징하는 방법을 안내합니다.
+
+Basis는 아바타에 `.BEE` 파일 형식을 사용하며, 이는 컴파일된 에셋과 메타데이터를 공유하기 쉬운 단일 파일로 패키징합니다. 아바타는 휴머노이드 리그, 블렌드 셰이프, 재질, 지글 물리, 안면 추적을 지원합니다.
+
+## 빠른 시작 가이드
+
+<Cards>
+  <Card
+    title="설정"
+    description="Unity를 설정하고 아바타 모델 준비"
+    href="/ko/docs/avatar/setup"
+  />
+  <Card
+    title="빌드"
+    description="아바타를 .BEE 파일로 빌드"
+    href="/ko/docs/avatar/building"
+  />
+  <Card
+    title="업로드"
+    description="Basis에서 아바타 업로드 및 로드"
+    href="/ko/docs/avatar/uploading"
+  />
+  <Card
+    title="지글 물리"
+    description="아바타에 동적 물리 추가"
+    href="/ko/docs/avatar/jiggle"
+  />
+  <Card
+    title="안면 추적"
+    description="눈 및 안면 추적 지원 추가"
+    href="/ko/docs/avatar/face-tracking"
+  />
+  <Card
+    title="셰이더"
+    description="아바타용 호환 URP 셰이더"
+    href="/ko/docs/avatar/shaders"
+  />
+</Cards>
+
+## 주요 기능
+
+- **휴머노이드 리그 지원**: 자동 본 매핑이 있는 표준 Unity 휴머노이드 리그
+- **블렌드 셰이프**: 표정 및 비젬에 대한 완전한 지원
+- **멀티 플랫폼**: Windows, Linux, Mac, Android 및 iOS용 빌드
+- **지글 물리**: 동적 요소를 위한 선택적 물리 시뮬레이션
+- **안면 추적**: 선택적 눈 및 안면 추적 지원
+- **URP 셰이더**: Unity의 Universal Render Pipeline과 호환
+
+## 요구사항
+
+- **Unity**: Unity 6 (최신 지원 버전)
+- **모델 형식**: 휴머노이드 리그가 있는 FBX
+- **셰이더**: URP 호환 셰이더 (Lit, Poiyomi, lilToon 등)
+- **호스팅**: .BEE 파일용 원격 URL 호스팅 (Google Drive 최대 100MB)
+
+## 워크플로우 개요
+
+1. **가져오기** Unity에 아바타 모델 임포트
+2. **구성** 리그 및 스킨드 메시 설정
+3. **추가** Basis Avatar 컴포넌트 추가
+4. **빌드** 대상 플랫폼용 .BEE 파일 빌드
+5. **업로드** 호스팅 서비스에 업로드
+6. **로드** URL과 비밀번호로 Basis에서 로드

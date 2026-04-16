@@ -1,0 +1,166 @@
+---
+title: Implementazione
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Introduzione
+
+L'obiettivo qui è la configurazione specifica del Basis Server e non i molti modi in cui puoi ospitare server di gioco nel cloud.
+
+Il multi-threading sul server funziona meglio con più core disponibili, ma funziona bene anche con soli due core. La VR sociale richiede molta larghezza di banda, quindi tienilo a mente quando scegli il tuo provider di servizi.
+
+Questo documento si applica a un Basis Server non modificato: Versione 6 dal branch LTS a maggio 2025 {/* `commit 672035f0afe87b2fbe4e36bbd7f6cd340059d976` of lts branch */}
+
+<Callout type="info" title="Suggerimento utile sulla versione del server">
+Puoi trovare la **ServerVersion** nel codice che hai clonato dal repository.  
+Il codice client e server **deve concordare** sulla versione.
+
+```csharp
+BasisNetworkCore\BasisNetworkVersion.cs
+5:        public static ushort ServerVersion = 6;
+```
+</Callout>
+
+## Esecuzione con Docker
+
+L'utilizzo di docker-compose è il modo più semplice e veloce per avviare un server Basis. Le immagini Docker del server vengono pubblicate su GitHub sia nel branch `long-term-support` che nel branch `developer`, rispettivamente con i tag `latest` e `nightly`.
+
+```yml
+services:
+  basis-server:
+    image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
+    container_name: basis-server
+    init: true 					 # handle process termination
+    restart: unless-stopped
+    environment:
+      SetPort: 4296               # basis port
+      HealthCheckPort: 10666      # http healthcheck port
+      PromethusPort: 1234         # exists but is unused
+      Password: default_password
+      PeerLimit: 1024             # 1024 is the maximum supported
+      EnableStatistics: true
+      EnableConsole: false
+    ports:
+      - "4296:4296/udp"
+      - "10666:10666/tcp"
+      - "1234:1234/tcp" # unused
+    volumes:
+      - ./initialresources:/app/initialresources:ro
+      - ./config:/app/config
+      - ./logs:/app/logs
+    # exercise health endpoint (optional)
+    healthcheck:
+      # http GET request
+      test: ["CMD", "curl", "-f", "http://localhost:10666/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2s
+``` 
+Eseguire una volta per creare `config.xml` (in `./config` nell'esempio). Le impostazioni in XML vengono sovrascritte dalle variabili d'ambiente.
+
+## Compilazione ed esecuzione su Windows
+
+Supponendo di aver clonato il branch LTS del repository:
+`git clone -b long-term-support https://github.com/BasisVR/Basis.git`
+
+Troverai il file della soluzione Visual Studio (sln) nella cartella `Basis Server`.
+Questi passaggi presuppongono l'utilizzo di Windows 11 con Microsoft Visual Studio Community 2022 (64-bit) - Versione 17.12.3.
+
+Il BasisNetworkConsole è il csproj che devi compilare.
+Puoi selezionare questo progetto nel menu degli elementi di avvio in alto.
+Dopo averlo selezionato, fai clic sulla freccia verde per compilare.
+
+Dopo la compilazione, vai a `\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\`
+per trovare l'exe del server e le dipendenze compilate.
+
+Per eseguire il server localmente su Windows, apri un prompt dei comandi in questa cartella ed esegui `.\BasisNetworkConsole.exe`.
+
+`\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0> .\BasisNetworkConsole.exe`
+
+Dovrebbe aprire una console che mostra qualcosa del genere:
+
+```txt title="Esempio di output della console del server"
+[20:07] [INFO] Logs are saved to C:\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\Logs\2025-05-10.log
+[20:07] [INFO] Server Booting
+[20:07] [INFO] HTTP health check started at 'http://localhost:10666/health'
+[20:07] [INFO] Loaded Admins 0
+[20:07] [INFO] DidAuthIdentity initialized.
+[20:07] [INFO] Server Wiring up SetPort 4296
+[20:07] [INFO] Server Worker Threads Booted
+[20:07] [INFO] CombinedURL: https://example.com/502c8e6c8405d50418.BEE, LoadAssetPassword: c661cfeaf9757e
+[20:07] [INFO] Adding Object world
+```
+
+Assicurati di puntare a `localhost` quando esegui il Basis Demo Client. L'opzione si trova nel pannello avanzato quando avvii il client per la prima volta.
+
+## Compilazione ed esecuzione su Linux
+
+### Requisiti per Debian/Ubuntu
+
+Per Ubuntu 22.04:
+
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Per Debian o altre configurazioni particolari:
+
+```bash
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Poi continua con l'installazione:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+### Ottenere Basis
+
+Vai alla directory in cui vuoi scaricare Basis ed esegui il seguente comando:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+### Compilare il Basis Server
+
+Apri un nuovo terminale e vai alla cartella contenente il Basis Server, ad es. `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Poi compila con:
+
+`dotnet build` (per debug)
+
+oppure
+
+`dotnet build --configuration Release` (per release)
+
+### Esecuzione
+
+Vai alla cartella BasisServerConsole (qualcosa come `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`)
+ed esegui:
+
+`dotnet .\.BasisNetworkConsole.dll`
+
+<Callout type="info" title="Per una release Linux più mirata">
+
+Puoi compilare con il seguente:
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+L'interruttore `--self-contained` viene aggiunto per consentire l'esecuzione su un OS senza dotnet.
+
+Se compili tramite questo metodo (o hai mirato la build al sistema), dovresti essere in grado di eseguire:
+
+`./BasisNetworkConsole`
+
+da `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`.
+
+</Callout>
+
+## Firewall
+
+Potresti voler aprire le seguenti porte:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp

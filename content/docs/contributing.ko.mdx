@@ -1,0 +1,95 @@
+---
+title: 기여하기
+description: BasisVR에 기여하는 방법
+icon: GitPullRequest
+---
+
+## BasisDocs 기여 가이드
+
+이 페이지는 BasisDocs 저장소에 문서를 기여하고자 하는 분들을 위해 만들어졌습니다.
+
+BasisDocs는 현대적인 문서 프레임워크인 Fumadocs를 사용합니다. 주로 작업하게 될 디렉토리는 다음과 같습니다:
+
+- `content/docs/` - MDX 형식의 문서 콘텐츠
+- `public/img/` - 정적 이미지 및 에셋
+
+![문서 구조](/img/basisdocs-contrib/1.png)
+
+## 시작하기
+
+이 사이트를 빠르게 파악하려면 다음 내용을 숙지하세요:
+
+- [MDX 문서](https://mdxjs.com/) - JSX 컴포넌트가 포함된 확장 마크다운
+- [Fumadocs 문서](https://fumadocs.vercel.app/) - 사용 중인 문서 프레임워크
+
+### 사용 가능한 컴포넌트
+
+문서에서 다양한 컴포넌트를 사용할 수 있습니다:
+
+- `<Callout type="info|warn|error">` - 중요한 참고 사항 및 경고용
+- `<Card>`와 `<Cards>` - 탐색 카드용
+- 구문 강조 기능이 있는 코드 블록
+- 적절한 대체 텍스트가 있는 이미지
+
+## 마크다운 기능
+
+표준 마크다운과 함께 확장 기능이 지원됩니다:
+
+- **표** - 구조화된 데이터용
+- **코드 블록** - 언어별 구문 강조 포함
+- **알림** - Callout 컴포넌트 사용
+- **링크** - 내부 및 외부
+- **이미지** - `/public/img/`에서 올바르게 참조
+
+## 문서 기여하기
+
+1. **저장소 포크**
+   
+   GitHub에서 [BasisDocs 저장소](https://github.com/BasisVR/BasisDocs)를 포크합니다.
+
+2. **포크 클론**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **의존성 설치**
+   
+   ```bash
+   npm install
+   ```
+
+4. **개발 서버 실행**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **변경 사항 적용**
+   
+   `content/docs/`의 MDX 파일을 편집하고 `public/img/`에 이미지를 추가합니다.
+
+6. **변경 사항 테스트**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **풀 리퀘스트 제출**
+   
+   변경 사항을 푸시하고 GitHub에서 풀 리퀘스트를 엽니다.
+
+## 가이드라인
+
+- 설명적인 제목과 적절한 헤딩 계층 구조 사용
+- 모든 이미지에 대체 텍스트 추가
+- 일반 텍스트 경고 대신 Callout 컴포넌트 사용
+- 기존 파일 구조 및 명명 규칙 따르기
+- 제출 전 로컬에서 변경 사항 테스트
+
+기여해 주셔서 미리 감사드립니다!
+
+### 질문이 있으신가요?
+
+기여에 관한 질문이 있으시면 [Discord](https://discord.gg/aCzSPKEW2v)에 참여하세요!

@@ -1,0 +1,89 @@
+---
+title: 컨스트레인트
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis는 현재 컨스트레인트를 제공하기 위해 Animation Rigging 패키지를 사용합니다.
+
+<Callout type="info">
+이 패키지는 멀티 스레드 컨스트레인트 시스템의 오픈 소스 구현이 없어 사용됩니다. 이를 개발할 시간이나 관심이 있는 분은 기여나 새 프로젝트를 매우 환영합니다.
+</Callout>
+
+Animation Rigging이 제공하는 모든 컨스트레인트에 대한 문서는 [여기](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)에서 찾을 수 있습니다.
+
+## Animation Rigging 패키지 설정
+<Steps>
+
+<Step>
+**Rig Builder 추가**: `Armature` GameObject에 `Rig Builder` 컴포넌트와 `Animator` 컴포넌트를 추가합니다.
+
+![Armature GameObject의 인스펙터 창](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis는 애니메이션 및 리깅에 루트/아바타의 GameObject 애니메이터를 사용합니다*.
+</Callout>
+
+<Callout type="warning">
+**Rig Builder에 루트의 애니메이터를 사용할 수 없으며, 이는 애니메이션과 Basis armature 로더를 중단시킵니다.**
+</Callout>
+</Step>
+<Step>
+**Rig Setup 생성**: "Rig Setup"이라는 빈 GameObject를 만들고 여기에 `Rig` 컴포넌트를 추가합니다.
+
+![Rig Setup GameObject의 인스펙터 창](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Rig Setup 할당**: "Rig Setup" GameObject를 `Armature`의 `Rig Builder` 컴포넌트에 할당합니다.
+
+![할당 후 Armature의 인스펙터 창](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## 지글 본에 관한 참고 사항
+
+Jiggle Bones가 컨스트레인트에 영향을 미치는 경우 컨스트레인트 본의 모든 부모 본에 `Rig Transform`을 추가해야 합니다.
+
+예: 아바타 머리 방향을 바라보도록 컨스트레인트된 레이저가 있습니다. 레이저의 부모부터 시작하여 Armature/Humanoid 본에 도달할 때까지 `Rig Transform` 컴포넌트를 추가해야 합니다.
+<Callout type="info">
+휴머노이드에 속하지 않는 경우 모든 소스 본이 포함됩니다. 예: Jiggle Bones의 영향을 받는 날개는 컨스트레인트가 이를 참조하는 경우 `Rig Transform` 컴포넌트가 필요합니다.
+</Callout>
+<Accordions type="single">
+<Accordion title="지글 본 예시">
+![지글 본 예시](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+
+## 회전 컨스트레인트
+<Steps>
+
+<Step>
+
+먼저 [설정](#setup-for-animation-rigging-packages)을 수행한 후 회전 컨스트레인트 설정 지침을 계속합니다.
+
+</Step>
+
+<Step>
+
+`Rig Setup` GameObject의 자식인 gameobject에 `Multi-Rotation Constraint` 컴포넌트를 추가합니다.
+
+![인스펙터 창의 Twist 컴포넌트](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Constrained Object 필드에 영향을 받을 본을 할당합니다. 하나 이상의 소스 오브젝트를 사용할 수 있습니다.
+<Callout type="info">
+빨간색으로 강조 표시된 Source Objects 영역에 소스 본/GameObject를 드래그 앤 드롭할 수 있습니다.
+gameObject당 하나의 `Multi-Rotation Constraint`만 추가할 수 있습니다.
+</Callout>
+![인스펙터 창의 Twist 컴포넌트](/img/avatars/22.png)
+</Step>
+
+</Steps>

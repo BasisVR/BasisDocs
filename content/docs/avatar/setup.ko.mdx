@@ -1,0 +1,101 @@
+---
+title: 설정
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Unity Editor 설정
+
+- [시작하기](/ko/docs#installing-unity) 섹션에 따라 최신 지원 Unity Editor 버전을 설치하고 Basis 프레임워크를 취득합니다.
+- Unity Hub를 열고 기존 프로젝트를 추가하여 압축 해제/클론된 Basis 프로젝트 폴더를 선택합니다.
+- 프로젝트를 처음 로드할 때 다음 프롬프트가 표시됩니다. 'Restart Editor'를 클릭하세요.
+
+![Unity 재시작 프롬프트](/img/avatars/0.png)
+
+- 프로젝트가 로드되면 아바타 파일을 로드할 수 있습니다:
+- 또는,
+  - 프로젝트 계층에서 `Assets`를 찾아 `Assets` 안의 빈 공간을 마우스 오른쪽 버튼으로 클릭하고 `Show in Explorer`를 선택합니다.
+  - 아바타 파일 [메시/재질/텍스처 등]을 복사합니다.
+- 또는
+  - Assets 메뉴에서 Import Package > Custom Package를 통해 파일이 포함된 .unity 패키지를 가져옵니다.
+- Unity 창으로 돌아가 가져오기 프로세스가 완료될 때까지 기다립니다.
+
+<Callout type="info">
+콘텐츠를 새 디렉토리 "Assets > _UserContent"에 배치하면 프로젝트의 기본 .gitignore 파일이 이 폴더의 git 변경 사항을 숨깁니다.
+</Callout>
+
+## 모델 가져오기
+
+- 아바타 모델의 위치를 찾습니다 (일반적으로 .FBX 형식으로 제공).
+- 파일을 클릭한 후 가져오기 설정 창의 `Model` 섹션으로 이동합니다.
+- 아래와 같이 `Red/Write`와 `Legacy Blend Shape Normals`가 선택되어 있는지 확인합니다.
+
+![모델 가져오기 설정](/img/avatars/1.png)
+
+- 가져오기 설정 창의 `Rig` 섹션으로 이동합니다.
+- `Animation Type` 드롭다운 메뉴를 클릭하고 `Humanoid`를 선택한 후 아래와 같이 `Apply`를 누릅니다.
+
+![리그 설정](/img/avatars/2.png)
+
+- 그런 다음 `Apply` 위의 `Configure` 버튼이 선택 가능해집니다. 이를 클릭하고 본 매핑을 확인합니다.
+
+![본 매핑](/img/avatars/3.png)
+
+- 모든 필수 본이 선택된 것으로 표시되어야 합니다. Armature에 맞게 올바른지 확인합니다.
+- 마지막으로 `Mapping` 창에서 `Head` 버튼을 클릭하고 `Jaw`에 대한 할당을 제거합니다. 이는 보통 잘못 설정되어 있습니다.
+
+![머리 매핑](/img/avatars/4.png)
+
+<Callout type="info">
+경우에 따라 Unity 인스펙터에서 아바타의 본 매핑이 제대로 할당되지 않았거나 아바타가 T 포즈를 제대로 취하지 않는다고 표시될 수 있습니다. 이를 수정하려면 Mapping과 Pose 드롭다운을 클릭하고 Automap 또는 Enforce T-Pose를 선택하세요.
+
+![아바타 리그 자동 매핑 방법을 보여주는 인스펙터 창](/img/avatars/4a.png)
+
+![T 포즈 적용 방법을 보여주는 인스펙터 창](/img/avatars/4b.png)
+
+</Callout>
+
+## 스킨드 메시 설정
+
+- 현재 아바타의 스킨드 메시를 `Body` 또는 가상 플랫폼에서 사용하는 다른 변형으로 명명할 필요가 없습니다.
+- 여러 스킨드 메시가 있는 경우, 씬의 라이트 프로브를 상속받기 위해 모두 동일한 신체 참조 지점을 사용하도록 고정하는 것을 고려하세요. Armature의 본(일반적으로 Hips)을 `Anchor Override` 필드에 할당하여 이를 수행할 수 있습니다.
+
+![앵커 오버라이드](/img/avatars/5.png)
+
+- 여러 스킨드 메시가 있는 아바타에서 또 다른 고려 사항은 서로 다른 바운딩 박스 크기로 인해 아바타의 나머지 부분이 원격 뷰어에게 보이는 동안 개별 메시가 나타났다 사라졌다 할 수 있다는 점입니다.
+- 스킨드 메시 렌더러 컴포넌트 상단의 `Bounds` 섹션에서 Center X, Y, Z 및 Extent X, Y, Z 값을 재정의할 수 있습니다. 일반적으로 별도의 스킨드 메시 전체에 동일하게 설정하는 것이 좋습니다.
+
+![바운드 설정](/img/avatars/6.png)
+
+## 재질/셰이더
+
+- Unity 6에 포함된 Universal Render Pipeline/Lit 셰이더를 바로 사용할 수 있습니다.
+- 그렇지 않으면 사용할 수 있는 호환 [아바타 셰이더](/ko/docs/avatar/shaders) 목록을 제공합니다.
+
+## Basis Avatar 설정
+
+- 위의 단계를 수행하면 아바타를 씬으로 드래그할 때 아바타 프리팹에 자동으로 Animator 컴포넌트가 추가됩니다.
+- 아바타의 부모 GameObject에서 `Add Component`를 클릭하고 `Basis Avatar`를 추가합니다.
+- 원하는 아바타 이름과 설명을 입력합니다.
+- `Assigned Input`에서 Animator가 할당되어 있는지 확인합니다. 일반적으로 자동으로 완료됩니다. 또한 아바타의 얼굴 및 눈 깜빡임 블렌드셰이프가 포함된 스킨드 메시 렌더러를 할당합니다. 원하는 경우 아바타의 선택적 썸네일 아이콘을 추가할 수도 있습니다.
+- `Viseme Setup`에서 아바타에 맞는 비젬과 눈 깜빡임을 할당합니다. 자동으로 처리하는 자동 감지 버튼을 사용할 수도 있습니다.
+- 선택적으로 플레이 모드에 진입한 후 `Test in Editor` 옵션을 선택하여 에디터에서 아바타를 테스트할 수 있습니다.
+- `Create Avatar Bee File`을 선택하기 전에 모든 셰이더가 호환되는지 확인합니다. 아바타에 호환되지 않는 셰이더 오류가 있으면 BEE 파일이 생성되지 않습니다(의상 및 액세서리 포함). 문제가 있으면 인스펙터에서 보고하므로 반드시 해결하세요!
+
+![필드가 할당된 Basis Avatar 컴포넌트가 추가된 인스펙터 창](/img/avatars/6a.png)
+
+![아바타 블렌드셰이프 움직임 예시를 보여주는 인스펙터 창](/img/avatars/6b.png)
+
+<Callout type="info">
+스킨드 메시 렌더러 블렌드셰이프나 아바타 업로드가 처음이라면, 블렌드셰이프는 기본적으로 아바타의 모프를 변경하기 위해 제어할 수 있는 슬라이더입니다.
+
+![아바타 블렌드셰이프 움직임 예시를 보여주는 인스펙터 창](/img/avatars/6c.gif)
+</Callout>
+
+<Callout type="type">
+참고: `Basis Avatar` 블렌드셰이프가 모두 없어도 아바타를 업로드할 수 있습니다. 또한 눈 블렌드셰이프만 지원되며 눈 본은 현재 지원되지 않습니다.
+</Callout>
+
+## 컨스트레인트 설정
+
+Basis는 Unity 내장 컨스트레인트 시스템을 사용하지 않고 Animation Rigging을 사용합니다. 설정 가이드는 [여기](/ko/docs/avatar/animation-rigging#setup-for-animation-rigging-packages)에서 찾을 수 있습니다.

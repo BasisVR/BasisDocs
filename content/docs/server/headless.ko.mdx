@@ -1,0 +1,255 @@
+---
+title: 헤드리스 클라이언트
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+
+## 소개
+
+Basis는 전체 인터랙티브 클라이언트를 렌더링하지 않고 Basis 서버에 연결할 수 있는 헤드리스 클라이언트 빌드를 제공합니다. 이러한 빌드는 주로 부하 테스트, 연결 테스트 및 더 많은 플레이어 수로 서버 동작을 검증하는 데 유용합니다.
+
+Linux 및 Windows 헤드리스 클라이언트 빌드는 Basis의 GitHub 아티팩트에서도 다운로드할 수 있습니다. Docker는 많은 인스턴스를 실행하는 편리한 방법이지만 헤드리스 클라이언트를 실행하는 데 필수적이지는 않습니다.
+
+다음 경우에 헤드리스 클라이언트를 사용하세요:
+
+- 같은 서버에 참여하는 여러 사용자를 시뮬레이션하고 싶을 때
+- 부하 상태에서 서버의 동작을 측정하고 싶을 때
+- 실제 사용자를 초대하기 전에 비밀번호 접근을 테스트하고 싶을 때
+- 더 통제된 클라이언트로 네트워크 문제를 재현하고 싶을 때
+
+<Callout type="info" title="이 페이지에서 다루는 내용">
+이 페이지는 헤드리스 클라이언트 자체 실행에 중점을 둡니다. 서버 측 설정은 배포, 구성 및 모니터링 페이지를 참조하세요.
+</Callout>
+
+## 헤드리스 클라이언트 얻기
+
+헤드리스 클라이언트를 실행하는 두 가지 주요 방법이 있습니다:
+
+- [GitHub 아티팩트](https://nightly.link/BasisVR/Basis/workflows/build-docker-server/developer?preview)에서 Linux 또는 Windows 헤드리스 클라이언트 빌드 다운로드
+- 게시된 헤드리스 Docker 이미지 실행
+
+Docker는 반복 가능한 컨테이너화된 설정을 원하거나 많은 인스턴스를 빠르게 확장해야 할 때 유용합니다. 하나 또는 몇 개의 헤드리스 클라이언트만 실행해야 하는 경우 플랫폼 빌드를 직접 다운로드하는 것도 유효합니다.
+
+<Callout type="warn">
+기본적으로 헤드리스의 Windows 버전은 빌드를 위한 UnityCI의 제한으로 인해 IL2CPP 대신 Mono로 빌드됩니다. Mono는 IL2CPP보다 약 1.5-2배 더 많은 메모리를 사용하므로, 패키지가 IL2CPP 버전을 나타내지 않는 한 Linux 버전을 사용하세요.
+</Callout>
+
+## 시작하기 전에
+
+연결하려는 서버가 이미 연결 가능한지 확인합니다.
+
+- Basis 트래픽은 `4296/udp`를 사용합니다.
+- `config.xml`이나 환경 변수로 변경하지 않은 경우 기본 서버 비밀번호는 `default_password`입니다.
+- 로컬 서버를 테스트하는 경우 공개 호스트 이름 대신 로컬 머신이나 LAN 주소를 사용하세요.
+
+서버 문서에서는 `config.xml` 값이 환경 변수로 재정의될 수 있다고 언급합니다. 아래 헤드리스 클라이언트 예시에도 동일한 패턴이 사용되므로 관련이 있습니다.
+
+## Docker Desktop 설정
+<Steps>
+<Step>
+`시스템 정보`를 열고 가상화 기반 보안이 `실행 중`이고 가상화 기반 보안 사용 가능에: `보안 속성: 가상화 기본 지원`이 있는지 확인합니다.
+
+그렇지 않은 경우 BIOS로 이동하여 CPU에 따라 AMD-Vi 또는 Intel VT-d를 활성화합니다.
+
+`BaseBoard 제품`에 있는 마더보드 모델을 검색하여 설정 위치와 BIOS를 여는 키를 알아보세요.
+</Step>
+<Step>
+[Docker에서 Windows용으로 다운로드](https://docs.docker.com/desktop/setup/install/windows-install/)하여 Docker Desktop을 설치합니다.
+</Step>
+<Step>
+`docker-compose.yml`용 폴더를 만들고 아래 예시를 복사합니다.
+</Step>
+<Step>
+해당 폴더에서 명령 프롬프트 또는 PowerShell을 시작합니다. 파일 탐색기를 사용하는 경우 주소 표시줄에 `cmd.exe`를 입력하여 명령 프롬프트를 시작할 수 있습니다.
+</Step>
+<Step>
+먼저 `docker compose pull`로 Docker 이미지를 다운로드/업데이트합니다. *기본 `docker-compose.yml`을 사용하는 경우 필요하지 않습니다*
+</Step>
+<Step>
+`docker compose up -d` 명령을 입력하여 컨테이너를 시작합니다.
+</Step>
+<Step>
+`docker ps`를 사용하여 모든 컨테이너의 상태를 확인하고 모두 `healthy`를 표시할 때까지 기다립니다. 약 30초에서 1분 정도 걸립니다.
+</Step>
+<Step>
+`docker compose scale "basis-headless=#`를 사용하여 컨테이너 수를 늘립니다. CPU나 RAM이 부족할 때까지 이전 단계로 돌아가 반복합니다.
+
+*`#`를 최대 5씩 증분하는 숫자로 교체합니다. 용량이 낮은 하드웨어나 제한된 RAM에서는 1씩 증분하세요.*
+
+<Callout type="info">
+`docker compose stats`로 사용량을 측정할 수도 있습니다.
+</Callout>
+</Step>
+</Steps>
+
+## Docker Compose 구성
+
+Docker Desktop을 통해 Docker를 실행할 때 Docker 엔진은 일반적으로 내부적으로 WSL2를 사용하므로 Linux 이미지가 일반적으로 올바른 선택입니다. Windows 컨테이너를 특별히 실행하는 경우 *예: Windows Server 2016*, GitHub의 Basis-Headless 패키지에서 찾을 수 있는 Windows 이미지를 사용하세요.
+
+<Callout type="warn">
+기본적으로 Docker 이미지의 Linux 버전을 사용하세요. IL2CPP로 빌드되었습니다. Linux에 대한 매니페스트 오류가 발생하면 `-linux` 버전을 사용해야 합니다.
+</Callout>
+
+### docker-compose.yml
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    pull_policy: always
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+      HealthCheckEnabled: "true"
+      HealthCheckHost: "127.0.0.1"
+      HealthCheckPort: 10666
+      HealthPath: "/health"
+      AvatarFileLocation: ""
+      AvatarPassword: ""
+    volumes:
+      - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
+      #- "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
+      #- ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M #Highest I ever saw we need to load a 500MB world file.
+        reservations:
+          memory: 1024M #Recommend amount that basis will actually need.
+    labels:
+      autoheal-app: true
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  Basis:
+```
+
+## 설정의 의미
+
+위 예시는 연결에 필요한 최솟값을 사용합니다:
+
+| 변수 | 목적 |
+|----------|---------|
+| `Ip` | Basis 서버의 호스트 이름 또는 IP 주소 |
+| `Port` | 서버가 수신 대기하는 UDP 포트, 보통 `4296` |
+| `Password` | 참여에 필요한 서버 비밀번호 |
+| `HealthCheckEnabled` | 상태 확인 엔드포인트 활성화/비활성화 |
+| `HealthCheckHost` | 엔드포인트가 수신 대기하는 IP |
+| `HealthCheckPort` | 엔드포인트가 수신 대기하는 포트 |
+| `HealthPath` | 상태 정보 경로 |
+| `AvatarFileLocation` | avatar#base64의 결합 URL 지원 |
+| `AvatarPassword` | 아바타 비밀번호 |
+| `StrictMemoryCleanupEnabled` | 로드된 모든 텍스처 제거 |
+
+`config.xml`을 마운트하는 경우 파일 기반 폴백 구성으로 취급하세요. 환경 변수도 설정하는 경우 기본 서버 문서에 따르면 환경 값이 XML 값을 재정의합니다. 테스트 중 혼란을 피하기 위해 가능한 한 단일 진실 소스를 유지하세요.
+
+## AudioClips를 사용한 선택적 음성 시뮬레이션
+
+헤드리스 클라이언트는 선택적으로 `.wav` 또는 `.opus` 파일을 음성 오디오로 스트리밍하여 마이크 트래픽을 시뮬레이션할 수 있습니다.
+
+Basis는 시작 시 헤드리스 플레이어 데이터 폴더의 `AudioClips` 폴더를 확인합니다. 하나 이상의 파일이 있으면 헤드리스 클라이언트가 무작위로 파일을 선택하고 반복하며 Opus로 인코딩하여 일반 음성 트래픽으로 전송합니다.
+
+폴더가 없으면 Basis가 폴더를 만듭니다. 폴더는 있지만 오디오 파일이 없으면 헤드리스 클라이언트는 조용합니다.
+
+48kHz가 아닌 파일은 자동으로 모노 `48kHz`로 변환됩니다.
+
+### 파일 위치
+
+일반적으로 압축 해제된 빌드에서는 헤드리스 데이터 폴더 아래에 파일을 배치합니다:
+
+- `AudioClips/`
+
+Docker의 경우 플레이어 데이터 폴더의 `AudioClips` 폴더에 폴더를 마운트합니다.
+
+Linux 헤드리스 예시:
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    volumes:
+      - ./AudioClips:/app/HeadlessLinuxServer_Data/AudioClips
+...
+```
+
+
+## 확장 실행
+
+Docker Compose는 동일한 서비스 정의에서 여러 헤드리스 클라이언트를 시작할 수 있습니다:
+
+<h3> `docker compose up --scale "basis-headless=10"`</h3> *docker-compose.yml에 설정되지 않은 경우 --scale*
+
+대략적인 지침으로, 기존 메모는 인스턴스당 약 `1.5GB` 메모리를 예산으로 권장합니다. 예를 들어 `30GB`가 사용 가능한 경우 약 `20`개의 인스턴스를 예상할 수 있습니다.
+
+<Callout type="warning" title="한 번에 몇 개씩 로드">
+모든 클라이언트를 동시에 시작하려고 하지 마세요. 컴퓨터의 RAM이 과부하되며 현재 인스턴스를 쉽게 시작할 수 있는 스크립트를 제공하지 않습니다.
+
+가장 좋은 방법은 더 추가하기 전에 시작된 모든 컨테이너의 상태가 `healthy`를 표시할 때까지 기다리는 것입니다.
+</Callout>
+
+이것은 시작 추정치일 뿐입니다. 실제 한계는 다음에 따라 다릅니다:
+
+- 사용 가능한 RAM
+- CPU 코어
+- 서버의 `PeerLimit`
+- 헤드리스 클라이언트와 서버 간의 사용 가능한 대역폭
+
+
+## 테스트 중 모니터링
+
+서버의 상태 확인 엔드포인트를 사용할 수 있는 경우 테스트가 예상 효과를 내는지 확인하는 데 사용할 수 있습니다. 모니터링 문서에는 이 응답 예시가 나와 있습니다:
+
+```json
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+헤드리스 부하 테스트 중 가장 유용한 필드는:
+
+- `listening` - 서버가 연결을 수락하는지 확인
+- `visitors` - 현재 연결된 클라이언트 수 확인
+- `capacity` - 구성된 플레이어 한도와 비교
+- `sent`와 `recv` - 트래픽 증가 관찰
+- `version` - 예상 서버 버전 확인
+
+<Callout type="warn" title="버전 일치가 중요합니다">
+서버 문서에는 클라이언트와 서버 코드가 서버 버전에 동의해야 한다고 명시적으로 언급되어 있습니다. 헤드리스 이미지와 대상 서버가 호환되지 않는 버전으로 빌드된 경우 네트워크 설정이 올바르더라도 연결 시도가 실패할 수 있습니다.
+</Callout>
+
+## 문제 해결
+
+헤드리스 클라이언트가 연결되지 않으면 먼저 다음을 확인하세요:
+
+- `Ip`의 서버 주소가 컨테이너에서 연결 가능한지
+- 서버 비밀번호가 맞는지
+- `4296/udp`가 열려 있고 올바르게 매핑되어 있는지
+- 컨테이너 런타임에 맞는 올바른 이미지를 사용하고 있는지
+- 서버가 실제로 수신 대기 중이고 시작 시 정상인지
+- 클라이언트와 서버 버전이 호환되는지
+
+많은 인스턴스로 확장하고 불안정함을 경험하는 경우 인스턴스 수를 줄이고 한계가 메모리, CPU, 네트워크 대역폭 또는 서버의 구성된 `PeerLimit`인지 확인하세요.
+
+Docker에서 137 종료 코드(메모리 부족)를 경험하지 않고 Unity를 실행하려면 상당량의 가상 메모리가 사용 가능하도록 하는 것이 좋습니다.

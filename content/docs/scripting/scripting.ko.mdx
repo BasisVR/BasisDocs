@@ -1,0 +1,298 @@
+---
+title: 스크립팅
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+여러 이유로 커스텀 코드는 클라이언트를 재빌드(즉, Unity 프로젝트)하거나 Cilbox(샌드박스 CIL)를 통해 생성해야 합니다.
+
+## Unity 클라이언트 빌드를 통해 스크립트 추가하는 방법
+
+<Callout type="info">
+
+프레임워크로 게임이나 애플리케이션을 만들고 있고, 사용자 생성 콘텐츠(씬, 아바타, 소품 등)를 지원하는 것이 우선순위가 아니라면 Cilbox를 활용하는 대신 MonoBehaviour 스크립트를 네이티브로 빌드하는 것이 좋을 수 있습니다.
+
+이는 Cilbox가 CIL 인터프리터이기 때문에 상당한 속도 패널티가 발생하며 사용 가능한 언어 기능의 일부만 지원할 수 있습니다.
+</Callout>
+
+- 내부에 버튼이 있는 캔버스 오브젝트를 만듭니다.
+
+- 버튼 오브젝트에 스크립트를 추가합니다. 간단한 예로 TestButton이라는 TMP 텍스트 오브젝트를 업데이트하는 스크립트를 만들겠습니다.
+
+- TMP 텍스트 오브젝트를 만들고 인스펙터의 Button Text 필드에 할당합니다.
+
+![Test Button 컴포넌트를 보여주는 인스펙터 창](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- 버튼을 선택하고 onClick() 이벤트를 추가합니다. Test Button GameObject를 할당하고 버튼 클릭 시 호출할 메서드로 TestButton.OnButtonClick을 선택합니다.
+
+![버튼 이벤트 핸들러와 할당된 TMP 텍스트를 보여주는 인스펙터 창](/img/scripting/2.png)
+
+- 캔버스 GameObject에 Basis Prop 컴포넌트를 추가하고, Asset Bundle 이름을 입력한 후 'Create Prop Bee File' 버튼을 누릅니다. Loadable Config Editor를 사용하여 XML 파일을 생성합니다.
+
+![Basis Prop을 사용하는 버튼을 보여주는 인스펙터 창](/img/scripting/3.png)
+
+- BasisFramework 프리팹을 엽니다. Bundled Content Folder 컴포넌트에 생성된 .bee 비밀번호와 URL을 추가합니다.
+
+![BasisFramework 프리팹을 보여주는 인스펙터 창](/img/scripting/4.png)
+
+![BasisFramework 프리팹을 보여주는 인스펙터 창](/img/scripting/5.png)
+
+- Initialization 씬을 실행합니다.
+
+![Initialization 씬이 실행 중인 창](/img/scripting/6.png)
+
+- Unity 클라이언트를 빌드합니다. 커스텀 스크립트가 빌드에 포함됩니다.
+
+![Unity 클라이언트 빌드 프로필을 보여주는 창](/img/scripting/7.png)
+
+- 버튼을 클릭하면 TMP 텍스트 오브젝트가 "Clicked!"로 업데이트됩니다.
+
+![커스텀 스크립트가 실행 중인 창](/img/scripting/8.png)
+
+## Unity 클라이언트 빌드를 통해 네트워크 동기화 스크립트 추가하는 방법
+
+- 내부에 버튼이 있는 캔버스 오브젝트를 만듭니다.
+
+![캔버스를 보여주는 인스펙터 창](/img/scripting/9.png)
+
+- 버튼 오브젝트에 스크립트를 추가합니다. 간단한 예로 버튼이 클릭된 횟수로 TMP 텍스트 오브젝트를 업데이트하는 SCNE(Send Custom Network Events의 약자)라는 스크립트를 만들겠습니다.
+
+- TMP 텍스트 오브젝트를 만들고 인스펙터의 Button Text 필드에 할당합니다.
+
+- 버튼을 선택하고 onClick() 이벤트를 추가합니다. Button GameObject를 할당하고 버튼 클릭 시 호출할 메서드로 SCNE.IncrementCounter를 선택합니다.
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![SCNE 스크립트가 있는 버튼을 보여주는 인스펙터 창](/img/scripting/10.png)
+
+<Callout type="info">
+재정의된 **OnPlayerJoined()** 는 이것이 없으면 나중에 참여하는 플레이어가 업데이트된 카운트 숫자를 볼 수 없기 때문에 사용됩니다.
+
+**TakeOwnership()** 은 나중에 참여하는 플레이어가 버튼을 클릭할 때 카운터 값이 재설정되는 등의 비동기화를 방지하기 위해 사용됩니다.
+</Callout>
+
+- 캔버스 GameObject에 Basis Prop 컴포넌트를 추가하고, Asset Bundle 이름을 입력한 후 'Create Prop Bee File' 버튼을 누릅니다. Loadable Config Editor를 사용하여 XML 파일을 생성합니다.
+
+![Basis Prop을 사용하는 버튼을 보여주는 인스펙터 창](/img/scripting/11.png)
+
+![BasisFramework 프리팹을 보여주는 인스펙터 창](/img/scripting/13.png)
+
+- PropContentPoliceSelector 에셋을 열고 허용된 컴포넌트 목록에 SCNE 스크립트를 추가합니다. 이렇게 하면 런타임 중에 스크립트가 제거되지 않습니다.
+
+![BasisFramework 프리팹을 보여주는 인스펙터 창](/img/scripting/13.5.png)
+
+- 빈 GameObject에 Basis Scene 컴포넌트를 추가하고, Asset Bundle 이름을 입력한 후 'Create Scene Bee File' 버튼을 누릅니다. 원격 서버에 저장합니다.
+
+<Callout type="info">
+씬에서 캔버스 오브젝트를 비활성화하거나 제거해야 합니다. 이를 활성화 상태로 유지하면 나중에 씬에 두 개의 복사본이 존재하게 됩니다: 하나는 씬 자체에서, 다른 하나는 XML에 의해 생성된 것입니다.
+</Callout>
+
+![Basis Scene 컴포넌트를 보여주는 인스펙터 창](/img/scripting/12.png)
+
+- BasisFramework 프리팹을 엽니다. Bundled Content Folder 컴포넌트에 생성된 .bee 비밀번호와 URL을 추가합니다.
+
+![BasisFramework 프리팹을 보여주는 인스펙터 창](/img/scripting/14.png)
+
+- Initialization 씬을 실행합니다.
+
+![Initialization 씬이 실행 중인 창](/img/scripting/6.png)
+
+- Unity 클라이언트를 빌드합니다. 커스텀 스크립트가 빌드에 포함됩니다.
+
+![Unity 클라이언트 빌드 프로필을 보여주는 창](/img/scripting/7.png)
+
+- 버튼을 클릭하면 TMP 텍스트 오브젝트가 로컬 및 원격 플레이어 모두에게 각 버튼 클릭 후 카운트를 업데이트해야 합니다.
+
+![클라이언트에서 실행 중인 씬을 보여주는 인스펙터 창](/img/scripting/15.png)
+
+## Cilbox를 통해 네트워크 동기화 스크립트 추가하는 방법
+
+Cilbox는 소품, 아바타, 씬과 같은 사용자 생성 콘텐츠에서 기본 동작의 이식성을 활성화하여 일부 최소한의 게임 로직을 제공하는 접착제 역할을 하는 스크립팅 시스템입니다. 런타임에 작동하는 스크립트를 만드는 데 사용할 수 있습니다.
+
+현재 Cilbox는 여전히 매우 실험적입니다. 다음 예시는 Cilbox를 사용하여 큐브를 회전시키는 스크립트를 만드는 방법을 보여줍니다.
+
+<Callout type="info">
+참고: Cilbox는 사용자 생성 콘텐츠를 로드하는 애플리케이션이나 게임을 만들고 해당 사용자 콘텐츠에서 스크립팅을 지원하려는 경우 특히 유용합니다. 다른 콘텐츠와 함께 DLC처럼 스크립트를 제공할 수 있으며, 코드 실행을 위한 더 안전한 샌드박스를 제공하여 해롭거나 원치 않는 동작이 있는 스크립트의 실행을 방지합니다.
+</Callout>
+
+- 큐브 오브젝트를 만들고 여기에 연결할 ObjectRotator 컴포넌트를 만듭니다. 클래스 위에 [Cilboxable]을 추가했는지 확인합니다.
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![회전 스크립트가 연결된 큐브를 보여주는 인스펙터 창](/img/scripting/16.png)
+
+- 빈 GameObject를 만들고 여기에 Cilbox Basis Scene 컴포넌트를 연결합니다. Cilbox Basis Scene은 모든 스크립트가 실행되는 cilbox가 됩니다.
+
+<Callout type="info">
+참고: 에디터에서 Cilbox 네임스페이스를 감지하지 못하는 경우 자체 .asmdef 파일을 만들고 Cilbox를 참조하거나, 단순히 Cilbox asmdef를 열고 *Auto Referenced*를 선택하여 해결할 수 있습니다.
+
+![회전 스크립트가 연결된 큐브를 보여주는 인스펙터 창](/img/scripting/16.5.png)
+</Callout>
+
+![CilboxSceneBasis 컴포넌트를 보여주는 인스펙터 창](/img/scripting/17.png)
+
+- 빈 GameObject에 Basis Scene 컴포넌트를 추가하고, Asset Bundle 이름을 입력한 후 'Create Scene Bee File' 버튼을 누릅니다. 원격 서버에 저장합니다.
+
+![Basis Scene 컴포넌트를 보여주는 인스펙터 창](/img/scripting/18.png)
+
+![Inspector Window Load Config](/img/scripting/19.png)
+
+- 플레이 모드에서 씬을 실행하면 만든 스크립트가 Unity에 의해 정상적으로 컴파일됩니다. 그러나 실제로 플레이하기 전에 스크립트가 Cilbox Proxy 컴포넌트로 교체됩니다. 이것이 런타임 중에 실제로 컴포넌트로 실행되는 것들입니다. Basis는 여러분의 것 대신 자체 Cilbox Proxy와 Cilbox Basis Scene 사본을 사용하지만, 데이터는 직렬화됩니다.
+
+
+![생성된 Cilbox Proxy 컴포넌트를 보여주는 인스펙터 창](/img/scripting/20.png)
+
+![플레이 모드에서 업데이트된 Cilbox Scene Basis 컴포넌트를 보여주는 인스펙터 창](/img/scripting/21.png)
+
+![플레이 모드를 보여주는 창](/img/scripting/22.png)
+
+- Initialization 씬을 실행하고 앱에서 Cilbox 스크립트를 테스트합니다. 큐브가 회전해야 합니다.
+
+![앱에서 Cilbox 큐브 회전 데모를 보여주는 창](/img/scripting/23.png)
+
+아래는 시도해볼 수 있는 추가 예시 스크립트입니다.
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+BasisNetworkBehaviour 대신 BasisNetworkShim에서 상속하여 네트워크 스크립트를 만들 수 있습니다.
+</Callout>

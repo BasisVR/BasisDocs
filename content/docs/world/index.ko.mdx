@@ -1,0 +1,55 @@
+---
+title: 소개
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 개요
+
+월드는 Basis에서 소셜 VR 경험이 이루어지는 환경입니다. 이 문서는 Unity와 Basis SDK를 사용하여 자신만의 커스텀 월드를 설정, 빌드, 테스트하는 방법을 안내합니다.
+
+Basis는 월드에 `.BEE` 파일 형식을 사용하며, 컴파일된 씬과 메타데이터를 단일 파일로 패키징합니다. 월드는 커스텀 메시, 머티리얼, 조명, 스폰 포인트를 지원하며, 멀티플레이어 경험을 위해 원격으로 호스팅할 수 있습니다.
+
+## 빠른 시작 가이드
+
+<Cards>
+  <Card
+    title="설정"
+    description="Unity를 설정하고 월드 에셋을 가져오기"
+    href="/ko/docs/world/setup"
+  />
+  <Card
+    title="빌드"
+    description="씬 컴포넌트를 구성하고 .BEE 파일 빌드"
+    href="/ko/docs/world/building"
+  />
+  <Card
+    title="테스트"
+    description="Basis에서 월드를 로컬로 테스트"
+    href="/ko/docs/world/testing"
+  />
+</Cards>
+
+## 주요 기능
+
+- **커스텀 환경**: 모든 3D 메시, 머티리얼, 텍스처 가져오기
+- **스폰 포인트**: 플레이어가 월드에 입장하는 위치 정의
+- **멀티 플랫폼**: Windows, Linux, Android용 빌드
+- **네트워크 지원**: 멀티플레이어 경험을 위해 설계됨
+- **BEE 형식**: 간편한 배포를 위한 단순한 패키징
+
+## 요구 사항
+
+- **Unity**: Unity 6 (최신 지원 버전)
+- **에셋**: 탐색을 위한 콜라이더가 있는 3D 메시
+- **컴포넌트**: 씬 구성을 위한 Basis Scene 컴포넌트
+- **호스팅**: 멀티플레이어를 위한 원격 URL 호스팅 (로컬 테스트는 선택 사항)
+
+## 워크플로우 개요
+
+1. 월드 에셋을 Unity로 **가져오기**
+2. Basis Scene 컴포넌트와 스폰 포인트 **구성**
+3. 대상 플랫폼용 .BEE 파일 **빌드**
+4. BasisFramework 프리팹을 사용하여 로컬에서 **테스트**
+5. 멀티플레이어를 위한 호스팅 서비스에 **업로드** (선택 사항)
+6. URL과 비밀번호를 사용하여 Basis에서 **로드**

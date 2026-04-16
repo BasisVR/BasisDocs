@@ -1,0 +1,21 @@
+---
+title: Interattivo
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Come creare un Prop sincronizzato in rete
+
+I prop possono essere sincronizzati in rete e generati durante il runtime. Di seguito è riportato un esempio su come caricare un cubo interattivo Pickup sincronizzato in rete:
+
+- Aggiungi un oggetto cubo nella gerarchia della scena.
+
+![Finestra Inspector al Cubo](/img/props/2A.png)
+
+- Aggiungi un componente Basis Pickup Interactable. Questo consente a un giocatore locale di raccogliere e spostare il cubo.
+
+![Finestra Inspector al componente Basis Pickup Interactable](/img/props/2B.png)
+
+- Aggiungi un componente Basis Object Sync Networking. Questo consente al cubo di essere sincronizzato per tutti i giocatori.
+
+![Finestra Inspector al componente Basic Object Sync Networking](/img/props/2C.png)

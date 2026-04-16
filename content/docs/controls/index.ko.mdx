@@ -1,0 +1,36 @@
+---
+title: 설정 및 컨트롤
+---
+
+## 컨트롤
+
+BasisVR에서 사용 가능한 컨트롤을 다루는 페이지를 만들어 봅시다
+
+
+## 키보드 단축키
+
+- F9: 데스크톱으로 전환
+
+- F10: OpenXR로 전환
+
+- F11: OpenVR로 전환
+
+## 디버깅 도움말
+
+- *BasisDebug.Log("\<로그-메시지\>");* 를 사용하여 Basis 앱의 인게임 콘솔 메뉴에 출력을 인쇄할 수 있습니다.
+
+- <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+이는 선택한 앱의 steamid를 사용하는 Proton에 따라 다르며, 에디터에서 빌드하면 다른 위치에 있습니다.</Tab></Tabs>에 위치한 `Player.log` 파일을 볼 수도 있습니다. 게임 중 발생한 정확한 Unity 문제에 대한 더 포괄적인 로그를 제공하며, null 참조 오류가 발생한 정확한 줄과 같은 스택 추적을 포함합니다.
+
+![Basis 콘솔 메뉴](/img/controls/2.png)
+
+## 라이브러리 항목은 어디에 저장되나요?
+
+- <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+이는 선택한 앱의 steamid를 사용하는 Proton에 따라 다르며, 에디터에서 빌드하면 다른 위치에 있습니다.</Tab></Tabs>에 위치한 `ItemKeyStore.json` 파일은 현재 라이브러리에 포함된 아바타, 월드 및 소품의 매핑을 저장합니다.
+
+<Callout>
+코드베이스 내에서 애플리케이션에 내장된 라이브러리 항목을 포함하는 `EmbeddedItems` 클래스를 찾을 수 있습니다.
+</Callout>

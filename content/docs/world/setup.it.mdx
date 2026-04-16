@@ -1,0 +1,21 @@
+---
+title: Configurazione
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurare Unity Editor
+
+- Come indicato nella sezione [Guida introduttiva](/it/docs#installing-unity) per l'installazione dell'ultima versione supportata di Unity editor e l'acquisizione del framework Basis.
+- Apri Unity Hub e aggiungi un progetto esistente, scegli la cartella del progetto Basis estratta/clonata.
+- Una volta caricato il progetto Unity, puoi caricare i file del tuo mondo:
+- Oppure,
+  - Trova `Assets` nella gerarchia del progetto, all'interno di `Assets` fai clic destro su uno spazio vuoto e seleziona `Show in Explorer`.
+  - Copia i file del tuo mondo [Mesh/Materiali/Texture, ecc.].
+- o
+  - Importa un pacchetto .unity contenente i tuoi file, dal menu Assets, `Import Package > Custom Package`.
+- Torna alla finestra Unity e attendi il completamento del processo di importazione.
+
+<Callout type="info">
+Se inserisci il contenuto in una nuova directory "Assets > _UserContent", il file .gitignore predefinito del progetto nasconderà le modifiche in git per questa cartella.
+</Callout>

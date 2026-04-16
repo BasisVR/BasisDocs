@@ -1,0 +1,55 @@
+---
+title: Introduzione
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Panoramica
+
+I mondi sono gli ambienti in cui si svolgono le esperienze di VR sociale in Basis. Questa documentazione ti guiderà nella configurazione, costruzione e test dei tuoi mondi personalizzati utilizzando Unity e il Basis SDK.
+
+Basis utilizza il formato di file `.BEE` per i mondi, che racchiude la scena compilata e i metadati in un unico file. I mondi supportano mesh personalizzate, materiali, illuminazione, punti di spawn e possono essere ospitati in remoto per esperienze multiplayer.
+
+## Guida rapida
+
+<Cards>
+  <Card
+    title="Configurazione"
+    description="Configura Unity e importa le risorse del tuo mondo"
+    href="/it/docs/world/setup"
+  />
+  <Card
+    title="Costruzione"
+    description="Configura i componenti della scena e costruisci il file .BEE"
+    href="/it/docs/world/building"
+  />
+  <Card
+    title="Test"
+    description="Testa il tuo mondo localmente in Basis"
+    href="/it/docs/world/testing"
+  />
+</Cards>
+
+## Caratteristiche principali
+
+- **Ambienti personalizzati**: Importa qualsiasi mesh 3D, materiali e texture
+- **Punti di spawn**: Definisci dove i giocatori entrano nel tuo mondo
+- **Multi-piattaforma**: Compila per Windows, Linux e Android
+- **Pronto per la rete**: Progettato per esperienze multiplayer
+- **Formato BEE**: Packaging semplice per una distribuzione facile
+
+## Requisiti
+
+- **Unity**: Unity 6 (ultima versione supportata)
+- **Risorse**: Mesh 3D con collider per la navigazione
+- **Componenti**: Componente Basis Scene per la configurazione della scena
+- **Hosting**: Hosting URL remoto per il multiplayer (opzionale per test locali)
+
+## Panoramica del flusso di lavoro
+
+1. **Importa** le risorse del tuo mondo in Unity
+2. **Configura** il componente Basis Scene e i punti di spawn
+3. **Costruisci** il file .BEE per le piattaforme di destinazione
+4. **Testa** localmente usando il prefab BasisFramework
+5. **Carica** su un servizio di hosting per il multiplayer (opzionale)
+6. **Carica** in Basis usando l'URL e la password
