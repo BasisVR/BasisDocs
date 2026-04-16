@@ -1,0 +1,63 @@
+---
+title: 소개
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 개요
+
+Basis 서버는 소셜 VR 경험을 위한 네트워킹 백본입니다. 이 문서는 자체 Basis 서버 인스턴스를 설정, 구성 및 관리하는 방법을 안내합니다.
+
+서버는 .NET 9.0 기반으로 구축되었으며 저수준 네트워킹을 위해 LiteNetLib를 사용합니다. 효율적인 대역폭 사용으로 여러 동시 플레이어를 처리하도록 설계되었으며 Docker 배포와 Windows 및 Linux에서의 네이티브 컴파일을 모두 지원합니다.
+
+## 빠른 시작 가이드
+
+<Cards>
+  <Card
+    title="배포"
+    description="Docker, Windows 또는 Linux를 사용하여 서버를 배포하는 방법 알아보기"
+    href="/ko/docs/server/deployment"
+  />
+  <Card
+    title="구성"
+    description="config.xml 및 로드 가능한 리소스로 서버 구성"
+    href="/ko/docs/server/configuration"
+  />
+  <Card
+    title="모니터링"
+    description="서버 상태 및 성능 메트릭 모니터링"
+    href="/ko/docs/server/monitoring"
+  />
+  <Card
+    title="고급 구성"
+    description="축소 시스템으로 서버 성능 최적화"
+    href="/ko/docs/server/advanced"
+  />
+</Cards>
+
+## 주요 기능
+
+- **멀티 스레드 성능**: 최소 두 개의 코어에서도 잘 작동하며 더 많은 코어로 확장 가능
+- **유연한 배포**: Docker, Windows 및 Linux 지원
+- **인증**: DID 기반 신원 확인
+- **대역폭 최적화**: 서버 및 클라이언트 축소 시스템
+- **상태 모니터링**: 내장 HTTP 상태 확인 엔드포인트
+- **로드 가능한 리소스**: 동적 월드 및 오브젝트 로딩
+
+## 요구사항
+
+- **CPU**: 최소 2코어 (더 많은 코어가 성능을 향상시킴)
+- **네트워크**: 소셜 VR을 위해 높은 대역폭 권장
+- **포트**:
+  - 4296/udp (Basis 프로토콜)
+  - 10666/tcp (상태 확인)
+  - 1234/tcp (Prometheus 메트릭)
+
+## 서버 버전
+
+이 문서는 LTS 브랜치의 **Basis 서버 버전 6** (2025년 5월)을 다룹니다.
+
+<Callout type="warn">
+클라이언트와 서버 코드는 버전 번호에 대해 **동의해야 합니다**. `ServerVersion`은 `BasisNetworkCore\BasisNetworkVersion.cs`에서 찾을 수 있습니다.
+</Callout>

@@ -1,0 +1,44 @@
+---
+title: 建構
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Basis 加密擴展 (BEE) 檔案
+
+Basis 將使用者生成的內容儲存為 .BEE 檔案，其中包含您編譯的資產及其相關元資料。每個生成的 .BEE 檔案都附帶一個隨機生成的存取密碼，兩者都可以在您 Unity 專案的根目錄中找到：`Basis\Basis\AssetBundles`。
+
+## 避免重複的 GameObject
+
+- 預設情況下，BasisAvatar 元件將重新命名虛擬形象階層中所有重複名稱的 GameObject。
+
+<Callout type="warning">
+如果您在處理選項中啟用 `Do not auto-rename bones`，請確保您的虛擬形象階層（包括骨架）中**沒有**重複名稱的 GameObject，否則在建構 AssetBundle 後您的虛擬形象將無法載入。
+</Callout>
+
+## 建構 AssetBundle
+
+- 在虛擬形象的 Basis Avatar 元件底部，確認是否啟用了適合您內容的建構目標。Basis 支援多種目標平台，包括：Windows、Android、Mac、Linux 和 iOS。
+- 按下「Create Avatar Bee File」按鈕，等待此程序完成。
+
+![建立 Avatar Bee 檔案](/img/avatars/7.png)
+
+- 結果將自動在新視窗中開啟，如下所示。
+
+![建構結果](/img/avatars/8.png)
+
+- 根據您的硬體配置，每個平台的首次建構可能平均需要一到兩分鐘。由於快取機制，後續建構應該花費更少的時間。為所有平台建構可能需要額外的時間，並會增加整體檔案大小。
+
+<Callout type="info">
+了解一下：
+
+- 您可以方便地為生成的 BEE 檔案使用自訂密碼。如果您希望對不同的 BEE 檔案使用單一密碼，這樣可以更容易記憶。 
+
+- 如果您願意，也可以將生成的 .BEE 檔案名稱替換為更容易記憶的名稱。請注意，重複使用相同名稱將導致任何先前的版本被新版本替換！
+
+![建立 Avatar Bee 檔案](/img/avatars/7a.png)
+</Callout>
+
+<Callout type="info">
+2026 年 1 月的實際案例：一個使用 Poiyomi URP 的 18 材質虛擬形象，120K 多邊形，每個平台套件大小 45MB，在 Ryzen 7 9800x3D 上為所有目標平台建構耗時 9 分 43 秒。
+</Callout>

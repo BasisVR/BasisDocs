@@ -1,0 +1,53 @@
+---
+title: Jiggle Physics
+description: Met Jiggle Physics kun je dynamische beweging toevoegen aan delen van je avatar, zoals haar, kleding of accessoires, wat het realisme en de immersie vergroot.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Jiggle Physics toevoegen
+
+Voor elke jiggle root:
+- Voeg een nieuwe `Jiggle Rig`-component toe aan een nieuw GameObject of een bestaand GameObject, zolang het zich onder de hiërarchie van je Avatar-root bevindt.
+
+![Inspectorvenster met Jiggle Root-component toevoegen](/img/jiggle/1.png)
+
+- Wijs het bot in het avatar-armature dat je wilt laten jiggle toe aan de `Root Transform` in de inspector. Dit kan bijvoorbeeld haar, kleding, accessoires of lichaamsdelen van je avatar zijn. Houd er rekening mee dat je voor dingen met een linker- en rechterkant (zoals linker- en rechterborst) een aparte `Jiggle Rig` voor elk wilt toevoegen (anders jiggle maar één kant!).
+
+<Callout type="info">
+Tip: Om je Jiggle Rigs georganiseerd te houden, kun je ze nesten onder een nieuw aangemaakt bovenliggend GameObject.
+</Callout>
+
+- Je kunt de instellingen aanpassen en testen in de afspeelmodus (bijv. door de avatar te slepen of de optie `Test in Editor` van de `Basis Avatar`-component te gebruiken) totdat je tevreden bent. Je kunt ook met je muis over elke instelling bewegen om een beschrijving te zien van wat het doet. Klik op `Advanced` om alle instellingen te bekijken.
+
+![Inspectorvenster met georganiseerde jiggles](/img/jiggle/2.png)
+
+<Callout>
+Optioneel: als je een bovenliggend bot hebt met meerdere ketens van kinderbotten waarop je hetzelfde effect wil toepassen, kun je `Motionless Root` inschakelen zodat het alleen de kinderbotten beïnvloedt en niet de root zelf.
+</Callout>
+
+- Hieronder zie je een voorbeeld met Jiggle Rigs toegepast op het haar, de kleding en de borst.
+
+![Venster met avatar die Jiggle Rig gebruikt in afspeelmodus](/img/jiggle/3.gif)
+
+## Botsingsinteractie
+
+Als je wilt dat botsingen met objecten de jiggles aandrijven:
+
+- Activeer `Advanced` om alle instellingen te bekijken.
+
+- Schakel `Collision` in en pas `Collision Radius` aan om bij het object te passen.
+
+- Voeg een GameObject toe dat je wilt gebruiken voor het activeren van botsingen. Wijs hieraan de component `Jiggle Collider Example` toe.
+
+<Callout type="info">
+Zorg ervoor dat het GameObject dat je gebruikt een sphere collider heeft!
+</Callout>
+
+- Wijs in het veld `Jiggle Collider Transform` je botsingsobject toe en selecteer Sphere als `Collider Type`. Merk op dat momenteel alleen sphere colliders worden ondersteund, maar de maker van het jiggle-systeem, Naelstrof, zal er in de toekomst waarschijnlijk meer toevoegen.
+
+![Inspectorvenster met bol met Jiggle Collider](/img/jiggle/4.png)
+
+- Hieronder is een voorbeeld van een bolobject met de component `BasisPickupInteractable` dat botst met het haar van een avatar.
+
+![Inspectorvenster met georganiseerde jiggles](/img/jiggle/5.gif)

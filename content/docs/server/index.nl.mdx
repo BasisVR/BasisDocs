@@ -1,0 +1,63 @@
+---
+title: Introductie
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overzicht
+
+De Basis Server is de netwerkruggengraat van je sociale VR-ervaring. Deze documentatie begeleidt je bij het opzetten, configureren en beheren van je eigen Basis server-instantie.
+
+De server is gebouwd op .NET 9.0 en gebruikt LiteNetLib voor low-level netwerken. Het is ontworpen om meerdere gelijktijdige spelers te verwerken met efficiënt bandbreedtegebruik en ondersteunt zowel Docker-implementaties als native compilatie op Windows en Linux.
+
+## Snelstartgids
+
+<Cards>
+  <Card
+    title="Implementatie"
+    description="Leer hoe je de server implementeert met Docker, Windows of Linux"
+    href="/nl/docs/server/deployment"
+  />
+  <Card
+    title="Configuratie"
+    description="Configureer je server met config.xml en laadbare bronnen"
+    href="/nl/docs/server/configuration"
+  />
+  <Card
+    title="Bewaking"
+    description="Bewaak de gezondheid en prestaties van je server"
+    href="/nl/docs/server/monitoring"
+  />
+  <Card
+    title="Geavanceerde configuratie"
+    description="Optimaliseer serverprestaties met reductiesystemen"
+    href="/nl/docs/server/advanced"
+  />
+</Cards>
+
+## Belangrijkste functies
+
+- **Multi-threaded prestaties**: Werkt goed met slechts twee cores, schaalt op met meer
+- **Flexibele implementatie**: Docker-, Windows- en Linux-ondersteuning
+- **Authenticatie**: DID-gebaseerde identiteitsverificatie
+- **Bandbreedteoptimalisatie**: Server- en clientreductiesystemen
+- **Gezondheidsbewaking**: Ingebouwde HTTP-gezondheidscontrole-endpoint
+- **Laadbare bronnen**: Dynamisch laden van werelden en objecten
+
+## Vereisten
+
+- **CPU**: Minimaal 2 cores (meer cores verbeteren de prestaties)
+- **Netwerk**: Hoge bandbreedte aanbevolen voor sociale VR
+- **Poorten**:
+  - 4296/udp (Basis-protocol)
+  - 10666/tcp (Gezondheidscontroles)
+  - 1234/tcp (Prometheus-statistieken)
+
+## Serverversie
+
+Deze documentatie behandelt **Basis Server Versie 6** uit de LTS-branch (mei 2025).
+
+<Callout type="warn">
+Client- en servercode **moeten overeenkomen** wat betreft het versienummer. Je kunt de `ServerVersion` vinden in `BasisNetworkCore\BasisNetworkVersion.cs`.
+</Callout>

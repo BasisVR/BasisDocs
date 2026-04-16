@@ -1,0 +1,64 @@
+---
+title: Configuración
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurar el editor Unity
+
+- Según la sección [Primeros pasos](/en/docs#installing-unity) para instalar la última versión compatible del editor Unity y adquirir el framework Basis.
+- Abre Unity Hub y añade un proyecto existente, elige la carpeta del proyecto Basis extraído/clonado
+- En la carga inicial del proyecto, verás el siguiente mensaje, por favor haz clic en 'Restart Editor'.
+
+![Mensaje de reinicio de Unity](/img/avatars/0.png)
+
+- Una vez que el proyecto se haya cargado, ahora puedes cargar tus archivos de Avatar:
+- Ya sea,
+  - Encuentra `Assets` en la jerarquía del proyecto, dentro de `Assets` haz clic derecho en cualquier espacio vacío y selecciona `Show in Explorer`
+  - Copia tus archivos de Avatar [Mesh/Materiales/Texturas, etc.]
+- o
+  - Importa un paquete .unity que contenga tus archivos, desde el menú Assets, Import Package > Custom Package
+- Vuelve a la ventana de Unity y permite que el proceso de importación termine.
+
+<Callout type="info">
+Si colocas tu contenido dentro de un nuevo directorio "Assets > _UserContent", el archivo .gitignore predeterminado del proyecto ocultará los cambios en git de esta carpeta.
+</Callout>
+
+## Importar modelo
+
+- Encuentra la ubicación de tu modelo de Prop (generalmente proporcionado en formato .FBX).
+- Haz clic en el archivo y luego navega a la sección `Model` de la ventana Import Settings.
+- Asegúrate de que `Red/Write` y `Legacy Blend Shape Normals` estén seleccionados.
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+- Navega a la sección `Rig` de la ventana Import Settings.
+- Haz clic en el menú desplegable `Animation Type` y asegúrate de que `Generic` esté seleccionado.
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+## Configuración del Skinned Mesh
+
+- Una consideración para Props con múltiples Skinned Meshes es cuando diferentes tamaños de caja delimitadora provocan que mallas individuales aparezcan y desaparezcan mientras el resto del Prop es visible para los espectadores remotos.
+- Puedes anular los valores Center X, Y, Z y Extent X, Y, Z en la sección llamada `Bounds` en la parte superior del componente Skinned Mesh Renderer. Por lo general, es una buena idea establecer esto igual en los Skinned Meshes separados.
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+## Materiales/Shaders
+
+- Puedes empezar directamente con el shader Universal Render Pipeline/Lit que viene con Unity 6
+- De lo contrario, hemos compilado una lista de [Shaders de Avatar](/es/docs/avatar/shaders) compatibles.
+
+## Configuración de Basis Prop
+
+- Los pasos anteriores deberían agregar automáticamente un componente Animator a tu prefab de Avatar.
+- En el GameObject padre del Avatar, haz clic en `Add Component` y agrega `Basis Prop`.
+- Ingresa el nombre y la descripción preferidos de tu Prop.
+- Antes de seleccionar `Create Prop Bee File`, asegúrate de que todos tus shaders sean compatibles. El archivo BEE no se generará si hay errores de shader incompatibles en tu Prop. Si hay algún problema, el inspector lo reportará, ¡así que asegúrate de resolverlos!
+
+(INSERTAR REFERENCIA DE IMAGEN AQUÍ)
+
+<Callout type="info">
+En caso de que seas nuevo con los blendshapes del Skinned Mesh Renderer o la carga de Props en general, básicamente son solo controles deslizantes que puedes controlar para cambiar las morfologías en tu modelo.
+
+</Callout>

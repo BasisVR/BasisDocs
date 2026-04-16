@@ -1,0 +1,93 @@
+---
+title: Introduzione
+description: Benvenuto nella documentazione di BasisVR
+icon: BookOpen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Benvenuto nel wiki di Basis!
+
+Questa pagina fornisce i passaggi minimi necessari per avviare un progetto Basis, incluse le guide per la creazione di bundle di asset per Avatar e Mondo.
+
+## Requisiti di sistema attuali
+
+https://docs.unity3d.com/Manual/system-requirements.html
+
+## Installare Unity
+
+- Hub - https://unity.com/download
+- Standalone - https://unity.com/releases/editor/archive
+
+### Versioni di Unity compatibili
+
+A seconda del branch utilizzato, osserva la versione dell'Unity Editor su cui è costruito il framework:
+
+✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
+✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+
+### Moduli Unity aggiuntivi
+
+Aggiungi i seguenti moduli tramite la schermata "Aggiungi moduli" durante l'installazione della versione dell'Unity Editor:
+
+```ts tab="Windows"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono) 
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (IL2CPP)
+```
+
+```ts tab="Mac"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono)
+✓ Mac Build Support (IL2CPP)
+✓ Windows Build Support (Mono)
+```
+
+```ts tab="Linux"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (IL2CPP)
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (Mono)
+```
+
+<Callout type="info">
+Anche se stai costruendo solo contenuti generati dagli utenti per la creazione di Avatar e Mondi, avrai comunque bisogno di questi moduli aggiuntivi per rendere questi contenuti disponibili su queste piattaforme.
+</Callout>
+
+<Callout type="info">
+Se hai già installata la versione corretta di Unity ma l'opzione "Aggiungi moduli" non è disponibile, probabilmente è stata installata esternamente da Unity Hub. Reinstalla la versione corretta di Unity da Unity Hub.
+</Callout>
+
+## Acquisire il framework Basis
+
+### Git
+
+Puoi direttamente [clonare](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) i branch `developer` o `long-term-support` disponibili su https://github.com/BasisVR/Basis oppure [fare un fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) nel tuo repository locale, quindi aprire il progetto Unity risultante sul tuo computer.
+
+### Download ZIP diretto
+
+Per chi preferisce non usare Git:
+
+- Seleziona il menu a tendina 'Code' in alto a destra e poi Scarica ZIP.
+- Estrai lo ZIP in qualsiasi cartella o destinazione desideri.
+- Aggiungi la sottocartella Basis come progetto esistente in Unity Hub.
+
+![Scarica ZIP da GitHub](/img/getting-started/3.png)
+
+## Risorse
+
+Abbiamo fornito istruzioni per creare il tuo primo [Avatar](/it/docs/avatar) o [Mondo](/it/docs/world) compatibile con il framework Basis.
+
+Unisciti al [Discord di Basis](https://discord.gg/F35u3cUMqt) e partecipa a una comunità di sviluppatori e appassionati che ti aiuteranno lungo il percorso!
+
+Iniziamo con BasisVR!

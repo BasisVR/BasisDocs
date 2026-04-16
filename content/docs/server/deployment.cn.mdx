@@ -1,0 +1,166 @@
+---
+title: 部署
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 介绍
+
+这里的重点是 Basis 服务器特定配置，而不是在云中托管游戏服务器的多种方式。
+
+服务器上的多线程在可用核心越多时运行越好，但已证明在只有两个核心的情况下也能良好运行。社交 VR 对带宽要求很高，因此在选择服务提供商时请牢记这一点。
+
+本文档适用于未修改的 Basis 服务器：截至 2025 年 5 月的 LTS 分支第 6 版 {/* `commit 672035f0afe87b2fbe4e36bbd7f6cd340059d976` of lts branch */}
+
+<Callout type="info" title="关于服务器版本的有用提示">
+您可以在从仓库克隆的代码中找到 **ServerVersion**。  
+客户端和服务器代码的版本**必须一致**。
+
+```csharp
+BasisNetworkCore\BasisNetworkVersion.cs
+5:        public static ushort ServerVersion = 6;
+```
+</Callout>
+
+## 使用 Docker 运行
+
+使用 docker-compose 是启动 Basis 服务器最简单快捷的方式。服务器的 Docker 镜像在 GitHub 上同时发布在 `long-term-support` 和 `developer` 分支，分别以 `latest` 和 `nightly` 标识。
+
+```yml
+services:
+  basis-server:
+    image: ghcr.io/basisvr/basis-server:latest # or :nightly for most recent changes
+    container_name: basis-server
+    init: true 					 # handle process termination
+    restart: unless-stopped
+    environment:
+      SetPort: 4296               # basis port
+      HealthCheckPort: 10666      # http healthcheck port
+      PromethusPort: 1234         # exists but is unused
+      Password: default_password
+      PeerLimit: 1024             # 1024 is the maximum supported
+      EnableStatistics: true
+      EnableConsole: false
+    ports:
+      - "4296:4296/udp"
+      - "10666:10666/tcp"
+      - "1234:1234/tcp" # unused
+    volumes:
+      - ./initialresources:/app/initialresources:ro
+      - ./config:/app/config
+      - ./logs:/app/logs
+    # exercise health endpoint (optional)
+    healthcheck:
+      # http GET request
+      test: ["CMD", "curl", "-f", "http://localhost:10666/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2s
+``` 
+运行一次以创建 `config.xml`（在示例中的 `./config` 下）。XML 中的设置将被环境变量覆盖。
+
+## 在 Windows 上编译和运行
+
+假设您已克隆仓库的 LTS 分支。
+`git clone -b long-term-support https://github.com/BasisVR/Basis.git`
+
+您将在 `Basis Server` 目录中找到 Visual Studio 解决方案文件 (sln)。
+这些步骤假设使用 Windows 11 和 Microsoft Visual Studio Community 2022 (64 位) - 版本 17.12.3。
+
+BasisNetworkConsole 是您编译时需要的 csproj。
+您应该能够从顶部的启动项菜单中选择该项目。
+选中后点击绿色箭头进行构建。
+
+编译完成后，导航至 `\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\`
+以找到服务器 exe 和编译的依赖项。
+
+要在 Windows 本地运行服务器，在此目录中打开命令 shell 并运行 `.\BasisNetworkConsole.exe`
+
+`\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0> .\BasisNetworkConsole.exe`
+
+这应该会打开一个控制台并显示类似以下内容：
+
+```txt title="服务器控制台输出示例"
+[20:07] [INFO] Logs are saved to C:\Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\Logs\2025-05-10.log
+[20:07] [INFO] Server Booting
+[20:07] [INFO] HTTP health check started at 'http://localhost:10666/health'
+[20:07] [INFO] Loaded Admins 0
+[20:07] [INFO] DidAuthIdentity initialized.
+[20:07] [INFO] Server Wiring up SetPort 4296
+[20:07] [INFO] Server Worker Threads Booted
+[20:07] [INFO] CombinedURL: https://example.com/502c8e6c8405d50418.BEE, LoadAssetPassword: c661cfeaf9757e
+[20:07] [INFO] Adding Object world
+```
+
+运行 Basis 演示客户端时，请确保指向 `localhost`。该选项在客户端首次启动时的高级面板中。
+
+## 在 Linux 上编译和运行
+
+### Debian/Ubuntu 的先决条件
+
+对于 Ubuntu 22.04：
+
+`sudo add-apt-repository ppa:dotnet/backports`
+
+对于 Debian 或其他特殊设置：
+
+```bash
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+然后继续安装：
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+### 获取 Basis
+
+切换到您希望下载 Basis 的文件夹，然后执行以下命令：
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+### 构建 Basis 服务器
+
+打开新终端并 cd 到 Basis Server 目录：`cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+然后使用以下任一方式构建：
+
+`dotnet build`（用于调试）
+
+或
+
+`dotnet build --configuration Release`（用于发布）
+
+### 执行
+
+导航到 BasisServerConsole 目录（类似 `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`）
+并运行：
+
+`dotnet .\.BasisNetworkConsole.dll`
+
+<Callout type="info" title="用于更精确的 Linux 发布版本">
+
+您可以使用以下方式编译：
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+添加 `--self-contained` 开关是为了允许在没有安装 dotnet 的操作系统上运行。
+
+如果您通过此方法编译（或您的构建针对系统），您应该能够运行：
+
+`./BasisNetworkConsole`
+
+从 `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`。
+
+</Callout>
+
+## 防火墙
+
+您可能需要开放以下端口：
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp

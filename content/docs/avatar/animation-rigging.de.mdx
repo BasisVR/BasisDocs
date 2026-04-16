@@ -1,0 +1,88 @@
+---
+title: Constraints
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis verwendet derzeit das Animation Rigging-Paket für Constraints. 
+
+<Callout type="info">
+Dieses Paket wird aufgrund des Fehlens einer Open-Source-Implementierung eines multi-threaded Constraint-Systems verwendet. Wenn jemand die Zeit oder das Interesse hat, eines zu entwickeln, wären Beiträge oder neue Projekte sehr willkommen.
+</Callout>
+
+Dokumentation für alle Constraints, die Animation Rigging bietet, finden Sie [hier](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Einrichtung für Animation Rigging Pakete
+<Steps>
+
+<Step>
+**Hinzufügen von Rig Builder**: Fügen Sie eine `Rig Builder`-Komponente und eine `Animator`-Komponente zum `Armature`-GameObject hinzu. 
+
+![Inspektor-Fenster beim Armature-GameObject](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis verwendet den Animator des Root/Avatar-GameObjects für Animation und Rigging*. 
+</Callout>
+
+<Callout type="warning">
+**Sie können den Animator des Roots nicht für den Rig Builder verwenden, da dies Animation und den Basis-Armatur-Loader kaputt machen würde.**
+</Callout>
+</Step>
+<Step>
+**Erstellen des Rig-Setups**: Erstellen Sie ein leeres GameObject namens "Rig Setup" und fügen Sie die `Rig`-Komponente hinzu.
+
+![Inspektor-Fenster für das Rig Setup-GameObject](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Zuweisen des Rig-Setups**: Weisen Sie das "Rig Setup"-GameObject der `Rig Builder`-Komponente der `Armature` zu.
+
+![Inspektor-Fenster für die Armature nach der Zuweisung](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Hinweise zu Jiggle-Knochen
+
+Wenn Jiggle Bones Constraints beeinflusst, müssen Sie den `Rig Transform` zu allen übergeordneten Knochen des Constraint-Knochens hinzufügen.
+
+Beispiel: Sie haben einen Laser, der in die Richtung des Kopfes Ihres Avatars ausgerichtet ist. Sie müssen vom übergeordneten Element des Lasers aufwärts `Rig Transform`-Komponenten hinzufügen, bis Sie einen Armatur/Humanoiden-Knochen erreichen.
+<Callout type="info">
+Dies schließt alle Quellknochen ein, die nicht Teil des Humanoiden sind. Beispiel: Flügel, die von Jiggle Bones beeinflusst werden, benötigen `Rig Transform`-Komponenten, wenn Sie einen Constraint haben, der sie referenziert.
+</Callout>
+<Accordions type="single">
+<Accordion title="Beispiel Jiggle Bone">
+![Jiggle Bones Beispiel](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## Rotations-Constraints
+<Steps>
+
+<Step>
+
+Führen Sie zuerst die [Einrichtung](#setup-for-animation-rigging-packages) durch und fahren Sie dann mit den Anweisungen zum Einrichten von Rotations-Constraints fort.
+
+</Step>
+
+<Step>
+
+Fügen Sie die `Multi-Rotation Constraint`-Komponente zu einem GameObject hinzu, das ein Kind des `Rig Setup`-GameObjects ist.
+
+![Twist-Komponente im Inspektor-Fenster](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Weisen Sie den Knochen, den Sie beeinflussen möchten, im Feld Constrained Object zu. Ein oder mehrere Quellobjekte können verwendet werden.
+<Callout type="info">
+Sie können die Quellknochen/GameObjects per Drag-and-Drop in den rot markierten Bereich ziehen.
+Sie können nur einen `Multi-Rotation Constraint` pro GameObject hinzufügen.
+</Callout>
+![Twist-Komponente im Inspektor-Fenster](/img/avatars/22.png)
+</Step>
+
+</Steps>

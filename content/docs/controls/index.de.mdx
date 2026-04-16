@@ -1,0 +1,35 @@
+---
+title: Einstellungen und Steuerung
+---
+
+## Steuerung
+
+Erstellen wir eine Seite, um die verfügbaren Steuerungen in BasisVR zu erläutern.
+
+## Tastaturkürzel
+
+- F9: zu Desktop wechseln
+
+- F10: zu OpenXR wechseln
+
+- F11: zu OpenVR wechseln
+
+## Hilfe beim Debugging
+
+- Sie können *BasisDebug.Log("\<Ihre-Log-Nachricht\>");* verwenden, um Ausgaben in das In-Game-Konsolenmenü der Basis-App zu drucken.
+
+- Sie können auch die `Player.log`-Datei einsehen, die sich befindet in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Dies hängt vom Proton ab, das die steamid der ausgewählten App verwendet; der Build im Editor befindet sich an einem anderen Ort.</Tab></Tabs> Sie bietet ein umfassenderes Protokoll der genauen Unity-Probleme beim Spielen, einschließlich Stack-Traces wie der genauen Zeile, in der ein nullreference-Fehler aufgetreten sein könnte.
+
+![Basis Konsolenmenü](/img/controls/2.png)
+
+## Wo werden Bibliothekselemente gespeichert?
+
+- Die `ItemKeyStore.json`-Datei, die sich befindet in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Dies hängt vom Proton ab, das die steamid der ausgewählten App verwendet; der Build im Editor befindet sich an einem anderen Ort.</Tab></Tabs> speichert eine Zuordnung der Avatare, Welten und Requisiten, die sich derzeit in Ihrer Bibliothek befinden.
+
+<Callout>
+In der Codebasis finden Sie auch eine `EmbeddedItems`-Klasse mit in die Anwendung eingebetteten Bibliothekselementen.   
+</Callout>

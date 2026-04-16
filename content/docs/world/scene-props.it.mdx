@@ -1,0 +1,71 @@
+---
+title: Prop di scena
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Come spawnare un prop usando un pulsante nella scena
+
+Il componente Runtime Loader genererà qualsiasi prop situato in *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources* a runtime. È anche possibile usare un pulsante nella scena per generare prop. Per farlo:
+
+- Aggiungi un oggetto canvas alla tua scena. Assicurati di allegare i componenti rilevanti simili a quelli mostrati nelle sezioni precedenti. Ricordati di aggiungere un componente Basis Prop per generare un file .bee per il tuo prop e caricarlo su un server remoto.
+
+![Finestra Inspector con canvas e componenti](/img/props/6A.png)
+
+- Crea un pulsante TMP.
+
+![Finestra Inspector con pulsante e componenti](/img/props/6B.png)
+
+- Aggiungi un componente Basis Prop, inserisci un Asset Bundle Name e premi il pulsante 'Create Prop Bee File'. I file .bee generati verranno utilizzati dal Basis Runtime Loader per caricare il prop in una scena. Per questo esempio, useremo di nuovo il cubo sincronizzato in rete dalla sezione precedente.
+
+![Finestra Inspector con cubo sincronizzato e componenti](/img/props/6B-.png)
+
+- Crea un Gameobject vuoto e allegagli un componente Runtime Loader. Questo verrà usato per spawnare il prop. Per evitare che i prop vengano generati all'avvio della scena, disabilita il componente nell'inspector.
+
+![Finestra Inspector con Runtime Loader disabilitato](/img/props/6C.png)
+
+<Callout type="info">
+Se vuoi che il tuo prop sia sincronizzato in rete, aggiungi un componente di sincronizzazione di rete ad esso. Ad esempio, puoi usare il componente Basis Object Network Syncing, come mostrato in precedenza, per sincronizzare il movimento del prop.
+
+Puoi anche creare il tuo codice di sincronizzazione di rete. Per ispirazione e per iniziare, puoi fare riferimento ai pacchetti di esempio *Basis Ported Pooltable* e *Basis Vehicles* che puoi trovare all'interno del progetto.
+</Callout>
+
+- Seleziona il tuo pulsante e aggiungi un evento onClick(). Assegna il tuo Gameobject Runtime Loader, assicurandoti di selezionare BasisRuntimeLoader.LoadNow come metodo che il tuo pulsante chiamerà quando cliccato.
+
+![Finestra Inspector con evento pulsante che chiama RuntimeLoader](/img/props/6D.png)
+
+- Apri l'editor Load Config.
+
+- Inserisci la password del prop generata e l'url del file .bee.
+
+- Assicurati che Persistent sia selezionato in modo che le modifiche sincronizzate persistano per i giocatori che si uniscono in ritardo.
+
+- Clicca Salva XML.
+
+![Finestra Inspector con configurazione di caricamento](/img/props/6E.png)
+
+- Se non l'hai già fatto, crea un Gameobject vuoto e aggiungi un componente Basis Scene, compilando i campi rilevanti. Una volta impostato, clicca 'Create Scene Bee File'.
+
+![Finestra Inspector con scena Basis](/img/props/6F.png)
+
+- Apri di nuovo l'editor Load Config.
+
+- Inserisci la password della scena generata e l'url del file .bee.
+
+- Assicurati che Persistent sia selezionato in modo che le modifiche sincronizzate persistano per i giocatori che si uniscono in ritardo.
+
+- Clicca Salva XML.
+
+![Finestra Inspector con pulsante e componenti](/img/props/6G.png)
+
+- Apri la scena 'Initialization' e premi play. Questo inizializza la scena creata e gli oggetti di rete. La prossima volta che carichi la scena tramite il server mentre esegui l'applicazione Basis, dovresti essere in grado di spawnare il tuo prop tramite un pulsante.
+
+![Finestra Inspector con pulsante e componenti](/img/props/6H.png)
+
+<Callout type="info">
+Nota: Sia i giocatori locali che quelli remoti possono spawnare cubi!
+</Callout>
+
+<Callout type="info">
+Doppia nota: Puoi accedere a Basis VR anche tramite Steam. Per ottenere una chiave di accesso, [unisciti al discord](https://discord.gg/v6ve6WT562)!
+</Callout>

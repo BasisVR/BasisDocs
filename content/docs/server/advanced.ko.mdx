@@ -1,0 +1,19 @@
+---
+title: 고급 구성
+---
+
+## 서버 축소 시스템
+
+서버의 플레이어 수가 증가함에 따라 대역폭 요구사항도 빠르게 증가합니다. SRS 시스템은 거리에 따라 플레이어에게 모션 데이터를 전송하는 빈도를 줄여 네트워크 부하를 줄이고 성능을 향상시키려 합니다.
+
+거리에 따라 서버가 사용자에게 모션 데이터를 전송하는 데 얼마나 더 오래 걸리는지를 지배하는 방정식:
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+이 섹션의 나머지 부분은 나중에 게시될 예정입니다.
+
+## 클라이언트 축소 시스템
+
+이 섹션은 나중에 게시될 예정입니다.

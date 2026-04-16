@@ -1,0 +1,88 @@
+---
+title: Contraintes
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis utilise actuellement le package Animation Rigging pour fournir des contraintes. 
+
+<Callout type="info">
+Ce package est utilisé en raison de l'absence d'une implémentation open-source d'un système de contraintes multi-threads. Si quelqu'un a le temps ou l'intérêt de développer un tel système, les contributions ou de nouveaux projets seraient très bienvenus.
+</Callout>
+
+La documentation pour toutes les contraintes fournies par Animation Rigging peut être trouvée [ici](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Configuration pour les packages Animation Rigging
+<Steps>
+
+<Step>
+**Ajout de Rig Builder** : Ajoutez un composant `Rig Builder` et un composant `Animator` sur le GameObject `Armature`. 
+
+![Fenêtre inspecteur au niveau du GameObject Armature](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis utilise l'Animator du GameObject racine/Avatar pour l'animation et le rigging*. 
+</Callout>
+
+<Callout type="warning">
+**Vous ne pouvez pas utiliser l'Animator de la racine pour le Rig Builder car cela cassera l'animation et le chargeur d'armature Basis.**
+</Callout>
+</Step>
+<Step>
+**Création de la configuration Rig** : Créez un GameObject vide nommé "Rig Setup" et ajoutez le composant `Rig` dessus.
+
+![Fenêtre inspecteur pour le GameObject Rig Setup](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Assignation de la configuration Rig** : Assignez le GameObject "Rig Setup" au composant `Rig Builder` de l'`Armature`.
+
+![Fenêtre inspecteur pour l'Armature après assignation](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Notes sur les os Jiggle
+
+Si Jiggle Bones affecte des contraintes, vous devez ajouter le `Rig Transform` à tous les os parents de l'os de contrainte.
+
+Exemple : Vous avez un laser contraint pour regarder dans la direction de la tête de votre avatar. Vous devez ajouter des composants `Rig Transform` à partir du parent du laser jusqu'à un os Armature/Humanoïde.
+<Callout type="info">
+Cela inclut tous les os sources qui ne font pas partie de l'humanoïde. Exemple : Les ailes affectées par Jiggle Bones nécessitent des composants `Rig Transform` si vous avez une contrainte qui les référence.
+</Callout>
+<Accordions type="single">
+<Accordion title="Exemple d'os Jiggle">
+![Exemple de Jiggle Bones](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## Contraintes de rotation
+<Steps>
+
+<Step>
+
+Effectuez d'abord la [Configuration](#setup-for-animation-rigging-packages) puis continuez avec les instructions pour configurer les contraintes de rotation.
+
+</Step>
+
+<Step>
+
+Ajoutez le composant `Multi-Rotation Constraint` sur un GameObject enfant du GameObject `Rig Setup`.
+
+![Composant Twist dans la fenêtre inspecteur](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Assignez l'os que vous souhaitez affecter dans le champ Constrained Object. Un ou plusieurs objets sources peuvent être utilisés.
+<Callout type="info">
+Vous pouvez faire glisser et déposer les os/GameObjects sources dans la zone mise en évidence en rouge.
+Vous ne pouvez ajouter qu'un seul `Multi-Rotation Constraint` par GameObject.
+</Callout>
+![Composant Twist dans la fenêtre inspecteur](/img/avatars/22.png)
+</Step>
+
+</Steps>

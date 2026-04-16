@@ -1,0 +1,19 @@
+---
+title: 進階配置
+---
+
+## 伺服器減少系統
+
+隨著伺服器上玩家數量的增加，頻寬需求迅速增長。SRS 系統嘗試透過根據距離降低向玩家發送運動資料的頻率來減少網路負載並提高效能。
+
+控制伺服器根據距離向使用者發送運動資料所需時間的方程式：
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+本節的其餘部分將稍後發布。
+
+## 客戶端減少系統
+
+本節將稍後發布。

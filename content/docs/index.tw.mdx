@@ -1,0 +1,93 @@
+---
+title: 快速入門
+description: 歡迎使用 BasisVR 文件
+icon: BookOpen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+歡迎來到 Basis 維基！
+
+本頁將協助您了解啟動並運行 Basis 專案所需的最小步驟，包括建立 Avatar 和 World 資產包的操作指南。
+
+## 當前系統需求
+
+https://docs.unity3d.com/Manual/system-requirements.html
+
+## 安裝 Unity
+
+- Hub - https://unity.com/download
+- 獨立版 - https://unity.com/releases/editor/archive
+
+### 相容的 Unity 版本
+
+根據所使用的分支，請注意框架所基於的 Unity 編輯器版本：
+
+✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
+✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+
+### 附加 Unity 模組
+
+在安裝 Unity 編輯器版本時，透過「新增模組」畫面新增以下模組：
+
+```ts tab="Windows"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono) 
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (IL2CPP)
+```
+
+```ts tab="Mac"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono)
+✓ Mac Build Support (IL2CPP)
+✓ Windows Build Support (Mono)
+```
+
+```ts tab="Linux"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (IL2CPP)
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (Mono)
+```
+
+<Callout type="info">
+即使您只是為 Avatar 和 World 建立使用者生成內容，仍需要這些額外模組，以便在這些平台上提供內容。
+</Callout>
+
+<Callout type="info">
+如果您已安裝了正確的 Unity 版本，但「新增模組」選項不可用，則可能是從 Unity Hub 外部安裝的。請透過 Unity Hub 重新安裝正確的 Unity 版本。
+</Callout>
+
+## 取得 Basis 框架
+
+### Git
+
+您可以直接[複製](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) https://github.com/BasisVR/Basis 上的 `developer` 或 `long-term-support` 分支，或將其[分叉](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)到您自己的本地儲存庫，然後在本地電腦上開啟產生的 Unity 專案。
+
+### 直接下載 ZIP
+
+對於希望跳過 Git 體驗的使用者：
+
+- 選擇右上角的「Code」下拉選單，然後點選「下載 ZIP」。
+- 將 ZIP 解壓縮到任意資料夾。
+- 將 Basis 子資料夾作為現有專案新增到 Unity Hub。
+
+![從 GitHub 下載 ZIP](/img/getting-started/3.png)
+
+## 資源
+
+我們提供了建立與 Basis 框架相容的首個[虛擬形象](/tw/docs/avatar)或[世界](/tw/docs/world)的說明。
+
+請加入 [Basis Discord](https://discord.gg/F35u3cUMqt)，與開發者和愛好者社群一起交流！
+
+讓我們開始使用 BasisVR 吧！

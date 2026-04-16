@@ -1,0 +1,94 @@
+---
+title: Hochladen
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Ihren Avatar hochladen
+
+Basis ermöglicht es Ihnen, eine Avatar .BEE-Datei von einer Remote-URL zu laden, was auch erforderlich ist, damit andere Benutzer in einer vernetzten Sitzung die Assets laden können.
+
+<Callout type="info">
+Sie können Ihr Avatar-Passwort direkt in die URL Ihrer .BEE-Datei einfügen: `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Sie hängen dabei `#` und den Base64-codierten String Ihres Passworts an.
+</Callout>
+
+Um dies zu unterstützen, müssen Sie einen direkten Link zu einem Remote-Speicherort bereitstellen. Für dieses Beispiel verwenden wir Google Drive.
+
+(Google Drive unterstützt direkte Links zu Dateien bis zu 100 MB aufgrund ihrer Virenscan-Richtlinie.)
+
+Laden Sie die **BEE-Datei** auf Google Drive hoch, oder einen Hosting-Anbieter, der direkte Links zu Dateien ohne Login ermöglicht.
+
+- Erstellen Sie einen Ordner auf Ihrem Drive und setzen Sie die Freigabeeinstellungen auf „Jeder mit dem Link."
+
+Wenn Sie nun Ihre Dateien in diesen Ordner ziehen, müssen Sie diese Berechtigung nicht einzeln setzen.
+
+- Klicken Sie auf das Hamburger-Menü oben rechts des Assets, das Sie gerade in den Ordner hochgeladen haben.
+- Finden Sie „Teilen" und klicken Sie auf „Link kopieren."
+
+Wir müssen die URL untersuchen, um die benötigten Informationen für Ihre BEE-Datei zu erhalten.
+
+Beispiel:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+Wir möchten den eindeutigen Bezeichner in der URL kopieren und ihn zu folgendem hinzufügen:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Beispiel:
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**LADEN SIE IHRE GENERIERTE PASSWORTDATEI NICHT HOCH UND TEILEN SIE SIE NICHT**
+</Callout>
+
+## In Basis laden
+<Steps>
+
+<Step>
+Starten Sie Basis, öffnen Sie das Menü und wählen Sie Bibliothek.
+
+![Basis-Menü](/img/avatars/11.png)
+</Step>
+
+<Step>
+Im Bibliotheksmenü wählen Sie „Neuen Inhalt hinzufügen" oben rechts im Fenster.
+
+![Avatar-Schaltfläche hinzufügen](/img/avatars/12.png)
+</Step>
+
+<Step>
+Fügen Sie die **BEE-Datei-URL** in das BEE-Datei-URL-Feld und das **SUPER GEHEIME VERSCHLÜSSELTE PASSWORT** in das BEE-Datei-Passwort-Feld ein, dann klicken Sie unten auf „Hinzufügen".
+
+![BEE-Datei-URL & Passwort](/img/avatars/13.png)
+</Step>
+
+<Step>
+Der Inhalt der BEE-Datei wird validiert, bevor er Ihrer Bibliothek hinzugefügt wird.
+
+![BEE-Datei-Schaltfläche hinzufügen](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## Avatar-Verwaltung
+
+Sie können den zuletzt zur Bibliothek hinzugefügten Avatar finden.
+
+![Neuer Avatar in der Bibliothek](/img/avatars/15.png)
+
+Avatare können geladen, gelöscht oder mit anderen in der Welt geteilt werden, indem Sie auf die entsprechenden Schaltflächen unten im Fenster klicken.
+
+![Avatar-Details](/img/avatars/16.png)
+
+Außerdem sehen Sie hier eine Reihe nützlicher Informationspanels:
+
+- **(1) Avatar-Informationen** - Das Detailpanel zeigt den Kompilierungs-Zeitstempel, Titel und Beschreibung
+- **(2) Plattformkompatibilität** - Icons zeigen, welche OS-Plattformen diesen Avatar unterstützen
+- **(3) Statistiken** - Zeigt Dreiecks-, Material- und Knochen-Anzahlen

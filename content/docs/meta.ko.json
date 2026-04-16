@@ -1,0 +1,20 @@
+{
+  "title": "문서",
+  "pages": [
+    "---소개---",
+    "index",
+    "faq",
+    "contributing",
+    "---가이드---",
+    "controls",
+    "avatar",
+    "prop",
+    "world",
+    "scripting",
+    "server",
+    "---기술---",
+    "...technical",
+    "---API 참조---",
+    "...reference"
+  ]
+}

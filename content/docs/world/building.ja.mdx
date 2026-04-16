@@ -1,0 +1,40 @@
+---
+title: ビルド
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 機能するBasisシーンの最小要件
+
+- ワールドメッシュをインポートするか、PlaneやCubeなどの新しい3Dオブジェクトを作成します。Colliderが存在することを確認してください。
+- gameObjectを作成し、適切な名前を付けて、InspectorでAdd Componentをクリックし、Basis Sceneコンポーネントを検索/選択します。
+
+![Add Componentメニュー](/img/worlds/1.png)
+
+![Basis Sceneコンポーネント](/img/worlds/2.png)
+
+- この時点で別のgameObjectを作成し、Spawnという名前を付けて、プレイヤーがワールドにスポーンしてほしい場所に配置できます。または、Basis Sceneコンポーネントのために作成した同じgameObjectを使用することもできます。
+
+![シーン内のスポーンポイント](/img/worlds/3.png)
+
+- いずれの場合も、選択したスポーン位置のgameObjectを`Spawn Point`フィールドに配置してください。そのgameObjectのトランスフォームが使用されます。
+
+![Spawn Pointフィールド](/img/worlds/4.png)
+
+## AssetBundleをビルドする
+
+- `Basis Scene`コンポーネントで`Create Scene Bee File`ボタンを押します。
+
+![Create Scene Bee Fileボタン](/img/worlds/5.png)
+
+- 結果は以下のように自動的に開きます。
+
+![ビルド結果](/img/worlds/6.png)
+
+<Callout type="info">
+Basisは.BEEファイル拡張子を使用しており、コンパイルされたアセットとメタデータが含まれ、ユーザー生成コンテンツを簡素化します。
+
+.BEEファイルは、アクセスするためのランダム生成パスワードとともに、Unityプロジェクトパスの/AssetBundles/ディレクトリ下に作成され、デフォルトでUnityから非表示になっています。
+
+必要に応じて、生成された.BEEファイル名をより覚えやすいものに変更することもできます。同じ名前を再使用すると、以前のバージョンが新しいものに置き換えられることに注意してください！
+</Callout>

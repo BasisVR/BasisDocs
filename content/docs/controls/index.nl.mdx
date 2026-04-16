@@ -1,0 +1,35 @@
+---
+title: Instellingen en bediening
+---
+
+## Bediening
+
+Laten we een pagina maken over de beschikbare bediening in BasisVR.
+
+## Sneltoetsen
+
+- F9: overschakelen naar Desktop
+
+- F10: overschakelen naar OpenXR
+
+- F11: overschakelen naar OpenVR
+
+## Hulp bij foutopsporing
+
+- Je kunt *BasisDebug.Log("\<jouw-logbericht-hier\>");* gebruiken om uitvoer te printen naar het in-game consolemenu van de Basis-app.
+
+- Je kunt ook het bestand `Player.log` bekijken dat zich bevindt in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Dit is afhankelijk van de proton die de steam-id van de geselecteerde app gebruikt; bouwen in de editor bevindt zich op een andere locatie.</Tab></Tabs> Het biedt een uitgebreider logboek van de exacte Unity-problemen die optreden tijdens het spelen. Dit omvat stack traces zoals de exacte regel waarop een nullreferentiefout is opgetreden.
+
+![Basis-consolemenu](/img/controls/2.png)
+
+## Waar worden bibliotheekitems opgeslagen?
+
+- De `ItemKeyStore.json`, te vinden in <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Dit is afhankelijk van de proton die de steam-id van de geselecteerde app gebruikt; bouwen in de editor bevindt zich op een andere locatie.</Tab></Tabs> slaat een koppeling op van de avatars, werelden en props die momenteel in je bibliotheek staan.
+
+<Callout>
+In de codebase vind je ook een `EmbeddedItems`-klasse met bibliotheekitems die in de applicatie zijn ingebouwd.
+</Callout>

@@ -1,0 +1,88 @@
+---
+title: 約束
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis 目前使用 Animation Rigging 套件來提供約束。 
+
+<Callout type="info">
+使用此套件是因為缺乏多執行緒約束系統的開源實作。如果有人有時間或興趣開發一個，歡迎貢獻或新專案。
+</Callout>
+
+Animation Rigging 提供的所有約束的文件可以在[這裡](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)找到。
+
+## Animation Rigging 套件的設定
+<Steps>
+
+<Step>
+**新增 Rig Builder**：在 `Armature` GameObject 上新增 `Rig Builder` 元件和 `Animator` 元件。 
+
+![Armature GameObject 的檢查器視窗](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis 使用根/虛擬形象 GameObject 的 Animator 進行動畫和骨骼綁定*。 
+</Callout>
+
+<Callout type="warning">
+**不能將根的 Animator 用於 Rig Builder，這會破壞動畫和 Basis 骨架載入器。**
+</Callout>
+</Step>
+<Step>
+**建立 Rig 設定**：建立一個名為「Rig Setup」的空 GameObject，並為其新增 `Rig` 元件。
+
+![Rig Setup GameObject 的檢查器視窗](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**分配 Rig 設定**：將「Rig Setup」GameObject 分配給 `Armature` 的 `Rig Builder` 元件。
+
+![分配後 Armature 的檢查器視窗](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## 關於抖動骨骼的注意事項
+
+如果抖動骨骼影響了任何約束，則需要將 `Rig Transform` 新增到約束骨骼的所有父骨骼。
+
+例如：您有一個被約束為朝向虛擬形象頭部方向的雷射。您需要從雷射的父物件開始新增 `Rig Transform` 元件，直到遇到骨架/人形骨骼為止。
+<Callout type="info">
+這包括不屬於人形的所有來源骨骼。例如：如果您有引用翅膀的約束，且翅膀受抖動骨骼影響，則需要為翅膀新增 `Rig Transform` 元件。
+</Callout>
+<Accordions type="single">
+<Accordion title="抖動骨骼範例">
+![抖動骨骼範例](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## 旋轉約束
+<Steps>
+
+<Step>
+
+首先完成[設定](#setup-for-animation-rigging-packages)，然後繼續按照說明設定旋轉約束。
+
+</Step>
+
+<Step>
+
+在 `Rig Setup` GameObject 的子 GameObject 上新增 `Multi-Rotation Constraint` 元件。
+
+![檢查器視窗中的 Twist 元件](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+在 Constrained Object 欄位中分配您想要影響的骨骼。可以使用一個或多個來源物件。
+<Callout type="info">
+您可以將來源骨骼/GameObjects 拖放到紅色高亮區域。
+每個 GameObject 只能新增一個 `Multi-Rotation Constraint`。
+</Callout>
+![檢查器視窗中的 Twist 元件](/img/avatars/22.png)
+</Step>
+
+</Steps>

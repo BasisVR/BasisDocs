@@ -1,0 +1,53 @@
+---
+title: Fisica Jiggle
+description: La fisica Jiggle consente di aggiungere movimenti dinamici a parti del tuo avatar, come capelli, abbigliamento o accessori, aumentando il realismo e l'immersione.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Come aggiungere la fisica Jiggle
+
+Per ogni radice jiggle:
+- Aggiungi un nuovo componente `Jiggle Rig` a un nuovo GameObject o a uno esistente, purché si trovi nella gerarchia della radice del tuo Avatar.
+
+![Finestra Inspector che aggiunge il componente Jiggle Root](/img/jiggle/1.png)
+
+- Assegna l'osso nell'armature dell'avatar che vuoi far muovere dinamicamente al `Root Transform` nell'inspector. Ad esempio, può includere capelli, abbigliamento, accessori o parti del corpo dell'avatar. Tieni presente che per gli elementi con un lato sinistro e destro (come il seno sinistro e destro), vorrai aggiungere un `Jiggle Rig` separato per ciascuno (altrimenti solo un lato si muoverà dinamicamente!).
+
+<Callout type="info">
+Suggerimento: Per mantenere i tuoi Jiggle Rig organizzati, puoi annidarli sotto un GameObject padre appena creato, ad esempio.
+</Callout>
+
+- Puoi regolare le impostazioni e testare in modalità play (ad esempio, trascinando l'avatar o usando l'opzione `Test in Editor` del componente `Basis Avatar`) finché non sei soddisfatto. Puoi anche posizionare il cursore del mouse su ciascuna opzione di impostazione per vedere una descrizione di cosa fa. Per visualizzare tutte le impostazioni, puoi fare clic su `Advanced`.
+
+![Finestra Inspector che mostra i jiggle organizzati](/img/jiggle/2.png)
+
+<Callout>
+Opzionalmente, se hai un osso padre con più catene di ossa figlie all'interno e desideri applicare lo stesso effetto a tutte, puoi abilitare `Motionless Root` in modo che riguardi solo le ossa figlie e non la radice stessa.
+</Callout>
+
+- Di seguito puoi vedere un esempio con Jiggle Rig applicati ai capelli, all'abbigliamento e al petto.
+
+![Finestra che mostra l'avatar con Jiggle Rig in modalità play](/img/jiggle/3.gif)
+
+## Interazione con le collisioni
+
+Se vuoi che le collisioni con gli oggetti guidino i jiggle:
+
+- Attiva `Advanced` per visualizzare tutte le impostazioni.
+
+- Abilita `Collision` e regola il `Collision Radius` per adattarlo all'oggetto.
+
+- Aggiungi un GameObject che vuoi usare per attivare le collisioni. Assegnagli il componente `Jiggle Collider Example`.
+
+<Callout type="info">
+Assicurati che qualsiasi GameObject tu stia usando abbia uno sphere collider!
+</Callout>
+
+- Nel campo `Jiggle Collider Transform`, assegna il tuo GameObject di collisione e seleziona Sphere come `Collider Type`. Nota che attualmente sono supportati solo i collider sferici, ma il creatore del sistema jiggle, Naelstrof, ne aggiungerà probabilmente altri in futuro.
+
+![Finestra Inspector che mostra la sfera con Jiggle Collider](/img/jiggle/4.png)
+
+- Di seguito è riportato un esempio di un oggetto sfera con il componente `BasisPickupInteractable` che collide con i capelli di un avatar.
+
+![Finestra Inspector che mostra i jiggle organizzati](/img/jiggle/5.gif)

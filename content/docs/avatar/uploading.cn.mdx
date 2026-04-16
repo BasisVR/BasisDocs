@@ -1,0 +1,94 @@
+---
+title: 上传
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## 上传您的虚拟形象
+
+Basis 允许您从远程 URL 加载虚拟形象 .BEE 文件，这也是网络会话中其他用户加载资产所必需的。
+
+<Callout type="info">
+您可以通过 `https://locationofBeefile.BEE#(Base64Encode(Password))` 将虚拟形象密码直接添加到 .BEE 文件的 URL 中。<br />
+即在 URL 后添加 `#` 和密码的 Base64 编码字符串。
+</Callout>
+
+为了支持这一点，您需要直接链接到远程位置。在此示例中，我们将使用 Google Drive。
+
+（由于 Google Drive 的病毒扫描政策，它支持最大 100MB 文件的直接链接。）
+
+将 **BEE 文件**上传到 Google Drive，或任何允许在不登录的情况下直接链接到文件的托管提供商。
+
+- 在您的 Drive 上创建一个文件夹，并将其共享设置设为"知道链接的任何人"。
+
+现在当您将文件拖入此文件夹时，无需单独设置该权限。
+
+- 点击刚刚上传到文件夹中的资产右上角的汉堡菜单。
+- 找到"共享"并点击"复制链接"。
+
+我们需要查看 URL 以获取 BEE 文件所需的信息。
+
+示例：
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+我们要复制 URL 中的唯一标识符并将其添加到以下内容中：
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+示例：
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**请勿上传您生成的密码文件或将其分享给他人**
+</Callout>
+
+## 在 Basis 中加载
+<Steps>
+
+<Step>
+启动 Basis，打开菜单，选择图书馆。
+
+![Basis 菜单](/img/avatars/11.png)
+</Step>
+
+<Step>
+在图书馆菜单中，选择窗口右上角附近的"添加新内容"。
+
+![添加虚拟形象按钮](/img/avatars/12.png)
+</Step>
+
+<Step>
+将 **BEE 文件 URL** 粘贴到 BEE 文件 URL 字段，将**超级机密加密密码**粘贴到 BEE 文件密码字段，然后点击下方的"添加"。
+
+![BEE 文件 URL 和密码](/img/avatars/13.png)
+</Step>
+
+<Step>
+BEE 文件的内容在添加到您的图书馆之前将被验证。
+
+![添加 BEE 文件按钮](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## 虚拟形象管理
+
+您可以在图书馆中找到最近添加的虚拟形象。
+
+![图书馆中的新虚拟形象](/img/avatars/15.png)
+
+可以通过点击窗口底部相应的按钮，在世界中加载、删除或与他人共享虚拟形象。
+
+![虚拟形象详情](/img/avatars/16.png)
+
+此外，您还会在这里看到一些有用的信息面板：
+
+- **(1) 虚拟形象信息** - 详情面板显示编译时间戳、标题和描述
+- **(2) 平台兼容性** - 图标显示哪些操作系统平台支持此虚拟形象
+- **(3) 统计数据** - 显示三角形、材质和骨骼数量

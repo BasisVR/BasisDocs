@@ -1,0 +1,297 @@
+---
+title: 腳本
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+出於技術原因，自訂程式碼必須透過重新建置客戶端（即 Unity 專案）或透過 Cilbox（沙盒 CIL）來生成。
+
+## 如何透過 Unity 客戶端建置添加腳本
+
+<Callout type="info">
+
+如果您正在使用框架開發遊戲或應用程式，且支援使用者生成內容（如場景、虛擬形象或道具）不是優先考量，您可能更傾向於原生建置 MonoBehaviour 腳本，而非使用 Cilbox。
+
+這是因為 Cilbox 是一個 CIL 直譯器，會帶來顯著的速度損耗，且可能只支援可用語言功能的子集。
+</Callout>
+
+- 建立一個包含按鈕的 canvas 物件。
+
+- 向按鈕物件添加腳本。作為簡單範例，我們將建立一個更新名為 TestButton 的 TMP 文字物件的腳本。
+
+- 建立並將 TMP 文字物件指定到檢查器中的 Button Text 欄位。
+
+![顯示 Test Button 元件的檢查器視窗](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- 選擇按鈕並為其添加 onClick() 事件。將您的 Test Button 遊戲物件指定給它，確保選擇 TestButton.OnButtonClick 作為點擊時呼叫的方法。
+
+![顯示按鈕事件處理程序和已指定 TMP 文字的檢查器視窗](/img/scripting/2.png)
+
+- 向 canvas 遊戲物件添加 Basis Prop 元件，輸入資源包名稱並按下「Create Prop Bee File」按鈕。使用 Loadable Config Editor 生成 XML 檔案。
+
+![顯示使用 Basis Prop 的按鈕的檢查器視窗](/img/scripting/3.png)
+
+- 開啟 BasisFramework 預製件。在 Bundled Content Folder 元件中，添加生成的 .bee 密碼和 URL。
+
+![顯示 BasisFramework 預製件的檢查器視窗](/img/scripting/4.png)
+
+![顯示 BasisFramework 預製件的檢查器視窗](/img/scripting/5.png)
+
+- 執行初始化場景。
+
+![顯示初始化場景執行中的視窗](/img/scripting/6.png)
+
+- 建置 Unity 客戶端。您的自訂腳本將包含在建置中。
+
+![顯示 Unity 客戶端建置設定檔的視窗](/img/scripting/7.png)
+
+- 點擊按鈕，TMP 文字物件應更新為顯示「Clicked!」。
+
+![顯示自訂腳本執行中的視窗](/img/scripting/8.png)
+
+## 如何透過 Unity 客戶端建置添加網路同步腳本
+
+- 建立一個包含按鈕的 canvas 物件。
+
+![顯示 canvas 的檢查器視窗](/img/scripting/9.png)
+
+- 向按鈕物件添加腳本。作為簡單範例，我們將建立一個名為 SCNE（Send Custom Network Events 的縮寫）的腳本，它使用按鈕被點擊的次數更新 TMP 文字物件。
+
+- 建立並將 TMP 文字物件指定到檢查器中的 Button Text 欄位。
+
+- 選擇按鈕並為其添加 onClick() 事件。將您的 Button 遊戲物件指定給它，確保選擇 SCNE.IncrementCounter 作為點擊時呼叫的方法。
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![顯示帶有 SCNE 腳本的按鈕的檢查器視窗](/img/scripting/10.png)
+
+<Callout type="info">
+覆寫的 **OnPlayerJoined()** 被使用是因為，沒有它，新加入的玩家將看不到更新的計數數字。
+
+**TakeOwnership()** 用於防止去同步，例如由於新加入的玩家點擊按鈕導致計數器值重置。
+</Callout>
+
+- 向 canvas 遊戲物件添加 Basis Prop 元件，輸入資源包名稱並按下「Create Prop Bee File」按鈕。使用 Loadable Config Editor 生成 XML 檔案。
+
+![顯示使用 Basis Prop 的按鈕的檢查器視窗](/img/scripting/11.png)
+
+![顯示 BasisFramework 預製件的檢查器視窗](/img/scripting/13.png)
+
+- 開啟 PropContentPoliceSelector 資源，將 SCNE 腳本添加到允許的元件列表中。這確保腳本在執行時不會被刪除。
+
+![顯示 BasisFramework 預製件的檢查器視窗](/img/scripting/13.5.png)
+
+- 向空的遊戲物件添加 Basis Scene 元件，輸入資源包名稱並按下「Create Scene Bee File」按鈕。將其儲存在遠端伺服器上。
+
+<Callout type="info">
+應該停用或從場景中刪除 canvas 物件。保持其啟用狀態將導致場景中稍後存在兩個副本：一個來自場景本身，另一個由 XML 生成。
+</Callout>
+
+![顯示 Basis Scene 元件的檢查器視窗](/img/scripting/12.png)
+
+- 開啟 BasisFramework 預製件。在 Bundled Content Folder 元件中，添加生成的 .bee 密碼和 URL。
+
+![顯示 BasisFramework 預製件的檢查器視窗](/img/scripting/14.png)
+
+- 執行初始化場景。
+
+![顯示初始化場景執行中的視窗](/img/scripting/6.png)
+
+- 建置 Unity 客戶端。您的自訂腳本將包含在建置中。
+
+![顯示 Unity 客戶端建置設定檔的視窗](/img/scripting/7.png)
+
+- 點擊按鈕，TMP 文字物件應在每次按鈕點擊後為本地和遠端玩家更新計數。
+
+![顯示在客戶端中執行的場景的檢查器視窗](/img/scripting/15.png)
+
+## 如何透過 Cilbox 添加網路同步腳本
+
+Cilbox 是一個腳本系統，作為黏合劑提供一些最小化的遊戲邏輯，使使用者生成內容（如道具、虛擬形象和場景）中的基本行為具有可移植性。它可用於建立在執行時工作的腳本。
+
+目前，Cilbox 仍然非常實驗性。以下範例展示了如何使用 Cilbox 建立一個使立方體旋轉的腳本。
+
+<Callout type="info">
+注意：如果您正在開發一款載入使用者生成內容的應用程式或遊戲，並希望支援該使用者內容的腳本，Cilbox 特別有用。它允許將腳本作為類似 DLC 的內容與其他內容一起提供，同時為程式碼執行提供更安全的沙盒，防止具有有害或不受歡迎行為的腳本執行。
+</Callout>
+
+- 建立一個立方體物件和要附加到它的 ObjectRotator 元件。確保在您的類別上方添加 [Cilboxable]。
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![顯示附加了旋轉腳本的立方體的檢查器視窗](/img/scripting/16.png)
+
+- 建立一個空的遊戲物件並附加 Cilbox Basis Scene 元件。Cilbox Basis Scene 成為所有腳本執行的 cilbox。
+
+<Callout type="info">
+注意：如果您的編輯器無法偵測到 Cilbox 命名空間，您可以建立自己的 .asmdef 檔案並參照 Cilbox，或者直接開啟 Cilbox 的 asmdef 並選擇 *Auto Referenced* 來解決此問題。
+
+![顯示附加了旋轉腳本的立方體的檢查器視窗](/img/scripting/16.5.png)
+</Callout>
+
+![顯示 CilboxSceneBasis 元件的檢查器視窗](/img/scripting/17.png)
+
+- 向空的遊戲物件添加 Basis Scene 元件，輸入資源包名稱並按下「Create Scene Bee File」按鈕。將其儲存在遠端伺服器上。
+
+![顯示 Basis Scene 元件的檢查器視窗](/img/scripting/18.png)
+
+![檢查器 Load Config](/img/scripting/19.png)
+
+- 當您在播放模式下執行場景時，您建立的腳本將被 Unity 正常編譯。但是，在實際開始播放之前，腳本會被 Cilbox Proxy 元件替換。這些是在執行時實際作為元件執行的內容。Basis 使用其自己的 Cilbox Proxy 和 Cilbox Basis Scene 副本而不是您的，但您的資料會被序列化。
+
+![顯示已建立的 Cilbox Proxy 元件的檢查器視窗](/img/scripting/20.png)
+
+![顯示在播放模式下更新的 Cilbox Scene Basis 元件的檢查器視窗](/img/scripting/21.png)
+
+![顯示播放模式的視窗](/img/scripting/22.png)
+
+- 執行初始化場景並在應用程式中測試您的 Cilbox 腳本。立方體應該旋轉。
+
+![顯示應用程式中旋轉立方體 Cilbox 示範的視窗](/img/scripting/23.png)
+
+以下是您可以嘗試的一些額外範例腳本。
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+可以繼承 BasisNetworkShim 而不是 BasisNetworkBehaviour 來建立網路腳本。
+</Callout>

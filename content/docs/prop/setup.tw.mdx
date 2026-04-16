@@ -1,0 +1,64 @@
+---
+title: 設定
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 設定 Unity 編輯器
+
+- 參考[入門](/en/docs#installing-unity)章節，安裝最新支援的 Unity 編輯器版本並取得 Basis 框架。
+- 開啟 Unity Hub，新增現有專案，選擇解壓/複製的 Basis 專案資料夾
+- 在專案初次載入時，您將看到以下提示，請點擊「Restart Editor」。
+
+![Unity 重新啟動提示](/img/avatars/0.png)
+
+- 專案載入完成後，您現在可以載入您的虛擬形象檔案：
+- 您可以，
+  - 在專案階層中找到 `Assets`，在 `Assets` 內右鍵點擊任意空白處，選擇 `Show in Explorer`
+  - 複製您的虛擬形象檔案 [網格/材質/貼圖等]
+- 或者
+  - 從 Assets 選單中匯入包含您檔案的 .unity 套件，Import Package > Custom Package
+- 返回 Unity 視窗，等待匯入程序完成。
+
+<Callout type="info">
+如果您將內容放置在新目錄「Assets > _UserContent」中，專案的預設 .gitignore 檔案將在 git 中隱藏此資料夾中的變更。
+</Callout>
+
+## 匯入模型
+
+- 找到您的道具模型的位置（通常以 .FBX 格式提供）。
+- 點擊檔案，然後導覽至 Import Settings 視窗的 `Model` 部分。
+- 確保 `Red/Write` 和 `Legacy Blend Shape Normals` 已被勾選。
+
+（在此插入圖片引用）
+
+- 導覽至 Import Settings 視窗的 `Rig` 部分。
+- 點擊 `Animation Type` 下拉選單，確保選擇了 `Generic`。
+
+（在此插入圖片引用）
+
+## 蒙皮網格設定
+
+- 具有多個蒙皮網格的道具的一個考量因素是，當不同的邊界框大小導致單個網格在道具的其餘部分對遠端查看者可見時出現/消失。
+- 您可以在 Skinned Mesh Renderer 元件頂部名為 `Bounds` 的部分中覆蓋 Center X、Y、Z 和 Extent X、Y、Z 值。通常，將不同蒙皮網格的這些值設定為相同是個好主意。
+
+（在此插入圖片引用）
+
+## 材質/著色器
+
+- 您可以直接使用 Unity 6 附帶的 Universal Render Pipeline/Lit 著色器
+- 否則，我們整理了一份可以使用的相容[虛擬形象著色器](/tw/docs/avatar/shaders)清單。
+
+## Basis Prop 設定
+
+- 上述步驟應該會在您將虛擬形象預製件拖入場景時自動新增 Animator 元件。
+- 在虛擬形象的父 GameObject 上，點擊 `Add Component`，並新增 `Basis Prop`。
+- 輸入您首選的道具名稱和描述。
+- 在選擇 `Create Prop Bee File` 之前，確保所有著色器都相容。如果您的道具上存在不相容的著色器錯誤，BEE 檔案將無法生成。如果有任何問題，檢查器會報告，請確保解決它們！
+
+（在此插入圖片引用）
+
+<Callout type="info">
+如果您剛接觸蒙皮網格渲染器混合形狀或一般的上傳道具，它們基本上只是可以控制的滑桿，用於改變模型上的變形。
+
+</Callout>

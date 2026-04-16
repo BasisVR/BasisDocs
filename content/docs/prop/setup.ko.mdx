@@ -1,0 +1,65 @@
+---
+title: 설정
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Unity Editor 설정
+
+- [시작하기](/ko/docs#installing-unity) 섹션에 따라 최신 지원 Unity Editor 버전을 설치하고 Basis 프레임워크를 취득합니다.
+- Unity Hub를 열고 기존 프로젝트를 추가하여 압축 해제/클론된 Basis 프로젝트 폴더를 선택합니다.
+- 프로젝트를 처음 로드할 때 다음 프롬프트가 표시됩니다. 'Restart Editor'를 클릭하세요.
+
+![Unity 재시작 프롬프트](/img/avatars/0.png)
+
+- 프로젝트가 로드되면 아바타 파일을 로드할 수 있습니다:
+- 또는,
+  - 프로젝트 계층에서 `Assets`를 찾아 `Assets` 안의 빈 공간을 마우스 오른쪽 버튼으로 클릭하고 `Show in Explorer`를 선택합니다.
+  - 아바타 파일 [메시/재질/텍스처 등]을 복사합니다.
+- 또는
+  - Assets 메뉴에서 Import Package > Custom Package를 통해 파일이 포함된 .unity 패키지를 가져옵니다.
+- Unity 창으로 돌아가 가져오기 프로세스가 완료될 때까지 기다립니다.
+
+<Callout type="info">
+콘텐츠를 새 디렉토리 "Assets > _UserContent"에 배치하면 프로젝트의 기본 .gitignore 파일이 이 폴더의 git 변경 사항을 숨깁니다.
+</Callout>
+
+## 모델 가져오기
+
+- 소품 모델의 위치를 찾습니다 (일반적으로 .FBX 형식으로 제공).
+- 파일을 클릭한 후 가져오기 설정 창의 `Model` 섹션으로 이동합니다.
+- 아래와 같이 `Red/Write`와 `Legacy Blend Shape Normals`가 선택되어 있는지 확인합니다.
+
+(이미지 참조 삽입 필요)
+
+- 가져오기 설정 창의 `Rig` 섹션으로 이동합니다.
+- `Animation Type` 드롭다운 메뉴를 클릭하고 `Generic`이 선택되어 있는지 확인합니다.
+
+(이미지 참조 삽입 필요)
+
+
+## 스킨드 메시 설정
+
+- 여러 스킨드 메시가 있는 소품에서 고려 사항은 서로 다른 바운딩 박스 크기로 인해 소품의 나머지 부분이 원격 뷰어에게 보이는 동안 개별 메시가 나타났다 사라졌다 할 수 있다는 점입니다.
+- 스킨드 메시 렌더러 컴포넌트 상단의 `Bounds` 섹션에서 Center X, Y, Z 및 Extent X, Y, Z 값을 재정의할 수 있습니다. 일반적으로 별도의 스킨드 메시 전체에 동일하게 설정하는 것이 좋습니다.
+
+(이미지 참조 삽입 필요)
+
+## 재질/셰이더
+
+- Unity 6에 포함된 Universal Render Pipeline/Lit 셰이더를 바로 사용할 수 있습니다.
+- 그렇지 않으면 사용할 수 있는 호환 [아바타 셰이더](/ko/docs/avatar/shaders) 목록을 제공합니다.
+
+## Basis Prop 설정
+
+- 위의 단계를 수행하면 씬으로 드래그할 때 아바타 프리팹에 자동으로 Animator 컴포넌트가 추가됩니다.
+- 아바타의 부모 GameObject에서 `Add Component`를 클릭하고 `Basis Prop`을 추가합니다.
+- 소품의 원하는 이름과 설명을 입력합니다.
+- `Create Prop Bee File`을 선택하기 전에 모든 셰이더가 호환되는지 확인합니다. 소품에 호환되지 않는 셰이더 오류가 있으면 BEE 파일이 생성되지 않습니다. 문제가 있으면 인스펙터에서 보고하므로 반드시 해결하세요!
+
+(이미지 참조 삽입 필요)
+
+<Callout type="info">
+스킨드 메시 렌더러 블렌드셰이프나 소품 업로드가 처음이라면, 블렌드셰이프는 기본적으로 모델의 모프를 변경하기 위해 제어할 수 있는 슬라이더입니다.
+
+</Callout>

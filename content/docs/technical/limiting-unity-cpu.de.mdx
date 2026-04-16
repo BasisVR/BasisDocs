@@ -1,0 +1,21 @@
+---
+title: Unity-CPU-Auslastung begrenzen
+---
+
+Beim Erstellen eines Projekts in Unity 6 neigt es dazu, ALLE Systemressourcen zu verwenden und das System vollständig unbrauchbar zu machen (besonders während der Shader-Kompilierungsphase) – sogar auf einem High-End-Rechner.
+
+Sie können folgenden Argument für den Launcher verwenden, um zu verhindern, dass jeder einzelne CPU-Kern auf 100 % blockiert wird.
+
+```
+-job-worker-count 8
+```
+
+Dabei sollte **8** eine Zahl kleiner als die Gesamtzahl der physischen CPU-Kerne Ihrer Maschine sein. Dies begrenzt die Unity-Kindprozesse auf diesen Wert und verhindert so, dass jeder einzelne CPU-Kern blockiert wird. Dies kann sogar die Unity-Build-Geschwindigkeit verbessern, da es dazu neigt, sich selbst zu überlasten und zu verlangsamen.
+
+Sie können die Startargumente für ein Projekt aufrufen, indem Sie Unity Hub öffnen und mit der rechten Maustaste auf den Projektnamen klicken:
+
+![Kontextmenü des Unity Hub-Projekts](/img/limiting-unity-cpu/1.png)
+
+Es wird dann ungefähr so aussehen, nachdem Sie das Argument hinzugefügt haben:
+
+![Unity Hub mit Startargumenten](/img/limiting-unity-cpu/2.png)

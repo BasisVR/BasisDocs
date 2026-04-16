@@ -1,0 +1,32 @@
+---
+title: Monitoraggio
+---
+
+## Endpoint di controllo della salute
+
+Quando si esegue il server localmente, è possibile verificare lo stato del server visitando l'endpoint di controllo della salute all'indirizzo:
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| Variabile     | Definizione                          |
+|---------------|--------------------------------------|
+| `listening`   | Il server è in ascolto per le connessioni |
+| `visitors`    | Il numero di giocatori attualmente connessi (visitatori) |
+| `capacity`    | Numero massimo di giocatori consentiti sul server |
+| `sent`        | Quantità totale di dati inviati (in byte?) |
+| `recv`        | Quantità totale di dati ricevuti (in byte?) |
+| `currentTime` | L'ora corrente del server in formato ISO 8601 |
+| `startTime`   | L'ora di avvio del server in formato ISO 8601 |
+| `version`     | Il numero di versione del server. Importante: il codice client deve corrispondere alla ServerVersion attesa |

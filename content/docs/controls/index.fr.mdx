@@ -1,0 +1,35 @@
+---
+title: Paramètres et contrôles
+---
+
+## Contrôles
+
+Créons une page pour couvrir les contrôles disponibles dans BasisVR.
+
+## Raccourcis clavier
+
+- F9 : passer en mode Bureau
+
+- F10 : passer en OpenXR
+
+- F11 : passer en OpenVR
+
+## Aide au débogage
+
+- Vous pouvez utiliser *BasisDebug.Log("\<votre-message-de-log\>");* pour afficher une sortie dans le menu de console en jeu de l'application Basis.
+
+- Vous pouvez également consulter le fichier `Player.log` situé dans <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Cela dépend du proton utilisant le steamid de l'application sélectionnée, la construction dans l'éditeur sera à un emplacement différent.</Tab></Tabs> Il fournit un journal plus complet des problèmes Unity rencontrés pendant le jeu, incluant les traces de pile comme la ligne exacte où une erreur nullreference peut s'être produite.
+
+![Menu console Basis](/img/controls/2.png)
+
+## Où sont stockés les éléments de la bibliothèque ?
+
+- Le fichier `ItemKeyStore.json`, situé dans <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+Cela dépend du proton utilisant le steamid de l'application sélectionnée, la construction dans l'éditeur sera à un emplacement différent.</Tab></Tabs> stocke un mappage des avatars, mondes et accessoires actuellement dans votre bibliothèque.
+
+<Callout>
+Dans la base de code, vous pouvez également trouver une classe `EmbeddedItems` contenant des éléments de bibliothèque intégrés dans l'application.   
+</Callout>

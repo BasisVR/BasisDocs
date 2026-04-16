@@ -1,0 +1,93 @@
+---
+title: はじめに
+description: BasisVRドキュメントへようこそ
+icon: BookOpen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basisウィキへようこそ！
+
+このページでは、Basisプロジェクトを起動・実行するために必要な最小限の手順を説明します。アバターとワールドのアセットバンドルを作成するためのハウツーガイドも含まれています。
+
+## 現在のシステム要件
+
+https://docs.unity3d.com/Manual/system-requirements.html
+
+## Unityのインストール
+
+- Hub - https://unity.com/download
+- スタンドアロン - https://unity.com/releases/editor/archive
+
+### 対応Unityバージョン
+
+使用するブランチに応じて、フレームワークが基づいているUnityエディターのバージョンを確認してください：
+
+✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
+✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+
+### 追加のUnityモジュール
+
+Unityエディターバージョンのインストール時に「モジュールの追加」画面から以下のモジュールを追加してください：
+
+```ts tab="Windows"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono) 
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (IL2CPP)
+```
+
+```ts tab="Mac"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (Mono)
+✓ Mac Build Support (IL2CPP)
+✓ Windows Build Support (Mono)
+```
+
+```ts tab="Linux"
+✓ Android Build Support  
+   ↳ ✓ OpenJDK  
+   ↳ ✓ Android SDK & NDK Tools  
+✓ IOS Build Support  
+✓ Linux Build Support (IL2CPP)
+✓ Mac Build Support (Mono)
+✓ Windows Build Support (Mono)
+```
+
+<Callout type="info">
+アバターとワールド作成のためのユーザー生成コンテンツのみを構築する場合でも、これらのプラットフォームでコンテンツを利用可能にするためにこれらの追加モジュールが必要です。
+</Callout>
+
+<Callout type="info">
+正しいUnityバージョンがすでにインストールされているにも関わらず「モジュールの追加」オプションが利用できない場合、Unity Hub外からインストールされた可能性があります。Unity Hubから正しいUnityバージョンを再インストールしてください。
+</Callout>
+
+## Basisフレームワークの取得
+
+### Git
+
+https://github.com/BasisVR/Basis にある`developer`または`long-term-support`ブランチを直接[クローン](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)するか、自分のローカルリポジトリに[フォーク](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)して、ローカルコンピュータでUnityプロジェクトを開くことができます。
+
+### ZIPの直接ダウンロード
+
+Gitを使わずに進めたい方：
+
+- 右上の「Code」ドロップダウンを選択し、「ZIP をダウンロード」をクリックします。
+- ZIPを任意のフォルダに解凍します。
+- BasisサブフォルダをUnity Hubに既存プロジェクトとして追加します。
+
+![GitHubからZIPをダウンロード](/img/getting-started/3.png)
+
+## リソース
+
+Basisフレームワークと互換性のある初めての[アバター](/ja/docs/avatar)または[ワールド](/ja/docs/world)の作成手順を提供しています。
+
+[Basis Discord](https://discord.gg/F35u3cUMqt)に参加して、開発者や愛好家のコミュニティに加わりましょう！
+
+BasisVRを始めましょう！

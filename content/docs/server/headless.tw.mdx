@@ -1,0 +1,255 @@
+---
+title: 無頭客戶端
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+
+## 介紹
+
+Basis 提供無頭客戶端構建，可以連接到 Basis 伺服器而無需渲染完整的互動式客戶端。這些構建主要用於負載測試、連線測試和驗證伺服器在更多玩家數量下的行為。
+
+Linux 和 Windows 無頭客戶端構建也可以從 Basis 的 GitHub artifacts 下載。Docker 是執行多個實例的便捷方式，但執行無頭客戶端並不是必需的。
+
+在以下情況下使用無頭客戶端：
+
+- 模擬多個使用者加入同一伺服器
+- 測量伺服器在負載下的表現
+- 在邀請真實使用者之前測試密碼保護存取
+- 使用更受控的客戶端重現網路問題
+
+<Callout type="info" title="本頁內容">
+本頁重點介紹執行無頭客戶端本身。有關伺服器端設置，請參閱部署、配置和監控頁面。
+</Callout>
+
+## 取得無頭客戶端
+
+您有兩種主要方式執行無頭客戶端：
+
+- 從 [GitHub artifacts](https://nightly.link/BasisVR/Basis/workflows/build-docker-server/developer?preview) 下載 Linux 或 Windows 無頭客戶端構建
+- 執行已發布的無頭 Docker 映像
+
+當您需要可重複的容器化設置或需要快速擴展多個實例時，Docker 很有用。如果您只需要執行一個或幾個無頭客戶端，直接下載平台構建也是有效的。
+
+<Callout type="warn">
+預設情況下，無頭客戶端的 Windows 版本使用 Mono 而非 IL2CPP 構建，這是 UnityCI 構建的限制。Mono 使用的記憶體約為 IL2CPP 的 1.5-2 倍，因此請使用 Linux 版本，除非軟體包說明其為 IL2CPP 版本。
+</Callout>
+
+## 開始之前
+
+確保您要連接的伺服器已經可以訪問。
+
+- Basis 流量使用 `4296/udp`
+- 預設伺服器密碼為 `default_password`，除非您在 `config.xml` 或環境變數中更改了它
+- 如果您正在測試本地伺服器，請使用本地機器或 LAN 地址而不是公共主機名稱
+
+伺服器文件還指出 `config.xml` 值可以被環境變數覆蓋。這在這裡很重要，因為下面的無頭客戶端範例也使用了相同的模式。
+
+## 設定 Docker Desktop
+<Steps>
+<Step>
+開啟`系統資訊`，檢查基於虛擬化的安全性是否顯示`正在執行`，以及基於虛擬化的安全性可用項是否包含：`安全性內容 基本虛擬化支援`
+
+如果沒有，進入 BIOS 並根據您的 CPU 啟用 AMD-Vi 或 Intel VT-d。
+
+在 Google 上搜尋`BaseBoard 產品`下顯示的主機板型號，以找出設定位置和開啟 BIOS 的按鍵。
+</Step>
+<Step>
+前往 [Docker Windows 下載](https://docs.docker.com/desktop/setup/install/windows-install/) 並安裝 Docker Desktop。
+</Step>
+<Step>
+為 `docker-compose.yml` 建立一個資料夾並複製下面的範例。
+</Step>
+<Step>
+在該目錄中啟動命令提示字元或 PowerShell。在檔案總管中，您可以透過在 URL 列中輸入 `cmd.exe` 來啟動命令提示字元。
+</Step>
+<Step>
+首先使用 `docker compose pull` 下載/更新 Docker 映像 *如果使用預設的 `docker-compose.yml` 則不需要*
+</Step>
+<Step>
+輸入命令 `docker compose up -d` 啟動容器
+</Step>
+<Step>
+使用 `docker ps` 查看所有容器的健康狀態，等待所有容器顯示 healthy。這應該需要約 30 秒到一分鐘。
+</Step>
+<Step>
+使用 `docker compose scale "basis-headless=#` 增加容器數量。然後返回上一步，重複直到 CPU 或 RAM 耗盡。
+
+*將 `#` 替換為最多以 5 為增量的數字，在低端/RAM 受限硬體上使用 1 的增量*
+
+<Callout type="info">
+也可以使用 `docker compose stats` 測量使用情況
+</Callout>
+</Step>
+</Steps>
+
+## Docker Compose 配置
+
+從 Docker Desktop 執行 Docker 時，Docker 引擎通常在後台使用 WSL2，因此 Linux 映像通常是正確的選擇。如果您專門執行 Windows 容器（例如 Windows Server 2016），請使用 GitHub 上 Basis-Headless 軟體包中的 Windows 映像。
+
+<Callout type="warn">
+預設使用 Linux 版本的 Docker 映像，因為它使用 IL2CPP 構建。如果您遇到關於 Linux 的清單錯誤，需要使用 `-linux` 版本。
+</Callout>
+
+### docker-compose.yml
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    pull_policy: always
+    environment:
+      Port: 4296
+      Password: default_password
+      Ip: 'server1.basisvr.org'
+      HealthCheckEnabled: "true"
+      HealthCheckHost: "127.0.0.1"
+      HealthCheckPort: 10666
+      HealthPath: "/health"
+      AvatarFileLocation: ""
+      AvatarPassword: ""
+    volumes:
+      - Basis:/root/.config/unity3d/Basis Unity/Basis Unity # For Sharing Cached files. If running on Windows you should do it this way.
+      #- "${APPDATA}/../LocalLow/Basis Unity/Basis Unity:/root/.config/unity3d/Basis Unity/Basis Unity" # If you want to use your own cache and avatar files. Slower on Windows as its having the overhead from WSL2 *Corruption possible
+      #- ./config.xml:/app/HeadlessLinuxServer_Data/config.xml # Optional will be overridden when using environment variables
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:10666/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    deploy:
+      resources:
+        limits:
+          memory: 4096M #Highest I ever saw we need to load a 500MB world file.
+        reservations:
+          memory: 1024M #Recommend amount that basis will actually need.
+    labels:
+      autoheal-app: true
+  autoheal:
+    image: willfarrell/autoheal:latest
+    network_mode: none
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal-app
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+volumes:
+  Basis:
+```
+
+## 設定的含義
+
+上面的範例使用連接所需的最小值：
+
+| 變數 | 用途 |
+|----------|---------|
+| `Ip` | Basis 伺服器的主機名稱或 IP 位址 |
+| `Port` | 伺服器監聽的 UDP 連接埠，通常是 `4296` |
+| `Password` | 加入所需的伺服器密碼 |
+| `HealthCheckEnabled` | 啟用或停用 HealthCheck 端點 |
+| `HealthCheckHost` | 端點監聽的 IP |
+| `HealthCheckPort` | 端點監聽的連接埠 |
+| `HealthPath` | 健康資訊的路徑 |
+| `AvatarFileLocation` | 支援 avatar#base64 的組合 URL |
+| `AvatarPassword` | 虛擬形象密碼 |
+| `StrictMemoryCleanupEnabled` | 刪除所有已載入的紋理 |
+
+如果您掛載 `config.xml`，請將其視為基於檔案的備用配置。如果您還設定了環境變數，主伺服器文件指出環境值會覆蓋 XML 值。
+
+## 使用 AudioClips 的可選語音模擬
+
+無頭客戶端可以選擇透過將 `.wav` 或 `.opus` 檔案作為語音音訊串流來模擬麥克風流量。
+
+Basis 在啟動時檢查無頭播放器資料目錄中的 `AudioClips` 資料夾。如果存在一個或多個檔案，無頭客戶端隨機選擇一個檔案，循環播放，對其進行 Opus 編碼，並作為正常語音流量發送。
+
+如果資料夾不存在，Basis 會建立它。如果資料夾存在但不包含音訊檔案，無頭客戶端保持靜音。
+
+非 48 kHz 檔案會自動重採樣為單聲道 `48 kHz`。
+
+### 檔案放置位置
+
+對於正常解壓的構建，將檔案放在無頭資料資料夾下：
+
+- `AudioClips/`
+
+對於 Docker，將資料夾掛載到播放器資料目錄的 `AudioClips` 資料夾。
+
+Linux headless 範例：
+
+```yml
+services:
+  basis-headless:
+    image: ghcr.io/basisvr/basis-headless:nightly-linux
+    volumes:
+      - ./AudioClips:/app/HeadlessLinuxServer_Data/AudioClips
+...
+```
+
+
+## 大規模執行
+
+Docker Compose 可以從同一服務定義啟動多個無頭客戶端：
+
+<h3> `docker compose up --scale "basis-headless=10"`</h3> *--scale 當未在 docker-compose.yml 中設定時*
+
+作為粗略指導，現有說明建議為每個實例分配約 `1.5 GB` 記憶體。例如，如果您有約 `30 GB` 可用，可以計劃大約 `20` 個實例。
+
+<Callout type="warning" title="少量逐批載入">
+不要嘗試一次啟動所有客戶端。這會使您的電腦 RAM 過載，目前我們不提供輕鬆啟動實例的腳本。
+
+最好的方法是等到所有已啟動容器的健康狀態顯示 healthy 後再添加更多。
+</Callout>
+
+這只是一個起始估計。實際限制取決於：
+
+- 可用 RAM
+- CPU 核心
+- 伺服器的 `PeerLimit`
+- 無頭客戶端和伺服器之間的可用頻寬
+
+
+## 測試期間的監控
+
+如果伺服器健康端點已公開，您可以使用它來確認測試正在產生預期效果。監控文件顯示了這個範例回應：
+
+```json
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+在無頭負載測試期間，最有用的欄位是：
+
+- `listening` 確認伺服器正在接受連線
+- `visitors` 查看當前連線了多少客戶端
+- `capacity` 與您配置的玩家限制進行比較
+- `sent` 和 `recv` 觀察流量增長
+- `version` 確認預期的伺服器版本
+
+<Callout type="warn" title="版本匹配很重要">
+伺服器文件明確指出，客戶端和伺服器程式碼必須在伺服器版本上一致。如果您的無頭映像和目標伺服器是從不相容的版本構建的，即使網路設定正確，連線嘗試也可能失敗。
+</Callout>
+
+## 故障排除
+
+如果無頭客戶端無法連線，請首先檢查：
+
+- `Ip` 中的伺服器位址可從容器訪問
+- 伺服器密碼匹配
+- `4296/udp` 已開放並正確映射
+- 您使用的映像適合您的容器執行時
+- 您的伺服器實際上正在監聽並在啟動時健康
+- 客戶端和伺服器版本相容
+
+如果您正在擴展多個實例並看到不穩定性，請減少實例數量並確認限制是記憶體、CPU、網路頻寬還是伺服器配置的 `PeerLimit`。
+
+還建議為 Unity 提供大量虛擬記憶體，以便在 Docker 中執行時不會遇到 137 退出代碼（記憶體不足）。

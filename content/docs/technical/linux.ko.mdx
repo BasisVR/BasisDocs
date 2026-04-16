@@ -1,0 +1,80 @@
+---
+title: Linux에서 빌드
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Linux 지원은 실험적이며 추가적인 문제가 있을 수 있습니다.
+</Callout>
+
+<Callout type="info">
+현재 Linux에서 Windows 또는 Android 빌드를 만드는 것은 권장하지 않습니다. 기능이 빠져 있거나 전혀 작동하지 않을 가능성이 높습니다.
+</Callout>
+
+이 페이지는 먼저 [시작하기](/docs)를 완료했다고 가정합니다.
+
+## Linux 사전 요구 사항
+
+<Callout type="error">
+**이 문서 페이지에 나열된 유틸리티 제거를 커밋하지 마세요!**
+Windows 및 Android 클라이언트 빌드에 필요합니다!
+</Callout>
+
+Linux에서 Basis를 빌드하려면 [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html)를 통해 `com.meta.xr.sdk.core` "Meta XR Core SDK"와 `com.unity.xr.openxr` "OpenXR Plugin"을 제거해야 합니다.
+
+`com.unity.toolchain.linux-x86_64` "Toolchain Linux x64"를 설치해야 할 수도 있지만 Unity가 자동으로 설치해야 합니다.
+
+![Unity Package Manager](/img/linux/1.png)
+![패키지 제거](/img/linux/2.png)
+
+## Linux에서 .BEE 파일 빌드
+
+Linux 에디터에서 Windows 및 Android용 .bee 파일을 빌드하려면 `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` 파일을 삭제하고 `Edit > Project Settings > Player > Configuration > Scripting Backend`에서 "Scripting Backend"를 `Mono`로 설정해야 합니다.
+
+![프로젝트 설정](/img/linux/3.png)
+![스크립팅 백엔드](/img/linux/4.png)
+
+## Linux에서 네이티브 Linux 클라이언트 빌드
+
+<Callout type="info">
+더 나은 성능을 위해 "Scripting Backend"를 `IL2CPP`로 변경하는 것을 권장합니다.
+
+![프로젝트 설정](/img/linux/3.png)
+![IL2CPP 백엔드](/img/linux/5.png)
+</Callout>
+
+- 먼저 [지원되지 않는 패키지를 제거](#linux-prerequisites)했는지 확인합니다.
+- [월드 테스트](/ko/docs/world#test-the-scene)에서 `Use Scene Provided Here`가 체크되어 있지 *않은지* 확인합니다.
+- `Packages/com.basis.sdk/Scenes/Initialization` 씬이 열려 있는지 확인합니다.
+
+그런 다음 평소와 같이 Basis를 빌드합니다.
+
+## Linux 네이티브
+
+**VR:** `--force-OpenVRLoader` 플래그로 실행해야 할 수 있습니다:
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**: 실행 직후 애플리케이션이 종료되면 XWayland를 사용하세요:
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+Proton / Wine에서 Windows 빌드로 OpenXR을 사용하려면 다음을 추가할 수 있습니다:
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+Steam 실행 인수에 추가합니다.
+
+## 기타 정보
+
+- 마지막으로 테스트된 브랜치 `#developer` 커밋 `102765e5b05663ce9ce2967f3d09021d5216ec51`
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

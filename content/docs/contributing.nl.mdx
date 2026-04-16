@@ -1,0 +1,95 @@
+---
+title: Bijdragen
+description: Hoe bij te dragen aan BasisVR
+icon: GitPullRequest
+---
+
+## BasisDocs-bijdragegids
+
+Deze pagina is gemaakt om mensen te helpen die documentatie willen bijdragen aan de BasisDocs-repository.
+
+BasisDocs gebruikt Fumadocs, een modern documentatieframework. De belangrijkste mappen waarmee je werkt zijn:
+
+- `content/docs/` - Documentatie-inhoud in MDX-formaat
+- `public/img/` - Statische afbeeldingen en bestanden
+
+![Documentatiestructuur](/img/basisdocs-contrib/1.png)
+
+## Aan de slag
+
+De snelste manier om vertrouwd te raken met deze site is je te verdiepen in:
+
+- [MDX-documentatie](https://mdxjs.com/) - Uitgebreide Markdown met JSX-componenten
+- [Fumadocs-documentatie](https://fumadocs.vercel.app/) - Het documentatieframework dat we gebruiken
+
+### Beschikbare componenten
+
+Je kunt verschillende componenten gebruiken in je documentatie:
+
+- `<Callout type="info|warn|error">` - Voor belangrijke opmerkingen en waarschuwingen
+- `<Card>` en `<Cards>` - Voor navigatiekaarten
+- Codeblokken met syntaxismarkering
+- Afbeeldingen met passende alternatieve tekst
+
+## Markdown-functies
+
+Standaard Markdown wordt ondersteund, samen met uitgebreide functies:
+
+- **Tabellen** - Voor gestructureerde gegevens
+- **Codeblokken** - Met taalspecifieke syntaxismarkering
+- **Aankondigingen** - Met behulp van Callout-componenten
+- **Koppelingen** - Intern en extern
+- **Afbeeldingen** - Correct verwezen vanuit `/public/img/`
+
+## Documentatie bijdragen
+
+1. **Fork de repository**
+   
+   Fork de [BasisDocs-repository](https://github.com/BasisVR/BasisDocs) op GitHub.
+
+2. **Kloon je fork**
+   
+   ```bash
+   git clone https://github.com/JOUW_GEBRUIKERSNAAM/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **Installeer afhankelijkheden**
+   
+   ```bash
+   npm install
+   ```
+
+4. **Start de ontwikkelserver**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **Breng je wijzigingen aan**
+   
+   Bewerk MDX-bestanden in `content/docs/` en voeg afbeeldingen toe aan `public/img/`.
+
+6. **Test je wijzigingen**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **Dien een pull request in**
+   
+   Push je wijzigingen en open een pull request op GitHub.
+
+## Richtlijnen
+
+- Gebruik beschrijvende titels en een correcte kopiehiërarchie
+- Voeg alternatieve tekst toe aan alle afbeeldingen
+- Gebruik Callout-componenten in plaats van gewone tekstwaarschuwingen
+- Volg de bestaande bestandsstructuur en naamgevingsconventies
+- Test je wijzigingen lokaal vóór het indienen
+
+Alvast bedankt voor je bijdragen!
+
+### Vragen?
+
+Sluit je aan bij onze [Discord](https://discord.gg/aCzSPKEW2v) als je vragen hebt over bijdragen!

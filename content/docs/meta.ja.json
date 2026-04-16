@@ -1,0 +1,20 @@
+{
+  "title": "ドキュメント",
+  "pages": [
+    "---はじめに---",
+    "index",
+    "faq",
+    "contributing",
+    "---ガイド---",
+    "controls",
+    "avatar",
+    "prop",
+    "world",
+    "scripting",
+    "server",
+    "---技術---",
+    "...technical",
+    "---APIリファレンス---",
+    "...reference"
+  ]
+}

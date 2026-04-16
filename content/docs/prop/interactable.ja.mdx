@@ -1,0 +1,21 @@
+---
+title: インタラクタブル
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## ネットワーク同期プロップの作成方法
+
+プロップはネットワーク同期でき、ランタイム時に生成することができます。ネットワーク同期されたPickup Interactableキューブの読み込み例を示します：
+
+- シーン階層にキューブオブジェクトを追加します。
+
+![キューブのインスペクターウィンドウ](/img/props/2A.png)
+
+- Basis Pickup Interactableコンポーネントを追加します。これにより、ローカルプレイヤーがキューブを持ち上げて移動できるようになります。
+
+![Basis Pickup InteractableコンポーネントのInspectorウィンドウ](/img/props/2B.png)
+
+- Basis Object Sync Networkingコンポーネントを追加します。これにより、すべてのプレイヤーでキューブが同期されます。
+
+![Basic Object Sync NetworkingコンポーネントのInspectorウィンドウ](/img/props/2C.png)

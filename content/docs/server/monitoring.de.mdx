@@ -1,0 +1,32 @@
+---
+title: Überwachung
+---
+
+## Gesundheitscheck-Endpunkt
+
+Beim lokalen Betrieb des Servers können Sie den Serverstatus unter dem Gesundheitscheck-Endpunkt überprüfen:
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| Variable      | Definition                          |
+|---------------|--------------------------------------|
+| `listening`   | Hört der Server auf Verbindungen |
+| `visitors`    | Die Anzahl der aktuell verbundenen Spieler |
+| `capacity`    | Maximale Anzahl der auf dem Server erlaubten Spieler |
+| `sent`        | Gesamtmenge der gesendeten Daten (in Bytes?) |
+| `recv`        | Gesamtmenge der empfangenen Daten (in Bytes?) |
+| `currentTime` | Die aktuelle Serverzeit im ISO 8601-Format |
+| `startTime`   | Die Startzeit des Servers im ISO 8601-Format |
+| `version`     | Die Versionsnummer des Servers. Wichtig: Der Client-Code muss mit der erwarteten ServerVersion übereinstimmen |

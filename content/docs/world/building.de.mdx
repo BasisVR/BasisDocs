@@ -1,0 +1,40 @@
+---
+title: Erstellen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Mindestanforderungen für eine funktionale Basis-Szene
+
+- Importieren Sie Ihre Weltmeshes oder erstellen Sie ein neues 3D-Objekt, z.B. eine Plane oder einen Cube. Stellen Sie sicher, dass ein Collider vorhanden ist.
+- Erstellen Sie ein GameObject, geben Sie ihm einen passenden Namen, und klicken Sie im Inspector auf `Add Component`, dann suchen/wählen Sie die Basis Scene-Komponente.
+
+![Add Component-Menü](/img/worlds/1.png)
+
+![Basis Scene-Komponente](/img/worlds/2.png)
+
+- An diesem Punkt können Sie ein weiteres GameObject erstellen, es Spawn nennen und es an einer Stelle in der Welt platzieren, wo Spieler in die Welt eintreten sollen, oder einfach dasselbe GameObject verwenden, das für die Basis Scene-Komponente erstellt wurde.
+
+![Spawnpunkt in der Szene](/img/worlds/3.png)
+
+- Stellen Sie in jedem Fall sicher, dass Sie das GameObject Ihrer gewählten Spawnposition in das Feld `Spawn Point` platzieren. Es wird dann die Transformation dieses GameObjects verwenden.
+
+![Spawn Point-Feld](/img/worlds/4.png)
+
+## Das AssetBundle erstellen
+
+- Drücken Sie auf der `Basis Scene`-Komponente die Schaltfläche `Create Scene Bee File`.
+
+![Schaltfläche Create Scene Bee File](/img/worlds/5.png)
+
+- Die Ergebnisse werden automatisch wie unten gezeigt geöffnet.
+
+![Erstellungsergebnisse](/img/worlds/6.png)
+
+<Callout type="info">
+Basis verwendet die Dateierweiterung .BEE, die Ihr kompiliertes Asset und die Metadaten enthält, um benutzergenerierte Inhalte zu vereinfachen.
+
+Die .BEE-Datei wird zusammen mit einem zufällig generierten Passwort für den Zugriff im Verzeichnis /AssetBundles/ Ihres Unity-Projekts erstellt und ist standardmäßig vor Unity verborgen.
+
+Wenn Sie möchten, können Sie den generierten .BEE-Dateinamen auch durch etwas Einprägsameres ersetzen. Beachten Sie, dass die Wiederverwendung desselben Namens dazu führt, dass jede frühere Version durch die neue ersetzt wird!
+</Callout>

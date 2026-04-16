@@ -1,0 +1,71 @@
+---
+title: アバターシェーダー
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## URP互換アバターシェーダー
+
+### Universal Render Pipeline/Lit（Unityライセンス）
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![URP Litシェーダー](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [無料版]（MITライセンス） by Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Poiyomiシェーダー](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader（MITライセンス） by s-ilent
+
+- https://github.com/s-ilent/scss または https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shadingシェーダー](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon（MITライセンス） by lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![lilToonシェーダー](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon（MITライセンス） by UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![MToonシェーダー](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader（サブスクリプション） by Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakuraシェーダー](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+これらは最新のドキュメント更新時点で動作/互換性があることが確認されています。
+</Callout>
+
+## Poiyomiシェーダーを使用するアバターをBasisVR/URPで動作させる方法
+
+多くのアバターはPoiyomiシェーダーを使用しており、これはもともとUnityのBuilt-in Render Pipeline（BIRP）でのみ動作していました。しかし現在、PoiyomiシェーダーはBasisVRに使用されているUnityのUniversal Render Pipeline（URP）でも動作するようになりました。
+
+URPのPoiyomiシェーダーサポートはまだベータ版です。BIRP Poiyomiシェーダーで設計されたアバターをお持ちの場合、以下の手順に従ってURP対応に簡単に変換できます。例として、[TomarudoのHatsune Miku](https://boothplorer.com/avatar/3226395)を使用します。
+
+- https://discord.gg/poiyomi #urp-release から最新リリースをダウンロードします。
+
+- キャラクターをUnityシーンにインポートします。シェーダーが期待どおりに見えない場合（色が失われているか、シェーダーの欠如などによりマゼンタ色になっているなど）、いくつかの小さな調整が必要になります。
+
+![ボタンとコンポーネントを示すインスペクターウィンドウ](/img/avatars/23.png)
+
+- アバターのフォルダーにある各マテリアルを選択して、シェーダーをPoiyomi Pro URPに変更します。
+
+![ボタンとコンポーネントを示すインスペクターウィンドウ](/img/avatars/24.png)
+
+- 変更を加えた後、アバターは期待どおりにレンダリングされるはずです。
+
+![ボタンとコンポーネントを示すインスペクターウィンドウ](/img/avatars/25.png)
+
+<Callout type="info">
+URPのPoiyomiシェーダーはPCとAndroidデバイスの両方に対応しています。 
+</Callout>

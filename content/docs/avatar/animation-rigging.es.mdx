@@ -1,0 +1,88 @@
+---
+title: Restricciones
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis actualmente usa el paquete Animation Rigging para proporcionar restricciones. 
+
+<Callout type="info">
+Este paquete se usa debido a la falta de una implementación de código abierto de un sistema de restricciones multi-hilo. Si alguien tiene el tiempo o interés de desarrollar uno, se agradecerían mucho las contribuciones o nuevos proyectos.
+</Callout>
+
+La documentación para todas las restricciones que proporciona Animation Rigging se puede encontrar [aquí](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)
+
+## Configuración para paquetes de Animation Rigging
+<Steps>
+
+<Step>
+**Añadir Rig Builder**: Añade un componente `Rig Builder` y un componente `Animator` en el GameObject `Armature`. 
+
+![Ventana del inspector en el GameObject Armature](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis usa el Animator del GameObject raíz/Avatar para la animación y el rigging*. 
+</Callout>
+
+<Callout type="warning">
+**No puedes usar el Animator de la raíz para el Rig Builder ya que romperá la animación y el cargador de armadura de Basis.**
+</Callout>
+</Step>
+<Step>
+**Crear la configuración de Rig**: Crea un GameObject vacío llamado "Rig Setup" y añade el componente `Rig` a él.
+
+![Ventana del inspector para el GameObject Rig Setup](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Asignar la configuración de Rig**: Asigna el GameObject "Rig Setup" al componente `Rig Builder` de la `Armature`.
+
+![Ventana del inspector para Armature después de la asignación](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Notas sobre los Jiggle Bones
+
+Si Jiggle Bones está afectando alguna restricción, tienes que añadir el `Rig Transform` a todos los huesos padre del hueso de restricción.
+
+Ejemplo: Tienes un láser que está restringido para mirar en la dirección de la cabeza de tu avatar. Tienes que ir desde el padre del láser añadiendo componentes `Rig Transform` hasta llegar a un hueso de Armadura/Humanoide.
+<Callout type="info">
+Esto incluye todos los huesos fuente que no son parte del humanoide. Ejemplo: Las alas afectadas por Jiggle Bones necesitan componentes `Rig Transform` si tienes una restricción que las referencia.
+</Callout>
+<Accordions type="single">
+<Accordion title="Ejemplo de Jiggle Bone">
+![Ejemplo de Jiggle Bones](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## Restricciones de rotación
+<Steps>
+
+<Step>
+
+Primero haz la [Configuración](#setup-for-animation-rigging-packages) y luego continúa con las instrucciones para configurar las restricciones de rotación.
+
+</Step>
+
+<Step>
+
+Añade el componente `Multi-Rotation Constraint` en un GameObject que sea hijo del GameObject `Rig Setup`.
+
+![Componente Twist en la ventana del inspector](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Asigna el hueso que quieres afectar en el campo Constrained Object. Se pueden usar uno o más objetos fuente.
+<Callout type="info">
+Puedes arrastrar y soltar los huesos/GameObjects fuente en el área resaltada en rojo.
+Solo puedes añadir un `Multi-Rotation Constraint` por GameObject.
+</Callout>
+![Componente Twist en la ventana del inspector](/img/avatars/22.png)
+</Step>
+
+</Steps>

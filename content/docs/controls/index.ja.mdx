@@ -1,0 +1,35 @@
+---
+title: 設定とコントロール
+---
+
+## コントロール
+
+BasisVRで利用可能なコントロールについてのページを作成しましょう。
+
+## キーボードショートカット
+
+- F9: デスクトップモードに切り替え
+
+- F10: OpenXRに切り替え
+
+- F11: OpenVRに切り替え
+
+## デバッグのヘルプ
+
+- *BasisDebug.Log("\<ログメッセージ\>");* を使用して、Basisアプリのゲーム内コンソールメニューにLogを出力できます。
+
+- `Player.log` ファイルも確認できます。場所は <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+これは選択したアプリのsteamidを使用するprotonに依存します。エディタでのビルドは異なる場所になります。</Tab></Tabs> このファイルにはプレイ中に発生したUnityの問題のより包括的なログが含まれており、nullreferenceエラーが発生した正確な行のスタックトレースなどが含まれます。
+
+![Basisコンソールメニュー](/img/controls/2.png)
+
+## ライブラリアイテムはどこに保存されますか？
+
+- `ItemKeyStore.json` ファイルは <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+これは選択したアプリのsteamidを使用するprotonに依存します。エディタでのビルドは異なる場所になります。</Tab></Tabs> に存在し、ライブラリに現在入っているアバター、ワールド、プロップのマッピングを保存します。
+
+<Callout>
+コードベースでは、アプリケーションに埋め込まれたライブラリアイテムを含む `EmbeddedItems` クラスもあります。   
+</Callout>

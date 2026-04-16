@@ -1,0 +1,80 @@
+---
+title: Compilazione da Linux
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Il supporto Linux è sperimentale e potrebbe avere problemi aggiuntivi.
+</Callout>
+
+<Callout type="info">
+Attualmente non è consigliato compilare una build Windows o Android da Linux poiché probabilmente mancheranno funzionalità o non funzioneranno affatto.
+</Callout>
+
+Questa pagina presuppone che tu abbia già consultato prima [Guida introduttiva](/docs).
+
+## Prerequisiti Linux
+
+<Callout type="error">
+**Non committare la rimozione delle Utility elencate in questa pagina!**
+Sono necessarie per compilare client Windows e Android!
+</Callout>
+
+Per compilare qualsiasi cosa di Basis sotto Linux è necessario rimuovere `com.meta.xr.sdk.core` "Meta XR Core SDK" e `com.unity.xr.openxr` "OpenXR Plugin" tramite il [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html).
+
+Potrebbe essere necessario installare `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64" ma Unity dovrebbe installarlo automaticamente.
+
+![Unity Package Manager](/img/linux/1.png)
+![Rimozione pacchetti](/img/linux/2.png)
+
+## Compilazione di file .BEE da Linux
+
+Per compilare file .bee per Windows e Android da un Editor Linux, è necessario eliminare il file `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` e impostare il "Scripting Backend" su `Mono` in `Edit > Project Settings > Player > Configuration > Scripting Backend`.
+
+![Impostazioni progetto](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## Compilazione di un client Linux nativo da Linux
+
+<Callout type="info">
+Si consiglia di cambiare lo "Scripting Backend" in `IL2CPP` per prestazioni migliori.
+
+![Impostazioni progetto](/img/linux/3.png)
+![Backend IL2CPP](/img/linux/5.png)
+</Callout>
+
+- Assicurati di aver prima [rimosso i pacchetti non supportati](#linux-prerequisites).
+- Assicurati di *non* avere `Use Scene Provided Here` selezionato dal [Test del mondo](/it/docs/world#test-the-scene).
+- Assicurati che la scena `Packages/com.basis.sdk/Scenes/Initialization` sia aperta.
+
+Poi compila Basis come faresti normalmente.
+
+## Linux nativo
+
+**VR:** Potrebbe essere necessario avviare con il flag `--force-OpenVRLoader`:
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**: Se l'applicazione si chiude immediatamente dopo l'avvio, usa XWayland:
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+Se desideri usare OpenXR con una build Windows sotto Proton / Wine, puoi aggiungere:
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+Agli argomenti di avvio Steam.
+
+## Altre informazioni
+
+- Ultimo test funzionante sul branch `#developer` commit `102765e5b05663ce9ce2967f3d09021d5216ec51`
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

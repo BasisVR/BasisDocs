@@ -1,0 +1,105 @@
+---
+title: Uploaden
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Je prop uploaden
+
+Basis stelt je in staat een Prop .BEE-bestand te laden vanaf een externe URL-locatie, wat ook vereist is zodat andere gebruikers in een netwerkverbinding de assets kunnen laden.
+
+<Callout type="info">
+Je kunt je prop-wachtwoord direct toevoegen aan de URL van je .BEE-bestand via `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Waarbij je `#` en een Base64-gecodeerde string van je wachtwoord toevoegt.
+</Callout>
+
+Om dit te ondersteunen, moet je een directe link naar een externe locatie gebruiken. In dit voorbeeld gebruiken we Google Drive.
+
+(Google Drive ondersteunt directe links naar bestanden tot 100 MB vanwege hun virusscanbeleidsregel.)
+
+Upload het **BEE-bestand** naar Google Drive of een andere hostingprovider die directe links naar bestanden zonder inloggen toestaat.
+
+- Maak een map op je Drive en stel de deelinstelling in op "Iedereen met de link."
+
+Wanneer je nu bestanden naar deze map sleept, hoef je die rechten niet afzonderlijk in te stellen.
+
+- Klik op het hamburgermenu rechtsboven van het asset dat je zojuist in de map hebt geüpload.
+- Zoek "Delen" en klik op "Link kopiëren."
+
+We moeten de URL bekijken om de benodigde informatie voor je BEE-bestand te vinden.
+
+
+Voorbeeld:
+```
+https://drive.google.com/file/d/JouwIDBrengtAlleLagNaarMijnTuin/view?usp=sharing
+```
+
+We willen de unieke identificatiecode in de URL kopiëren en toevoegen aan het volgende:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Voorbeeld:
+```
+https://drive.google.com/uc?export=download&id=JouwIDBrengtAlleLagNaarMijnTuin
+```
+<UrlConverter />
+
+<Callout type="warn">
+**UPLOAD JE GEGENEREERDE WACHTWOORDBESTAND NIET EN DEEL HET NIET**
+</Callout>
+
+## Laden in Basis
+<Steps>
+
+<Step>
+Start Basis, open het menu en selecteer Bibliotheek.
+
+![Basis-menu](/img/props/8.png)
+</Step>
+
+<Step>
+Selecteer in het Bibliotheek-menu 'Nieuwe inhoud toevoegen' rechtsboven in het venster.
+
+![Nieuwe inhoud toevoegen-knop](/img/props/9.png)
+</Step>
+
+<Step>
+Plak de **BEE-bestand-URL** in het veld BEE File URL en het **SUPERGEHEIME VERSLEUTELDE WACHTWOORD** in het veld BEE File Password en klik vervolgens op 'Toevoegen'.
+
+![BEE-bestand-URL & wachtwoord](/img/props/10.png)
+</Step>
+
+<Step>
+De inhoud van het BEE-bestand wordt gevalideerd voordat het aan je bibliotheek wordt toegevoegd.
+
+![BEE-bestand toevoegen-knop](/img/props/11.png)
+</Step>
+</Steps>
+
+## Propbeheer
+
+De recent toegevoegde prop is te vinden in de Bibliotheek.
+
+![Nieuwe prop in bibliotheek](/img/props/12.png)
+
+Props kunnen worden gespawnd, verwijderd of gedeeld met anderen in de wereld door op de overeenkomstige knoppen onderaan het venster te klikken.
+
+![Propdetails](/img/props/13.png)
+
+Daarnaast zie je hier ook een aantal nuttige informatievensters:
+
+- **(1) Prop-informatie** - Het detailvenster toont de compilatietijdstempel, titel en beschrijving
+- **(2) Platformcompatibiliteit** - Pictogrammen geven aan welke OS-platformen deze prop ondersteunen
+- **(3) Statistieken** - Toont het aantal driehoeken, materialen en botten
+- **(4) Kenmerken** - Hiermee kun je het netwerkgedrag en de persistentie van de prop instellen
+- **(5) Vastmaken** - Je kunt deze prop vastzetten aan het hoofdmenuvenster bovenaan
+
+![Spawn Bounding Box](/img/props/14.png)
+
+Wanneer je op de knop 'Spawn' klikt, kun je de exacte positie bepalen waar de prop in de wereld moet verschijnen.
+
+![Prop gespawnd](/img/props/15.png)
+
+Na een korte periode verschijnt het asset dan, lokaal of via het netwerk, afhankelijk van de propeigenschappen.

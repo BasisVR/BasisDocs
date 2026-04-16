@@ -1,0 +1,40 @@
+---
+title: 빌드
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 기능하는 Basis 씬의 최소 요구 사항
+
+- 월드 메시를 가져오거나 Plane 또는 Cube와 같은 새 3D 오브젝트를 생성합니다. 콜라이더가 있는지 확인하세요.
+- gameObject를 만들고 적절한 이름을 지정한 후, Inspector에서 `Add Component`를 클릭하여 Basis Scene 컴포넌트를 찾아 선택합니다.
+
+![컴포넌트 추가 메뉴](/img/worlds/1.png)
+
+![Basis Scene 컴포넌트](/img/worlds/2.png)
+
+- 이 시점에서 다른 gameObject를 만들어 Spawn이라고 이름 짓고, 플레이어가 월드에 스폰되기를 원하는 위치에 배치하거나, Basis Scene 컴포넌트를 위해 만든 동일한 gameObject를 사용할 수도 있습니다.
+
+![씬의 스폰 포인트](/img/worlds/3.png)
+
+- 어느 방법이든, 선택한 스폰 위치의 gameObject를 `Spawn Point` 필드에 배치하면 해당 gameObject의 transform을 사용합니다.
+
+![스폰 포인트 필드](/img/worlds/4.png)
+
+## AssetBundle 빌드
+
+- `Basis Scene` 컴포넌트에서 `Create Scene Bee File` 버튼을 누릅니다.
+
+![씬 Bee 파일 생성 버튼](/img/worlds/5.png)
+
+- 아래와 같이 결과가 자동으로 열립니다.
+
+![빌드 결과](/img/worlds/6.png)
+
+<Callout type="info">
+Basis는 .BEE 파일 확장자를 사용하며, 컴파일된 에셋과 메타데이터를 포함하여 사용자 생성 콘텐츠를 단순화합니다.
+
+.BEE 파일은 접근을 위한 무작위 생성 비밀번호와 함께 Unity 프로젝트 경로의 /AssetBundles/ 디렉토리 아래에 생성되며 Unity에서 기본적으로 숨겨집니다.
+
+원한다면 생성된 .BEE 파일 이름을 더 기억하기 쉬운 것으로 바꿀 수도 있습니다. 동일한 이름을 재사용하면 이전 버전이 새 버전으로 교체됩니다!
+</Callout>

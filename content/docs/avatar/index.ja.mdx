@@ -1,0 +1,71 @@
+---
+title: はじめに
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概要
+
+アバターはBasisにおけるソーシャルVR体験の中心です。このドキュメントでは、UnityとBasis SDKを使用して独自のアバターを作成、ビルド、アップロード、カスタマイズする方法を説明します。
+
+Basisはアバターに`.BEE`ファイル形式を使用しており、コンパイルされたアセットとメタデータを単一の共有しやすいファイルにパッケージ化します。アバターはヒューマノイドリグ、ブレンドシェイプ、マテリアル、ジグル物理演算、フェイストラッキングをサポートしています。
+
+## クイックスタートガイド
+
+<Cards>
+  <Card
+    title="セットアップ"
+    description="Unityをセットアップしてアバターモデルを準備する"
+    href="/ja/docs/avatar/setup"
+  />
+  <Card
+    title="ビルド"
+    description="アバターを.BEEファイルにビルドする"
+    href="/ja/docs/avatar/building"
+  />
+  <Card
+    title="アップロード"
+    description="アバターをアップロードしてBasisで読み込む"
+    href="/ja/docs/avatar/uploading"
+  />
+  <Card
+    title="ジグル物理演算"
+    description="アバターに動的な物理演算を追加する"
+    href="/ja/docs/avatar/jiggle"
+  />
+  <Card
+    title="フェイストラッキング"
+    description="目と顔のトラッキングサポートを追加する"
+    href="/ja/docs/avatar/face-tracking"
+  />
+  <Card
+    title="シェーダー"
+    description="アバター用の互換性のあるURPシェーダー"
+    href="/ja/docs/avatar/shaders"
+  />
+</Cards>
+
+## 主な機能
+
+- **ヒューマノイドリグサポート**: 自動ボーンマッピングを備えた標準Unityヒューマノイドリグ
+- **ブレンドシェイプ**: 表情とビジームの完全サポート
+- **マルチプラットフォーム**: Windows、Linux、Mac、Android、iOSでのビルド
+- **ジグル物理演算**: 動的要素のためのオプション物理シミュレーション
+- **フェイストラッキング**: オプションの目と顔のトラッキングサポート
+- **URPシェーダー**: UnityのUniversal Render Pipelineと互換
+
+## 必要条件
+
+- **Unity**: Unity 6（最新サポートバージョン）
+- **モデル形式**: ヒューマノイドリグを持つFBX
+- **シェーダー**: URP互換シェーダー（Lit、Poiyomi、lilToonなど）
+- **ホスティング**: .BEEファイル用のリモートURLホスティング（Google Driveは最大100MB）
+
+## ワークフロー概要
+
+1. アバターモデルをUnityに**インポート**する
+2. リグとスキンドメッシュを**設定**する
+3. Basis Avatarコンポーネントを**追加**する
+4. ターゲットプラットフォーム用に.BEEファイルを**ビルド**する
+5. ホスティングサービスに**アップロード**する
+6. URLとパスワードを使ってBasisで**読み込む**

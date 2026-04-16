@@ -1,0 +1,40 @@
+---
+title: Erstellen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Die Basis Encrypted Extension (BEE) Datei
+
+Basis speichert benutzergenerierte Inhalte als .BEE-Datei, die Ihr kompiliertes Asset und dessen Metadaten enthält. Jede generierte .BEE-Datei enthält ein zufällig generiertes Passwort für den Zugriff: `Basis\Basis\AssetBundles`.
+
+## Doppelte GameObjects vermeiden
+
+- Standardmäßig benennt die BasisAvatar-Komponente alle doppelt benannten GameObjects innerhalb der Hierarchie des Avatars um.
+
+<Callout type="warning">
+Wenn Sie `Do not auto-rename bones` in den Verarbeitungsoptionen aktivieren, stellen Sie sicher, dass es **KEINE** doppelt benannten GameObjects in der Hierarchie Ihres Avatars gibt, einschließlich der Armatur.
+</Callout>
+
+## Das AssetBundle erstellen
+
+- Überprüfen Sie unten in der Basis Prop-Komponente, ob die entsprechenden Build-Targets für Ihren Inhalt aktiviert sind. Basis unterstützt: Windows, Android, Mac, Linux und IOS.
+- Drücken Sie die Schaltfläche 'Create Prop Bee File' und warten Sie.
+
+(BILDREFERENZ HIER EINFÜGEN)
+
+- Die Ergebnisse werden automatisch in einem neuen Fenster geöffnet.
+
+(BILDREFERENZ HIER EINFÜGEN)
+
+- Jede Plattform kann beim ersten Mal durchschnittlich ein bis zwei Minuten für den Build benötigen. Nachfolgende Builds dauern weniger.
+
+<Callout type="info">
+Gut zu wissen:
+
+- Sie können ein benutzerdefiniertes Passwort für Ihre generierte BEE-Datei verwenden. 
+
+- Sie können auch den generierten .BEE-Dateinamen durch etwas leichter Merkbares ersetzen. Beachten Sie, dass die Wiederverwendung desselben Namens die vorherige Version ersetzt!
+
+(BILDREFERENZ HIER EINFÜGEN)
+</Callout>

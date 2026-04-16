@@ -1,0 +1,88 @@
+---
+title: 上傳
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## 上傳您的道具
+
+Basis 允許從遠端 URL 載入道具 .BEE 檔案，這也是網路工作階段中所有使用者載入資產所必需的。
+
+<Callout type="info">
+您可以透過 `https://locationofBeefile.BEE#(Base64Encode(Password))` 將道具密碼直接新增到 .BEE 檔案的 URL 中。<br />
+即新增 `#` 和密碼的 Base64 編碼字串。
+</Callout>
+
+將 **BEE 檔案**上傳到 Google Drive 或任何允許不登入直接連結檔案的託管提供商。
+
+- 建立共用設定為「知道連結的任何人」的資料夾。
+- 點擊漢堡選單，「複製連結」。
+
+範例：
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**請勿上傳您生成的密碼檔案或將其分享給他人**
+</Callout>
+
+## 在 Basis 中載入
+<Steps>
+
+<Step>
+啟動 Basis，開啟選單，選擇圖書館。
+
+![Basis 選單](/img/props/8.png)
+</Step>
+
+<Step>
+選擇視窗右上角附近的「新增內容」。
+
+![新增內容按鈕](/img/props/9.png)
+</Step>
+
+<Step>
+貼上 **BEE 檔案 URL** 和**超級機密加密密碼**，然後點擊「新增」。
+
+![BEE 檔案 URL 和密碼](/img/props/10.png)
+</Step>
+
+<Step>
+BEE 檔案內容在新增到圖書館之前將被驗證。
+
+![新增 BEE 檔案按鈕](/img/props/11.png)
+</Step>
+</Steps>
+
+## 道具管理
+
+您可以在圖書館中找到最近新增的道具。
+
+![圖書館中的新道具](/img/props/12.png)
+
+道具可以在世界中生成、刪除或與他人共享。
+
+![道具詳情](/img/props/13.png)
+
+有用的資訊面板：
+
+- **(1) 道具資訊** - 編譯時間戳、標題和描述
+- **(2) 平台相容性** - 支援此道具的作業系統平台
+- **(3) 統計資料** - 三角形、材質和骨骼數量
+- **(4) 特性** - 道具的網路行為和持久性
+- **(5) 固定** - 可將此道具固定到頂部主選單視窗
+
+![生成邊界框](/img/props/14.png)
+
+點擊「生成」按鈕後，可以定位道具在世界中生成的確切位置。
+
+![已生成道具](/img/props/15.png)
+
+片刻後，資產將根據道具特性以本地或網路方式出現。

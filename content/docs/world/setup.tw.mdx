@@ -1,0 +1,21 @@
+---
+title: 設定
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 設定 Unity 編輯器
+
+- 請參閱[入門](/tw/docs#installing-unity)部分，了解如何安裝最新支援的 Unity 編輯器版本並取得 Basis 框架。
+- 開啟 Unity Hub 並新增現有專案，選擇已解壓縮/複製的 Basis 專案資料夾。
+- Unity 專案載入完成後，您可以載入世界檔案：
+- 任一方式，
+  - 在專案層級中找到 `Assets`，在 `Assets` 內右鍵點擊任意空白處，選擇 `Show in Explorer`。
+  - 複製您的世界檔案 [網格/材質/紋理等]。
+- 或
+  - 從 Assets 選單匯入包含檔案的 .unity 套件：`Import Package > Custom Package`。
+- 返回 Unity 視窗並等待匯入程序完成。
+
+<Callout type="info">
+如果您將內容放置在新目錄「Assets > _UserContent」中，專案的預設 .gitignore 檔案將在 git 中隱藏此資料夾的變更。
+</Callout>

@@ -1,0 +1,54 @@
+---
+title: 简介
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概述
+
+道具在 Basis 框架项目中提供了丰富的社交 VR 体验动态。本文档将指导您使用 Unity 和 Basis SDK 创建、构建、上传和自定义您自己的道具。
+
+Basis 使用 `.BEE` 文件格式存储道具，将编译后的资产和元数据打包成一个易于共享的单一文件。道具支持混合形状、材质和脚本。
+
+## 快速入门指南
+
+<Cards>
+  <Card
+    title="设置"
+    description="设置 Unity 并准备您的道具"
+    href="/cn/docs/prop/setup"
+  />
+  <Card
+    title="构建"
+    description="将您的道具构建为 .BEE 文件"
+    href="/cn/docs/prop/building"
+  />
+  <Card
+    title="上传"
+    description="上传并在 Basis 中加载您的道具"
+    href="/cn/docs/prop/uploading"
+  />
+</Cards>
+
+## 主要功能
+
+- **人形骨骼支持**：标准 Unity 人形骨骼，支持自动骨骼映射
+- **混合形状**：完整支持面部表情和口型同步
+- **多平台**：支持 Windows、Linux、Mac、Android 和 iOS 构建
+- **URP 着色器**：与 Unity 的通用渲染管线兼容
+
+## 要求
+
+- **Unity**：Unity 6（最新支持版本）
+- **模型格式**：带人形骨骼的 FBX
+- **着色器**：URP 兼容着色器（Lit、Poiyomi、lilToon 等）
+- **托管**：.BEE 文件的远程 URL 托管（Google Drive 最大 100MB）
+
+## 工作流程概述
+
+1. 将虚拟形象模型**导入** Unity
+2. **配置**骨骼和蒙皮网格
+3. **添加** Basis Avatar 组件
+4. 为目标平台**构建** .BEE 文件
+5. **上传**到托管服务
+6. 使用 URL 和密码在 Basis 中**加载**

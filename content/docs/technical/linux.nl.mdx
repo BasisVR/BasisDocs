@@ -1,0 +1,80 @@
+---
+title: Bouwen vanuit Linux
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Linux-ondersteuning is experimenteel en kan extra problemen hebben.
+</Callout>
+
+<Callout type="info">
+Het wordt momenteel niet aanbevolen om een Windows- of Android-build te maken vanuit Linux, omdat deze waarschijnlijk functies missen of helemaal niet werken.
+</Callout>
+
+Deze pagina gaat ervan uit dat je eerst [Aan de slag](/nl/docs) hebt doorlopen.
+
+## Linux-vereisten
+
+<Callout type="error">
+**Verwijder de op deze pagina vermelde hulpprogramma's NIET uit de commit!**
+Ze zijn vereist voor het bouwen van Windows- en Android-clients!
+</Callout>
+
+Om iets van Basis onder Linux te bouwen, moet je `com.meta.xr.sdk.core` "Meta XR Core SDK" en `com.unity.xr.openxr` "OpenXR Plugin" verwijderen via de [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html).
+
+Mogelijk moet je `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64" installeren, maar Unity zou dat automatisch voor je moeten installeren.
+
+![Unity Package Manager](/img/linux/1.png)
+![Pakketten verwijderen](/img/linux/2.png)
+
+## .BEE-bestanden bouwen vanuit Linux
+
+Voor het bouwen van .bee-bestanden voor Windows en Android vanuit een Linux-editor moet je het bestand `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` verwijderen en de "Scripting Backend" instellen op `Mono` onder `Edit > Project Settings > Player > Configuration > Scripting Backend`.
+
+![Projectinstellingen](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## Een native Linux-client bouwen vanuit Linux
+
+<Callout type="info">
+Het wordt aanbevolen om je "Scripting Backend" te wijzigen naar `IL2CPP` voor betere prestaties.
+
+![Projectinstellingen](/img/linux/3.png)
+![IL2CPP Backend](/img/linux/5.png)
+</Callout>
+
+- Zorg ervoor dat je eerst de [niet-ondersteunde pakketten hebt verwijderd](#linux-prerequisites).
+- Zorg ervoor dat `Use Scene Provided Here` NIET is ingeschakeld vanuit [Wereld testen](/nl/docs/world#test-the-scene).
+- Zorg ervoor dat de scène `Packages/com.basis.sdk/Scenes/Initialization` open is.
+
+Bouw Basis daarna zoals je normaal zou doen.
+
+## Linux Native
+
+**VR:** Mogelijk moet je starten met de vlag `--force-OpenVRLoader`:
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**: Als de applicatie direct na het starten wordt gesloten, gebruik dan XWayland:
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+Als je OpenXR wilt gebruiken met een Windows-build onder Proton / Wine, kun je het volgende toevoegen:
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+Aan je Steam-startargumenten.
+
+## Overige informatie
+
+- Laatste geteste werkende versie op branch `#developer` commit `102765e5b05663ce9ce2967f3d09021d5216ec51`
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

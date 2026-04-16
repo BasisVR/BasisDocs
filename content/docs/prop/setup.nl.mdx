@@ -1,0 +1,65 @@
+---
+title: Instellen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## De Unity Editor instellen
+
+- Zoals beschreven in de sectie [Aan de slag](/nl/docs#installing-unity) voor het installeren van de nieuwste ondersteunde Unity Editor-versie en het verkrijgen van het Basis-framework.
+- Open Unity Hub en voeg een bestaand project toe; kies de geëxtraheerde/gekloonde Basis-projectmap.
+- Bij het eerste laden van het project verschijnt de volgende melding; klik op 'Restart Editor'.
+
+![Unity-herstartprompt](/img/avatars/0.png)
+
+- Zodra het project is geladen, kun je je Avatar-bestanden importeren:
+- Ofwel,
+  - Zoek `Assets` in de Project-hiërarchie, klik binnen `Assets` met de rechtermuisknop op een leeg gedeelte en selecteer `Show in Explorer`.
+  - Kopieer je Avatar-bestanden [Mesh/Materialen/Texturen, enz.].
+- of
+  - Importeer een .unity-pakket met je bestanden via het Assets-menu: Import Package > Custom Package.
+- Ga terug naar het Unity-venster en wacht tot het importproces is voltooid.
+
+<Callout type="info">
+Als je je inhoud plaatst in een nieuw mapje "Assets > _UserContent", verbergt het standaard .gitignore-bestand van het project de wijzigingen in git voor deze map.
+</Callout>
+
+## Model importeren
+
+- Zoek de locatie van je Prop-model (doorgaans aangeleverd in .FBX-formaat).
+- Klik op het bestand en ga naar de sectie `Model` in het venster Import Settings.
+- Zorg ervoor dat `Read/Write` en `Legacy Blend Shape Normals` zijn aangevinkt zoals hieronder.
+
+(VOEG HIER AFBEELDINGSVERWIJZING IN)
+
+- Ga naar de sectie `Rig` van het venster Import Settings.
+- Klik op het vervolgkeuzemenu `Animation Type` en zorg ervoor dat `Generic` is geselecteerd.
+
+(VOEG HIER AFBEELDINGSVERWIJZING IN)
+
+
+## Skinned Mesh instellen
+
+- Een overweging voor props met meerdere Skinned Meshes is wanneer verschillende bounding box-groottes ervoor zorgen dat afzonderlijke meshes in en uit beeld knipperen terwijl de rest van de Prop zichtbaar is voor externe kijkers.
+- Je kunt de waarden Center X, Y, Z & Extent X, Y, Z overschrijven in de sectie genaamd `Bounds` bovenaan de Skinned Mesh Renderer-component. Het is doorgaans een goed idee om dit voor de afzonderlijke Skinned Meshes op hetzelfde in te stellen.
+
+(VOEG HIER AFBEELDINGSVERWIJZING IN)
+
+## Materialen/Shaders
+
+- Je kunt direct aan de slag met de Universal Render Pipeline/Lit-shader die bij Unity 6 wordt meegeleverd.
+- Anders hebben we een lijst met compatibele [Avatar-shaders](/nl/docs/avatar/shaders) samengesteld die je kunt gebruiken.
+
+## Basis Prop instellen
+
+- De bovenstaande stappen voegen automatisch een Animator-component toe aan je Avatar-prefab wanneer je deze in de scène plaatst.
+- Klik op het bovenliggende GameObject van de Avatar op `Add Component` en voeg `Basis Prop` toe.
+- Voer de gewenste Prop-naam en -beschrijving in.
+- Zorg ervoor vóór het selecteren van `Create Prop Bee File` dat alle shaders compatibel zijn. Het BEE-bestand wordt niet gegenereerd als er incompatibele shader-fouten zijn op je Prop. Als er problemen zijn, zal de inspector hierover rapporteren, dus zorg ervoor dat je ze oplost!
+
+(VOEG HIER AFBEELDINGSVERWIJZING IN)
+
+<Callout type="info">
+Als je nieuw bent met Skinned Mesh Renderer blend shapes of het uploaden van props in het algemeen: het zijn in feite gewoon schuifregelaars waarmee je de morphs op je model kunt aanpassen.
+
+</Callout>

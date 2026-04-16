@@ -1,0 +1,21 @@
+---
+title: Interaktiv
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Wie man ein netzwerksynchronisiertes Prop erstellt
+
+Props können netzwerksynchronisiert und zur Laufzeit generiert werden. Hier ist ein Beispiel, wie man einen netzwerksynchronisierten Pickup Interactable-Würfel lädt:
+
+- Fügen Sie ein Würfelobjekt in die Szenenhierarchie ein.
+
+![Inspektor-Fenster beim Würfel](/img/props/2A.png)
+
+- Fügen Sie eine Basis Pickup Interactable-Komponente hinzu. Dies ermöglicht es einem lokalen Spieler, den Würfel aufzuheben und zu bewegen.
+
+![Inspektor-Fenster bei der Basis Pickup Interactable-Komponente](/img/props/2B.png)
+
+- Fügen Sie eine Basis Object Sync Networking-Komponente hinzu. Dies ermöglicht es, den Würfel für alle Spieler zu synchronisieren.
+
+![Inspektor-Fenster bei der Basic Object Sync Networking-Komponente](/img/props/2C.png)

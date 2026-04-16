@@ -1,0 +1,31 @@
+---
+title: テスト
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## シーンをテストする
+
+<Callout type="warn">
+プロジェクトファイルで`BasisFramework` .prefabアセットを選択してください。**このプレハブを現在のシーンにインスタンス化しないでください！Basis SDKが自動的に行います！**
+</Callout>
+
+- AssetBundleが作成されたら、`Packages > Basis SDK > Prefabs > Boot`にある`BasisFramework`プレハブを通してこれを読み込むことができます。
+
+![BasisFrameworkプレハブの場所](/img/worlds/7.png)
+
+- 新しいAssetBundleの場所を`Remote BEE File Location`フィールドに入力し、`/AssetBundles/`ディレクトリに生成された`dontuploadmepassword.txt`ファイルに記載された`Unlock Password`を入力してから、`Use Scene Provided Here`を有効にします。
+
+![BasisFrameworkの設定](/img/worlds/8.png)
+
+<Callout type="info">
+注意：*Use Scene Provided Here*インスペクタープロパティがオンになっている場合、*Remote Bee File Location*で指定されたシーンが読み込まれます。オフの場合は、Basis Config Loaderを通じて生成されたXMLシーンが読み込まれます（存在する場合）。
+</Callout>
+
+- `Packages > Basis SDK > Scenes`から`Initialization`シーンを読み込み、Playを押します。
+
+![Initializationシーン](/img/worlds/9.png)
+
+- ユーザー名を入力して「Connect」を押します。ローカルマシンで[サーバー](/ja/docs/server)が起動している*場合*は、localhostを使用できます。
+
+- その後、ワールドまたは接続しているサーバーのスポーン位置にロードされます。

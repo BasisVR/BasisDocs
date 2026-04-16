@@ -1,0 +1,94 @@
+---
+title: 上傳
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## 上傳您的虛擬形象
+
+Basis 允許您從遠端 URL 載入虛擬形象 .BEE 檔案，這也是網路工作階段中其他使用者載入資產所必需的。
+
+<Callout type="info">
+您可以透過 `https://locationofBeefile.BEE#(Base64Encode(Password))` 將虛擬形象密碼直接新增到 .BEE 檔案的 URL 中。<br />
+即在 URL 後新增 `#` 和密碼的 Base64 編碼字串。
+</Callout>
+
+為了支援這一點，您需要直接連結到遠端位置。在此範例中，我們將使用 Google Drive。
+
+（由於 Google Drive 的病毒掃描政策，它支援最大 100MB 檔案的直接連結。）
+
+將 **BEE 檔案**上傳到 Google Drive，或任何允許在不登入的情況下直接連結到檔案的託管提供商。
+
+- 在您的 Drive 上建立一個資料夾，並將其共用設定設為「知道連結的任何人」。
+
+現在當您將檔案拖入此資料夾時，無需單獨設定該權限。
+
+- 點擊剛上傳到資料夾中的資產右上角的漢堡選單。
+- 找到「共用」並點擊「複製連結」。
+
+我們需要查看 URL 以取得 BEE 檔案所需的資訊。
+
+範例：
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+我們要複製 URL 中的唯一識別碼並將其新增到以下內容中：
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+範例：
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**請勿上傳您生成的密碼檔案或將其分享給他人**
+</Callout>
+
+## 在 Basis 中載入
+<Steps>
+
+<Step>
+啟動 Basis，開啟選單，選擇圖書館。
+
+![Basis 選單](/img/avatars/11.png)
+</Step>
+
+<Step>
+在圖書館選單中，選擇視窗右上角附近的「新增內容」。
+
+![新增虛擬形象按鈕](/img/avatars/12.png)
+</Step>
+
+<Step>
+將 **BEE 檔案 URL** 貼上到 BEE 檔案 URL 欄位，將**超級機密加密密碼**貼上到 BEE 檔案密碼欄位，然後點擊下方的「新增」。
+
+![BEE 檔案 URL 和密碼](/img/avatars/13.png)
+</Step>
+
+<Step>
+BEE 檔案的內容在新增到您的圖書館之前將被驗證。
+
+![新增 BEE 檔案按鈕](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## 虛擬形象管理
+
+您可以在圖書館中找到最近新增的虛擬形象。
+
+![圖書館中的新虛擬形象](/img/avatars/15.png)
+
+可以透過點擊視窗底部相應的按鈕，在世界中載入、刪除或與他人共享虛擬形象。
+
+![虛擬形象詳情](/img/avatars/16.png)
+
+此外，您還會在這裡看到一些有用的資訊面板：
+
+- **(1) 虛擬形象資訊** - 詳情面板顯示編譯時間戳、標題和描述
+- **(2) 平台相容性** - 圖示顯示哪些作業系統平台支援此虛擬形象
+- **(3) 統計資料** - 顯示三角形、材質和骨骼數量

@@ -1,0 +1,101 @@
+---
+title: Configurazione
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurare l'Unity Editor
+
+- Come indicato nella sezione [Introduzione](/it/docs#installing-unity) per installare l'ultima versione supportata dell'Unity Editor e acquisire il framework Basis.
+- Apri Unity Hub e aggiungi un progetto esistente, scegli la cartella del progetto Basis estratta/clonata.
+- Al caricamento iniziale del progetto vedrai il seguente prompt; fai clic su 'Restart Editor'.
+
+![Prompt di riavvio di Unity](/img/avatars/0.png)
+
+- Una volta caricato il progetto, puoi ora caricare i tuoi file Avatar:
+- Oppure,
+  - Trova `Assets` nella gerarchia del progetto, all'interno di `Assets` fai clic con il tasto destro su uno spazio vuoto e seleziona `Show in Explorer`
+  - Copia i tuoi file Avatar [Mesh/Materiali/Texture, ecc.]
+- oppure
+  - Importa un pacchetto .unity contenente i tuoi file, dal menu Assets, Import Package > Custom Package
+- Torna alla finestra di Unity e attendi il completamento del processo di importazione.
+
+<Callout type="info">
+Se inserisci il tuo contenuto in una nuova directory "Assets > _UserContent", il file .gitignore predefinito del progetto nasconderà le modifiche in git per questa cartella.
+</Callout>
+
+## Importare il modello
+
+- Trova la posizione del tuo modello Avatar (di solito fornito in formato .FBX).
+- Fai clic sul file e poi vai alla sezione `Model` della finestra delle impostazioni di importazione.
+- Assicurati che `Red/Write` e `Legacy Blend Shape Normals` siano selezionati come indicato di seguito.
+
+![Impostazioni di importazione del modello](/img/avatars/1.png)
+
+- Vai alla sezione `Rig` della finestra delle impostazioni di importazione.
+- Fai clic sul menu a tendina `Animation Type` e seleziona `Humanoid`, poi premi `Apply` come mostrato di seguito.
+
+![Impostazioni Rig](/img/avatars/2.png)
+
+- Successivamente, il pulsante `Configure` sopra `Apply` diventa selezionabile; fai clic e verifica le mappature delle ossa.
+
+![Mappatura delle ossa](/img/avatars/3.png)
+
+- Questo dovrebbe mostrare tutte le ossa obbligatorie come selezionate; assicurati che sia corretto per il tuo Armature.
+- Infine, fai clic sul pulsante `Head` nella finestra `Mapping` e rimuovi l'assegnazione per la `Jaw`; di solito questa è errata.
+
+![Mappatura della testa](/img/avatars/4.png)
+
+<Callout type="info">
+In alcuni casi, l'inspector di Unity potrebbe indicare che le mappature delle ossa del tuo avatar non sono correttamente assegnate, o che l'avatar non è in T-pose. Per risolvere questo problema, puoi fare clic sui menu a tendina Mapping e Pose e selezionare Automap o Enforce T-Pose.
+
+![Finestra inspector che mostra come mappare automaticamente il rig dell'avatar](/img/avatars/4a.png)
+
+![Finestra inspector che mostra come applicare la T-pose](/img/avatars/4b.png)
+
+</Callout>
+
+## Configurazione Skinned Mesh
+
+- Attualmente non ci sono requisiti per nominare la Skinned Mesh del tuo Avatar come `Body` o altra variazione usata sulle piattaforme virtuali.
+- Se hai più skinned mesh, considera di associarle tutte allo stesso punto di riferimento sul corpo per ereditare le light probe nella scena. Puoi farlo assegnando un osso dell'Armature (di solito Hips) al campo `Anchor Override`.
+
+![Anchor override](/img/avatars/5.png)
+
+- Un'altra considerazione per gli Avatar con più Skinned Mesh è quando dimensioni diverse dei bounding box causano la comparsa e scomparsa di mesh individuali mentre il resto dell'Avatar è visibile per i visualizzatori remoti.
+- Puoi sovrascrivere i valori Center X, Y, Z & Extent X, Y, Z nella sezione `Bounds` nella parte superiore del componente Skinned Mesh Renderer. Di solito è una buona idea impostare gli stessi valori per le diverse Skinned Mesh.
+
+![Impostazioni Bounds](/img/avatars/6.png)
+
+## Materiali/Shader
+
+- Puoi iniziare subito con lo shader Universal Render Pipeline/Lit incluso in Unity 6.
+- Altrimenti, abbiamo compilato un elenco di [Shader Avatar](/it/docs/avatar/shaders) compatibili che puoi usare.
+
+## Configurazione Basis Avatar
+
+- I passaggi precedenti dovrebbero aggiungere automaticamente un componente Animator al prefab del tuo Avatar quando lo trascini nella scena.
+- Sul GameObject padre dell'Avatar, fai clic su `Add Component` e aggiungi `Basis Avatar`.
+- Inserisci il nome e la descrizione preferiti per il tuo Avatar.
+- In `Assigned Input`, assicurati che un Animator sia assegnato. Di solito questo viene fatto automaticamente. Inoltre, assegna le Skinned Mesh Renderer che contengono le blendshape del viso e del blink per il tuo avatar. Puoi anche aggiungere un'icona thumbnail opzionale per il tuo avatar.
+- In `Viseme Setup`, assegna i visemi e il blink appropriati per il tuo avatar. Puoi anche usare i pulsanti di rilevamento automatico che tenteranno di farlo automaticamente.
+- Opzionalmente, puoi testare il tuo avatar nell'editor entrando prima in modalità play e poi selezionando l'opzione `Test in Editor`.
+- Prima di selezionare `Create Avatar Bee File`, assicurati che tutti i tuoi shader siano compatibili. Il file BEE non verrà generato se ci sono errori di shader incompatibili sul tuo avatar (inclusi abiti e accessori). In caso di problemi, l'inspector li segnalerà, quindi assicurati di risolverli!
+
+![Finestra Inspector con il componente Basis Avatar aggiunto e i campi assegnati](/img/avatars/6a.png)
+
+![Finestra Inspector che mostra un esempio di movimenti di blendshape dell'avatar](/img/avatars/6b.png)
+
+<Callout type="info">
+Nel caso tu non abbia familiarità con le blendshape dello Skinned Mesh Renderer o con il caricamento di avatar in generale, sono fondamentalmente solo cursori che puoi controllare per modificare le morfologie del tuo avatar.
+
+![Finestra Inspector che mostra un esempio di movimenti di blendshape dell'avatar](/img/avatars/6c.gif)
+</Callout>
+
+<Callout type="type">
+Nota: Puoi comunque caricare il tuo avatar anche se non ha tutte le blendshape di `Basis Avatar`. Inoltre, tieni presente che solo le blendshape degli occhi sono supportate; le ossa degli occhi attualmente non sono supportate.
+</Callout>
+
+## Configurazione Constraints
+
+Basis non utilizza il sistema Constraints integrato di Unity, ma usa Animation Rigging. Puoi trovare la guida alla configurazione [qui](/it/docs/avatar/animation-rigging#setup-for-animation-rigging-packages).

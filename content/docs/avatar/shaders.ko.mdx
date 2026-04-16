@@ -1,0 +1,72 @@
+---
+title: 아바타 셰이더
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## URP 호환 아바타 셰이더
+
+### Universal Render Pipeline/Lit (Unity 라이선스)
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![URP Lit 셰이더](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [무료 버전](MIT 라이선스) by Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Poiyomi 셰이더](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader (MIT 라이선스) by s-ilent
+
+- https://github.com/s-ilent/scss 또는 https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shading 셰이더](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon (MIT 라이선스) by lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![lilToon 셰이더](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon (MIT 라이선스) by UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![MToon 셰이더](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader (구독) by Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakura 셰이더](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+최신 문서 업데이트 시점에 작동/호환되는 것으로 알려진 셰이더입니다.
+</Callout>
+
+
+## Poiyomi 셰이더를 사용하는 아바타를 BasisVR/URP에서 작동시키는 방법
+
+많은 아바타가 원래 Unity의 Built-in Render Pipeline(BIRP)에서만 작동하는 Poiyomi 셰이더를 사용합니다. 그러나 이제 Poiyomi 셰이더는 BasisVR에서 사용하는 렌더 파이프라인인 Unity의 Universal Render Pipeline(URP)에서도 작동하도록 지원합니다.
+
+URP를 위한 Poiyomi 셰이더 지원은 아직 베타 버전입니다. 원래 BIRP Poiyomi 셰이더로 설계된 아바타가 있다면 아래 단계에 따라 URP 호환으로 쉽게 변환할 수 있습니다. 예시로 [Tomarudo의 하츠네 미쿠](https://boothplorer.com/avatar/3226395)를 사용합니다.
+
+- https://discord.gg/poiyomi #urp-release 에서 최신 릴리스를 다운로드합니다.
+
+- 캐릭터를 Unity 씬으로 가져옵니다. 셰이더가 예상과 다르게 보이면(예: 색상이 없거나 셰이더 누락으로 인한 마젠타 색상 등), 몇 가지 작은 조정이 필요합니다.
+
+![버튼과 컴포넌트를 보여주는 인스펙터 창](/img/avatars/23.png)
+
+- 아바타 폴더의 각 재질을 선택하고 셰이더를 Poiyomi Pro URP로 변경합니다.
+
+![버튼과 컴포넌트를 보여주는 인스펙터 창](/img/avatars/24.png)
+
+- 변경 후 아바타가 예상대로 렌더링되어야 합니다.
+
+![버튼과 컴포넌트를 보여주는 인스펙터 창](/img/avatars/25.png)
+
+<Callout type="info">
+URP용 Poiyomi 셰이더는 PC와 Android 기기 모두와 호환됩니다.
+</Callout>

@@ -1,0 +1,94 @@
+---
+title: Caricamento
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Caricare il tuo Avatar
+
+Basis consente di caricare un file Avatar .BEE da una posizione URL remota, necessaria affinché anche gli altri utenti in una sessione di rete possano caricare gli asset.
+
+<Callout type="info">
+Puoi aggiungere la password del tuo avatar direttamente nell'URL del tuo file .BEE con `https://posizionedelBeefile.BEE#(Base64Encode(Password))`<br />
+In cui stai aggiungendo `#` e la stringa Base64 della tua password.
+</Callout>
+
+Per supportare questo, dovrai collegarti direttamente a una posizione remota. Per questo esempio, useremo Google Drive.
+
+(Google Drive supporta il link diretto ai file fino a 100 MB per la loro politica di scansione virus.)
+
+Carica il **file BEE** su Google Drive o su qualsiasi provider di hosting che consente link diretti ai file senza login.
+
+- Crea una cartella nel tuo Drive e imposta le sue impostazioni di condivisione su "Chiunque abbia il link."
+
+Ora, quando trascini i file in questa cartella, non sarà necessario impostare individualmente quell'autorizzazione.
+
+- Fai clic sul menu Hamburger in alto a destra dell'asset appena caricato nella cartella.
+- Trova "Condividi" e fai clic su "Copia link."
+
+Dovremo esaminare l'URL per ottenere le informazioni necessarie per il tuo file BEE.
+
+Esempio:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+Vogliamo copiare l'identificatore univoco all'interno dell'URL e aggiungerlo al seguente:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Esempio:
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NON CARICARE IL FILE PASSWORD GENERATO E NON CONDIVIDERLO**
+</Callout>
+
+## Caricare in Basis
+<Steps>
+
+<Step>
+Avvia Basis, apri il menu e seleziona Libreria.
+
+![Menu Basis](/img/avatars/11.png)
+</Step>
+
+<Step>
+Nel menu Libreria, seleziona 'Aggiungi nuovo contenuto' in alto a destra della finestra.
+
+![Pulsante Aggiungi Avatar](/img/avatars/12.png)
+</Step>
+
+<Step>
+Incolla l'**URL del file BEE** nel campo URL file BEE e la **SUPER SECRET ENCRYPTED PASSWORD** nel campo Password file BEE, poi fai clic su 'Aggiungi' in basso.
+
+![URL e password file BEE](/img/avatars/13.png)
+</Step>
+
+<Step>
+Il contenuto del file BEE verrà validato prima di essere aggiunto alla tua libreria.
+
+![Pulsante Aggiungi file BEE](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## Gestione Avatar
+
+Puoi trovare l'avatar aggiunto di recente nella Libreria.
+
+![Nuovo Avatar nella Libreria](/img/avatars/15.png)
+
+Gli avatar possono essere Caricati, Eliminati o Condivisi con altri nel mondo, facendo clic sui pulsanti corrispondenti nella parte inferiore della finestra.
+
+![Dettagli Avatar](/img/avatars/16.png)
+
+Inoltre, vedrai anche una serie di pannelli di informazioni utili:
+
+- **(1) Informazioni Avatar** - Il pannello dettagli mostra il timestamp di compilazione, il Titolo e la Descrizione
+- **(2) Compatibilità Piattaforma** - Le icone indicano su quali piattaforme OS è supportato questo avatar
+- **(3) Statistiche** - Mostra il numero di Triangoli, Materiali e Ossa

@@ -1,0 +1,53 @@
+---
+title: 지글 물리
+description: 지글 물리를 사용하면 머리카락, 의상, 액세서리 등 아바타의 일부에 동적 움직임을 추가하여 사실감과 몰입감을 향상시킬 수 있습니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 지글 물리 추가 방법
+
+각 지글 루트에 대해:
+- 아바타 루트의 계층 아래에 있는 새 GameObject 또는 기존 GameObject에 새 `Jiggle Rig` 컴포넌트를 추가합니다.
+
+![Jiggle Root 컴포넌트를 추가하는 인스펙터 창](/img/jiggle/1.png)
+
+- 인스펙터의 `Root Transform`에 지글을 적용할 아바타 armature의 본을 할당합니다. 예를 들어 아바타의 머리카락, 의상, 액세서리 또는 신체 부위가 포함될 수 있습니다. 좌우가 있는 요소(예: 왼쪽/오른쪽 가슴)의 경우 각각 별도의 `Jiggle Rig`를 추가해야 합니다(그렇지 않으면 한쪽만 지글거립니다!).
+
+<Callout type="info">
+팁: Jiggle Rig를 정리하려면 새로 생성된 부모 GameObject 아래에 중첩할 수 있습니다.
+</Callout>
+
+- 만족할 때까지 설정을 조정하고 플레이 모드에서 테스트할 수 있습니다(예: 아바타를 드래그하거나 `Basis Avatar` 컴포넌트의 `Test in Editor` 옵션 사용). 각 설정 옵션 위에 마우스 커서를 올려 해당 기능에 대한 설명을 볼 수도 있습니다. 모든 설정을 보려면 `Advanced`를 클릭합니다.
+
+![정리된 지글을 보여주는 인스펙터 창](/img/jiggle/2.png)
+
+<Callout>
+선택적으로, 여러 자식 본 체인이 있는 부모 본이 있고 모두에게 동일한 효과를 적용하려면 `Motionless Root`를 활성화하여 루트 자체가 아닌 자식 본에만 영향을 줄 수 있습니다.
+</Callout>
+
+- 아래는 머리카락, 의상 및 가슴에 Jiggle Rig가 적용된 예시입니다.
+
+![플레이 모드에서 Jiggle Rig를 사용하는 아바타를 보여주는 창](/img/jiggle/3.gif)
+
+## 충돌 상호작용
+
+오브젝트와의 충돌이 지글을 유발하도록 하려면:
+
+- `Advanced`를 활성화하여 모든 설정을 봅니다.
+
+- `Collision`을 활성화하고 오브젝트에 맞게 `Collision Radius`를 조정합니다.
+
+- 충돌을 트리거하는 데 사용할 GameObject를 추가합니다. 여기에 `Jiggle Collider Example` 컴포넌트를 할당합니다.
+
+<Callout type="info">
+사용 중인 GameObject에 구 충돌체가 있는지 확인하세요!
+</Callout>
+
+- `Jiggle Collider Transform` 필드에 충돌 GameObject를 할당하고 `Collider Type`으로 Sphere를 선택합니다. 현재 구 충돌체만 지원되지만, 지글 시스템 제작자인 Naelstrof가 향후 더 많이 추가할 가능성이 높습니다.
+
+![Jiggle Collider가 있는 구를 보여주는 인스펙터 창](/img/jiggle/4.png)
+
+- 아래는 `BasisPickupInteractable` 컴포넌트가 있는 구 오브젝트가 아바타의 머리카락과 충돌하는 예시입니다.
+
+![정리된 지글을 보여주는 인스펙터 창](/img/jiggle/5.gif)

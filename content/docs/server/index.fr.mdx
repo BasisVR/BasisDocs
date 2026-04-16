@@ -1,0 +1,63 @@
+---
+title: Introduction
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Vue d'ensemble
+
+Le serveur Basis est l'épine dorsale réseau de votre expérience sociale en VR. Cette documentation vous guidera dans la configuration, la mise en service et la gestion de votre propre instance de serveur Basis.
+
+Le serveur est construit sur .NET 9.0 et utilise LiteNetLib pour le réseau de bas niveau. Il est conçu pour gérer plusieurs joueurs simultanés avec une utilisation efficace de la bande passante, et prend en charge à la fois les déploiements Docker et la compilation native sur Windows et Linux.
+
+## Guide de démarrage rapide
+
+<Cards>
+  <Card
+    title="Déploiement"
+    description="Apprenez à déployer le serveur avec Docker, Windows ou Linux"
+    href="/fr/docs/server/deployment"
+  />
+  <Card
+    title="Configuration"
+    description="Configurez votre serveur avec config.xml et les ressources chargeables"
+    href="/fr/docs/server/configuration"
+  />
+  <Card
+    title="Surveillance"
+    description="Surveillez la santé et les performances de votre serveur"
+    href="/fr/docs/server/monitoring"
+  />
+  <Card
+    title="Configuration avancée"
+    description="Optimisez les performances du serveur avec les systèmes de réduction"
+    href="/fr/docs/server/advanced"
+  />
+</Cards>
+
+## Fonctionnalités clés
+
+- **Performance multi-thread** : Fonctionne bien avec aussi peu que deux cœurs, s'adapte avec plus de cœurs
+- **Déploiement flexible** : Prise en charge de Docker, Windows et Linux
+- **Authentification** : Vérification d'identité basée sur DID
+- **Optimisation de la bande passante** : Systèmes de réduction côté serveur et client
+- **Surveillance de la santé** : Point de terminaison de vérification de santé HTTP intégré
+- **Ressources chargeables** : Chargement dynamique de mondes et d'objets
+
+## Configuration requise
+
+- **CPU** : Minimum 2 cœurs (plus de cœurs améliorent les performances)
+- **Réseau** : Bande passante élevée recommandée pour la VR sociale
+- **Ports** :
+  - 4296/udp (protocole Basis)
+  - 10666/tcp (vérifications de santé)
+  - 1234/tcp (métriques Prometheus)
+
+## Version du serveur
+
+Cette documentation couvre **Basis Server Version 6** de la branche LTS (mai 2025).
+
+<Callout type="warn">
+Le code client et serveur **doit concorder** sur le numéro de version. Vous trouverez le `ServerVersion` dans `BasisNetworkCore\BasisNetworkVersion.cs`.
+</Callout>

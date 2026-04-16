@@ -1,0 +1,94 @@
+---
+title: アップロード
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## アバターのアップロード
+
+Basisでは、リモートURLからアバター.BEEファイルを読み込むことができます。これは、ネットワークセッションの他のユーザーもアセットを読み込むために必要です。
+
+<Callout type="info">
+`https://locationofBeefile.BEE#(Base64Encode(Password))`のように、.BEEファイルのURLにアバターパスワードを直接追加できます。<br />
+`#`とパスワードのBase64エンコード文字列を追加する形式です。
+</Callout>
+
+これをサポートするには、リモートの場所への直接リンクが必要です。この例ではGoogle Driveを使用します。
+
+（Google DriveはウイルススキャンポリシーのためI、最大100MBのファイルの直接リンクをサポートしています。）
+
+**BEEファイル**をGoogle Drive、またはログインなしでファイルへの直接リンクを許可する任意のホスティングプロバイダーにアップロードします。
+
+- Driveにフォルダーを作成し、共有設定を「リンクを知っている全員」に設定します。
+
+これにより、このフォルダーにファイルをドラッグしたとき、個別に権限を設定する必要がなくなります。
+
+- フォルダーにアップロードしたばかりのアセットの右上にあるハンバーガーメニューをクリックします。
+- 「共有」を見つけ、「リンクをコピー」をクリックします。
+
+BEEファイルに必要な情報を取得するために、URLを確認する必要があります。
+
+例：
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+URL内の一意の識別子をコピーして、以下に追加します：
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+例：
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**生成されたパスワードファイルをアップロードまたは共有しないでください**
+</Callout>
+
+## Basisで読み込む
+<Steps>
+
+<Step>
+Basisを起動し、メニューを開いて「ライブラリ」を選択します。
+
+![Basisメニュー](/img/avatars/11.png)
+</Step>
+
+<Step>
+ライブラリメニューで、ウィンドウの右上近くにある「新しいコンテンツを追加」を選択します。
+
+![アバター追加ボタン](/img/avatars/12.png)
+</Step>
+
+<Step>
+**BEEファイルURL**をBEEファイルURLフィールドに、**超秘密暗号化パスワード**をBEEファイルパスワードフィールドに貼り付け、下の「追加」をクリックします。
+
+![BEEファイルのURLとパスワード](/img/avatars/13.png)
+</Step>
+
+<Step>
+BEEファイルの内容は、ライブラリに追加される前に検証されます。
+
+![BEEファイル追加ボタン](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## アバター管理
+
+ライブラリに最近追加されたアバターを確認できます。
+
+![ライブラリ内の新しいアバター](/img/avatars/15.png)
+
+アバターは、ウィンドウ下部の対応するボタンをクリックすることで、ワールド内で他のユーザーと読み込み、削除、または共有できます。
+
+![アバターの詳細](/img/avatars/16.png)
+
+さらに、ここでいくつかの有用な情報パネルも表示されます：
+
+- **(1) アバター情報** - 詳細パネルにはコンパイルのタイムスタンプ、タイトル、説明が表示されます
+- **(2) プラットフォーム互換性** - このアバターをサポートするOSプラットフォームをアイコンで表示します
+- **(3) 統計** - 三角形、マテリアル、ボーンの数を表示します

@@ -1,0 +1,95 @@
+---
+title: Contribuire
+description: Come contribuire a BasisVR
+icon: GitPullRequest
+---
+
+## Guida ai contributi di BasisDocs
+
+Questa pagina è stata creata per assistere coloro che desiderano contribuire alla documentazione del repository BasisDocs.
+
+BasisDocs utilizza Fumadocs, un moderno framework per la documentazione. Le principali directory con cui lavorerai sono:
+
+- `content/docs/` - Contenuto della documentazione in formato MDX
+- `public/img/` - Immagini e risorse statiche
+
+![Struttura della documentazione](/img/basisdocs-contrib/1.png)
+
+## Per iniziare
+
+Il modo più rapido per familiarizzare con questo sito è conoscere:
+
+- [Documentazione MDX](https://mdxjs.com/) - Markdown esteso con componenti JSX
+- [Documentazione Fumadocs](https://fumadocs.vercel.app/) - Il framework di documentazione che utilizziamo
+
+### Componenti disponibili
+
+Puoi usare vari componenti nella tua documentazione:
+
+- `<Callout type="info|warn|error">` - Per note importanti e avvisi
+- `<Card>` e `<Cards>` - Per le schede di navigazione
+- Blocchi di codice con evidenziazione della sintassi
+- Immagini con testo alternativo appropriato
+
+## Funzionalità Markdown
+
+È supportato il Markdown standard, insieme a funzionalità estese:
+
+- **Tabelle** - Per dati strutturati
+- **Blocchi di codice** - Con evidenziazione della sintassi specifica per linguaggio
+- **Ammonimenti** - Usando i componenti Callout
+- **Link** - Interni ed esterni
+- **Immagini** - Correttamente referenziate da `/public/img/`
+
+## Contribuire alla documentazione
+
+1. **Fai un fork del repository**
+   
+   Fai un fork del [repository BasisDocs](https://github.com/BasisVR/BasisDocs) su GitHub.
+
+2. **Clona il tuo fork**
+   
+   ```bash
+   git clone https://github.com/IL_TUO_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **Installa le dipendenze**
+   
+   ```bash
+   npm install
+   ```
+
+4. **Avvia il server di sviluppo**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **Apporta le tue modifiche**
+   
+   Modifica i file MDX in `content/docs/` e aggiungi immagini in `public/img/`.
+
+6. **Testa le tue modifiche**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **Invia una pull request**
+   
+   Carica le tue modifiche e apri una pull request su GitHub.
+
+## Linee guida
+
+- Usa titoli descrittivi e una gerarchia di intestazioni appropriata
+- Aggiungi testo alternativo a tutte le immagini
+- Usa i componenti Callout invece di avvisi in testo semplice
+- Segui la struttura dei file e le convenzioni di denominazione esistenti
+- Testa le modifiche in locale prima di inviarle
+
+Grazie in anticipo per i tuoi contributi!
+
+### Domande?
+
+Unisciti al nostro [Discord](https://discord.gg/aCzSPKEW2v) se hai domande sui contributi!

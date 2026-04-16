@@ -1,0 +1,101 @@
+---
+title: Instellen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## De Unity Editor instellen
+
+- Zoals beschreven in de sectie [Aan de slag](/docs#installing-unity) voor het installeren van de nieuwste ondersteunde Unity Editor-versie en het verkrijgen van het Basis-framework.
+- Open Unity Hub en voeg een bestaand project toe; kies de geëxtraheerde/gekloonde Basis-projectmap.
+- Bij het eerste laden van het project verschijnt de volgende melding; klik op 'Restart Editor'.
+
+![Unity-herstartprompt](/img/avatars/0.png)
+
+- Zodra het project is geladen, kun je je Avatar-bestanden importeren:
+- Ofwel,
+  - Zoek `Assets` in de Project-hiërarchie, klik binnen `Assets` met de rechtermuisknop op een leeg gedeelte en selecteer `Show in Explorer`.
+  - Kopieer je Avatar-bestanden [Mesh/Materialen/Texturen, enz.].
+- of
+  - Importeer een .unity-pakket met je bestanden via het Assets-menu: Import Package > Custom Package.
+- Ga terug naar het Unity-venster en wacht tot het importproces is voltooid.
+
+<Callout type="info">
+Als je je inhoud plaatst in een nieuw mapje "Assets > _UserContent", verbergt het standaard .gitignore-bestand van het project de wijzigingen in git voor deze map.
+</Callout>
+
+## Model importeren
+
+- Zoek de locatie van je Avatar-model (doorgaans aangeleverd in .FBX-formaat).
+- Klik op het bestand en ga naar de sectie `Model` in het venster Import Settings.
+- Zorg ervoor dat `Read/Write` en `Legacy Blend Shape Normals` zijn aangevinkt zoals hieronder.
+
+![Modelimportinstellingen](/img/avatars/1.png)
+
+- Ga naar de sectie `Rig` van het venster Import Settings.
+- Klik op het vervolgkeuzemenu `Animation Type` en selecteer `Humanoid`; klik op `Apply` zoals hieronder weergegeven.
+
+![Rig-instellingen](/img/avatars/2.png)
+
+- Daarna wordt de knop `Configure` boven `Apply` klikbaar; klik hierop en controleer je botmappings.
+
+![Botmappings](/img/avatars/3.png)
+
+- Alle verplichte botten moeten zijn geselecteerd; controleer of dit klopt voor jouw Armature.
+- Klik tot slot op de knop `Head` in het venster `Mapping` en verwijder de toewijzing voor `Jaw`; dit is doorgaans onjuist.
+
+![Hoofdmapping](/img/avatars/4.png)
+
+<Callout type="info">
+In sommige gevallen meldt de Unity Inspector dat de botmappings van je avatar niet correct zijn toegewezen, of dat de avatar niet goed in T-pose staat. Om dit op te lossen, klik je op de vervolgkeuzemenu's Mapping en Pose en selecteer je Automap of Enforce T-Pose.
+
+![Inspectorvenster dat toont hoe de avatar-rig automatisch te mappen](/img/avatars/4a.png)
+
+![Inspectorvenster dat toont hoe T-pose af te dwingen](/img/avatars/4b.png)
+
+</Callout>
+
+## Skinned Mesh instellen
+
+- Er zijn momenteel geen vereisten voor de naam van je Avatar's Skinned Mesh als `Body` of een andere variant die op virtuele platforms wordt gebruikt.
+- Als je meerdere Skinned Meshes hebt, overweeg dan om ze allemaal hetzelfde referentiepunt op het lichaam te geven voor het overerven van lichtprobes in de scène. Dit doe je door een bot uit het Armature (meestal Hips) toe te wijzen aan het veld `Anchor Override`.
+
+![Anchor override](/img/avatars/5.png)
+
+- Een andere overweging voor avatars met meerdere Skinned Meshes is wanneer verschillende bounding box-groottes ervoor zorgen dat afzonderlijke meshes in en uit beeld knipperen terwijl de rest van de Avatar zichtbaar is voor externe kijkers.
+- Je kunt de waarden Center X, Y, Z & Extent X, Y, Z overschrijven in de sectie genaamd `Bounds` bovenaan de Skinned Mesh Renderer-component. Het is doorgaans een goed idee om dit voor de afzonderlijke Skinned Meshes op hetzelfde in te stellen.
+
+![Bounds-instellingen](/img/avatars/6.png)
+
+## Materialen/Shaders
+
+- Je kunt direct aan de slag met de Universal Render Pipeline/Lit-shader die bij Unity 6 wordt meegeleverd.
+- Anders hebben we een lijst met compatibele [Avatar-shaders](/nl/docs/avatar/shaders) samengesteld die je kunt gebruiken.
+
+## Basis Avatar instellen
+
+- De bovenstaande stappen voegen automatisch een Animator-component toe aan je Avatar-prefab wanneer je deze in de scène plaatst.
+- Klik op het bovenliggende GameObject van de Avatar op `Add Component` en voeg `Basis Avatar` toe.
+- Voer de gewenste Avatar-naam en -beschrijving in.
+- Zorg er in `Assigned Input` voor dat een Animator is toegewezen. Dit wordt doorgaans automatisch gedaan. Wijs ook de Skinned Mesh Renderers toe die de blend shapes voor het gezicht en knipperen bevatten. Je kunt ook optioneel een miniatuurpictogram voor je avatar toevoegen.
+- Wijs in `Viseme Setup` de relevante visemen en het knipperen toe voor je avatar. Je kunt ook de automatische detectieknoppen gebruiken die dit voor je proberen te doen.
+- Je kunt je avatar optioneel in de editor testen door eerst de afspeelmodus te activeren en vervolgens de optie `Test in Editor` te selecteren.
+- Zorg ervoor vóór het selecteren van `Create Avatar Bee File` dat alle shaders compatibel zijn. Het BEE-bestand wordt niet gegenereerd als er incompatibele shader-fouten zijn op je avatar (inclusief kleding en accessoires). Als er problemen zijn, zal de inspector hierover rapporteren, dus zorg ervoor dat je ze oplost!
+
+![Inspectorvenster met Basis Avatar-component toegevoegd en velden ingevuld](/img/avatars/6a.png)
+
+![Inspectorvenster met voorbeeld van blend shape-bewegingen van avatar](/img/avatars/6b.png)
+
+<Callout type="info">
+Als je nieuw bent met Skinned Mesh Renderer blend shapes of het uploaden van avatars in het algemeen: het zijn in feite gewoon schuifregelaars waarmee je de morphs op je avatar kunt aanpassen.
+
+![Inspectorvenster met voorbeeld van blend shape-bewegingen van avatar](/img/avatars/6c.gif)
+</Callout>
+
+<Callout type="type">
+Opmerking: Je kunt je avatar nog steeds uploaden ook al heeft het niet alle `Basis Avatar` blend shapes. Let ook op dat alleen oogblend shapes worden ondersteund; oogbotten worden momenteel niet ondersteund.
+</Callout>
+
+## Constraints instellen
+
+Basis gebruikt niet het ingebouwde Unity Constraints-systeem, maar gebruikt Animation Rigging. De installatiegids is [hier](/nl/docs/avatar/animation-rigging#setup-for-animation-rigging-packages) te vinden.

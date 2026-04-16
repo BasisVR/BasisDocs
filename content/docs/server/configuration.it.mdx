@@ -1,0 +1,282 @@
+---
+title: Configurazione
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## Introduzione
+
+L'obiettivo qui è la configurazione specifica del Basis Server e non i molti modi in cui puoi ospitare server di gioco nel cloud.
+
+...
+*/}
+
+### Compilazione ed esecuzione su Linux
+
+#### Requisiti per Debian/Ubuntu
+
+Per Ubuntu 22.04,
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Per Debian o altre configurazioni particolari:
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Poi continua con l'installazione:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Ottenere Basis
+
+Vai alla directory in cui vuoi scaricare Basis ed esegui il seguente comando:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Compilare il Basis Server
+
+Apri un nuovo terminale e vai alla cartella contenente il Basis Server, ad es. `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Poi compila con:
+
+`dotnet build` (per debug)
+
+oppure
+
+`dotnet build --configuration Release` (per release)
+
+#### Esecuzione
+
+Vai alla cartella BasisServerConsole (qualcosa come `/BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`)
+ed esegui:
+
+`dotnet .\BasisNetworkConsole.dll`
+
+## Firewall
+
+Potresti voler aprire le seguenti porte:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+## File di configurazione
+
+La prima volta che esegui il server, vengono creati vari file di configurazione e una struttura nella cartella dove si trova l'exe del server.
+
+| File/Cartella            | Descrizione                                 |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | File di configurazione principale del server. |
+| `initialresources/`      | Questa cartella contiene file di mondo e oggetti che il server carica su richiesta. |
+| `Log/`                   | Cartella dove vengono salvati i log del server. |
+| `admins.xml`             | Elenco degli utenti con privilegi di amministratore. |
+| `banned_players.xml`     | Elenco degli account giocatori bannati. |
+
+## Config.xml
+
+| Variabile                           | Predefinito           | Descrizione |
+|-------------------------------------|------------------------|-------------|
+| `PeerLimit`                         | 1024                   | Numero massimo di giocatori consentiti sul server. |
+| `SetPort`                           | 4296                   | Porta di rete su cui è in ascolto il server. |
+| `QueueEvents`                       | 10                     |   |
+| `UseNativeSockets`                  | true                   | LNL: Utilizza l'implementazione socket nativa del sistema |
+| `NatPunchEnabled`                   | true                   | LNL: Abilitare NAT punch-through |
+| `PingInterval`                      | 1500                   | LNL:  |
+| `DisconnectTimeout`                | 5000                   | LNL: Tempo di attesa prima di disconnettere un giocatore |
+| `SimulatePacketLoss`               | false                  | Simulare la perdita di pacchetti per i test. |
+| `SimulateLatency`                  | false                  | Simulare la latenza di rete. |
+| `SimulationPacketLossChance`      | 10                     |  |
+| `SimulationMinLatency`            | 50                     | Latenza simulata minima. |
+| `SimulationMaxLatency`            | 150                    | Latenza simulata massima. |
+| `UnsyncedEvents`                   | false                  |  |
+| `UnsyncedReceiveEvent`            | false                  |  |
+| `UnsyncedDeliveryEvent`           | false                  |  |
+| `ReconnectDelay`                   | 500                    | Tempo per un tentativo di riconnessione. |
+| `MaxConnectAttempts`              | 10                     | Numero massimo di tentativi di riconnessione. |
+| `ReuseAddress`                     | true                   |  |
+| `DontRoute`                        | false                  |  |
+| `EnableStatistics`                 | true                   | LNL:  |
+| `IPv6Enabled`                      | true                   | LNL: Abilitare il supporto IPv6. |
+| `MtuOverride`                      | 1500                   | Sovrascrivere MTU (Maximum Transmission Unit). |
+| `MtuDiscovery`                     | true                   | Abilitare il rilevamento automatico MTU. |
+| `DisconnectOnUnreachable`         | true                   | Disconnettere i giocatori se irraggiungibili. |
+| `AllowPeerAddressChange`          | true                   | LNL: Consentire ai client dei giocatori di cambiare il loro indirizzo IP. |
+| `UsingLoggingFile`                | true                   | Abilitare il log su file. |
+| `HealthCheckHost`                 | localhost              | Hostname per i controlli di salute. Usa `*` per associarsi a tutte le interfacce. |
+| `HealthCheckPort`                 | 10666                  | Porta per i controlli di salute. |
+| `HealthPath`                       | /health                | Percorso dell'endpoint di controllo della salute. |
+| `BSRSMillisecondDefaultInterval`  | 50                     |  |
+| `BSRBaseMultiplier`               | 1                      |  |
+| `BSRSIncreaseRate`                | 0.005                  |  |
+| `OverrideAutoDiscoveryOfIpv`      | false                  |  |
+| `IPv4Address`                      | 0.0.0.0                | Indirizzo di binding IPv4. |
+| `IPv6Address`                      | ::1                    | Indirizzo di binding IPv6. |
+| `PromethusPort`                   | 1234                   | Porta per le statistiche Prometheus. |
+| `PromethusUrl`                    | /metrics               | Percorso URL per le statistiche Prometheus. |
+| `Password`                         | default_password       | Password di accesso predefinita del server. |
+| `MinThreadPoolThreads`            | 100                    | Numero minimo di thread nel pool. |
+| `MaxThreadPoolThreads`            | 500                    | Numero massimo di thread nel pool. |
+| `UseAuth`                          | true                   | Abilitare o disabilitare l'autenticazione del server. |
+| `UseAuthIdentity`                 | true                   | Usare la verifica dell'identità DID quando l'auth è abilitata. |
+| `BasisUserRestrictionMode`        | Normal                 | Riguarda gli strumenti di moderazione utente. Attualmente non ancora completato. |
+| `HowManyDuplicateAuthCanExist`   | 2                      | Numero di volte che lo stesso giocatore può essere autenticato contemporaneamente. |
+| `AuthValidationTimeOutMiliseconds` | 9000                 | Timeout per la validazione dell'autenticazione (ms). |
+
+<small>Il networking di basso livello è gestito da una libreria di terze parti chiamata <strong>LiteNetLib</strong>. Le variabili di configurazione relative a questo codice sono contrassegnate con <code>LNL</code>.</small>
+
+### Impostazioni di autenticazione
+
+```xml
+<UseAuth>true</UseAuth> 
+```
+Destinato alla disabilitazione completa dell'autenticazione.
+
+```xml
+<UseAuthIdentity>true</UseAuthIdentity>
+```
+Abilitare o disabilitare il provider di autenticazione DID.
+
+```xml
+<BasisUserRestrictionMode>Normal</BasisUserRestrictionMode>
+```
+Non ancora completato. Moderazione degli amministratori.
+
+```xml
+<HowManyDuplicateAuthCanExist>2</HowManyDuplicateAuthCanExist>
+```
+Quante persone possono connettersi con le stesse credenziali di autenticazione.
+
+### Esempio Config.xml
+
+Le impostazioni predefinite che puoi trovare in config.xml:
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <QueueEvents>10</QueueEvents>
+  <UseNativeSockets>true</UseNativeSockets>
+  <NatPunchEnabled>true</NatPunchEnabled>
+  <PingInterval>1500</PingInterval>
+  <DisconnectTimeout>5000</DisconnectTimeout>
+  <SimulatePacketLoss>false</SimulatePacketLoss>
+  <SimulateLatency>false</SimulateLatency>
+  <SimulationPacketLossChance>10</SimulationPacketLossChance>
+  <SimulationMinLatency>50</SimulationMinLatency>
+  <SimulationMaxLatency>150</SimulationMaxLatency>
+  <UnsyncedEvents>false</UnsyncedEvents>
+  <UnsyncedReceiveEvent>false</UnsyncedReceiveEvent>
+  <UnsyncedDeliveryEvent>false</UnsyncedDeliveryEvent>
+  <ReconnectDelay>500</ReconnectDelay>
+  <MaxConnectAttempts>10</MaxConnectAttempts>
+  <ReuseAddress>true</ReuseAddress>
+  <DontRoute>false</DontRoute>
+  <EnableStatistics>true</EnableStatistics>
+  <IPv6Enabled>true</IPv6Enabled>
+  <MtuOverride>1500</MtuOverride>
+  <MtuDiscovery>true</MtuDiscovery>
+  <DisconnectOnUnreachable>true</DisconnectOnUnreachable>
+  <AllowPeerAddressChange>true</AllowPeerAddressChange>
+  <UsingLoggingFile>true</UsingLoggingFile>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <HealthPath>/health</HealthPath>
+  <BSRSMillisecondDefaultInterval>50</BSRSMillisecondDefaultInterval>
+  <BSRBaseMultiplier>1</BSRBaseMultiplier>
+  <BSRSIncreaseRate>0.005</BSRSIncreaseRate>
+  <OverrideAutoDiscoveryOfIpv>false</OverrideAutoDiscoveryOfIpv>
+  <IPv4Address>0.0.0.0</IPv4Address>
+  <IPv6Address>::1</IPv6Address>
+  <PromethusPort>1234</PromethusPort>
+  <PromethusUrl>/metrics</PromethusUrl>
+  <Password>default_password</Password>
+  <MinThreadPoolThreads>100</MinThreadPoolThreads>
+  <MaxThreadPoolThreads>500</MaxThreadPoolThreads>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+  <BasisUserRestrictionMode>Normal</BasisUserRestrictionMode>
+  <HowManyDuplicateAuthCanExist>2</HowManyDuplicateAuthCanExist>
+  <AuthValidationTimeOutMiliseconds>9000</AuthValidationTimeOutMiliseconds>
+</Configuration>
+```
+
+## File di configurazione caricabili
+
+Puoi impostare file di mondo e oggetti da caricare su richiesta.
+Questi sono i file che metti nella cartella `InitialResources`.
+
+<Callout type="warn">
+Tieni presente che gli URL esterni che utilizzi devono essere forniti da un server adeguato che supporti il chunking.
+Qualsiasi server moderno dovrebbe farlo, ma i semplici server di sviluppo locali potrebbero non farlo.
+</Callout>
+
+<Callout type="info" title="Caricare qualcosa">
+Un modo per testare una nuova scena è creare una scena in Unity, esportarla come file BEE. Carica quel file BEE su un server che supporta HTTP, poi inserisci l'URL in `CombinedURL` e recupera la password da `dontuploadmepassword.txt` e inseriscila in `UnlockPassword`.
+</Callout>
+
+| Variabile        | Definizione |
+|------------------|------------|
+| `Mode`           | Modalità della configurazione: `0` = GameObject, `1` = Scena. |
+| `LoadedNetID`    | Un ID di rete: il server mantiene un elenco di oggetti di rete che i client possono interrogare e spawnare con questo valore come riferimento. |
+| `UnlockPassword` | Password richiesta per sbloccare o accedere alla risorsa. |
+| `CombinedURL`    | URL al file `.BEE` |
+| `IsLocalLoad`    | Indica se la risorsa viene caricata localmente (`true`) o da internet (`false`). |
+| `PositionX`      | Posizione mondiale sull'asse X dell'oggetto. |
+| `PositionY`      | Posizione mondiale sull'asse Y dell'oggetto. |
+| `PositionZ`      | Posizione mondiale sull'asse Z dell'oggetto. |
+| `QuaternionX`    | Componente X della rotazione dell'oggetto (quaternione). |
+| `QuaternionY`    | Componente Y della rotazione dell'oggetto (quaternione). |
+| `QuaternionZ`    | Componente Z della rotazione dell'oggetto (quaternione). |
+| `QuaternionW`    | Componente W della rotazione dell'oggetto (quaternione). |
+| `ScaleX`         | Fattore di scala sull'asse X. |
+| `ScaleY`         | Fattore di scala sull'asse Y. |
+| `ScaleZ`         | Fattore di scala sull'asse Z. |
+| `Persist`        | Se il giocatore che ha spawnato l'oggetto lascia il server, l'oggetto continua a esistere? |
+
+### Configurazione di esempio
+
+```xml title="BasisLoadableConfiguration-esempio"
+<BasisLoadableConfiguration>
+
+    <!-- Mode of the configuration: Mode  0 = Game object, 1 = Scene -->
+    <Mode>0</Mode>
+
+    <!-- A Network ID: Server keeps a list of Network Objects that Clients can query and spawn with this value. -->
+    <LoadedNetID></LoadedNetID>
+
+    <!-- Unlock password -->
+    <UnlockPassword>ffee4439eff</UnlockPassword>
+
+    <!-- Combined URL link to BEE file -->
+    <CombinedURL>https://www.example.com/2lkj23j.BEE</CombinedURL>
+
+    <!-- Does this resource exist on the internet or in the client? -->
+    <IsLocalLoad>false</IsLocalLoad>
+
+    <!-- Position values -->
+    <PositionX>0</PositionX>
+    <PositionY>0</PositionY>
+    <PositionZ>0</PositionZ>
+
+    <!-- Quaternion values -->
+    <QuaternionX>0</QuaternionX>
+    <QuaternionY>0</QuaternionY>
+    <QuaternionZ>0</QuaternionZ>
+    <QuaternionW>1</QuaternionW>
+
+    <!-- Scale values -->
+    <ScaleX>1</ScaleX>
+    <ScaleY>1</ScaleY>
+    <ScaleZ>1</ScaleZ>
+
+    <!--  If the player that spawned the object leaves the server does the object continue to exist?  -->
+    <Persist>false</Persist>
+
+</BasisLoadableConfiguration>
+```

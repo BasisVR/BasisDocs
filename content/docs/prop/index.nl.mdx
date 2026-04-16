@@ -1,0 +1,54 @@
+---
+title: Introductie
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overzicht
+
+Props bieden een groot scala aan sociale VR-ervaringen binnen een Basis-frameworkproject. Deze documentatie begeleidt je bij het maken, bouwen, uploaden en aanpassen van je eigen props met Unity en de Basis SDK.
+
+Basis gebruikt het `.BEE`-bestandsformaat voor props, dat je gecompileerde assets en metadata verpakt in één eenvoudig deelbaar bestand. Props ondersteunen blend shapes, materialen en scripting.
+
+## Snelstartgids
+
+<Cards>
+  <Card
+    title="Instellen"
+    description="Unity instellen en je prop voorbereiden"
+    href="/nl/docs/prop/setup"
+  />
+  <Card
+    title="Bouwen"
+    description="Je prop bouwen naar een .BEE-bestand"
+    href="/nl/docs/prop/building"
+  />
+  <Card
+    title="Uploaden"
+    description="Je prop uploaden en laden in Basis"
+    href="/nl/docs/prop/uploading"
+  />
+</Cards>
+
+## Belangrijkste functies
+
+- **Humanoid-rig-ondersteuning**: Standaard Unity humanoid-rigs met automatische botmapping
+- **Blend Shapes**: Volledige ondersteuning voor gezichtsuitdrukkingen en visemen
+- **Meerdere platforms**: Bouwen voor Windows, Linux, Mac, Android en iOS
+- **URP-shaders**: Compatibel met Unity's Universal Render Pipeline
+
+## Vereisten
+
+- **Unity**: Unity 6 (nieuwste ondersteunde versie)
+- **Modelformaat**: FBX met humanoid-rig
+- **Shader**: URP-compatibele shaders (Lit, Poiyomi, lilToon, enz.)
+- **Hosting**: Externe URL-hosting voor .BEE-bestanden (max. 100 MB voor Google Drive)
+
+## Workfloverzicht
+
+1. **Importeer** je avatarmodel in Unity
+2. **Configureer** de rig en geskinede meshes
+3. **Voeg** de Basis Avatar-component toe
+4. **Bouw** het .BEE-bestand voor je doelplatformen
+5. **Upload** naar een hostingservice
+6. **Laad** in Basis met de URL en het wachtwoord

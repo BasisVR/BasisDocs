@@ -1,0 +1,52 @@
+---
+title: Costruzione
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Il file Basis Encrypted Extension (BEE)
+
+Basis memorizza i contenuti generati dagli utenti come file .BEE che contiene il tuo asset compilato e i metadati ad esso associati. Ogni file .BEE generato viene fornito con una password generata casualmente per accedervi, entrambi trovabili nella directory radice del tuo progetto Unity in: `Basis\Basis\AssetBundles`.
+
+## Evitare GameObject duplicati
+
+- Per impostazione predefinita, il componente BasisAvatar rinominerà tutti i GameObject con nomi duplicati all'interno della gerarchia dell'avatar.
+
+<Callout type="warning">
+Se abiliti `Do not auto-rename bones` nelle Opzioni di elaborazione. Assicurati che non ci siano **NESSUN** GameObject con nome duplicato all'interno della gerarchia del tuo avatar, incluso l'armature, poiché questo causerà il fallimento del caricamento dell'avatar dopo la costruzione dell'AssetBundle.
+</Callout>
+
+## Costruire l'AssetBundle
+
+- Nella parte inferiore del componente Basis Prop sul tuo gameObject, verifica che le target di build appropriate per il tuo contenuto siano abilitate. Basis supporta varie piattaforme target, tra cui: Windows, Android, Mac, Linux e iOS.
+- Premi il pulsante 'Create Prop Bee File' e attendi il completamento del processo.
+
+(INSERIRE QUI RIFERIMENTO IMMAGINE)
+
+- I risultati verranno aperti automaticamente in una nuova finestra come mostrato di seguito.
+
+(INSERIRE QUI RIFERIMENTO IMMAGINE)
+
+- A seconda del tuo hardware, ogni piattaforma potrebbe richiedere in media da uno a due minuti per la prima build. Le build successive dovrebbero richiedere meno tempo grazie alla cache. La costruzione per tutte le piattaforme richiederà probabilmente più tempo e aumenterà le dimensioni complessive del file.
+
+<Callout type="info">
+Da sapere:
+
+- Puoi comodamente usare una password personalizzata per il tuo file BEE generato. Questo può semplificare le cose se preferisci una singola password da usare per diversi file BEE.
+
+- Se lo desideri, puoi anche sostituire il nome del file .BEE generato con qualcosa di più facile da ricordare. Tieni presente che riutilizzare lo stesso nome comporterà la sostituzione di qualsiasi versione precedente con quella nuova!
+
+
+(INSERIRE QUI RIFERIMENTO IMMAGINE)
+</Callout>
+
+{/* - Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
+
+(INSERT IMAGE REFERENCE HERE)
+
+- You can place the location of the .BEE file under the `Combinned URL` fields as shown in the example below, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated within the `/AssetBundles/` directory.
+- Make sure to tick `Is Local` if the file is not a URL.
+
+(INSERT IMAGE REFERENCE HERE)
+
+- Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play. */}

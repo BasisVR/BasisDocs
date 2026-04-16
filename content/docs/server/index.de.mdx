@@ -1,0 +1,63 @@
+---
+title: Einführung
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Übersicht
+
+Der Basis-Server ist das Netzwerk-Rückgrat für Ihr soziales VR-Erlebnis. Diese Dokumentation führt Sie durch die Einrichtung, Konfiguration und Verwaltung einer eigenen Basis-Serverinstanz.
+
+Der Server basiert auf .NET 9.0 und verwendet LiteNetLib für Low-Level-Networking. Er ist für die Handhabung mehrerer gleichzeitiger Spieler mit effizienter Bandbreitennutzung ausgelegt und unterstützt sowohl Docker-Deployments als auch native Kompilierung unter Windows und Linux.
+
+## Schnellstartanleitung
+
+<Cards>
+  <Card
+    title="Deployment"
+    description="Erfahren Sie, wie Sie den Server mit Docker, Windows oder Linux bereitstellen"
+    href="/de/docs/server/deployment"
+  />
+  <Card
+    title="Konfiguration"
+    description="Konfigurieren Sie Ihren Server mit config.xml und ladbaren Ressourcen"
+    href="/de/docs/server/configuration"
+  />
+  <Card
+    title="Überwachung"
+    description="Überwachen Sie Servergesundheit und Leistungsmetriken"
+    href="/de/docs/server/monitoring"
+  />
+  <Card
+    title="Erweiterte Konfiguration"
+    description="Optimieren Sie die Serverleistung mit Reduktionssystemen"
+    href="/de/docs/server/advanced"
+  />
+</Cards>
+
+## Hauptfunktionen
+
+- **Multi-Thread-Leistung**: Funktioniert gut mit nur zwei Kernen, skaliert mit mehr Kernen
+- **Flexibles Deployment**: Docker-, Windows- und Linux-Unterstützung
+- **Authentifizierung**: DID-basierte Identitätsverifizierung
+- **Bandbreitenoptimierung**: Server- und Client-Reduktionssysteme
+- **Gesundheitsüberwachung**: Integrierter HTTP-Gesundheits-Endpunkt
+- **Ladbare Ressourcen**: Dynamisches Laden von Welten und Objekten
+
+## Anforderungen
+
+- **CPU**: Mindestens 2 Kerne (mehr Kerne verbessern die Leistung)
+- **Netzwerk**: Hohe Bandbreite für Social VR empfohlen
+- **Ports**:
+  - 4296/udp (Basis-Protokoll)
+  - 10666/tcp (Gesundheitschecks)
+  - 1234/tcp (Prometheus-Metriken)
+
+## Server-Version
+
+Diese Dokumentation deckt **Basis Server Version 6** aus dem LTS-Branch (Mai 2025) ab.
+
+<Callout type="warn">
+Client- und Servercode **müssen** bei der Versionsnummer übereinstimmen. Die `ServerVersion` finden Sie in `BasisNetworkCore\BasisNetworkVersion.cs`.
+</Callout>

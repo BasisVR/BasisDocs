@@ -1,0 +1,297 @@
+---
+title: スクリプティング
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+技術的な理由から、カスタムコードはクライアント（Unityプロジェクト）を再ビルドするか、Cilbox（サンドボックスCIL）を通じて生成する必要があります。
+
+## UnityクライアントビルドでスクリプトをNativeに追加する方法
+
+<Callout type="info">
+
+フレームワークを使用してゲームやアプリケーションを開発しており、ユーザー生成コンテンツ（シーン、アバター、プロップなど）のサポートが優先事項でない場合は、Cilboxを使用するのではなく、MonoBehaviourスクリプトをネイティブにビルドすることをお勧めします。
+
+これはCilboxがCILインタープリターであるため、大きな速度ペナルティが生じ、利用可能な言語機能のサブセットのみをサポートする場合があるためです。
+</Callout>
+
+- ボタンを含むcanvasオブジェクトを作成します。
+
+- ボタンオブジェクトにスクリプトを追加します。簡単な例として、TestButtonというTMPテキストオブジェクトを更新するスクリプトを作成します。
+
+- TMPテキストオブジェクトを作成し、インスペクターのButton Textフィールドに割り当てます。
+
+![TestButtonコンポーネントを示すインスペクターウィンドウ](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- ボタンを選択し、onClick()イベントを追加します。Test ButtonゲームオブジェクトをTestButton.OnButtonClickメソッドに割り当てます。
+
+![ボタンのイベントハンドラーとTMPテキストが割り当てられたインスペクターウィンドウ](/img/scripting/2.png)
+
+- canvasゲームオブジェクトにBasis Propコンポーネントを追加し、アセットバンドル名を入力して「Create Prop Bee File」ボタンを押します。Loadable Config EditorでXMLファイルを生成します。
+
+![Basis Propを使用したボタンのインスペクターウィンドウ](/img/scripting/3.png)
+
+- BasisFrameworkプレハブを開きます。Bundled Content FolderコンポーネントにBeeパスワードとURLを追加します。
+
+![BasisFrameworkプレハブのインスペクターウィンドウ](/img/scripting/4.png)
+
+![BasisFrameworkプレハブのインスペクターウィンドウ](/img/scripting/5.png)
+
+- 初期化シーンを実行します。
+
+![初期化シーンが実行中のウィンドウ](/img/scripting/6.png)
+
+- Unityクライアントをビルドします。カスタムスクリプトがビルドに含まれます。
+
+![Unityクライアントビルドプロファイルのウィンドウ](/img/scripting/7.png)
+
+- ボタンをクリックすると、TMPテキストオブジェクトが「Clicked!」と表示されます。
+
+![カスタムスクリプトが実行中のウィンドウ](/img/scripting/8.png)
+
+## Unityクライアントビルドでネットワーク同期スクリプトを追加する方法
+
+- ボタンを含むcanvasオブジェクトを作成します。
+
+![canvasのインスペクターウィンドウ](/img/scripting/9.png)
+
+- ボタンオブジェクトにスクリプトを追加します。簡単な例として、SCNE（Send Custom Network Eventsの略）というスクリプトを作成します。これはボタンがクリックされた回数でTMPテキストオブジェクトを更新します。
+
+- TMPテキストオブジェクトを作成し、インスペクターのButton Textフィールドに割り当てます。
+
+- ボタンを選択し、onClick()イベントを追加します。ButtonゲームオブジェクトをSCNE.IncrementCounterメソッドに割り当てます。
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![SCNEスクリプトを含むボタンのインスペクターウィンドウ](/img/scripting/10.png)
+
+<Callout type="info">
+オーバーライドされた **OnPlayerJoined()** は、これがないと後から参加したプレイヤーが更新されたカウント数を確認できないため使用されます。
+
+**TakeOwnership()** は、後から参加したプレイヤーがボタンをクリックした際にカウンターがリセットされるなどの非同期を防ぐために使用されます。
+</Callout>
+
+- canvasゲームオブジェクトにBasis Propコンポーネントを追加し、アセットバンドル名を入力して「Create Prop Bee File」ボタンを押します。Loadable Config EditorでXMLファイルを生成します。
+
+![Basis Propを使用したボタンのインスペクターウィンドウ](/img/scripting/11.png)
+
+![BasisFrameworkプレハブのインスペクターウィンドウ](/img/scripting/13.png)
+
+- PropContentPoliceSelectorアセットを開き、SCNEスクリプトを許可されたコンポーネントのリストに追加します。これによりスクリプトが実行時に削除されないことが保証されます。
+
+![BasisFrameworkプレハブのインスペクターウィンドウ](/img/scripting/13.5.png)
+
+- 空のゲームオブジェクトにBasis Sceneコンポーネントを追加し、アセットバンドル名を入力して「Create Scene Bee File」ボタンを押します。リモートサーバーに保存します。
+
+<Callout type="info">
+シーンからcanvasオブジェクトを無効化または削除してください。アクティブのままにすると、シーン自体の1つとXMLで生成されたもう1つの2つのコピーが後でシーンに存在することになります。
+</Callout>
+
+![Basis Sceneコンポーネントのインスペクターウィンドウ](/img/scripting/12.png)
+
+- BasisFrameworkプレハブを開きます。Bundled Content FolderコンポーネントにBeeパスワードとURLを追加します。
+
+![BasisFrameworkプレハブのインスペクターウィンドウ](/img/scripting/14.png)
+
+- 初期化シーンを実行します。
+
+![初期化シーンが実行中のウィンドウ](/img/scripting/6.png)
+
+- Unityクライアントをビルドします。カスタムスクリプトがビルドに含まれます。
+
+![Unityクライアントビルドプロファイルのウィンドウ](/img/scripting/7.png)
+
+- ボタンをクリックすると、ローカルとリモートの両方のプレイヤーに対して、クリックするたびにTMPテキストオブジェクトのカウントが更新されます。
+
+![クライアントでシーンが実行中のインスペクターウィンドウ](/img/scripting/15.png)
+
+## Cilboxでネットワーク同期スクリプトを追加する方法
+
+Cilboxは最小限のゲームロジックを提供するためのスクリプトシステムで、プロップ、アバター、シーンなどのユーザー生成コンテンツの基本動作のポータビリティを実現します。実行時に動作するスクリプトの作成に使用できます。
+
+現在、Cilboxはまだ非常に実験的です。以下の例は、Cilboxを使用してキューブを回転させるスクリプトの作成方法を示しています。
+
+<Callout type="info">
+注意：Cilboxは、ユーザー生成コンテンツを読み込むアプリケーションやゲームを開発しており、そのコンテンツでスクリプティングをサポートしたい場合に特に役立ちます。他のコンテンツと一緒にDLCのようにスクリプトを配布でき、有害または望ましくない動作を持つスクリプトの実行を防ぐより安全なサンドボックスも提供します。
+</Callout>
+
+- キューブオブジェクトを作成し、ObjectRotatorコンポーネントを付けます。クラスの上に[Cilboxable]を追加してください。
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![回転スクリプトが付いたキューブのインスペクターウィンドウ](/img/scripting/16.png)
+
+- 空のゲームオブジェクトを作成し、Cilbox Basis Sceneコンポーネントを付けます。Cilbox Basis Sceneは全スクリプトが実行されるCilboxになります。
+
+<Callout type="info">
+注意：エディターがCilboxの名前空間を検出できない場合は、独自の.asmdefファイルを作成してCilboxを参照するか、CilboxのasmdefをOpenして*Auto Referenced*を選択することで解決できます。
+
+![回転スクリプトが付いたキューブのインスペクターウィンドウ](/img/scripting/16.5.png)
+</Callout>
+
+![CilboxSceneBasisコンポーネントのインスペクターウィンドウ](/img/scripting/17.png)
+
+- 空のゲームオブジェクトにBasis Sceneコンポーネントを追加し、アセットバンドル名を入力して「Create Scene Bee File」ボタンを押します。リモートサーバーに保存します。
+
+![Basis Sceneコンポーネントのインスペクターウィンドウ](/img/scripting/18.png)
+
+![インスペクターLoad Config](/img/scripting/19.png)
+
+- プレイモードでシーンを実行すると、作成したスクリプトはUnityによって通常通りコンパイルされます。しかし、実際にプレイする前に、スクリプトはCilbox Proxyコンポーネントに置き換えられます。これらが実行時にコンポーネントとして実際に実行されるものです。BasisはあなたのCilbox ProxyとCilbox Basis Sceneの代わりに独自のコピーを使用しますが、データはシリアライズされます。
+
+![作成されたCilbox Proxyコンポーネントのインスペクターウィンドウ](/img/scripting/20.png)
+
+![プレイモードで更新されたCilbox Scene Basisコンポーネントのインスペクターウィンドウ](/img/scripting/21.png)
+
+![プレイモードを示すウィンドウ](/img/scripting/22.png)
+
+- 初期化シーンを実行し、アプリでCilboxスクリプトをテストします。キューブが回転するはずです。
+
+![アプリでキューブが回転するCilboxデモのウィンドウ](/img/scripting/23.png)
+
+以下に試せる追加のサンプルスクリプトを示します。
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+BasisNetworkBehaviourの代わりに、BasisNetworkShimを継承してネットワーク対応スクリプトを作成できます。
+</Callout>

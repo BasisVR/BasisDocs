@@ -1,0 +1,32 @@
+---
+title: Bewaking
+---
+
+## Gezondheidscontrole-endpoint
+
+Wanneer je de server lokaal uitvoert, kun je de serverstatus controleren via het gezondheidscontrole-endpoint op:
+http://localhost:10666/health
+
+```json title="http://localhost:10666/health"
+{
+  "listening": true,
+  "visitors": "0",
+  "capacity": "1024",
+  "sent": "0",
+  "recv": "0",
+  "currentTime": "2025-05-09T20:19:03.200Z",
+  "startTime": "2025-05-09T20:19:00.049Z",
+  "version": "6"
+}
+```
+
+| Variabele     | Definitie                                    |
+|---------------|----------------------------------------------|
+| `listening`   | Luistert de server naar verbindingen         |
+| `visitors`    | Het aantal huidige spelers ofwel bezoekers   |
+| `capacity`    | Maximum aantal spelers toegestaan op server  |
+| `sent`        | Totale hoeveelheid verzonden data (in bytes?) |
+| `recv`        | Totale hoeveelheid ontvangen data (in bytes?) |
+| `currentTime` | De huidige servertijd in ISO 8601-formaat    |
+| `startTime`   | De starttijd van de server in ISO 8601-formaat |
+| `version`     | Het versienummer van de server. Belangrijk: Clientcode moet overeenkomen met de verwachte ServerVersion |

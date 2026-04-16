@@ -1,0 +1,31 @@
+---
+title: 测试
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 测试场景
+
+<Callout type="warn">
+在项目文件中选择 `BasisFramework` .prefab 资源，**不要将此预制体实例化到当前场景中！Basis SDK 会自动完成此操作！**
+</Callout>
+
+- 创建 AssetBundle 后，您可以通过 `Packages > Basis SDK > Prefabs > Boot` 中找到的 `BasisFramework` 预制体加载它。
+
+![BasisFramework 预制体位置](/img/worlds/7.png)
+
+- 您可以将新 AssetBundle 的位置放入 `Remote BEE File Location` 字段，以及在 `/AssetBundles/` 目录中生成的 `dontuploadmepassword.txt` 文件中提供的 `Unlock Password`，然后启用 `Use Scene Provided Here`。
+
+![BasisFramework 配置](/img/worlds/8.png)
+
+<Callout type="info">
+注意：如果打开，Inspector 属性 *Use Scene Provided Here* 将加载 *Remote Bee File Location* 中提供的场景。关闭时，它会加载通过 Basis Config Loader 生成的 XML 场景（如果存在的话）。
+</Callout>
+
+- 从 `Packages > Basis SDK > Scenes` 加载 `Initialization` 场景，然后点击 Play。
+
+![Initialization 场景](/img/worlds/9.png)
+
+- 输入用户名并按"Connect"，*如果*本地机器上已启动[服务器](/cn/docs/server)，则可以使用 localhost。
+
+- 然后您应该在您的世界或连接的服务器的出生位置加载进入。

@@ -1,0 +1,104 @@
+---
+title: Caricamento
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Caricare il tuo Prop
+
+Basis consente di caricare un file Prop .BEE da una posizione URL remota, necessaria affinché anche gli altri utenti in una sessione di rete possano caricare gli asset.
+
+<Callout type="info">
+Puoi aggiungere la password del tuo prop direttamente nell'URL del tuo file .BEE con `https://posizionedelBeefile.BEE#(Base64Encode(Password))`<br />
+In cui stai aggiungendo `#` e la stringa Base64 della tua password.
+</Callout>
+
+Per supportare questo, dovrai collegarti direttamente a una posizione remota. Per questo esempio, useremo Google Drive.
+
+(Google Drive supporta il link diretto ai file fino a 100 MB per la loro politica di scansione virus.)
+
+Carica il **file BEE** su Google Drive o su qualsiasi provider di hosting che consente link diretti ai file senza login.
+
+- Crea una cartella nel tuo Drive e imposta le sue impostazioni di condivisione su "Chiunque abbia il link."
+
+Ora, quando trascini i file in questa cartella, non sarà necessario impostare individualmente quell'autorizzazione.
+
+- Fai clic sul menu Hamburger in alto a destra dell'asset appena caricato nella cartella.
+- Trova "Condividi" e fai clic su "Copia link."
+
+Dovremo esaminare l'URL per ottenere le informazioni necessarie per il tuo file BEE.
+
+Esempio:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+Vogliamo copiare l'identificatore univoco all'interno dell'URL e aggiungerlo al seguente:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Esempio:
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NON CARICARE IL FILE PASSWORD GENERATO E NON CONDIVIDERLO**
+</Callout>
+
+## Caricare in Basis
+<Steps>
+
+<Step>
+Avvia Basis, apri il menu e seleziona Libreria.
+
+![Menu Basis](/img/props/8.png)
+</Step>
+
+<Step>
+Nel menu Libreria, seleziona 'Aggiungi nuovo contenuto' in alto a destra della finestra.
+
+![Pulsante Aggiungi nuovo contenuto](/img/props/9.png)
+</Step>
+
+<Step>
+Incolla l'**URL del file BEE** nel campo URL file BEE e la **SUPER SECRET ENCRYPTED PASSWORD** nel campo Password file BEE, poi fai clic su 'Aggiungi' in basso.
+
+![URL e password file BEE](/img/props/10.png)
+</Step>
+
+<Step>
+Il contenuto del file BEE verrà validato prima di essere aggiunto alla tua libreria.
+
+![Pulsante Aggiungi file BEE](/img/props/11.png)
+</Step>
+</Steps>
+
+## Gestione Prop
+
+Puoi trovare il prop aggiunto di recente nella Libreria.
+
+![Nuovo Prop nella Libreria](/img/props/12.png)
+
+I prop possono essere Spawnati, Eliminati o Condivisi con altri nel mondo, facendo clic sui pulsanti corrispondenti nella parte inferiore della finestra.
+
+![Dettagli Prop](/img/props/13.png)
+
+Inoltre, vedrai anche una serie di pannelli di informazioni utili:
+
+- **(1) Informazioni Prop** - Il pannello dettagli mostra il timestamp di compilazione, il Titolo e la Descrizione
+- **(2) Compatibilità Piattaforma** - Le icone indicano su quali piattaforme OS è supportato questo prop
+- **(3) Statistiche** - Mostra il numero di Triangoli, Materiali e Ossa
+- **(4) Caratteristiche** - Consente di impostare il comportamento in rete e la persistenza del prop
+- **(5) Aggiungi ai preferiti** - Puoi aggiungere questo Prop alla finestra del menu principale
+
+![Bounding box di spawn](/img/props/14.png)
+
+Facendo clic sul pulsante 'Spawn', puoi poi individuare la posizione esatta in cui spawnare il Prop nel mondo.
+
+![Prop spawnato](/img/props/15.png)
+
+Dopo un breve momento, l'asset apparirà, localmente o in rete, a seconda delle caratteristiche del prop.

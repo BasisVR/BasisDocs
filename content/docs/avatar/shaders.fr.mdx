@@ -1,0 +1,71 @@
+---
+title: Shaders d'avatar
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Shaders d'avatar compatibles URP
+
+### Universal Render Pipeline/Lit (Licence Unity)
+
+- https://docs.unity3d.com/Manual/urp/lit-shader.html
+
+![Shader URP Lit](https://cdn.sanity.io/images/fuvbjjlp/production/ed8ae4aba799bd64a04b6dee9e9f4eaee5735bc6-415x100.png)
+
+### Poiyomi [Version gratuite](Licence MIT) par Poiyomi
+
+- https://discord.gg/poiyomi #urp-release
+
+![Shader Poiyomi](https://s2.booth.pm/430bb41d-8aaa-46f4-ae48-63cff7c3ff3e/132c3ac8-cc2f-4858-9a92-2844c7f5cc05.png)
+
+### Silent Cel Shading Shader (Licence MIT) par s-ilent
+
+- https://github.com/s-ilent/scss ou https://gitlab.com/s-ilent/SCSS
+
+![Silent Cel Shading Shader](https://booth.pximg.net/da52898a-55fb-47ad-bd28-d1e52668811d/i/1894974/404925a9-044e-4a8e-8ea6-fb395ba45dab.png)
+
+### lilToon (Licence MIT) par lilxzw
+
+- https://github.com/lilxyzw/lilToon
+
+![Shader lilToon](https://booth.pximg.net/d39ea11b-78fc-488b-90dd-457109c7cd9b/i/3087170/235a98b9-7d60-49c5-980d-8028f6d0c6ad_base_resized.jpg)
+
+### MToon (Licence MIT) par UniVRM
+
+- https://github.com/vrm-c/UniVRM
+
+![Shader MToon](https://vrm.dev/en/images/vrm/card.png)
+
+### Sakura Shader (Abonnement) par Hyeve
+
+- https://ko-fi.com/sakurashaders
+
+![Sakura Shader](https://cdn.bsky.app/img/feed_fullsize/plain/did:plc:fxu7cua6kvrl7fz5fxso4cru/bafkreiad5qzfahj4yfrmljs7fgiztmjqsu4plfaenpeuaaxnga5ugfqkkm@jpeg)
+
+<Callout type="info">
+Ceux-ci sont connus pour fonctionner/être compatibles au moment de la dernière mise à jour de la documentation.
+</Callout>
+
+## Comment faire fonctionner les avatars utilisant des shaders Poiyomi dans BasisVR/URP
+
+De nombreux avatars utilisent des shaders Poiyomi qui fonctionnaient à l'origine uniquement avec le Built-in Render Pipeline (BIRP) d'Unity. Cependant, maintenant, les shaders Poiyomi sont également pris en charge pour fonctionner avec le Universal Render Pipeline (URP) d'Unity, qui est le pipeline de rendu utilisé pour BasisVR.
+
+La prise en charge des shaders Poiyomi pour URP est encore en bêta. Si vous avez un avatar qui a été conçu à l'origine avec des shaders Poiyomi BIRP, vous pouvez facilement les convertir pour être compatibles URP en suivant les étapes ci-dessous. Pour illustrer comment, cet exemple utilise [Hatsune Miku par Tomarudo](https://boothplorer.com/avatar/3226395).
+
+- Téléchargez la dernière version depuis https://discord.gg/poiyomi #urp-release.
+
+- Importez votre personnage dans la scène Unity. Si le shader semble différent de ce qui est attendu (par exemple, les couleurs sont manquantes ou il y a une couleur magenta en raison de shaders manquants ou similaires), vous devrez effectuer quelques petits ajustements pour corriger les choses.
+
+![Fenêtre inspecteur montrant le bouton et les composants](/img/avatars/23.png)
+
+- Sélectionnez chaque matériau dans le dossier de votre avatar et changez son shader pour utiliser Poiyomi Pro URP.
+
+![Fenêtre inspecteur montrant le bouton et les composants](/img/avatars/24.png)
+
+- Après avoir effectué les changements, votre avatar devrait s'afficher comme prévu.
+
+![Fenêtre inspecteur montrant le bouton et les composants](/img/avatars/25.png)
+
+<Callout type="info">
+Les shaders Poiyomi pour URP sont compatibles avec les appareils PC et Android. 
+</Callout>

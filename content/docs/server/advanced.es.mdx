@@ -1,0 +1,19 @@
+---
+title: Configuración avanzada
+---
+
+## Sistema de reducción del servidor
+
+A medida que el número de jugadores crece en el servidor, los requisitos de ancho de banda crecen rápidamente. El sistema SRS intenta reducir la carga de red y mejorar el rendimiento ralentizando la frecuencia con la que necesita enviar datos de movimiento a los jugadores según la distancia.
+
+La ecuación que rige cuánto más tarda el servidor en enviar datos de movimiento a los usuarios según la distancia es:
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+El resto de esta sección se publicará más adelante.
+
+## Sistema de reducción del cliente
+
+Esta sección se publicará más adelante.

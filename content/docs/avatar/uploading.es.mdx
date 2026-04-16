@@ -1,0 +1,94 @@
+---
+title: Carga
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Subir tu avatar
+
+Basis te permite cargar un archivo Avatar .BEE desde una URL remota, lo que también es necesario para que otros usuarios en una sesión en red también puedan cargar los recursos.
+
+<Callout type="info">
+Puedes agregar la contraseña de tu avatar directamente en la URL de tu archivo .BEE mediante `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Lo que estás haciendo es añadir `#` y una cadena codificada en Base64 de tu contraseña.
+</Callout>
+
+Para soportar esto, necesitarás enlazar directamente a una ubicación remota. Para este ejemplo, usaremos Google Drive.
+
+(Google Drive admite el enlace directo de archivos de hasta 100 MB debido a su política de escaneo de virus.)
+
+Sube el **archivo BEE** a Google Drive, o cualquier proveedor de alojamiento que permita enlaces directos a archivos sin inicio de sesión.
+
+- Crea una Carpeta en tu Drive y establece su configuración de uso compartido en "Cualquier persona con el enlace."
+
+Ahora, cuando arrastres tus archivos a esta Carpeta, no necesitarás establecer ese permiso individualmente.
+
+- Haz clic en el Menú Hamburguesa en la parte superior derecha del archivo que acabas de subir a la carpeta.
+- Encuentra "Compartir" y haz clic en "Copiar enlace."
+
+Necesitaremos examinar la URL para obtener la información que necesitamos para tu archivo BEE.
+
+Ejemplo:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+Queremos copiar el identificador único dentro de la URL y añadirlo a lo siguiente:
+```
+https://drive.google.com/uc?export=download&id=
+```
+
+Ejemplo:
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NO SUBAS TU ARCHIVO DE CONTRASEÑA GENERADO NI LO COMPARTAS**
+</Callout>
+
+## Cargar en Basis
+<Steps>
+
+<Step>
+Inicia Basis, abre el menú y selecciona Biblioteca.
+
+![Menú de Basis](/img/avatars/11.png)
+</Step>
+
+<Step>
+En el menú de Biblioteca, selecciona 'Agregar nuevo contenido' cerca de la parte superior derecha de la ventana.
+
+![Botón Agregar Avatar](/img/avatars/12.png)
+</Step>
+
+<Step>
+Pega la **URL del archivo BEE** en el campo URL del archivo BEE y la **CONTRASEÑA SUPER SECRETA CIFRADA** en el campo Contraseña del archivo BEE, luego haz clic en 'Agregar' abajo.
+
+![URL y contraseña del archivo BEE](/img/avatars/13.png)
+</Step>
+
+<Step>
+El contenido del archivo BEE será validado antes de ser añadido a tu biblioteca.
+
+![Botón Agregar archivo BEE](/img/avatars/14.png)
+</Step>
+</Steps>
+
+## Gestión de avatares
+
+Puedes encontrar el avatar recientemente añadido en la Biblioteca.
+
+![Nuevo Avatar en la Biblioteca](/img/avatars/15.png)
+
+Los avatares se pueden Cargar, Eliminar o Compartir con otros en el mundo, haciendo clic en los botones correspondientes en la parte inferior de la ventana.
+
+![Detalles del Avatar](/img/avatars/16.png)
+
+Además, también verás varios paneles de información útil aquí:
+
+- **(1) Información del Avatar** - El panel de detalles muestra la marca de tiempo de compilación, Título y Descripción
+- **(2) Compatibilidad de Plataforma** - Los iconos indican qué plataformas de SO admiten este avatar
+- **(3) Estadísticas** - Muestra los conteos de Triángulos, Materiales y Huesos

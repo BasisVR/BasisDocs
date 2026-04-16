@@ -1,0 +1,297 @@
+---
+title: Scripts
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Pour des raisons techniques, le code personnalisé doit soit être généré en reconstruisant le client (c'est-à-dire le projet Unity), soit via Cilbox (un CIL en sandbox).
+
+## Comment ajouter des scripts via la compilation du client Unity
+
+<Callout type="info">
+
+Si vous développez un jeu ou une application avec le framework et que la prise en charge du contenu généré par les utilisateurs (scènes, avatars ou props) n'est pas une priorité, vous préférerez peut-être compiler vos scripts MonoBehaviour nativement plutôt qu'utiliser Cilbox.
+
+Cela est dû au fait que Cilbox est un interpréteur CIL, ce qui entraîne une pénalité de vitesse significative et peut ne prendre en charge qu'un sous-ensemble des fonctionnalités du langage disponibles.
+</Callout>
+
+- Créez un objet canvas avec un bouton à l'intérieur.
+
+- Ajoutez un script à l'objet bouton. Comme exemple simple, nous allons créer un script qui met à jour un objet texte TMP appelé TestButton.
+
+- Créez et assignez un objet texte TMP au champ Button Text dans l'inspecteur.
+
+![Fenêtre de l'inspecteur montrant le composant Test Button](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- Sélectionnez le bouton et ajoutez-lui un événement onClick(). Assignez votre Gameobject Test Button, en veillant à sélectionner TestButton.OnButtonClick comme méthode appelée lors du clic.
+
+![Fenêtre de l'inspecteur montrant le gestionnaire d'événements du bouton et le texte TMP assigné](/img/scripting/2.png)
+
+- Ajoutez un composant Basis Prop à l'objet Gameobject canvas, entrez un nom d'Asset Bundle et appuyez sur le bouton « Create Prop Bee File ». Utilisez le Loadable Config Editor pour générer un fichier XML.
+
+![Fenêtre de l'inspecteur montrant le bouton avec Basis Prop](/img/scripting/3.png)
+
+- Ouvrez le prefab BasisFramework. Dans le composant Bundled Content Folder, ajoutez le mot de passe .bee généré et l'URL.
+
+![Fenêtre de l'inspecteur montrant le prefab BasisFramework](/img/scripting/4.png)
+
+![Fenêtre de l'inspecteur montrant le prefab BasisFramework](/img/scripting/5.png)
+
+- Exécutez la scène d'initialisation.
+
+![Fenêtre montrant la scène d'initialisation en cours d'exécution](/img/scripting/6.png)
+
+- Compilez le client Unity. Votre script personnalisé sera inclus dans la compilation.
+
+![Fenêtre montrant les profils de compilation du client Unity](/img/scripting/7.png)
+
+- Cliquez sur le bouton et l'objet texte TMP devrait se mettre à jour pour afficher « Clicked! ».
+
+![Fenêtre montrant le script personnalisé en cours d'exécution](/img/scripting/8.png)
+
+## Comment ajouter des scripts de synchronisation réseau via la compilation du client Unity
+
+- Créez un objet canvas avec un bouton à l'intérieur.
+
+![Fenêtre de l'inspecteur montrant le canvas](/img/scripting/9.png)
+
+- Ajoutez un script à l'objet bouton. Comme exemple simple, nous allons créer un script appelé SCNE (abréviation de Send Custom Network Events) qui met à jour un objet texte TMP avec le nombre de clics sur le bouton.
+
+- Créez et assignez un objet texte TMP au champ Button Text dans l'inspecteur.
+
+- Sélectionnez le bouton et ajoutez-lui un événement onClick(). Assignez votre Gameobject bouton, en veillant à sélectionner SCNE.IncrementCounter comme méthode appelée lors du clic.
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![Fenêtre de l'inspecteur montrant le bouton avec le script SCNE](/img/scripting/10.png)
+
+<Callout type="info">
+La méthode **OnPlayerJoined()** surchargée est utilisée car, sans elle, les nouveaux joueurs rejoignant la partie ne verraient pas le nombre mis à jour.
+
+**TakeOwnership()** est utilisé pour éviter la désynchronisation, par exemple la remise à zéro du compteur lors de l'arrivée d'un nouveau joueur qui clique sur le bouton.
+</Callout>
+
+- Ajoutez un composant Basis Prop à l'objet Gameobject canvas, entrez un nom d'Asset Bundle et appuyez sur le bouton « Create Prop Bee File ». Utilisez le Loadable Config Editor pour générer un fichier XML.
+
+![Fenêtre de l'inspecteur montrant le bouton avec Basis Prop](/img/scripting/11.png)
+
+![Fenêtre de l'inspecteur montrant le prefab BasisFramework](/img/scripting/13.png)
+
+- Ouvrez l'asset PropContentPoliceSelector et ajoutez le script SCNE à la liste des composants autorisés. Cela garantit que le script n'est pas supprimé lors de l'exécution.
+
+![Fenêtre de l'inspecteur montrant le prefab BasisFramework](/img/scripting/13.5.png)
+
+- Ajoutez un composant Basis Scene à un Gameobject vide, entrez un nom d'Asset Bundle et appuyez sur le bouton « Create Scene Bee File ». Stockez-le sur un serveur distant.
+
+<Callout type="info">
+Vous devriez désactiver ou supprimer l'objet canvas de la scène. Le garder actif entraînerait l'existence de deux copies dans la scène plus tard : une copie de la scène elle-même et une autre générée par le XML.
+</Callout>
+
+![Fenêtre de l'inspecteur montrant le composant Basis Scene](/img/scripting/12.png)
+
+- Ouvrez le prefab BasisFramework. Dans le composant Bundled Content Folder, ajoutez le mot de passe .bee généré et l'URL.
+
+![Fenêtre de l'inspecteur montrant le prefab BasisFramework](/img/scripting/14.png)
+
+- Exécutez la scène d'initialisation.
+
+![Fenêtre montrant la scène d'initialisation en cours d'exécution](/img/scripting/6.png)
+
+- Compilez le client Unity. Votre script personnalisé sera inclus dans la compilation.
+
+![Fenêtre montrant les profils de compilation du client Unity](/img/scripting/7.png)
+
+- Cliquez sur le bouton et l'objet texte TMP devrait mettre à jour le compteur après chaque clic, pour les joueurs locaux et distants.
+
+![Fenêtre de l'inspecteur montrant la scène en cours d'exécution dans le client](/img/scripting/15.png)
+
+## Comment ajouter des scripts de synchronisation réseau via Cilbox
+
+Cilbox est un système de scripting servant de liant pour fournir une logique de jeu minimale, permettant la portabilité de comportements de base dans le contenu généré par les utilisateurs (props, avatars et scènes). Il peut être utilisé pour créer des scripts fonctionnant au runtime.
+
+Actuellement, Cilbox est encore très expérimental. L'exemple suivant montre comment créer un script pour faire tourner un cube avec Cilbox.
+
+<Callout type="info">
+Remarque : Cilbox est particulièrement utile si vous développez une application ou un jeu qui charge du contenu généré par les utilisateurs et souhaitez prendre en charge les scripts sur ce contenu. Il permet de distribuer des scripts comme du DLC aux côtés de votre contenu, tout en offrant un sandbox plus sécurisé pour l'exécution du code, empêchant l'exécution de scripts aux comportements nuisibles ou indésirables.
+</Callout>
+
+- Créez un objet cube et un composant ObjectRotator à lui attacher. Assurez-vous d'ajouter [Cilboxable] au-dessus de votre classe.
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![Fenêtre de l'inspecteur montrant le cube avec le script de rotation attaché](/img/scripting/16.png)
+
+- Créez un Gameobject vide et attachez-y un composant Cilbox Basis Scene. Le Cilbox Basis Scene devient le cilbox dans lequel tous vos scripts s'exécutent.
+
+<Callout type="info">
+Remarque : Si votre éditeur ne peut pas détecter l'espace de noms Cilbox, vous pouvez soit créer votre propre fichier .asmdef et référencer Cilbox, soit ouvrir l'asmdef de Cilbox et sélectionner *Auto Referenced* pour résoudre ce problème.
+
+![Fenêtre de l'inspecteur montrant le cube avec le script de rotation attaché](/img/scripting/16.5.png)
+</Callout>
+
+![Fenêtre de l'inspecteur montrant le composant CilboxSceneBasis](/img/scripting/17.png)
+
+- Ajoutez un composant Basis Scene à un Gameobject vide, entrez un nom d'Asset Bundle et appuyez sur le bouton « Create Scene Bee File ». Stockez-le sur un serveur distant.
+
+![Fenêtre de l'inspecteur montrant le composant Basis Scene](/img/scripting/18.png)
+
+![Inspecteur Load Config](/img/scripting/19.png)
+
+- Lorsque vous exécutez la scène en mode lecture, votre script créé sera compilé normalement par Unity. Cependant, avant de pouvoir réellement jouer, les scripts sont remplacés par un composant Cilbox Proxy. Ce sont eux qui s'exécutent réellement en tant que composants au runtime. Basis utilise sa propre copie de Cilbox Proxy et Cilbox Basis Scene plutôt que la vôtre, mais vos données sont sérialisées.
+
+![Fenêtre de l'inspecteur montrant le composant Cilbox Proxy créé](/img/scripting/20.png)
+
+![Fenêtre de l'inspecteur montrant le composant Cilbox Scene Basis mis à jour en mode lecture](/img/scripting/21.png)
+
+![Fenêtre montrant le mode lecture](/img/scripting/22.png)
+
+- Exécutez la scène d'initialisation et testez votre script Cilbox dans l'application. Le cube devrait tourner.
+
+![Fenêtre montrant la démo Cilbox du cube en rotation dans l'application](/img/scripting/23.png)
+
+Voici quelques exemples de scripts supplémentaires à essayer.
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+Au lieu de BasisNetworkBehaviour, BasisNetworkShim peut être hérité pour créer des scripts réseau.
+</Callout>

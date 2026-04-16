@@ -1,0 +1,39 @@
+---
+title: Canvas UI
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 캔버스 추가 방법
+
+- 씬 계층 구조에 캔버스를 추가하고 적절한 이름을 지정합니다.
+
+![BasisFramework UI 캔버스 컨텍스트 창](/img/ui-canvas/1.png)
+
+<Callout type="info">
+참고: World Space 캔버스를 만드는 경우 X,Y,Z 스케일 0.001이 보통 좋은 시작 값입니다.
+</Callout>
+
+- Graphic Raycaster 컴포넌트가 있다면 제거합니다. Basis는 자체 그래픽 레이캐스터를 제공합니다.
+
+![BasisFramework UI 캔버스 graphic raycaster 제거](/img/ui-canvas/2.png)
+
+- Basis Graphics UI Ray Caster 컴포넌트를 추가하고 inspector의 Canvas 필드에 캔버스 오브젝트를 연결합니다.
+
+![BasisFramework UI 캔버스에 Basis Graphic Raycaster 추가](/img/ui-canvas/3.png)
+
+- 캔버스 레이어를 OverlayUI로 변경합니다.
+
+![BasisFramework UI 캔버스 레이어 OverlayUI](/img/ui-canvas/6.png)
+
+<Callout type="info">
+씬에 EventSystem 오브젝트가 없는지 확인하세요. 그렇지 않으면 캔버스에 추가된 UI 항목과 상호작용할 수 없습니다.
+</Callout>
+
+아래는 패널, 토글, 버튼, 드롭다운, 슬라이더 및 입력 필드를 포함하는 캔버스의 예시 이미지입니다.
+
+![BasisFramework UI 캔버스 레이어 OverlayUI](/img/ui-canvas/7.png)
+
+<Callout type="info">
+참고: UI 항목을 볼 때 레이캐스트 포인터 또는 커서가 파란색 원으로 바뀝니다.
+</Callout>

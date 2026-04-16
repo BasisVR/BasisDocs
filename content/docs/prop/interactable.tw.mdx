@@ -1,0 +1,21 @@
+---
+title: 可互動
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 如何建立網路同步道具
+
+道具可以進行網路同步並在執行時生成。以下是如何載入網路同步的 Pickup Interactable 立方體的範例：
+
+- 在場景階層中新增一個立方體物件。
+
+![立方體的檢查器視窗](/img/props/2A.png)
+
+- 新增 Basis Pickup Interactable 元件。這允許本地玩家拾取和移動立方體。
+
+![Basis Pickup Interactable 元件的檢查器視窗](/img/props/2B.png)
+
+- 新增 Basis Object Sync Networking 元件。這允許為所有玩家同步立方體。
+
+![Basic Object Sync Networking 元件的檢查器視窗](/img/props/2C.png)

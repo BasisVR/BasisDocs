@@ -1,0 +1,63 @@
+---
+title: Introducción
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Descripción general
+
+El servidor Basis es la columna vertebral de red para su experiencia de VR social. Esta documentación le guiará en la configuración y gestión de su propia instancia del servidor Basis.
+
+El servidor está construido sobre .NET 9.0 y utiliza LiteNetLib para el networking de bajo nivel. Está diseñado para manejar múltiples jugadores simultáneos con uso eficiente del ancho de banda, y soporta tanto despliegues en Docker como compilación nativa en Windows y Linux.
+
+## Guía de inicio rápido
+
+<Cards>
+  <Card
+    title="Despliegue"
+    description="Aprenda cómo desplegar el servidor usando Docker, Windows o Linux"
+    href="/es/docs/server/deployment"
+  />
+  <Card
+    title="Configuración"
+    description="Configure su servidor con config.xml y recursos cargables"
+    href="/es/docs/server/configuration"
+  />
+  <Card
+    title="Monitoreo"
+    description="Monitoree la salud y métricas de rendimiento de su servidor"
+    href="/es/docs/server/monitoring"
+  />
+  <Card
+    title="Configuración avanzada"
+    description="Optimice el rendimiento del servidor con sistemas de reducción"
+    href="/es/docs/server/advanced"
+  />
+</Cards>
+
+## Características principales
+
+- **Rendimiento multi-hilo**: Funciona bien con tan solo dos núcleos, escala con más
+- **Despliegue flexible**: Soporte para Docker, Windows y Linux
+- **Autenticación**: Verificación de identidad basada en DID
+- **Optimización de ancho de banda**: Sistemas de reducción de servidor y cliente
+- **Monitoreo de salud**: Endpoint de verificación de salud HTTP integrado
+- **Recursos cargables**: Carga dinámica de mundos y objetos
+
+## Requisitos
+
+- **CPU**: Mínimo 2 núcleos (más núcleos mejoran el rendimiento)
+- **Red**: Se recomienda alto ancho de banda para VR social
+- **Puertos**:
+  - 4296/udp (protocolo Basis)
+  - 10666/tcp (verificaciones de salud)
+  - 1234/tcp (métricas Prometheus)
+
+## Versión del servidor
+
+Esta documentación cubre **Basis Server Versión 6** de la rama LTS (mayo 2025).
+
+<Callout type="warn">
+El código del cliente y el servidor **deben coincidir** en el número de versión. Puede encontrar el `ServerVersion` en `BasisNetworkCore\BasisNetworkVersion.cs`.
+</Callout>

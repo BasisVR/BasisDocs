@@ -1,0 +1,21 @@
+---
+title: Instellen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## De Unity Editor instellen
+
+- Volg de sectie [Aan de slag](/nl/docs#installing-unity) voor het installeren van de nieuwste ondersteunde Unity Editor-versie en het verkrijgen van het Basis-framework.
+- Open Unity Hub en voeg een bestaand project toe; kies de uitgepakte/gekloonde Basis-projectmap.
+- Zodra het Unity-project is geladen, kun je je wereldbestanden laden:
+- Ofwel,
+  - Zoek `Assets` in de projecthiërarchie, klik met de rechtermuisknop op een lege ruimte binnen `Assets` en selecteer `Show in Explorer`.
+  - Kopieer je wereldbestanden [Mesh/Materialen/Texturen, enz.] daarin.
+- Of,
+  - Importeer een .unity-pakket met je bestanden via het Assets-menu: `Import Package > Custom Package`.
+- Ga terug naar het Unity-venster en wacht tot het importproces is voltooid.
+
+<Callout type="info">
+Als je je content plaatst in een nieuwe map "Assets > _UserContent", verbergt het standaard .gitignore-bestand van het project wijzigingen in git voor deze map.
+</Callout>

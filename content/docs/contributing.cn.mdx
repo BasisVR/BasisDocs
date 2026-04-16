@@ -1,0 +1,95 @@
+---
+title: 贡献
+description: 如何为 BasisVR 做贡献
+icon: GitPullRequest
+---
+
+## BasisDocs 贡献指南
+
+本页面旨在帮助希望向 BasisDocs 仓库贡献文档的人。
+
+BasisDocs 使用 Fumadocs，一个现代化的文档框架。您将主要使用以下目录：
+
+- `content/docs/` - MDX 格式的文档内容
+- `public/img/` - 静态图片和资产
+
+![文档结构](/img/basisdocs-contrib/1.png)
+
+## 快速入门
+
+快速了解本网站的最佳方式是熟悉：
+
+- [MDX 文档](https://mdxjs.com/) - 带有 JSX 组件的扩展 Markdown
+- [Fumadocs 文档](https://fumadocs.vercel.app/) - 我们使用的文档框架
+
+### 可用组件
+
+您可以在文档中使用各种组件：
+
+- `<Callout type="info|warn|error">` - 用于重要说明和警告
+- `<Card>` 和 `<Cards>` - 用于导航卡片
+- 带语法高亮的代码块
+- 带有适当 alt 文本的图片
+
+## Markdown 功能
+
+支持标准 Markdown，以及扩展功能：
+
+- **表格** - 用于结构化数据
+- **代码块** - 带有特定语言的语法高亮
+- **Admonitions** - 使用 Callout 组件
+- **链接** - 内部和外部链接
+- **图片** - 从 `/public/img/` 正确引用
+
+## 贡献文档
+
+1. **Fork 仓库**
+   
+   在 GitHub 上 Fork [BasisDocs 仓库](https://github.com/BasisVR/BasisDocs)。
+
+2. **克隆您的 Fork**
+   
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/BasisDocs.git
+   cd basis-docs
+   ```
+
+3. **安装依赖**
+   
+   ```bash
+   npm install
+   ```
+
+4. **运行开发服务器**
+   
+   ```bash
+   npm run dev
+   ```
+
+5. **进行更改**
+   
+   编辑 `content/docs/` 中的 MDX 文件，并将图片添加到 `public/img/`。
+
+6. **测试更改**
+   
+   ```bash
+   npm run build
+   ```
+
+7. **提交 Pull Request**
+   
+   推送您的更改并在 GitHub 上打开 pull request。
+
+## 指南
+
+- 使用描述性标题和适当的标题层次结构
+- 为所有图片添加 alt 文本
+- 使用 Callout 组件而不是纯文本警告
+- 遵循现有的文件结构和命名规范
+- 提交前在本地测试您的更改
+
+感谢您提前做出的贡献！
+
+### 有问题？
+
+如果您有关于贡献的问题，请加入我们的 [Discord](https://discord.gg/aCzSPKEW2v)！

@@ -1,0 +1,44 @@
+---
+title: Construction
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Le fichier Basis Encrypted Extension (BEE)
+
+Basis stocke le contenu généré par les utilisateurs sous forme de fichier .BEE qui contient votre ressource compilée et ses métadonnées. Chaque fichier .BEE généré est accompagné d'un mot de passe généré aléatoirement pour y accéder, tous deux disponibles dans le répertoire racine de votre projet Unity à : `Basis\Basis\AssetBundles`.
+
+## Éviter les GameObjects dupliqués
+
+- Par défaut, le composant BasisAvatar renommera tous les GameObjects portant des noms en double dans la hiérarchie de l'avatar.
+
+<Callout type="warning">
+Si vous activez `Do not auto-rename bones` dans les Options de traitement, assurez-vous qu'il n'y a **AUCUN** GameObject avec des noms en double dans la hiérarchie de votre avatar, y compris l'armature, car cela entraînera l'échec du chargement de votre avatar après la construction de l'AssetBundle.
+</Callout>
+
+## Construire l'AssetBundle
+
+- En bas du composant Basis Avatar sur votre Avatar, vérifiez que les cibles de construction appropriées pour votre contenu sont activées. Basis prend en charge diverses plateformes cibles, notamment : Windows, Android, Mac, Linux et IOS.
+- Appuyez sur le bouton 'Create Avatar Bee File' et attendez que ce processus se termine.
+
+![Créer le fichier Avatar Bee](/img/avatars/7.png)
+
+- Les résultats s'ouvriront automatiquement dans une nouvelle fenêtre comme indiqué ci-dessous.
+
+![Résultats de construction](/img/avatars/8.png)
+
+- Selon votre matériel, chaque plateforme peut prendre en moyenne une minute ou deux à construire la première fois. Les constructions suivantes devraient prendre moins de temps grâce à la mise en cache. La construction pour toutes les plateformes prendra probablement du temps supplémentaire et augmentera la taille globale du fichier.
+
+<Callout type="info">
+Bon à savoir :
+
+- Vous pouvez commodément utiliser un mot de passe personnalisé pour votre fichier BEE généré. Cela peut faciliter la mémorisation si vous préférez un seul mot de passe pour différents fichiers BEE. 
+
+- Si vous préférez, vous pouvez également remplacer le nom du fichier .BEE généré par quelque chose de plus facilement mémorisable. Gardez à l'esprit que la réutilisation du même nom entraînera le remplacement de toute version précédente par la nouvelle !
+
+![Créer le fichier Avatar Bee](/img/avatars/7a.png)
+</Callout>
+
+<Callout type="info">
+Anecdote de janvier 2026 : Un avatar avec 18 matériaux utilisant Poiyomi URP avec 120 000 polygones, avec une taille de package de 45 Mo par plateforme, a pris 9 min 43 s sur un Ryzen 7 9800x3D pour construire pour toutes les plateformes cibles.
+</Callout>

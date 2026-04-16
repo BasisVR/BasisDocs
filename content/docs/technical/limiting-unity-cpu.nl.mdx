@@ -1,0 +1,21 @@
+---
+title: Unity CPU-gebruik beperken
+---
+
+Bij het bouwen van een project in Unity 6 zal het de neiging hebben om ALLE systeembronnen te gebruiken, waardoor het systeem volledig onbruikbaar wordt (met name tijdens de shader-compilatiefase), zelfs op krachtige hardware.
+
+Je kunt het volgende gebruiken als argument voor de launcher om te voorkomen dat elke CPU-kern op 100% wordt vergrendeld.
+
+```
+-job-worker-count 8
+```
+
+Waarbij **8** een getal kleiner dan het totale aantal fysieke CPU-cores in je machine moet zijn. Dit beperkt de Unity-childworkers tot deze waarde, waardoor het niet elke CPU-kern kan blokkeren. Dit kan zelfs de Unity-bouwsnelheid verbeteren, omdat het de neiging heeft overbelast te raken en zichzelf te vertragen.
+
+Je kunt de startargumenten voor een project openen door Unity Hub te openen en met de rechtermuisknop op de projectnaam te klikken:
+
+![Unity Hub project rechtermuisklik menu](/img/limiting-unity-cpu/1.png)
+
+Het ziet er dan ongeveer zo uit nadat je het argument hebt toegevoegd:
+
+![Unity Hub met startargumenten](/img/limiting-unity-cpu/2.png)

@@ -1,0 +1,80 @@
+---
+title: Сборка из Linux
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+Поддержка Linux является экспериментальной и может иметь дополнительные проблемы.
+</Callout>
+
+<Callout type="info">
+В настоящее время не рекомендуется создавать сборки для Windows или Android из Linux, так как они, скорее всего, будут иметь недостающие функции или не будут работать вообще.
+</Callout>
+
+На этой странице предполагается, что вы сначала прошли раздел [Начало работы](/ru/docs).
+
+## Предварительные требования для Linux
+
+<Callout type="error">
+**Не коммитьте удаление утилит, перечисленных на этой странице!**
+Они необходимы для сборки клиентов Windows и Android!
+</Callout>
+
+Для сборки чего-либо в Basis под Linux нужно удалить `com.meta.xr.sdk.core` "Meta XR Core SDK" и `com.unity.xr.openxr` "OpenXR Plugin" через [Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html).
+
+Возможно, потребуется установить `com.unity.toolchain.linux-x86_64` "Toolchain Linux x64", но Unity должен установить его автоматически.
+
+![Unity Package Manager](/img/linux/1.png)
+![Удаление пакетов](/img/linux/2.png)
+
+## Сборка .BEE-файлов из Linux
+
+Для сборки .bee-файлов для Windows и Android из редактора Linux необходимо удалить файл `Assets/Basis/Profiles/HTCViveTrackerProfile.cs` и установить "Scripting Backend" в `Mono` в разделе `Edit > Project Settings > Player > Configuration > Scripting Backend`.
+
+![Настройки проекта](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## Сборка нативного Linux-клиента из Linux
+
+<Callout type="info">
+Рекомендуется изменить "Scripting Backend" на `IL2CPP` для лучшей производительности.
+
+![Настройки проекта](/img/linux/3.png)
+![Бэкенд IL2CPP](/img/linux/5.png)
+</Callout>
+
+- Сначала убедитесь, что вы [удалили неподдерживаемые пакеты](#linux-prerequisites).
+- Убедитесь, что у вас *не* отмечен `Use Scene Provided Here` из [Тестирования мира](/ru/docs/world#test-the-scene).
+- Убедитесь, что сцена `Packages/com.basis.sdk/Scenes/Initialization` открыта.
+
+Затем соберите Basis обычным образом.
+
+## Linux Нативный
+
+**VR:** Возможно, потребуется запустить с флагом `--force-OpenVRLoader`:
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**: Если приложение закрывается сразу после запуска, используйте XWayland:
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+Если вы хотите использовать OpenXR с Windows-сборкой под Proton / Wine, можно добавить:
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+В аргументы запуска Steam.
+
+## Другая информация
+
+- Последнее успешное тестирование на ветке `#developer` коммит `102765e5b05663ce9ce2967f3d09021d5216ec51`
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

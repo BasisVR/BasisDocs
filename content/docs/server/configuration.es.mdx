@@ -1,0 +1,139 @@
+---
+title: Configuración
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## Introducción
+
+El enfoque aquí es la configuración específica del servidor Basis.
+
+Este documento se aplica a un servidor Basis sin modificar: Versión 6, rama LTS, mayo 2025.
+*/}
+
+### Compilar y ejecutar en Linux
+
+#### Prerrequisitos para Debian/Ubuntu
+
+Para Ubuntu 22.04:
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Para Debian u otras configuraciones:
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+Luego continúe la instalación:
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Obtener Basis
+
+Cambie a la carpeta deseada y ejecute:
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Compilar el servidor Basis
+
+Abra una terminal y acceda al directorio: `cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+Luego compile:
+
+`dotnet build` (para depuración)
+
+o
+
+`dotnet build --configuration Release` (para release)
+
+#### Ejecutar
+
+Navegue al directorio BasisServerConsole y ejecute:
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip Para un release de Linux más específico
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+Desde `BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole` ejecute `./BasisNetworkConsole`.
+
+:::
+
+## Firewall
+
+Es posible que desee abrir los puertos:
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## Archivos de configuración
+
+La primera vez que ejecute el servidor, se crearán varios archivos de configuración en el directorio del exe del servidor.
+
+| Archivo/Carpeta          | Descripción                                 |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | Archivo de configuración principal.         |
+| `initialresources/`      | Contiene archivos de mundo y objetos que el servidor cargará a petición. |
+| `Log/`                   | Carpeta donde se almacenan los registros del servidor. |
+| `admins.xml`             | Lista de usuarios con privilegios de admin. |
+| `banned_players.xml`     | Lista de cuentas de jugadores baneados.     |
+
+## Config.xml
+
+| Variable                 | Predeterminado        | Descripción |
+|--------------------------|------------------------|-------------|
+| `PeerLimit`              | 1024                   | Número máximo de jugadores permitidos. |
+| `SetPort`                | 4296                   | Puerto de red en el que escucha el servidor. |
+| `Password`               | default_password       | Contraseña de acceso por defecto. |
+| `HealthCheckHost`        | localhost              | Nombre de host para verificaciones de salud. Use `*` para cualquier interfaz. |
+| `HealthCheckPort`        | 10666                  | Puerto para verificaciones de salud. |
+| `UseAuth`                | true                   | Habilitar o deshabilitar autenticación del servidor. |
+| `UseAuthIdentity`        | true                   | Usar verificación de identidad DID cuando auth está activo. |
+
+<small>El networking de bajo nivel es manejado por una biblioteca de terceros llamada <strong>LiteNetLib</strong>. Las variables de configuración relacionadas están marcadas con <code>LNL</code>.</small>
+
+### Ejemplo Config.xml
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## Archivos de configuración cargables
+
+Puede configurar archivos de mundo y objetos para cargar a petición.
+Estos se colocan en la carpeta `InitialResources`.
+
+<Callout type="warn">
+Las URLs remotas deben ser servidas desde un servidor que soporte chunking.
+</Callout>
+
+<Callout type="info" title="Para subir algo">
+Cree una escena en Unity, expórtela como archivo BEE, súbala a un servidor HTTP, luego coloque la URL en `CombinedURL` y la contraseña en `UnlockPassword`.
+</Callout>
+
+| Variable         | Definición |
+|------------------|------------|
+| `Mode`           | Modo de la configuración: `0` = Objeto de juego, `1` = Escena. |
+| `LoadedNetID`    | Un ID de red de referencia. |
+| `UnlockPassword` | Contraseña para acceder al recurso. |
+| `CombinedURL`    | URL al archivo `.BEE` |
+| `IsLocalLoad`    | Indica si el recurso se carga localmente o desde internet. |
+| `Persist`        | ¿El objeto continúa existiendo si el jugador que lo creó abandona el servidor? |

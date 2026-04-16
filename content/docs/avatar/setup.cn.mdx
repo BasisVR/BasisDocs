@@ -1,0 +1,101 @@
+---
+title: 设置
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 设置 Unity 编辑器
+
+- 参考[入门](/docs#installing-unity)章节，安装最新支持的 Unity 编辑器版本并获取 Basis 框架。
+- 打开 Unity Hub，添加一个现有项目，选择解压/克隆的 Basis 项目文件夹
+- 在项目初次加载时，您将看到以下提示，请点击"Restart Editor"。
+
+![Unity 重启提示](/img/avatars/0.png)
+
+- 项目加载完成后，您现在可以加载您的虚拟形象文件：
+- 您可以，
+  - 在项目层级中找到 `Assets`，在 `Assets` 内右键单击任意空白处，选择 `Show in Explorer`
+  - 复制您的虚拟形象文件 [网格/材质/纹理等]
+- 或者
+  - 从 Assets 菜单中导入包含您文件的 .unity 包，Import Package > Custom Package
+- 返回 Unity 窗口，等待导入过程完成。
+
+<Callout type="info">
+如果您将内容放置在新目录"Assets > _UserContent"中，项目的默认 .gitignore 文件将在 git 中隐藏此文件夹中的更改。
+</Callout>
+
+## 导入模型
+
+- 找到您的虚拟形象模型的位置（通常以 .FBX 格式提供）。
+- 点击文件，然后导航到 Import Settings 窗口的 `Model` 部分。
+- 确保如下所示选中了 `Red/Write` 和 `Legacy Blend Shape Normals`。
+
+![模型导入设置](/img/avatars/1.png)
+
+- 导航到 Import Settings 窗口的 `Rig` 部分。
+- 点击 `Animation Type` 下拉菜单，选择 `Humanoid`，如下所示按下 `Apply`。
+
+![骨骼设置](/img/avatars/2.png)
+
+- 之后，`Apply` 上方的 `Configure` 按钮现在可以选择，点击它，然后检查您的骨骼映射。
+
+![骨骼映射](/img/avatars/3.png)
+
+- 这里应该显示所有必需的骨骼都已选中；确保这对您的骨架来说看起来是正确的。
+- 最后，点击 `Mapping` 窗口中的 `Head` 按钮，并删除 `Jaw` 的分配；这通常是不正确的。
+
+![头部映射](/img/avatars/4.png)
+
+<Callout type="info">
+在某些情况下，Unity 检查器可能会提到您的虚拟形象的骨骼映射没有正确分配，或者虚拟形象没有正确处于 T 型姿势。要解决此问题，您可以点击 Mapping 和 Pose 下拉菜单，选择 Automap 或 Enforce T-Pose。
+
+![显示如何自动映射虚拟形象骨骼的检查器窗口](/img/avatars/4a.png)
+
+![显示如何强制 T 型姿势的检查器窗口](/img/avatars/4b.png)
+
+</Callout>
+
+## 蒙皮网格设置
+
+- 目前没有要求将虚拟形象的蒙皮网格命名为 `Body` 或虚拟平台上使用的其他变体。
+- 如果您有多个蒙皮网格，考虑将它们全部固定到身体上的同一参考点，以在场景中继承光照探针。您可以通过将骨架中的骨骼（通常是 Hips）分配给 `Anchor Override` 字段来实现。
+
+![锚点覆盖](/img/avatars/5.png)
+
+- 具有多个蒙皮网格的虚拟形象的另一个考虑因素是，当不同的边界框大小导致单个网格在虚拟形象的其余部分对远程查看者可见时出现/消失。
+- 您可以在 Skinned Mesh Renderer 组件顶部名为 `Bounds` 的部分中覆盖 Center X、Y、Z 和 Extent X、Y、Z 值。通常，将不同蒙皮网格的这些值设置为相同是个好主意。
+
+![边界设置](/img/avatars/6.png)
+
+## 材质/着色器
+
+- 您可以直接使用 Unity 6 附带的 Universal Render Pipeline/Lit 着色器
+- 否则，我们整理了一份可以使用的兼容[虚拟形象着色器](/cn/docs/avatar/shaders)列表。
+
+## Basis Avatar 设置
+
+- 上述步骤应该会在您将虚拟形象预制件拖入场景时自动添加 Animator 组件。
+- 在虚拟形象的父 GameObject 上，点击 `Add Component`，并添加 `Basis Avatar`。
+- 输入您首选的虚拟形象名称和描述。
+- 在 `Assigned Input` 中，确保分配了 Animator。通常，这会自动完成。另外，分配包含虚拟形象面部和眨眼混合形状的 Skinned Mesh Renderer。如果您愿意，也可以为您的虚拟形象添加可选的缩略图图标。
+- 在 `Viseme Setup` 中，为您的虚拟形象分配相关的口型和眨眼。您也可以使用自动检测按钮，它会尝试自动为您完成。
+- 可选地，您可以先进入播放模式，然后选择 `Test in Editor` 选项，在编辑器中测试您的虚拟形象。
+- 在选择 `Create Avatar Bee File` 之前，确保所有着色器都兼容。如果您的虚拟形象上存在不兼容的着色器错误（包括服装和配件），BEE 文件将无法生成。如果有任何问题，检查器会报告，请确保解决它们！
+
+![添加了 Basis Avatar 组件并分配了字段的检查器窗口](/img/avatars/6a.png)
+
+![显示虚拟形象混合形状运动示例的检查器窗口](/img/avatars/6b.png)
+
+<Callout type="info">
+如果您刚接触蒙皮网格渲染器混合形状或一般的上传虚拟形象，它们基本上只是可以控制的滑块，用于改变虚拟形象上的变形。
+
+![显示虚拟形象混合形状运动示例的检查器窗口](/img/avatars/6c.gif)
+</Callout>
+
+<Callout type="type">
+注意：即使您的虚拟形象没有所有 `Basis Avatar` 混合形状，您仍然可以上传它。另外，请注意只支持眼部混合形状；目前不支持眼部骨骼。
+</Callout>
+
+## 约束设置
+
+Basis 不使用内置的 Unity 约束系统，而是使用 Animation Rigging。您可以在[此处](/cn/docs/avatar/animation-rigging#setup-for-animation-rigging-packages)找到设置指南。

@@ -1,0 +1,22 @@
+---
+title: Erweiterte Funktionen
+---
+
+## Jiggles (Optional)
+
+**So fügen Sie Jiggle-Physik hinzu:**
+
+Für jede Jiggle-Wurzel:
+- Fügen Sie eine neue Komponente `Jiggle Rig` hinzu, die in einem separaten GameObject platziert werden kann, aber sie muss sich unter der Hierarchie Ihres Avatar-Stamms befinden.
+- Stellen Sie in der Jiggle Rig-Komponente sicher, einen `Root Transform` festzulegen, der ein Knochen in der Avatar-Armatur ist.
+- Wenn Sie einen übergeordneten Knochen haben (für mehrere Ketten von untergeordneten Knochen, auf die Sie denselben Effekt anwenden möchten), können Sie `Motionless Root` aktivieren, um nur die untergeordneten Knochen zu beeinflussen, nicht die Wurzel selbst. (Optional)
+- Passen Sie die `Settings` nach Belieben an (aktivieren Sie `Advanced`, um alle Einstellungen anzuzeigen).
+
+**Kollisionsinteraktion:**
+- Aktivieren Sie `Advanced`, um alle Einstellungen anzuzeigen.
+- Aktivieren Sie `Collision` und passen Sie `Collision Radius` an das Objekt an.
+
+## Augen- & Gesichtsverfolgung (optional)
+
+- Hai hat einen umfassenden Leitfaden zur Verfügung gestellt, wie man die Automatic Face Tracking-Komponente zu einem Avatar in einem Basis-Projekt hinzufügt
+- Den Link finden Sie [hier](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-tracking) für Anweisungen, wie das funktioniert.

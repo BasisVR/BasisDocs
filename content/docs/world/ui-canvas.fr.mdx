@@ -1,0 +1,39 @@
+---
+title: Canvas UI
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Comment ajouter un Canvas
+
+- Ajoutez un canvas à la hiérarchie de la scène et donnez-lui un nom approprié.
+
+![Fenêtre de contexte du canvas UI BasisFramework](/img/ui-canvas/1.png)
+
+<Callout type="info">
+Remarque : Si vous créez un canvas en World Space, une échelle X, Y, Z de 0,001 est généralement une bonne valeur de départ.
+</Callout>
+
+- Supprimez le composant Graphic Raycaster s'il est présent. Basis fournit son propre raycaster graphique.
+
+![Suppression du Graphic Raycaster du canvas UI BasisFramework](/img/ui-canvas/2.png)
+
+- Ajoutez un composant Basis Graphics UI Ray Caster et attachez votre objet canvas à son champ Canvas dans l'inspecteur.
+
+![Ajout du Basis Graphic Raycaster au canvas UI BasisFramework](/img/ui-canvas/3.png)
+
+- Changez le calque du canvas en OverlayUI.
+
+![Calque OverlayUI du canvas UI BasisFramework](/img/ui-canvas/6.png)
+
+<Callout type="info">
+Assurez-vous qu'il n'y a pas d'objets EventSystem dans votre scène, sinon les éléments d'interface ajoutés à votre canvas ne pourront pas être interactifs.
+</Callout>
+
+Voici un exemple d'image d'un canvas contenant un panneau, un toggle, un bouton, une liste déroulante, un curseur et un champ de saisie.
+
+![Calque OverlayUI du canvas UI BasisFramework](/img/ui-canvas/7.png)
+
+<Callout type="info">
+Remarque : Lorsque vous regardez un élément d'interface, votre pointeur raycast ou curseur se transforme en cercle bleu.
+</Callout>

@@ -1,0 +1,21 @@
+---
+title: Einrichtung
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Den Unity-Editor einrichten
+
+- Gemäß dem Abschnitt [Erste Schritte](/de/docs#installing-unity) zum Installieren der neuesten unterstützten Unity-Editor-Version und zum Abrufen des Basis-Frameworks.
+- Öffnen Sie Unity Hub und fügen Sie ein bestehendes Projekt hinzu, wählen Sie den extrahierten/geklonten Basis-Projektordner.
+- Sobald das Unity-Projekt geladen wurde, können Sie Ihre Weltdateien laden:
+- Entweder,
+  - Finden Sie `Assets` in der Projekthierarchie, klicken Sie mit der rechten Maustaste auf einen leeren Bereich innerhalb von `Assets` und wählen Sie `Show in Explorer`.
+  - Kopieren Sie Ihre Weltdateien [Mesh/Materialien/Texturen, etc.].
+- oder
+  - Importieren Sie ein .unity-Paket mit Ihren Dateien über das Assets-Menü: `Import Package > Custom Package`.
+- Wechseln Sie zurück zum Unity-Fenster und warten Sie, bis der Importvorgang abgeschlossen ist.
+
+<Callout type="info">
+Wenn Sie Ihren Inhalt in einem neuen Verzeichnis "Assets > _UserContent" ablegen, versteckt die Standard-.gitignore-Datei des Projekts Änderungen in diesem Ordner vor git.
+</Callout>

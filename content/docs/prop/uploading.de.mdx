@@ -1,0 +1,88 @@
+---
+title: Hochladen
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Ihr Prop hochladen
+
+Basis ermöglicht das Laden einer Prop .BEE-Datei von einer Remote-URL, was für alle Benutzer in einer vernetzten Sitzung erforderlich ist.
+
+<Callout type="info">
+Sie können Ihr Prop-Passwort direkt in die URL Ihrer .BEE-Datei einfügen: `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Sie hängen dabei `#` und den Base64-codierten String Ihres Passworts an.
+</Callout>
+
+Laden Sie die **BEE-Datei** auf Google Drive oder einen anderen Hosting-Anbieter mit direkten Links ohne Login hoch.
+
+- Erstellen Sie einen Ordner und setzen Sie die Freigabeeinstellungen auf „Jeder mit dem Link".
+- Klicken Sie auf das Hamburger-Menü und „Link kopieren".
+
+Beispiel:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**LADEN SIE IHRE GENERIERTE PASSWORTDATEI NICHT HOCH UND TEILEN SIE SIE NICHT**
+</Callout>
+
+## In Basis laden
+<Steps>
+
+<Step>
+Starten Sie Basis, öffnen Sie das Menü und wählen Sie Bibliothek.
+
+![Basis-Menü](/img/props/8.png)
+</Step>
+
+<Step>
+Wählen Sie „Neuen Inhalt hinzufügen" oben rechts.
+
+![Neuen Inhalt hinzufügen-Schaltfläche](/img/props/9.png)
+</Step>
+
+<Step>
+Fügen Sie die **BEE-Datei-URL** und das **SUPER GEHEIME VERSCHLÜSSELTE PASSWORT** ein, dann klicken Sie auf „Hinzufügen".
+
+![BEE-Datei-URL & Passwort](/img/props/10.png)
+</Step>
+
+<Step>
+Der Inhalt der BEE-Datei wird validiert, bevor er zur Bibliothek hinzugefügt wird.
+
+![BEE-Datei-Schaltfläche hinzufügen](/img/props/11.png)
+</Step>
+</Steps>
+
+## Prop-Verwaltung
+
+Den zuletzt hinzugefügten Prop finden Sie in der Bibliothek.
+
+![Neues Prop in der Bibliothek](/img/props/12.png)
+
+Props können platziert, gelöscht oder mit anderen in der Welt geteilt werden.
+
+![Prop-Details](/img/props/13.png)
+
+Informationspanels:
+
+- **(1) Prop-Informationen** - Kompilierungs-Zeitstempel, Titel und Beschreibung
+- **(2) Plattformkompatibilität** - Unterstützte OS-Plattformen
+- **(3) Statistiken** - Dreiecks-, Material- und Knochen-Anzahlen
+- **(4) Eigenschaften** - Vernetztes Verhalten und Persistenz des Props
+- **(5) Anheften** - Dieses Prop im Hauptmenü anheften
+
+![Spawn-Begrenzungsrahmen](/img/props/14.png)
+
+Nach Klick auf „Spawn" können Sie die genaue Position zum Platzieren des Props in der Welt festlegen.
+
+![Prop platziert](/img/props/15.png)
+
+Nach einem kurzen Moment erscheint das Asset — lokal oder vernetzt, je nach Prop-Eigenschaften.

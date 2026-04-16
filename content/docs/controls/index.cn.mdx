@@ -1,0 +1,35 @@
+---
+title: 设置与控制
+---
+
+## 控制
+
+让我们创建一个页面来介绍 BasisVR 中可用的控制。
+
+## 键盘快捷键
+
+- F9：切换到桌面模式
+
+- F10：切换到 OpenXR
+
+- F11：切换到 OpenVR
+
+## 调试帮助
+
+- 您可以使用 *BasisDebug.Log("\<您的日志消息\>");* 将输出打印到 Basis 应用程序的游戏内控制台菜单。
+
+- 您还可以查看 `Player.log` 文件，位于 <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+这取决于使用所选应用 steamid 的 proton，在编辑器中构建时位置会有所不同。</Tab></Tabs> 它提供了游戏过程中遇到的确切 Unity 问题的更全面日志，包括堆栈跟踪，例如可能出现空引用错误的确切行。
+
+![Basis 控制台菜单](/img/controls/2.png)
+
+## 库项目存储在哪里？
+
+- `ItemKeyStore.json` 文件，位于 <Tabs items={['Windows', 'Linux']}> <Tab value="Windows">%USERPROFILE%\AppData\LocalLow\Basis Unity\Basis Unity</Tab>
+<Tab value="Linux">~/.steam/steam/steamapps/compatdata/3157090/pfx/drive_c/users/steamuser/AppData/LocalLow/Basis Unity/Basis Unity/
+这取决于使用所选应用 steamid 的 proton，在编辑器中构建时位置会有所不同。</Tab></Tabs> 存储当前库中虚拟形象、世界和道具的映射。
+
+<Callout>
+在代码库中，您还可以找到包含嵌入到应用程序中的库项目的 `EmbeddedItems` 类。   
+</Callout>

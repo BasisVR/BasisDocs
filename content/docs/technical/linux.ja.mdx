@@ -1,0 +1,80 @@
+---
+title: Linuxからのビルド
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="warn">
+LinuxのサポートはExperimentalであり、追加の問題が発生する可能性があります。
+</Callout>
+
+<Callout type="info">
+現在、LinuxからWindowsまたはAndroidのビルドを作成することは推奨されていません。機能が不足していたり、まったく動作しない可能性があります。
+</Callout>
+
+このページは、まず[はじめに](/ja/docs)を通じてセットアップが完了していることを前提としています。
+
+## Linuxの前提条件
+
+<Callout type="error">
+**このドキュメントページに記載されているユーティリティの削除をコミットしないでください！**
+WindowsとAndroidクライアントのビルドに必要です！
+</Callout>
+
+Linux上でBasisのビルドを行うには、[Unity Package Manager](https://docs.unity3d.com/6000.0/Documentation/Manual/upm-ui.html)を通じて `com.meta.xr.sdk.core` "Meta XR Core SDK" と `com.unity.xr.openxr` "OpenXR Plugin" を削除する必要があります。
+
+`com.unity.toolchain.linux-x86_64` "Toolchain Linux x64" のインストールが必要な場合がありますが、Unityが自動的にインストールするはずです。
+
+![Unity Package Manager](/img/linux/1.png)
+![パッケージの削除](/img/linux/2.png)
+
+## LinuxからBEEファイルをビルドする
+
+LinuxエディターからWindowsおよびAndroid向けの.beeファイルをビルドするには、`Assets/Basis/Profiles/HTCViveTrackerProfile.cs`ファイルを削除し、`Edit > Project Settings > Player > Configuration > Scripting Backend`で"Scripting Backend"を`Mono`に設定する必要があります。
+
+![プロジェクト設定](/img/linux/3.png)
+![Scripting Backend](/img/linux/4.png)
+
+## LinuxからネイティブLinuxクライアントをビルドする
+
+<Callout type="info">
+パフォーマンス向上のため、"Scripting Backend"を`IL2CPP`に変更することをお勧めします。
+
+![プロジェクト設定](/img/linux/3.png)
+![IL2CPPバックエンド](/img/linux/5.png)
+</Callout>
+
+- まず[サポートされていないパッケージを削除](#linux-prerequisites)していることを確認してください。
+- [ワールドテスト](/ja/docs/world#test-the-scene)から`Use Scene Provided Here`にチェックが入っていない*ことを確認してください。
+- `Packages/com.basis.sdk/Scenes/Initialization`シーンが開いていることを確認してください。
+
+その後、通常通りBasisをビルドします。
+
+## Linuxネイティブ
+
+**VR：** `--force-OpenVRLoader`フラグで起動する必要がある場合があります：
+
+```bash
+./basis.x86_64 --force-OpenVRLoader
+```
+
+**Wayland**：起動直後にアプリケーションが閉じる場合は、XWaylandを使用してください：
+
+```bash
+SDL_VIDEODRIVER=x11 ./basis.x86_64
+```
+
+## Proton / Wine
+
+Proton / Wine上のWindowsビルドでOpenXRを使用したい場合は、以下を追加できます：
+
+```bash
+PRESSURE_VESSEL_IMPORT_OPENXR_1_RUNTIMES=1 %command% --disable-OpenVRLoader --force-OpenVRLoader
+```
+
+Steamの起動引数に追加してください。
+
+## その他の情報
+
+- ブランチ `#developer` のコミット `102765e5b05663ce9ce2967f3d09021d5216ec51` で最後に動作確認済み
+- https://github.com/BasisVR/Basis/commit/70a695d11082a2806f0933145d448143207c72e4

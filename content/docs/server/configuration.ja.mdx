@@ -1,0 +1,137 @@
+---
+title: 設定
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+{/*
+## はじめに
+
+BasisサーバーはLTS ブランチのバージョン6（2025年5月）を対象としています。
+*/}
+
+### Linuxでコンパイルして実行する
+
+#### Debian/Ubuntuの前提条件
+
+Ubuntu 22.04の場合：
+`sudo add-apt-repository ppa:dotnet/backports`
+
+Debianまたはその他のセットアップ：
+
+```
+wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb
+sudo dpkg -i packages-microsoft-prod.deb
+rm packages-microsoft-prod.deb
+```
+
+インストールを続けます：
+
+`sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0`
+
+#### Basisを取得する
+
+希望するフォルダに移動して実行します：
+
+`git clone -b long-term-support https://github.com/BasisVR/Basis`
+
+#### Basisサーバーをビルドする
+
+端末を開いてディレクトリに移動します：`cd Basis/Basis\ Server`
+
+`dotnet restore`
+
+ビルドします：
+
+`dotnet build`（デバッグ用）
+
+または
+
+`dotnet build --configuration Release`（リリース用）
+
+#### 実行する
+
+BasisServerConsoleディレクトリに移動して実行します：
+
+`dotnet .\BasisNetworkConsole.dll`
+
+:::tip より特定的なLinuxリリースの場合
+
+`dotnet publish -f net9.0 --self-contained --os Linux`
+
+`BasisServerConsole/bin/Debug/net9.0/BasisNetworkConsole`から`./BasisNetworkConsole`を実行してください。
+
+:::
+
+## ファイアウォール
+
+以下のポートを開く必要があるかもしれません：
+ * 1234/tcp
+ * 10666/tcp
+ * 4296/udp
+
+<br />
+<br />
+
+## 設定ファイル
+
+サーバーを初めて実行すると、サーバーexeが置かれているディレクトリにさまざまな設定ファイルと構造が作成されます。
+
+| ファイル/フォルダ        | 説明                                        |
+|--------------------------|---------------------------------------------|
+| `config.xml`             | サーバーのメイン設定ファイル。              |
+| `initialresources/`      | リクエストに応じてサーバーが読み込むワールドとオブジェクトファイル。 |
+| `Log/`                   | サーバーログが保存されるフォルダ。          |
+| `admins.xml`             | 管理者権限を持つユーザーのリスト。          |
+| `banned_players.xml`     | BANされたプレイヤーアカウントのリスト。     |
+
+## Config.xml
+
+| 変数                     | デフォルト            | 説明 |
+|--------------------------|------------------------|-------------|
+| `PeerLimit`              | 1024                   | サーバーで許可される最大プレイヤー数。 |
+| `SetPort`                | 4296                   | サーバーが待ち受けるネットワークポート。 |
+| `Password`               | default_password       | デフォルトサーバーアクセスパスワード。 |
+| `HealthCheckHost`        | localhost              | ヘルスチェック用ホスト名。`*`で全インターフェースにバインド。 |
+| `HealthCheckPort`        | 10666                  | ヘルスチェック用ポート。 |
+| `UseAuth`                | true                   | サーバー認証の有効/無効。 |
+| `UseAuthIdentity`        | true                   | 認証オン時にDID ID検証を使用。 |
+
+<small>低レベルネットワーキングは<strong>LiteNetLib</strong>というサードパーティライブラリで処理されます。このコードに関連する設定変数は<code>LNL</code>とマークされています。</small>
+
+### Config.xmlの例
+
+```xml title="config.xml"
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <PeerLimit>1024</PeerLimit>
+  <SetPort>4296</SetPort>
+  <Password>default_password</Password>
+  <HealthCheckHost>localhost</HealthCheckHost>
+  <HealthCheckPort>10666</HealthCheckPort>
+  <UseAuth>true</UseAuth>
+  <UseAuthIdentity>true</UseAuthIdentity>
+</Configuration>
+```
+
+## 読み込み可能な設定ファイル
+
+要求に応じて読み込むワールドとオブジェクトファイルを設定できます。
+これらのファイルは`InitialResources`フォルダに配置します。
+
+<Callout type="warn">
+使用するリモートURLは、チャンキングをサポートする適切なサーバーから提供される必要があります。
+</Callout>
+
+<Callout type="info" title="アップロードするには">
+Unityでシーンを作成し、BEEファイルとしてエクスポート、HTTPサーバーにアップロードし、URLを`CombinedURL`に、パスワードを`UnlockPassword`に設定します。
+</Callout>
+
+| 変数             | 定義 |
+|------------------|------------|
+| `Mode`           | 設定のモード：`0` = ゲームオブジェクト、`1` = シーン。 |
+| `LoadedNetID`    | ネットワーク参照ID。 |
+| `UnlockPassword` | リソースへのアクセスに必要なパスワード。 |
+| `CombinedURL`    | `.BEE`ファイルへのURL |
+| `IsLocalLoad`    | リソースがローカルから読み込まれるか、インターネットからかを示す。 |
+| `Persist`        | スポーンしたプレイヤーがサーバーを去った後もオブジェクトは存在し続けるか？ |

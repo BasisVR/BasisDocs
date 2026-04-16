@@ -1,0 +1,67 @@
+---
+title: Foire aux questions
+description: Questions et réponses courantes sur BasisVR
+icon: Info
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Foire aux questions
+
+### Qu'est-ce que BasisVR ?
+
+BasisVR est un framework logiciel qui donne aux développeurs des intégrations technologiques profondes et des approches de pointe pour créer des expériences sociales en réalité virtuelle.
+
+<Callout type="info">
+Remarque : ***Basis n'est pas une plateforme Social VR***. Il comprend des primitives utiles, mais le projet principal n'est pas destiné à créer le type d'infrastructure sociale évolutive que les plateformes Social VR nécessitent. Il n'entrave pas spécifiquement les créateurs qui souhaitent créer la leur, mais le projet lui-même fournit des frameworks et des démos.
+</Callout>
+
+### Quelles sont les configurations requises ?
+
+BasisVR nécessite :
+- Un PC compatible VR ou un casque VR autonome
+- Unity pour le développement
+- Des contrôleurs VR compatibles
+
+### Comment démarrer ?
+
+1. Installer BasisVR
+2. Configurer votre avatar
+3. Créer ou rejoindre un monde
+4. Commencer à explorer !
+
+Consultez l'[Introduction](/docs) pour des instructions de configuration détaillées.
+
+### Puis-je créer mes propres avatars ?
+
+Oui ! BasisVR supporte les avatars personnalisés. Consultez le [Guide Avatar](/fr/docs/avatar) pour plus d'informations sur la création et l'importation d'avatars personnalisés.
+
+### Comment créer mon propre monde ?
+
+Vous pouvez créer des mondes personnalisés avec Unity. Consultez le [Guide de création de mondes](/fr/docs/world) pour des instructions étape par étape.
+
+### Où puis-je obtenir de l'aide ?
+
+- Consultez cette documentation
+- Visitez nos forums communautaires
+- Soumettez des problèmes sur GitHub
+- Rejoignez notre serveur Discord
+
+### Comment puis-je contribuer ?
+
+Nous accueillons les contributions ! Consultez le [Guide de contribution](/fr/docs/contributing) pour plus d'informations sur la façon de participer.
+
+### Quelle est la différence entre les contributions aux composants principaux et les contributions aux modules complémentaires ?
+R : Les composants principaux comprennent les systèmes qui constituent les fonctionnalités clés de Basis. Les contributions (ou modules) comprennent des fonctionnalités supplémentaires qui, bien qu'utiles, ne sont pas requises par défaut. Par conséquent, les contributions peuvent fournir des fonctionnalités en dehors du cadre principal de Basis, ce qui peut être utile aux développeurs utilisant Basis.
+
+### Le partage de fichiers BEE compromet-il les informations d'identification du serveur d'hébergement de contenu distant ?
+
+Non ! Vous pouvez partager vos fichiers BEE avec vos amis, par exemple. Un fichier BEE englobe l'asset Basis (même pour plusieurs plateformes), à l'exclusion de la clé de chiffrement utilisée pour le déchiffrer. En d'autres termes, c'est essentiellement un multi-asset-bundle. Si vous partagez le mot de passe d'un fichier BEE, cela permet à quiconque le possède d'accéder à tout ce qui se trouve dans le fichier BEE (c'est-à-dire le contenu UGC spécifique comme les accessoires, les avatars, les mondes).
+
+## Comment puis-je me connecter à un serveur local depuis différents appareils ?
+
+Il existe plusieurs options pour se connecter à un serveur local depuis différents appareils. Par exemple, vous pouvez activer la redirection de port sur votre routeur. Alternativement, si vous préférez ne pas modifier votre routeur, vous pouvez installer [`Tailscale`](https://tailscale.com/download), qui est très simple à configurer.
+
+## Où puis-je configurer un serveur distant ?
+
+Il existe une variété de services Cloud sur lesquels vous pouvez héberger vos serveurs. Exemples : Bunny, DigitalOcean, CloudFlare, AWS, Microsoft Azure, Google Cloud, et plus encore.

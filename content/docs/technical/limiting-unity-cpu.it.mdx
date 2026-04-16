@@ -1,0 +1,21 @@
+---
+title: Limitare l'uso CPU di Unity
+---
+
+Quando si compila un progetto su Unity 6, tenderà a utilizzare TUTTE le risorse di sistema, rendendolo completamente inutilizzabile (in particolare durante la fase di compilazione degli shader) anche su macchine di fascia alta.
+
+Puoi usare il seguente come argomento per il launcher per evitare che blocchi ogni singolo core CPU al 100%.
+
+```
+-job-worker-count 8
+```
+
+Dove **8** deve essere un numero inferiore al numero totale di core CPU fisici reali nella tua macchina. Questo limiterà i worker child di Unity a questo valore, impedendogli di bloccare ogni singolo core CPU. Ciò potrebbe anche migliorare la velocità di compilazione di Unity poiché tende a essere sovraffollato e rallentarsi da solo.
+
+Puoi accedere agli argomenti di avvio per un progetto aprendo Unity Hub e facendo clic con il tasto destro sul nome del progetto:
+
+![Menu contestuale progetto Unity Hub](/img/limiting-unity-cpu/1.png)
+
+Apparirà qualcosa del genere una volta aggiunto l'argomento:
+
+![Unity Hub con argomenti di avvio](/img/limiting-unity-cpu/2.png)

@@ -1,0 +1,88 @@
+---
+title: 约束
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis 目前使用 Animation Rigging 包来提供约束。 
+
+<Callout type="info">
+使用此包是因为缺乏多线程约束系统的开源实现。如果有人有时间或兴趣开发一个，欢迎贡献或新项目。
+</Callout>
+
+Animation Rigging 提供的所有约束的文档可以在[这里](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html)找到。
+
+## Animation Rigging 包的设置
+<Steps>
+
+<Step>
+**添加 Rig Builder**：在 `Armature` GameObject 上添加 `Rig Builder` 组件和 `Animator` 组件。 
+
+![Armature GameObject 的检查器窗口](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis 使用根/虚拟形象 GameObject 的 Animator 进行动画和骨骼绑定*。 
+</Callout>
+
+<Callout type="warning">
+**不能将根的 Animator 用于 Rig Builder，这会破坏动画和 Basis 骨架加载器。**
+</Callout>
+</Step>
+<Step>
+**创建 Rig 设置**：创建一个名为"Rig Setup"的空 GameObject，并为其添加 `Rig` 组件。
+
+![Rig Setup GameObject 的检查器窗口](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**分配 Rig 设置**：将"Rig Setup" GameObject 分配给 `Armature` 的 `Rig Builder` 组件。
+
+![分配后 Armature 的检查器窗口](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## 关于抖动骨骼的注意事项
+
+如果抖动骨骼影响了任何约束，则需要将 `Rig Transform` 添加到约束骨骼的所有父骨骼。
+
+例如：您有一个被约束为朝向虚拟形象头部方向的激光器。您需要从激光器的父级开始添加 `Rig Transform` 组件，直到遇到骨架/人形骨骼为止。
+<Callout type="info">
+这包括不属于人形的所有源骨骼。例如：如果您有引用翅膀的约束，且翅膀受抖动骨骼影响，则需要为翅膀添加 `Rig Transform` 组件。
+</Callout>
+<Accordions type="single">
+<Accordion title="抖动骨骼示例">
+![抖动骨骼示例](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+## 旋转约束
+<Steps>
+
+<Step>
+
+首先完成[设置](#setup-for-animation-rigging-packages)，然后继续按照说明设置旋转约束。
+
+</Step>
+
+<Step>
+
+在 `Rig Setup` GameObject 的子 GameObject 上添加 `Multi-Rotation Constraint` 组件。
+
+![检查器窗口中的 Twist 组件](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+在 Constrained Object 字段中分配您想要影响的骨骼。可以使用一个或多个源对象。
+<Callout type="info">
+您可以将源骨骼/GameObjects 拖放到红色高亮区域。
+每个 GameObject 只能添加一个 `Multi-Rotation Constraint`。
+</Callout>
+![检查器窗口中的 Twist 组件](/img/avatars/22.png)
+</Step>
+
+</Steps>

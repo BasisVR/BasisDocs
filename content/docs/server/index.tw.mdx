@@ -1,0 +1,63 @@
+---
+title: 介紹
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 概述
+
+Basis 伺服器是您社交 VR 體驗的網路骨幹。本文件將引導您完成設置、配置和管理自己的 Basis 伺服器實例。
+
+伺服器基於 .NET 9.0 構建，使用 LiteNetLib 進行底層網路通訊。它專為處理多個同時在線玩家而設計，具有高效的頻寬使用，支援 Docker 部署以及在 Windows 和 Linux 上的原生編譯。
+
+## 快速入門指南
+
+<Cards>
+  <Card
+    title="部署"
+    description="了解如何使用 Docker、Windows 或 Linux 部署伺服器"
+    href="/tw/docs/server/deployment"
+  />
+  <Card
+    title="配置"
+    description="使用 config.xml 和可載入資源配置您的伺服器"
+    href="/tw/docs/server/configuration"
+  />
+  <Card
+    title="監控"
+    description="監控伺服器健康狀況和效能指標"
+    href="/tw/docs/server/monitoring"
+  />
+  <Card
+    title="進階配置"
+    description="使用減少系統優化伺服器效能"
+    href="/tw/docs/server/advanced"
+  />
+</Cards>
+
+## 主要功能
+
+- **多執行緒效能**：只需兩個核心即可良好運行，可隨更多核心擴展
+- **靈活部署**：支援 Docker、Windows 和 Linux
+- **身分驗證**：基於 DID 的身分驗證
+- **頻寬優化**：伺服器和客戶端減少系統
+- **健康監控**：內建 HTTP 健康檢查端點
+- **可載入資源**：動態載入世界和物件
+
+## 需求
+
+- **CPU**：最少 2 個核心（更多核心可提高效能）
+- **網路**：社交 VR 推薦高頻寬
+- **連接埠**：
+  - 4296/udp（Basis 協定）
+  - 10666/tcp（健康檢查）
+  - 1234/tcp（Prometheus 指標）
+
+## 伺服器版本
+
+本文件涵蓋 LTS 分支的 **Basis Server 版本 6**（2025 年 5 月）。
+
+<Callout type="warn">
+客戶端和伺服器程式碼的版本號**必須一致**。您可以在 `BasisNetworkCore\BasisNetworkVersion.cs` 中找到 `ServerVersion`。
+</Callout>

@@ -1,0 +1,88 @@
+---
+title: Carga
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { UrlConverter } from '@/components/UrlConverter';
+
+## Subir tu Prop
+
+Basis permite cargar un archivo Prop .BEE desde una URL remota, necesario para que todos los usuarios en una sesión en red puedan cargar los recursos.
+
+<Callout type="info">
+Puedes agregar la contraseña de tu prop directamente en la URL de tu archivo .BEE: `https://locationofBeefile.BEE#(Base64Encode(Password))`<br />
+Añadiendo `#` y una cadena codificada en Base64 de tu contraseña.
+</Callout>
+
+Sube el **archivo BEE** a Google Drive o cualquier proveedor que permita enlaces directos sin inicio de sesión.
+
+- Crea una Carpeta y establece su configuración de uso compartido en "Cualquier persona con el enlace".
+- Haz clic en el Menú Hamburguesa y "Copiar enlace".
+
+Ejemplo:
+```
+https://drive.google.com/file/d/YourIDBringsAllTheLagToMyYard/view?usp=sharing
+```
+
+```
+https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
+```
+<UrlConverter />
+
+<Callout type="warn">
+**NO SUBAS TU ARCHIVO DE CONTRASEÑA GENERADO NI LO COMPARTAS**
+</Callout>
+
+## Cargar en Basis
+<Steps>
+
+<Step>
+Inicia Basis, abre el menú y selecciona Biblioteca.
+
+![Menú de Basis](/img/props/8.png)
+</Step>
+
+<Step>
+Selecciona 'Agregar nuevo contenido' cerca de la parte superior derecha.
+
+![Botón Agregar nuevo contenido](/img/props/9.png)
+</Step>
+
+<Step>
+Pega la **URL del archivo BEE** y la **CONTRASEÑA SUPER SECRETA CIFRADA**, luego haz clic en 'Agregar'.
+
+![URL y contraseña del archivo BEE](/img/props/10.png)
+</Step>
+
+<Step>
+El contenido del archivo BEE será validado antes de ser añadido a tu biblioteca.
+
+![Botón Agregar archivo BEE](/img/props/11.png)
+</Step>
+</Steps>
+
+## Gestión de props
+
+Puedes encontrar el prop recientemente añadido en la Biblioteca.
+
+![Nuevo Prop en la Biblioteca](/img/props/12.png)
+
+Los props se pueden Generar, Eliminar o Compartir con otros en el mundo.
+
+![Detalles del Prop](/img/props/13.png)
+
+Paneles de información:
+
+- **(1) Información del Prop** - Marca de tiempo de compilación, Título y Descripción
+- **(2) Compatibilidad de Plataforma** - Plataformas de SO compatibles
+- **(3) Estadísticas** - Conteos de Triángulos, Materiales y Huesos
+- **(4) Características** - Comportamiento en red y persistencia del prop
+- **(5) Pin** - Puedes fijar este Prop en la ventana del menú principal
+
+![Caja delimitadora de generación](/img/props/14.png)
+
+Al hacer clic en 'Spawn', puedes ubicar la posición exacta donde generar el Prop en el mundo.
+
+![Prop generado](/img/props/15.png)
+
+Después de un breve momento el asset aparecerá, local o en red, según las características del prop.
