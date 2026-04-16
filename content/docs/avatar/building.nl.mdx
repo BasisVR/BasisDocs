@@ -1,0 +1,56 @@
+---
+title: Bouwen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Het Basis Encrypted Extension (BEE)-bestand
+
+Basis slaat gebruikersgegenereerde content op als een .BEE-bestand dat je gecompileerde asset en metadata bevat. Elk gegenereerd .BEE-bestand wordt geleverd met een willekeurig gegenereerd wachtwoord voor toegang; beide zijn te vinden in de hoofdmap van je Unity-project op: `Basis\Basis\AssetBundles`.
+
+## Dubbele GameObjects vermijden
+
+- Standaard hernoemt de BasisAvatar-component alle dubbele GameObjects in de hiërarchie van de avatar.
+
+<Callout type="warning">
+Als je `Do not auto-rename bones` inschakelt in de verwerkingsopties, zorg er dan voor dat er **GEEN** dubbele GameObject-namen zijn in de hiërarchie van je avatar, inclusief het armature, want anders zal je avatar niet laden na het bouwen van de AssetBundle.
+</Callout>
+
+## De AssetBundle bouwen
+
+- Controleer onderaan de Basis Avatar-component op je avatar of de juiste bouwdoelen voor je content zijn ingeschakeld. Basis ondersteunt diverse doelplatformen, waaronder: Windows, Android, Mac, Linux en iOS.
+- Druk op de knop 'Create Avatar Bee File' en wacht tot het proces is voltooid.
+
+![Avatar BEE-bestand maken](/img/avatars/7.png)
+
+- De resultaten worden automatisch geopend in een nieuw venster, zoals hieronder weergegeven.
+
+![Bouwresultaten](/img/avatars/8.png)
+
+- Afhankelijk van je hardware kan elk platform gemiddeld een minuut of twee nodig hebben voor de eerste build. Volgende builds zullen minder tijd kosten dankzij caching. Bouwen voor alle platformen neemt waarschijnlijk extra tijd in beslag en vergroot de totale bestandsgrootte.
+
+<Callout type="info">
+Handig om te weten:
+
+- Je kunt gemakkelijk een aangepast wachtwoord gebruiken voor je gegenereerde BEE-bestand. Dit kan dingen makkelijker te onthouden maken als je liever één wachtwoord gebruikt voor verschillende BEE-bestanden.
+
+- Als je wilt, kun je ook de gegenereerde .BEE-bestandsnaam vervangen door iets makkelijker te onthouden. Houd er rekening mee dat het hergebruiken van dezelfde naam ertoe leidt dat elke vorige versie wordt vervangen door de nieuwe!
+
+
+![Avatar BEE-bestand maken](/img/avatars/7a.png)
+</Callout>
+
+<Callout type="info">
+Anekdote januari 2026: Een avatar met 18 materialen die Poiyomi URP gebruikt met 120K polygonen en een pakketgrootte van 45 MB per platform, nam 9m 43s in beslag op een Ryzen 7 9800x3D om te bouwen voor alle doelplatformen.
+</Callout>
+
+{/* - Once the .BEE file has been created, you can load this via the `BootManager` prefab found at `Packages > Basis SDK > Prefabs > Boot`.
+
+![BootManager](/img/avatars/9.png)
+
+- You can place the location of the .BEE file under the `Combinned URL` fields as shown in the example below, along with the `Unlock Password` provided in the `dontuploadmepassword.txt` file generated within the `/AssetBundles/` directory.
+- Make sure to tick `Is Local` if the file is not a URL.
+
+![Local testing setup](/img/avatars/10.png)
+
+- Load the `Initialization` scene from `Packages > Basis SDK > Scenes`, and then hit Play. */}

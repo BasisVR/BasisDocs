@@ -1,0 +1,71 @@
+---
+title: Scène-props
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Een prop spawnen via een scèneknop
+
+Het Runtime Loader-component genereert tijdens runtime alle props die zich bevinden in *Basis\Basis Server\BasisServerConsole\bin\Debug\net9.0\initialresources*. Het is ook mogelijk om een knop in een scène te gebruiken om props te genereren. Om dit te doen:
+
+- Voeg een canvas-object toe aan je scène. Zorg ervoor dat je de relevante componenten toevoegt, vergelijkbaar met wat in de vorige secties is getoond. Vergeet niet een Basis Prop-component toe te voegen om een .bee-bestand te genereren voor je prop en upload het naar een externe server.
+
+![Inspectorvenster met canvas en componenten](/img/props/6A.png)
+
+- Maak een TMP-knop aan.
+
+![Inspectorvenster met knop en componenten](/img/props/6B.png)
+
+- Voeg een Basis Prop-component toe, voer een Asset Bundle-naam in en druk op de knop 'Create Prop Bee File'. De gegenereerde .bee-bestanden worden gebruikt door de Basis Runtime Loader om de prop in een scène te laden. Voor dit voorbeeld gebruiken we opnieuw de netwerk-gesynchroniseerde kubus uit de vorige sectie.
+
+![Inspectorvenster met gesynchroniseerde kubus en componenten](/img/props/6B-.png)
+
+- Maak een leeg GameObject aan en koppel er een Runtime Loader-component aan. Dit wordt gebruikt om de prop te spawnen. Om te voorkomen dat props worden gegenereerd bij het starten van de scène, schakel je het component uit in de inspector.
+
+![Inspectorvenster met Runtime Loader uitgeschakeld](/img/props/6C.png)
+
+<Callout type="info">
+Als je wilt dat je prop netwerk-gesynchroniseerd is, voeg dan een netwerk-synchronisatiecomponent toe. Je kunt bijvoorbeeld het Basis Object Network Syncing-component gebruiken, zoals eerder getoond, om prop-beweging te synchroniseren.
+
+Je kunt ook je eigen netwerk-synchronisatiecode schrijven. Voor inspiratie en om op gang te komen, kun je kijken naar de voorbeeldpakketten *Basis Ported Pooltable* en *Basis Vehicles* die je in het project kunt vinden.
+</Callout>
+
+- Selecteer je knop en voeg er een onClick()-event aan toe. Wijs je Runtime Loader-GameObject toe en zorg ervoor dat je BasisRuntimeLoader.LoadNow selecteert als de methode die je knop aanroept wanneer erop wordt geklikt.
+
+![Inspectorvenster met knopgebeurtenis die RuntimeLoader aanroept](/img/props/6D.png)
+
+- Open de Load Config-editor.
+
+- Voer je gegenereerde prop-wachtwoord en .bee-url in.
+
+- Zorg ervoor dat Persistent is geselecteerd, zodat gesynchroniseerde wijzigingen behouden blijven voor spelers die later verbinding maken.
+
+- Klik op Save XML.
+
+![Inspectorvenster met load config](/img/props/6E.png)
+
+- Als je dat nog niet hebt gedaan, maak dan een leeg GameObject aan en koppel er een Basis Scene-component aan, vul de relevante velden in. Klik daarna op 'Create Scene Bee File'.
+
+![Inspectorvenster met Basis-scène](/img/props/6F.png)
+
+- Open de Load Config-editor opnieuw.
+
+- Voer je gegenereerde scène-wachtwoord en .bee-url in.
+
+- Zorg ervoor dat Persistent is geselecteerd, zodat gesynchroniseerde wijzigingen behouden blijven voor spelers die later verbinding maken.
+
+- Klik op Save XML.
+
+![Inspectorvenster met knop en componenten](/img/props/6G.png)
+
+- Open de 'Initialization'-scène en druk op Play. Dit initialiseert de aangemaakte scène en netwerkobjecten. De volgende keer dat je de scène laadt via de server terwijl de Basis-applicatie actief is, zou je je prop via een knop moeten kunnen spawnen.
+
+![Inspectorvenster met knop en componenten](/img/props/6H.png)
+
+<Callout type="info">
+Opmerking: Zowel lokale als externe spelers kunnen kubussen spawnen!
+</Callout>
+
+<Callout type="info">
+Dubbele opmerking: Je kunt Basis VR ook via Steam openen. Neem voor een toegangssleutel [deel aan de discord](https://discord.gg/v6ve6WT562)!
+</Callout>

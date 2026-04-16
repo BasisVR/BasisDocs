@@ -2,7 +2,7 @@ import { defineI18n } from 'fumadocs-core/i18n';
 
 export const i18n = defineI18n({
   defaultLanguage: 'en',
-  languages: ['en', 'fr', 'de', 'es', 'ja', 'ru', 'cn', 'tw'],
+  languages: ['en', 'fr', 'de', 'es', 'ja', 'ru', 'cn', 'tw', 'nl'],
 });
 
 export const localeDisplayNames: Record<string, string> = {
@@ -14,4 +14,5 @@ export const localeDisplayNames: Record<string, string> = {
   ru: 'Русский',
   cn: '简体中文',
   tw: '繁體中文',
+  nl: 'Nederlands',
 };

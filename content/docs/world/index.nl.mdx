@@ -1,0 +1,55 @@
+---
+title: Introductie
+---
+
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overzicht
+
+Werelden zijn de omgevingen waarin sociale VR-ervaringen plaatsvinden in Basis. Deze documentatie begeleidt je bij het opzetten, bouwen en testen van je eigen aangepaste werelden met Unity en de Basis SDK.
+
+Basis gebruikt het `.BEE`-bestandsformaat voor werelden, dat je gecompileerde scène en metadata in één bestand verpakt. Werelden ondersteunen aangepaste meshes, materialen, verlichting, spawnpunten en kunnen op afstand worden gehost voor multiplayerervaringen.
+
+## Snelstartgids
+
+<Cards>
+  <Card
+    title="Instellen"
+    description="Stel Unity in en importeer je wereldbestanden"
+    href="/nl/docs/world/setup"
+  />
+  <Card
+    title="Bouwen"
+    description="Configureer scènecomponenten en bouw het .BEE-bestand"
+    href="/nl/docs/world/building"
+  />
+  <Card
+    title="Testen"
+    description="Test je wereld lokaal in Basis"
+    href="/nl/docs/world/testing"
+  />
+</Cards>
+
+## Belangrijkste functies
+
+- **Aangepaste omgevingen**: Importeer willekeurige 3D-meshes, materialen en texturen
+- **Spawnpunten**: Bepaal waar spelers je wereld betreden
+- **Multi-platform**: Bouw voor Windows, Linux en Android
+- **Netwerk klaar**: Ontworpen voor multiplayerervaringen
+- **BEE-formaat**: Eenvoudige verpakking voor gemakkelijke distributie
+
+## Vereisten
+
+- **Unity**: Unity 6 (nieuwste ondersteunde versie)
+- **Assets**: 3D-meshes met colliders voor navigatie
+- **Componenten**: Basis Scene-component voor scèneconfiguratie
+- **Hosting**: Externe URL-hosting voor multiplayer (optioneel voor lokaal testen)
+
+## Werkstroomomzicht
+
+1. **Importeer** je wereldbestanden in Unity
+2. **Configureer** het Basis Scene-component en spawnpunten
+3. **Bouw** het .BEE-bestand voor je doelplatforms
+4. **Test** lokaal met het BasisFramework-prefab
+5. **Upload** naar een hostingdienst voor multiplayer (optioneel)
+6. **Laad** in Basis met de URL en het wachtwoord

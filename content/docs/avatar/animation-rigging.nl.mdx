@@ -1,0 +1,90 @@
+---
+title: Constraints
+---
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion,Accordions } from 'fumadocs-ui/components/accordion';
+
+* Basis gebruikt momenteel het Animation Rigging-pakket voor constraints.
+
+<Callout type="info">
+Dit pakket wordt gebruikt vanwege het ontbreken van een open-source implementatie van een multi-threaded constraintsysteem. Als iemand de tijd of interesse heeft om er een te ontwikkelen, zijn bijdragen of nieuwe projecten zeer welkom.
+</Callout>
+
+Documentatie voor alle constraints die Animation Rigging biedt, is [hier](https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.4/manual/ConstraintComponents.html) te vinden.
+
+## Instellen van Animation Rigging-pakketten
+<Steps>
+
+<Step>
+**Rig Builder toevoegen**: Voeg een `Rig Builder`-component en `Animator`-component toe aan het `Armature`-GameObject.
+
+![Inspectorvenster bij Armature-GameObject](/img/avatars/17.png)
+
+<Callout type="info">
+*Basis gebruikt de animator van het Root/Avatar-GameObject voor animatie en rigging*.
+</Callout>
+
+<Callout type="warning">
+**Je kunt de animator van de root niet gebruiken voor de Rig Builder; dit verbreekt de animatie en de Basis armature loader.**
+</Callout>
+</Step>
+<Step>
+**Rig Setup aanmaken**: Maak een leeg GameObject genaamd "Rig Setup" en voeg de `Rig`-component eraan toe.
+
+![Inspectorvenster voor Rig Setup-GameObject](/img/avatars/18.png)
+
+</Step>
+
+<Step>
+**Rig Setup toewijzen**: Wijs het "Rig Setup"-GameObject toe aan de `Rig Builder`-component van het `Armature`.
+
+![Inspectorvenster voor Armature na toewijzing](/img/avatars/19.png)
+
+</Step>
+</Steps>
+
+## Opmerkingen over Jiggle Bones
+
+Als Jiggle Bones invloed heeft op constraints, moet je de `Rig Transform` toevoegen aan alle bovenliggende botten van het constraint-bot.
+
+Bijv.: Je hebt een laser die constraint is om in de richting van het hoofd van je avatar te kijken. Je moet van het bovenliggende bot van de laser naar boven `Rig Transform`-componenten toevoegen totdat je een Armature/Humanoid-bot bereikt.
+
+<Callout type="info">
+Dit geldt voor alle bronbotten als ze geen deel uitmaken van de humanoid. Bijv.: Vleugels die worden beïnvloed door Jiggle Bones hebben `Rig Transform`-componenten nodig als je een constraint hebt die ernaar verwijst.
+</Callout>
+<Accordions type="single">
+<Accordion title="Voorbeeld Jiggle Bone">
+![Jiggle Bones-voorbeeld](/img/avatars/20.png)
+</Accordion>
+</Accordions>
+
+
+## Rotatieconstraints
+<Steps>
+
+<Step>
+
+Voer eerst de [Instelling](#setup-for-animation-rigging-packages) uit en ga daarna verder met de instructies voor het instellen van rotatieconstraints.
+
+</Step>
+
+<Step>
+
+Voeg de `Multi-Rotation Constraint`-component toe aan een GameObject dat een kind is van het `Rig Setup`-GameObject.
+
+![Twist-component in Inspectorvenster](/img/avatars/21.png)
+
+</Step>
+
+<Step>
+
+Wijs het bot toe dat je wilt beïnvloeden in het veld Constrained Object. Er kunnen een of meer bronobjecten worden gebruikt.
+<Callout type="info">
+Je kunt de bronbotten/GameObjects slepen en neerzetten op de Source Objects in het rood gemarkeerde gebied.
+Je kunt slechts één `Multi-Rotation Constraint` per GameObject toevoegen.
+</Callout>
+![Twist-component in Inspectorvenster](/img/avatars/22.png)
+</Step>
+
+</Steps>

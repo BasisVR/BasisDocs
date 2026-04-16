@@ -1,0 +1,31 @@
+---
+title: Testen
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## De scène testen
+
+<Callout type="warn">
+Selecteer het `.prefab`-asset `BasisFramework` in de projectbestanden. **Voeg dit prefab NIET toe aan de huidige scène! De Basis SDK doet dit automatisch!**
+</Callout>
+
+- Zodra de AssetBundle is aangemaakt, kun je deze laden via het `BasisFramework`-prefab dat te vinden is op `Packages > Basis SDK > Prefabs > Boot`.
+
+![Locatie van BasisFramework-prefab](/img/worlds/7.png)
+
+- Je kunt de locatie van de nieuwe AssetBundle invoeren in het veld `Remote BEE File Location`, samen met het `Unlock Password` dat je vindt in het bestand `dontuploadmepassword.txt` dat is gegenereerd in de map `/AssetBundles/`. Schakel vervolgens `Use Scene Provided Here` in.
+
+![BasisFramework-configuratie](/img/worlds/8.png)
+
+<Callout type="info">
+Opmerking: Als ingeschakeld, laadt de inspector-eigenschap *Use Scene Provided Here* de scène die is opgegeven in *Remote Bee File Location*. Als uitgeschakeld, laadt het een XML-scène die is gegenereerd via de Basis Config Loader (als die er is).
+</Callout>
+
+- Laad de `Initialization`-scène vanuit `Packages > Basis SDK > Scenes` en klik dan op Play.
+
+![Initialization-scène](/img/worlds/9.png)
+
+- Voer een gebruikersnaam in en druk op "Connect". Localhost kan worden gebruikt *als* er een [Server](/nl/docs/server) op de lokale machine actief is.
+
+- Je zou dan moeten inladen op de spawnlocatie van je wereld of de verbonden server.

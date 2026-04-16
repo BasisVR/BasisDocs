@@ -1,0 +1,19 @@
+---
+title: Geavanceerde configuratie
+---
+
+## Server Reduction System
+
+Naarmate het aantal spelers op de server groeit, nemen de bandbreedtevereisten snel toe. Het SRS-systeem probeert de netwerkbelasting te verminderen en de prestaties te verbeteren door de frequentie waarmee bewegingsdata naar spelers wordt verzonden te vertragen op basis van afstand.
+
+De vergelijking die bepaalt hoeveel langer de server nodig heeft om bewegingsdata naar gebruikers te verzenden op basis van afstand ziet er als volgt uit:
+
+```csharp
+int adjustedInterval = (int)(Configuration.BSRSMillisecondDefaultInterval * (Configuration.BSRBaseMultiplier + (activeDistance * Configuration.BSRSIncreaseRate)));
+```
+
+De rest van deze sectie wordt later gepubliceerd.
+
+## Client Reduction System
+
+Deze sectie wordt later gepubliceerd.

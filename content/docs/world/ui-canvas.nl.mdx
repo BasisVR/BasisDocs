@@ -1,0 +1,39 @@
+---
+title: Canvas-UI
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Een canvas toevoegen
+
+- Voeg een canvas toe aan de scènehiërarchie en geef het een passende naam.
+
+![BasisFramework UI-canvas contextvenster](/img/ui-canvas/1.png)
+
+<Callout type="info">
+Opmerking: Als je een World Space-canvas maakt, is een X,Y,Z-schaal van 0,001 doorgaans een goede beginwaarde.
+</Callout>
+
+- Verwijder het Graphic Raycaster-component als het aanwezig is. Basis heeft zijn eigen graphics raycaster.
+
+![BasisFramework UI-canvas verwijder graphic raycaster](/img/ui-canvas/2.png)
+
+- Voeg een Basis Graphics UI Ray Caster-component toe en koppel je canvas-object aan het Canvas-veld in de inspector.
+
+![BasisFramework UI-canvas voeg Basis Graphic Raycaster toe](/img/ui-canvas/3.png)
+
+- Verander de canvaslaag naar OverlayUI.
+
+![BasisFramework UI-canvas laag OverlayUI](/img/ui-canvas/6.png)
+
+<Callout type="info">
+Zorg ervoor dat er geen EventSystem-objecten in je scène aanwezig zijn, anders kunnen UI-items die aan je canvas zijn toegevoegd niet worden bediend.
+</Callout>
+
+Hieronder staat een voorbeeldafbeelding van een canvas met een paneel, schakelaar, knop, vervolgkeuzelijst, schuifregelaar en invoerveld.
+
+![BasisFramework UI-canvas laag OverlayUI](/img/ui-canvas/7.png)
+
+<Callout type="info">
+Opmerking: Wanneer je naar een UI-item kijkt, verandert je raycast-aanwijzer of cursor in een blauwe cirkel.
+</Callout>

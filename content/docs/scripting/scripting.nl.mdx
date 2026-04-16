@@ -1,0 +1,298 @@
+---
+title: Scripting
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Om bepaalde redenen moet aangepaste code ofwel worden gegenereerd door de client opnieuw te bouwen (d.w.z. het Unity-project) of via Cilbox (een sandbox CIL).
+
+## Scripts toevoegen via Unity Client Build
+
+<Callout type="info">
+
+Als je een game of applicatie bouwt met het framework en het ondersteunen van gebruikersgegenereerde content (zoals scènes, avatars of props) geen prioriteit is, geef je er misschien de voorkeur aan je MonoBehaviour-scripts native te bouwen in plaats van Cilbox te gebruiken.
+
+Dit komt doordat Cilbox een CIL-interpreter is, die een aanzienlijke snelheidsstraf met zich meebrengt en mogelijk slechts een subset van beschikbare taaleigenschappen ondersteunt.
+</Callout>
+
+- Maak een canvas-object aan met een knop erin.
+
+- Voeg een script toe aan het knopobject. Als eenvoudig voorbeeld maken we een script dat een TMP-tekstobject bijwerkt, genaamd TestButton.
+
+- Maak een TMP-tekstobject aan en wijs het toe aan het veld Button Text in de inspector.
+
+![Inspectorvenster met TestButton-component](/img/scripting/1.png)
+
+``` cs title="TestButton.cs"
+public class TestButton : MonoBehaviour
+{
+    [SerializeField] private TextMeshPro buttonText;
+
+    public void OnButtonClick()
+    {
+        buttonText.text = "Clicked!";
+    }
+}
+```
+
+
+- Selecteer de knop en voeg er een onClick()-event aan toe. Wijs je Test Button Gameobject eraan toe en zorg ervoor dat je TestButton.OnButtonClick selecteert als de methode die je knop aanroept wanneer erop wordt geklikt.
+
+![Inspectorvenster met knopgebeurtenishandler en TMP-tekst toegewezen](/img/scripting/2.png)
+
+- Voeg een Basis Prop-component toe aan het canvas Gameobject, voer een Asset Bundle-naam in en druk op de knop 'Create Prop Bee File'. Gebruik de Loadable Config Editor om een XML-bestand te genereren.
+
+![Inspectorvenster met knop die Basis Prop gebruikt](/img/scripting/3.png)
+
+- Open de BasisFramework-prefab. Voeg in de Bundled Content Folder-component het gegenereerde .bee-wachtwoord en de URL toe.
+
+![Inspectorvenster met BasisFramework-prefab](/img/scripting/4.png)
+
+![Inspectorvenster met BasisFramework-prefab](/img/scripting/5.png)
+
+- Voer de Initialization-scène uit.
+
+![Venster met Initialization-scène actief](/img/scripting/6.png)
+
+- Bouw de Unity-client. Je aangepaste script wordt opgenomen in de build.
+
+![Venster met Unity Client Build Profiles](/img/scripting/7.png)
+
+- Klik op de knop en het TMP-tekstobject moet worden bijgewerkt naar "Clicked!".
+
+![Venster met aangepast script actief](/img/scripting/8.png)
+
+## Netwerk-synchronisatiescripts toevoegen via Unity Client Build
+
+- Maak een canvas-object aan met een knop erin.
+
+![Inspectorvenster met canvas](/img/scripting/9.png)
+
+- Voeg een script toe aan het knopobject. Als eenvoudig voorbeeld maken we een script genaamd SCNE (afkorting voor Send Custom Network Events) dat een TMP-tekstobject bijwerkt met het aantal keren dat een knop wordt geklikt.
+
+- Maak een TMP-tekstobject aan en wijs het toe aan het veld Button Text in de inspector.
+
+- Selecteer de knop en voeg er een onClick()-event aan toe. Wijs je Button Gameobject eraan toe en zorg ervoor dat je SCNE.IncrementCounter selecteert als de methode die je knop aanroept wanneer erop wordt geklikt.
+
+``` cs title="SCNE.cs"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using System;
+using TMPro;
+using UnityEngine;
+
+public class SCNE : BasisNetworkBehaviour
+{
+    private int counter = 0;
+
+    [SerializeField] TextMeshPro counterText;
+
+    public void IncrementCounter()
+    {
+        TakeOwnership(); // Ensure we have ownership before sending the update
+        counter++;
+        SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered);
+        OnDeserialization();
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod deliveryMethod) // Called when a network message is received
+    {
+        if (buffer != null && buffer.Length >= 4)
+        {
+            counter = BitConverter.ToInt32(buffer, 0);
+            OnDeserialization();
+        }
+    }
+
+    public void OnDeserialization() // Called after any change (local or remote)
+    {
+        Debug.Log($"Counter value is now: {counter}");
+        counterText.text = $"Counter: {counter}";
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player) // Ensure late joining players receive the correct count
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(counter), DeliveryMethod.ReliableOrdered, new ushort[] { player.playerId }); // Send the current counter value to the new player
+        }
+    }
+}
+```
+
+![Inspectorvenster met knop met SCNE-script](/img/scripting/10.png)
+
+<Callout type="info">
+De overschreven **OnPlayerJoined()** wordt gebruikt omdat, zonder deze, nieuw toetredende spelers anders het bijgewerkte telnummer niet zouden zien.
+
+**TakeOwnership()** wordt gebruikt om desynchronisatie te voorkomen, zoals het resetten van de tellerwaarde doordat een nieuw toetredende speler op de knop klikt.
+</Callout>
+
+- Voeg een Basis Prop-component toe aan het canvas Gameobject, voer een Asset Bundle-naam in en druk op de knop 'Create Prop Bee File'. Gebruik de Loadable Config Editor om een XML-bestand te genereren.
+
+![Inspectorvenster met knop die Basis Prop gebruikt](/img/scripting/11.png)
+
+![Inspectorvenster met BasisFramework-prefab](/img/scripting/13.png)
+
+- Open het PropContentPoliceSelector-asset en voeg het SCNE-script toe aan de lijst met toegestane componenten. Dit zorgt ervoor dat het script niet tijdens uitvoering wordt verwijderd.
+
+![Inspectorvenster met BasisFramework-prefab](/img/scripting/13.5.png)
+
+- Voeg een Basis Scene-component toe aan een leeg Gameobject, voer een Asset Bundle-naam in en druk op de knop 'Create Scene Bee File'. Sla dit op op een externe server.
+
+<Callout type="info">
+Je moet het canvas-object in de scène uitschakelen of verwijderen. Als je het actief houdt, resulteert dit later in twee kopieën ervan in de scène: één kopie van de scène zelf en één gegenereerd door de XML.
+</Callout>
+
+![Inspectorvenster met Basis Scene-component](/img/scripting/12.png)
+
+- Open de BasisFramework-prefab. Voeg in de Bundled Content Folder-component het gegenereerde .bee-wachtwoord en de URL toe.
+
+![Inspectorvenster met BasisFramework-prefab](/img/scripting/14.png)
+
+- Voer de Initialization-scène uit.
+
+![Venster met Initialization-scène actief](/img/scripting/6.png)
+
+- Bouw de Unity-client. Je aangepaste script wordt opgenomen in de build.
+
+![Venster met Unity Client Build Profiles](/img/scripting/7.png)
+
+- Klik op de knop en het TMP-tekstobject moet de telling bijwerken na elke knopklik voor zowel lokale als externe spelers.
+
+![Inspectorvenster met scène actief in client](/img/scripting/15.png)
+
+## Netwerk-synchronisatiescripts toevoegen via Cilbox
+
+Cilbox is een scriptsysteem dat als lijm dient om minimale spellogica te bieden, waardoor basis gedragingen in gebruikersgegenereerde content zoals props, avatars en scènes overdraagbaar worden. Het kan worden gebruikt om scripts te maken die tijdens uitvoering werken.
+
+Momenteel is Cilbox nog erg experimenteel. Het volgende voorbeeld laat zien hoe je een script maakt om een kubus te laten roteren met Cilbox.
+
+<Callout type="info">
+Opmerking: Cilbox is met name nuttig als je een applicatie of game maakt die gebruikersgegenereerde content laadt en je scripting op die gebruikerscontent wilt ondersteunen. Het maakt het mogelijk scripts te verzenden als iets als DLC naast je andere content, terwijl het ook een veiligere sandbox biedt voor het uitvoeren van code, waardoor scripts met schadelijk of ongewenst gedrag worden voorkomen.
+</Callout>
+
+- Maak een kubusobject aan en een ObjectRotator-component om eraan te koppelen. Zorg ervoor dat je [Cilboxable] boven je klasse toevoegt.
+
+```cs title="ObjectRotator.cs"
+using UnityEngine;
+
+[Cilboxable]
+public class ObjectRotator : MonoBehaviour
+{
+    [SerializeField] private Vector3 rotationSpeed = new Vector3(0, 100f, 0);
+
+    private void Update()
+    {
+        transform.Rotate(rotationSpeed * Time.deltaTime);
+    }
+}
+```
+
+![Inspectorvenster met kubus waaraan rotatiescript is gekoppeld](/img/scripting/16.png)
+
+- Maak een leeg Gameobject aan en koppel een Cilbox Basis Scene-component eraan. De Cilbox Basis Scene wordt de cilbox waarin al je scripts draaien.
+
+<Callout type="info">
+Opmerking: Als je editor de Cilbox-namespace niet kan detecteren, kun je ofwel je eigen .asmdef-bestand maken en Cilbox refereren, of eenvoudig de Cilbox asmdef openen en *Auto Referenced* selecteren om dit op te lossen.
+
+![Inspectorvenster met kubus waaraan rotatiescript is gekoppeld](/img/scripting/16.5.png)
+</Callout>
+
+![Inspectorvenster met CilboxSceneBasis-component](/img/scripting/17.png)
+
+- Voeg een Basis Scene-component toe aan een leeg Gameobject, voer een Asset Bundle-naam in en druk op de knop 'Create Scene Bee File'. Sla dit op op een externe server.
+
+![Inspectorvenster met Basis Scene-component](/img/scripting/18.png)
+
+![Inspectorvenster Load Config](/img/scripting/19.png)
+
+- Wanneer je de scène in de afspeelmodus uitvoert, wordt je gemaakte script normaal door Unity gecompileerd. Echter, voordat het daadwerkelijk kan worden afgespeeld, worden de scripts vervangen door een Cilbox Proxy-component. Dit zijn de componenten die tijdens uitvoering daadwerkelijk worden uitgevoerd. Basis gebruikt zijn eigen kopie van Cilbox Proxy en Cilbox Basis Scene in plaats van die van jou, maar je gegevens worden geserialiseerd.
+
+
+![Inspectorvenster met gemaakte Cilbox Proxy-component](/img/scripting/20.png)
+
+![Inspectorvenster met Cilbox Scene Basis-component bijgewerkt in afspeelmodus](/img/scripting/21.png)
+
+![Venster met afspeelmodus](/img/scripting/22.png)
+
+- Voer de Initialization-scène uit en test je Cilbox-script in de app. De kubus moet roteren.
+
+![Venster met roterende kubus Cilbox-demo in app](/img/scripting/23.png)
+
+Hieronder staan enkele aanvullende voorbeeldscripts die je kunt uitproberen.
+
+``` cs title="NM_Wind "
+using UnityEngine;
+
+[Cilboxable]
+public class NM_Wind : MonoBehaviour
+{
+    public Texture2D NoiseTexture;
+    public Texture2D GustMaskTexture;
+    public void Start()
+    {
+        ApplySettings();
+    }
+    void ApplySettings()
+    {
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexNoise", NoiseTexture);
+        Shader.SetGlobalTexture("WIND_SETTINGS_TexGust", GustMaskTexture);
+        Shader.SetGlobalVector("WIND_SETTINGS_WorldDirectionAndSpeed", new Vector4(1, 1, 1, 30 * 0.2777f));
+        Shader.SetGlobalFloat("WIND_SETTINGS_FlexNoiseScale", 1.0f / 175.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_ShiverNoiseScale", 1.0f / 10.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_Turbulence", 30 * 0.25f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustSpeed", 50);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustScale", 1.0f);
+        Shader.SetGlobalFloat("WIND_SETTINGS_GustWorldScale", 0.0016666667f);
+    }
+}
+```
+
+```cs title="Gun"
+using UnityEngine;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+[Cilboxable]
+public class Gun : MonoBehaviour
+{
+    private BasisPickupInteractable pickup;
+
+    void Start()
+    {
+        this.pickup = GetComponent<BasisPickupInteractable>();
+        this.pickup.OnInteractStartEvent.AddListener(OnPickup);
+        this.pickup.OnInteractEndEvent.AddListener(OnDrop);
+        this.pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    private void OnPickup(BasisInput input)
+    {
+        Debug.Log("HoloGun: Picked up!");
+    }
+
+    private void OnDrop(BasisInput input)
+    {
+        Debug.Log("HoloGun: Dropped!");
+    }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        switch (mode)
+        {
+            case BasisPickUpUseMode.OnPickUpUseDown:
+                Debug.Log("HoloGun: Pew Pew!");
+                break;
+            case BasisPickUpUseMode.OnPickUpUseUp:
+                Debug.Log("HoloGun: Pew Pew! (released)");
+                break;
+        }
+    }
+}
+```
+
+<Callout type="info">
+In plaats van BasisNetworkBehaviour kan BasisNetworkShim worden overgeërfd om genetwerkte scripts te maken.
+</Callout>
