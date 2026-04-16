@@ -3,11 +3,19 @@ import { DocsLayout } from 'fumadocs-ui/layouts/notebook';
 import { baseOptions } from '@/lib/layout.shared';
 import type { ReactNode } from 'react';
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: ReactNode;
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+
   return (
-    <DocsLayout 
-      tree={source.pageTree} 
-      {...baseOptions()}
+    <DocsLayout
+      tree={source.pageTree[lang]}
+      {...baseOptions(lang)}
       sidebar={{
         defaultOpenLevel: 0,
         footer: (

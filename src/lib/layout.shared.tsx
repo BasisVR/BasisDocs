@@ -1,7 +1,7 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
 import Image from 'next/image';
 
-export function baseOptions(): BaseLayoutProps {
+export function baseOptions(lang: string = 'en'): BaseLayoutProps {
   return {
     nav: {
       title: (
@@ -22,7 +22,7 @@ export function baseOptions(): BaseLayoutProps {
     links: [
       {
         text: 'Pages',
-        url: '/docs',
+        url: `/${lang}/docs`,
         active: 'nested-url',
       },
       {
