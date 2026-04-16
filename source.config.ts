@@ -32,6 +32,9 @@ export const docs = defineDocs({
 
 export default defineConfig({
   mdxOptions: {
+    remarkImageOptions: {
+      external: false,
+    },
     rehypeCodeOptions: {
       ...rehypeCodeDefaultOptions,
       themes: {
