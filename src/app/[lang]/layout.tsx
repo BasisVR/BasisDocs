@@ -1,6 +1,6 @@
-import { RootProvider } from 'fumadocs-ui/provider/next';
 import type { Metadata } from 'next';
 import { i18n, localeDisplayNames } from '@/lib/i18n';
+import { LocaleProvider } from '@/components/LocaleProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -44,24 +44,15 @@ export default async function LangLayout({
 }) {
   const { lang } = await params;
 
+  const locales = i18n.languages.map((l) => ({
+    locale: l,
+    name: localeDisplayNames[l] ?? l,
+  }));
+
   return (
-    <RootProvider
-      i18n={{
-        locale: lang,
-        locales: i18n.languages.map((l) => ({
-          locale: l,
-          name: localeDisplayNames[l] ?? l,
-        })),
-      }}
-      search={{
-        enabled: false,
-      }}
-      theme={{
-        defaultTheme: 'dark',
-      }}
-    >
+    <LocaleProvider lang={lang} locales={locales}>
       {children}
-    </RootProvider>
+    </LocaleProvider>
   );
 }
 
