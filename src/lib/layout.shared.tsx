@@ -32,5 +32,6 @@ export function baseOptions(lang: string = 'en'): BaseLayoutProps {
       },
     ],
     githubUrl: 'https://github.com/BasisVR/Basis',
+    i18n: true,
   };
 }
