@@ -22,7 +22,7 @@ export function LocaleProvider({ lang, locales, children }: LocaleProviderProps)
 
   return (
     <RootProvider
-      i18n={{ locale: lang, locales, onChange: onLocaleChange }}
+      i18n={{ locale: lang, locales, onLocaleChange }}
       search={{ enabled: false }}
       theme={{ defaultTheme: 'dark' }}
     >
