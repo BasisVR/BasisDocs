@@ -1,0 +1,373 @@
+---
+title: OSC
+description: OSC-gegevens publiceren en ontvangen in Basis-scripts
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overzicht
+
+Basis bevat een `BasisOsc`-shim voor maker-scripts die OSC-berichten moeten ontvangen, zich moeten abonneren op live adresbereiken of waarden terug moeten publiceren naar de OSC-bridge in runtime.
+
+De component is scope-bewust. Hetzelfde relatieve adres kan anders worden opgelost, afhankelijk van of het object draait onder een lokale avatar, een remote avatar, een prop of een scene.
+
+<Callout type="info">
+Gebruik `BasisOsc` voor makergerichte OSC-workflows in props, avatars en scenes. De bridge spiegelt actieve abonnementen en gepubliceerde waarden naar OSC Query, en numeriek gepubliceerde waarden kunnen ook Vixxy-avatarmenuvariabelen bijwerken.
+</Callout>
+
+## Instellen
+
+1. Voeg een `BasisOsc`-component toe aan hetzelfde GameObject als je script, of aan een nabijgelegen object waarnaar je kunt verwijzen. Cilbox kan de shim automatisch toevoegen wanneer je `GetComponent<BasisOsc>()` aanroept.
+2. Plaats dat object onder een erkend Basis-GameObject met deze componenten zodat het onder hun scope valt:
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. Lees de component met `GetComponent<BasisOsc>()` voordat je je abonneert of publiceert.
+4. Verwijder abonnementen wanneer het object wordt uitgeschakeld of vernietigd.
+
+In de Unity-editor toont de `BasisOsc`-inspecteur de opgeloste scope, het publicatievoorvoegsel, het standaard abonnementsvoorvoegsel, de `ReceiveAll`-status en de huidige exacte en voorvoegselabonnementen terwijl de game draait.
+
+```csharp title="Een BasisOsc-verwijzing ophalen"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+Als geen `BasisAvatar`, `BasisProp` of `BasisScene`-scope kan worden opgelost, vallen relatieve abonnementen standaard terug op `/avatar/parameters/...`. Publiceren is alleen beschikbaar wanneer de component onder een erkende scope valt.
+</Callout>
+
+## Abonneren op OSC
+
+Gebruik een exact abonnement wanneer je één adres wilt.
+
+```csharp title="Exact abonnement"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+Relatieve adressen zijn toegestaan. Op een lokale avatar wordt `"Face/Smile"` opgelost naar `/avatar/parameters/Face/Smile`.
+
+```csharp title="Relatief exact abonnement"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+Als je het uiteindelijke genormaliseerde adres wilt weten dat is geregistreerd, gebruik dan de overload met een `out`-variabele.
+
+```csharp title="Het opgeloste exacte abonnementsadres ophalen"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+Als je wilt dat het abonnement alleen op de lokale instantie bestaat, gebruik dan de `localOnly`-overload. Op remote avatars wordt niets geregistreerd.
+
+```csharp title="Alleen op de lokale instantie abonneren"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+Gebruik voorvoegselabonnementen wanneer je elk overeenkomend kindadres wilt.
+
+```csharp title="Voorvoegselabonnement"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="Het opgeloste voorvoegseladres ophalen"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+Voorvoegselmatching gebruikt grenzen tussen padsegmenten. Een voorvoegsel zoals `/avatar/parameters` komt overeen met `/avatar/parameters/Face/Smile`, maar niet met `/avatar/parametersExtra`.
+
+### Waardecallbacks
+
+Gebruik waardecallbacks wanneer je alleen om het eerste argument geeft.
+
+```csharp title="Exacte waardecallback"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="Lokale waardecallback"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="Voorvoegselwaardecallback"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` en `SubscribePrefixValue` reageren alleen als het bericht minstens één argument bevat.
+
+### Abonnementen verwijderen
+
+Verwijder de handlers die je toevoegt wanneer je script stopt. Dat houdt de runtime-router en de OSC Query-oppervlakte synchroon met actieve scripts.
+
+```csharp title="Exacte abonnementen verwijderen"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="Voorvoegselabonnementen verwijderen"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+Gebruik de alleen-adres-varianten wanneer je alle callbacks voor een genormaliseerd adres of voorvoegsel wilt verwijderen.
+
+```csharp title="Alle callbacks voor een adres of voorvoegsel verwijderen"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+Gebruik `ClearSubscriptions()` wanneer de component al zijn exacte en voorvoegselabonnementen moet laten vallen.
+
+### Alle berichten ontvangen
+
+Zet `ReceiveAll` aan wanneer je wilt dat de component elk gerouteerd OSC-bericht binnen zijn toegestane scope observeert.
+
+```csharp title="Alle berichten ontvangen"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` is bewust beveiligingsbeperkt. Het omzeilt normale scopegrenzen niet.
+
+- Een lokale avatar-`BasisOsc` ziet alleen `/avatar/parameters/*`
+- Een remote avatar-`BasisOsc` ziet alleen `/avatar/public/*`
+- Prop- en scene-`BasisOsc` zien dezelfde standaard ontvangstscoope als relatieve abonnementen, namelijk `/avatar/public/*`
+
+Dat betekent dat `ReceiveAll` zich gedraagt als een scoped wildcard, niet als een procesbrede OSC-tap.
+
+## OSC publiceren
+
+Gebruik `PublishValue` voor één argument en `PublishValues` voor meerdere argumenten.
+
+```csharp title="Eén waarde publiceren"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="Meerdere waarden publiceren"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+Als je het uiteindelijke absolute gepubliceerde adres wilt weten, gebruik dan de overload met een `out`-variabele.
+
+```csharp title="Het opgeloste gepubliceerde adres ophalen"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="Het opgeloste adres voor meerwaarde-publicatie ophalen"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+Je kunt meerdere OSC-datatype publiceren, waaronder booleans, integers, floats, strings, symbolen, MIDI-gegevens, arrays en blobs.
+
+Lokale avatars kunnen ook direct naar `/avatar/public/...` publiceren wanneer dat het adres is dat je wilt blootstellen.
+
+```csharp title="Lokale avatar publiceren naar avatar public"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+Remote-avatar-`BasisOsc`-componenten kunnen niet publiceren. Ga er niet van uit dat publiceren op een remote avatar hetzelfde werkt als op een lokale avatar, prop of scene.
+</Callout>
+
+### Vixxy-avatarmenu ondersteuning
+
+Gepubliceerde numerieke waarden worden ook naar de Vixxy-variabelenstore gestuurd wanneer `BasisOsc` er een kan oplossen via avatarcommunicatie of de acquisitiedienst.
+
+De ondersteunde Vixxy-waardetypen zijn:
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+Voor `PublishValues` wordt alleen de eerste waarde naar Vixxy gestuurd. Niet-numerieke OSC-waarden worden nog steeds naar OSC gepubliceerd, maar niet als Vixxy-variabelen verzonden.
+
+Het Vixxy-variabele-adres wordt afgeleid van het opgeloste OSC-adres. Basis verwijdert `/avatar/parameters/`, `/avatar/public/` of het eerste `/parameters/`-segment uit scoped prop- en scene-adressen voordat de waarde wordt verzonden.
+
+```csharp title="Naar OSC publiceren en een Vixxy-variabele bijwerken"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+Op een lokale avatar publiceert dit naar `/avatar/parameters/Expression/Smile` en verzendt de Vixxy-variabele `Expression/Smile`.
+
+## Adres- en scope-regels
+
+`BasisOsc` normaliseert adressen voordat ze worden gerouteerd. Dat is belangrijk voor zowel abonnementen als publicatie.
+
+### Lokale avatar
+
+- Relatieve abonnementen lossen standaard op naar `/avatar/parameters/...`.
+- Relatieve publicatieadressen publiceren naar `/avatar/parameters/...`.
+- Absolute `/avatar/public/...`-publicatieadressen zijn ook toegestaan.
+
+### Remote avatar
+
+- Relatieve abonnementen lossen standaard op naar `/avatar/public/...`.
+- Absolute `/avatar/parameters/...`-abonnementen worden herschreven naar `/avatar/public/...`.
+- Publicatie is niet beschikbaar.
+
+### Prop
+
+- Relatieve abonnementen lossen standaard op naar `/avatar/public/...`.
+- Absolute avatar-abonnementen zijn beperkt tot `/avatar/public/...`.
+- Relatieve publicatieadressen zijn scoped op de prop-instantie:
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### Scene
+
+- Relatieve abonnementen lossen standaard op naar `/avatar/public/...`.
+- Absolute avatar-abonnementen zijn beperkt tot `/avatar/public/...`.
+- Relatieve publicatieadressen zijn scoped op de scene-instantie:
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+Ga er niet van uit dat een rauw pad exact wordt gebruikt zoals geschreven. Als de component een scope heeft, kan `BasisOsc` relatieve adressen herschrijven of beperkte absolute avatarpaden weigeren.
+</Callout>
+
+## Adresrapportage-varianten
+
+Meerdere `BasisOsc`-methoden hebben overloads die het genormaliseerde absolute pad teruggeven via een `out string resolvedAddress`-parameter.
+
+De belangrijkste varianten die je meestal gebruikt zijn:
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+Deze overloads zijn nuttig wanneer:
+
+- je het exacte pad wilt loggen waar een relatieve adres naar is opgelost
+- je het genormaliseerde adres wilt opslaan voor latere `unsubscribe`-aanroepen
+- je wilt dat scripts expliciet weten waar een publicatie daadwerkelijk naartoe is gegaan
+
+Voor `Subscribe(...)` en `SubscribeValue(...)` betekent `localOnly: true` dat de callback alleen op de lokale instantie wordt geregistreerd. Op remote avatars is het opgeloste adres `null` en wordt geen abonnement toegevoegd.
+
+Er zijn geen passieve `Subscribe(...)`- of `SubscribePrefix(...)`-overloads. Abonnementen in `BasisOsc` zijn callback-gedreven, en `osc.OnMessage` wordt alleen aangeroepen wanneer een van die callback-gebaseerde abonnementen of `ReceiveAll` overeenkomt.
+
+## OSC-datatypen
+
+`OscData` verpakt gedecodeerde OSC-argumenten en stelt het type-specifieke waardeveld beschikbaar via eigenschappen zoals `BoolValue`, `IntValue`, `FloatValue`, `StringValue`, `BlobValue`, `Elements` en MIDI- of kleurvelden.
+
+Gebruik deze factory-methoden bij het publiceren:
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## OSC Query-gedrag
+
+De OSC-bridge werkt OSC Query bij vanuit de live runtime-status.
+
+- Exacte abonnementen maken querynodes aan voor het geabonneerde adres.
+- Voorvoegselabonnementen maken querytakken aan voor het geabonneerde voorvoegsel.
+- Gepubliceerde waarden maken querynodes aan met de laatst gepubliceerde payload.
+- Querynodes worden dynamisch aangemaakt en verwijderd terwijl abonnementen veranderen.
+
+Dat betekent dat het OSC Query-oppervlak geen vast statisch schema is. Het hangt af van de actieve `BasisOsc`-componenten en de abonnementen of gepubliceerde waarden die zij op dat moment bezitten.
+
+<Callout type="info">
+Omdat de ontvangerstatus per entiteits-ID centraal wordt beheerd, is opschoning belangrijk. Verwijder abonnementen in `OnDisable`, `OnDestroy`, of roep `ClearSubscriptions()` aan wanneer je script klaar is.
+</Callout>
+
+## Voorbeeld
+
+De branch voegt een voorbeeld toe met de naam `OSC Subscription Example` en `BasisOscCilboxSubscriptionExample.cs`. Het laat zowel expliciete als impliciete adresabonnementen zien en deregistreert zijn handlers bij vernietiging.
+
+<Cards>
+  <Card
+    title="Scripting-overzicht"
+    description="Ga terug naar de hoofdgids voor scripting voor bredere context over Cilbox en scriptinstelling."
+    href="/docs/scripting"
+  />
+</Cards>
+
+## Problemen oplossen
+
+- Als een relatief adres onverwacht wordt opgelost, controleer dan eerst de dichtstbijzijnde `BasisAvatar`-, `BasisProp`- of `BasisScene`-ouder.
+- Als een remote avatar `/avatar/parameters/...` niet ontvangt, abonneer dan op `/avatar/public/...` of gebruik een relatief pad.
+- Als een waardecallback niet wordt geactiveerd, controleer dan of het inkomende bericht minstens één argument bevat.
+- Als gepubliceerde data niet verschijnt waar je het verwacht, controleer dan of de component onder lokale avatar-, prop- of scene-scope zit.
+- Als verouderde querynodes of listeners achterblijven, zorg er dan voor dat je script zich afmeldt tijdens afsluiten.
+

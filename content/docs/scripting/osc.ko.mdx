@@ -1,0 +1,373 @@
+---
+title: OSC
+description: Basis 스크립트에서 OSC 데이터를 게시하고 수신하기
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 개요
+
+Basis에는 OSC 메시지를 수신하고, 실시간 주소 범위에 구독하고, 값을 OSC 브리지 런타임으로 다시 게시해야 하는 크리에이터 스크립트를 위한 `BasisOsc` shim이 포함되어 있습니다.
+
+이 구성 요소는 scope를 인식합니다. 같은 상대 주소라도 로컬 아바타, 원격 아바타, prop, scene 중 어디에서 실행되는지에 따라 다르게 해석될 수 있습니다.
+
+<Callout type="info">
+prop, avatar, scene 내부의 크리에이터용 OSC 워크플로에는 `BasisOsc`를 사용하세요. 브리지는 활성 구독과 게시된 값을 OSC Query에 반영하며, 숫자 값으로 게시된 내용은 Vixxy 아바타 메뉴 변수도 갱신할 수 있습니다.
+</Callout>
+
+## 설정
+
+1. 스크립트와 같은 GameObject에 `BasisOsc` 컴포넌트를 추가하거나, 참조할 수 있는 근처 객체에 추가합니다. `GetComponent<BasisOsc>()`를 호출하면 Cilbox가 shim을 자동으로 추가할 수 있습니다.
+2. 다음 컴포넌트를 가진 인식된 Basis GameObject 아래에 해당 객체를 두어 scope 안에 들어가게 합니다.
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. 구독하거나 게시하기 전에 `GetComponent<BasisOsc>()`로 컴포넌트를 읽습니다.
+4. 객체가 비활성화되거나 파괴될 때 구독을 제거합니다.
+
+Unity 에디터에서 `BasisOsc` 인스펙터는 게임이 실행되는 동안 해석된 scope, 게시 prefix, 기본 구독 prefix, `ReceiveAll` 상태, 현재의 정확한 구독과 prefix 구독 등록을 보여줍니다.
+
+```csharp title="BasisOsc 참조 얻기"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+`BasisAvatar`, `BasisProp`, `BasisScene` scope를 하나도 해석할 수 없다면, 상대 구독은 기본적으로 `/avatar/parameters/...`로 돌아갑니다. 게시는 구성 요소가 인식된 scope 아래 있을 때만 사용할 수 있습니다.
+</Callout>
+
+## OSC 구독
+
+하나의 주소만 원할 때는 정확한 구독을 사용하세요.
+
+```csharp title="정확한 구독"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+상대 주소도 허용됩니다. 로컬 아바타에서는 `"Face/Smile"`이 `/avatar/parameters/Face/Smile`로 해석됩니다.
+
+```csharp title="상대 정확한 구독"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+등록된 최종 정규화 주소를 알아야 하면 `out` 변수가 있는 오버로드를 사용하세요.
+
+```csharp title="해결된 정확한 구독 주소 얻기"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+구독이 로컬 인스턴스에만 존재해야 하면 `localOnly` 오버로드를 사용하세요. 원격 아바타에서는 아무것도 등록되지 않습니다.
+
+```csharp title="로컬 인스턴스에만 구독"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+일치하는 모든 자식 주소를 원할 때는 prefix 구독을 사용하세요.
+
+```csharp title="Prefix 구독"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="해결된 prefix 주소 얻기"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+prefix 매칭은 경로 세그먼트 경계를 사용합니다. `/avatar/parameters` 같은 prefix는 `/avatar/parameters/Face/Smile`에는 일치하지만 `/avatar/parametersExtra`에는 일치하지 않습니다.
+
+### 값 콜백
+
+첫 번째 인자만 관심 있을 때는 값 콜백을 사용하세요.
+
+```csharp title="정확한 값 콜백"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="로컬 전용 값 콜백"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="Prefix 값 콜백"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue`와 `SubscribePrefixValue`는 메시지에 최소 하나의 인자가 있을 때만 동작합니다.
+
+### 구독 제거
+
+스크립트가 종료될 때 추가한 핸들러를 제거하세요. 그러면 런타임 라우터와 OSC Query 표면이 활성 스크립트와 동기화됩니다.
+
+```csharp title="정확한 구독 제거"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="Prefix 구독 제거"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+정규화된 주소나 prefix에 대해 등록된 모든 콜백을 지우고 싶을 때는 주소만 받는 변형을 사용하세요.
+
+```csharp title="주소 또는 prefix의 모든 콜백 제거"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+구성 요소가 소유한 모든 정확한 구독과 prefix 구독을 지우려면 `ClearSubscriptions()`를 사용하세요.
+
+### 모든 메시지 받기
+
+허용된 scope 안의 모든 라우팅된 OSC 메시지를 관찰하고 싶다면 `ReceiveAll`을 설정하세요.
+
+```csharp title="모든 메시지 받기"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll`은 의도적으로 보안 제한이 있습니다. 일반적인 scope 경계를 우회하지 않습니다.
+
+- 로컬 아바타 `BasisOsc`는 `/avatar/parameters/*`만 봅니다
+- 원격 아바타 `BasisOsc`는 `/avatar/public/*`만 봅니다
+- prop과 scene `BasisOsc`는 상대 구독과 같은 기본 수신 scope, 즉 `/avatar/public/*`를 봅니다
+
+즉 `ReceiveAll`은 프로세스 전체 OSC 탭이 아니라 scope가 적용된 와일드카드처럼 동작합니다.
+
+## OSC 게시
+
+하나의 인자에는 `PublishValue`, 여러 인자에는 `PublishValues`를 사용하세요.
+
+```csharp title="값 하나 게시"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="값 여러 개 게시"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+최종 절대 게시 주소를 알아야 하면 `out` 변수가 있는 오버로드를 사용하세요.
+
+```csharp title="해결된 게시 주소 얻기"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="다중 값 게시의 해결된 주소 얻기"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+불리언, 정수, 실수, 문자열, 심볼, MIDI 데이터, 배열, blob 등 여러 OSC 데이터 형식을 게시할 수 있습니다.
+
+로컬 아바타는 노출해야 하는 주소가 그것이라면 `/avatar/public/...`로 직접 게시할 수도 있습니다.
+
+```csharp title="로컬 아바타를 avatar public에 게시"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+원격 아바타 `BasisOsc` 구성 요소는 게시할 수 없습니다. 원격 아바타 게시가 로컬 아바타, prop, scene과 같다고 가정하지 마세요.
+</Callout>
+
+### Vixxy 아바타 메뉴 지원
+
+`BasisOsc`가 아바타 통신이나 acquisition 서비스에서 값을 해석할 수 있을 때, 게시된 숫자 값은 Vixxy 변수 저장소에도 전송됩니다.
+
+지원되는 Vixxy 값 형식은 다음과 같습니다.
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+`PublishValues`의 경우 첫 번째 값만 Vixxy로 전송됩니다. 숫자가 아닌 OSC 값은 OSC로는 계속 게시되지만, Vixxy 변수로 전송되지는 않습니다.
+
+Vixxy 변수 주소는 해석된 OSC 주소에서 파생됩니다. Basis는 scoped prop 및 scene 주소에서 `/avatar/parameters/`, `/avatar/public/`, 또는 첫 번째 `/parameters/` 세그먼트를 제거한 뒤 값을 전송합니다.
+
+```csharp title="OSC에 게시하고 Vixxy 변수 갱신"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+로컬 아바타에서는 이것이 `/avatar/parameters/Expression/Smile`로 게시되고 Vixxy 변수 `Expression/Smile`을 전송합니다.
+
+## 주소 및 scope 규칙
+
+`BasisOsc`는 라우팅 전에 주소를 정규화합니다. 이는 구독과 게시 모두에 중요합니다.
+
+### 로컬 아바타
+
+- 상대 구독은 기본적으로 `/avatar/parameters/...`로 해석됩니다.
+- 상대 게시 주소는 `/avatar/parameters/...`로 게시됩니다.
+- 절대 `/avatar/public/...` 게시 주소도 허용됩니다.
+
+### 원격 아바타
+
+- 상대 구독은 기본적으로 `/avatar/public/...`로 해석됩니다.
+- 절대 `/avatar/parameters/...` 구독은 `/avatar/public/...`로 다시 작성됩니다.
+- 게시는 사용할 수 없습니다.
+
+### Prop
+
+- 상대 구독은 기본적으로 `/avatar/public/...`로 해석됩니다.
+- 절대 avatar 구독은 `/avatar/public/...`로 제한됩니다.
+- 상대 게시 주소는 prop 인스턴스에 scope가 적용됩니다.
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### Scene
+
+- 상대 구독은 기본적으로 `/avatar/public/...`로 해석됩니다.
+- 절대 avatar 구독은 `/avatar/public/...`로 제한됩니다.
+- 상대 게시 주소는 scene 인스턴스에 scope가 적용됩니다.
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+원시 경로가 적힌 그대로 정확히 사용된다고 가정하지 마세요. 구성 요소에 scope가 있으면 `BasisOsc`가 상대 주소를 다시 쓰거나 제한된 절대 avatar 경로를 거부할 수 있습니다.
+</Callout>
+
+## 주소 보고 변형
+
+여러 `BasisOsc` 메서드에는 정규화된 절대 경로를 `out string resolvedAddress`로 반환하는 오버로드가 있습니다.
+
+보통 자주 쓰는 주요 변형은 다음과 같습니다.
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+이 오버로드들은 다음과 같은 경우 유용합니다.
+
+- 상대 주소가 어디로 해석되었는지 정확히 로그하고 싶을 때
+- 나중에 `unsubscribe` 호출에 사용할 정규화된 주소를 저장하고 싶을 때
+- 스크립트가 게시 작업이 실제로 어디로 갔는지 명시적으로 알아야 할 때
+
+`Subscribe(...)`와 `SubscribeValue(...)`에서 `localOnly: true`는 콜백이 로컬 인스턴스에만 등록된다는 뜻입니다. 원격 아바타에서는 해석된 주소가 `null`이고 구독이 추가되지 않습니다.
+
+패시브 `Subscribe(...)` 또는 `SubscribePrefix(...)` 오버로드는 없습니다. `BasisOsc`의 구독은 콜백 기반이며, `osc.OnMessage`는 이런 callback-based 구독이나 `ReceiveAll`이 일치할 때만 발생합니다.
+
+## OSC 데이터 형식
+
+`OscData`는 디코딩된 OSC 인자를 감싸며 `BoolValue`, `IntValue`, `FloatValue`, `StringValue`, `BlobValue`, `Elements` 같은 속성과 MIDI 또는 색상 필드를 통해 형식별 값을 제공합니다.
+
+게시할 때는 다음 factory 메서드를 사용하세요.
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## OSC Query 동작
+
+OSC 브리지는 live runtime 상태에서 OSC Query를 갱신합니다.
+
+- 정확한 구독은 구독된 주소에 대한 query 노드를 만듭니다.
+- prefix 구독은 구독된 prefix에 대한 query branch를 만듭니다.
+- 게시된 값은 마지막으로 게시된 payload를 가진 query 노드를 만듭니다.
+- 구독이 바뀌면 query 노드는 동적으로 생성되고 제거됩니다.
+
+즉 OSC Query 표면은 고정된 정적 schema가 아닙니다. 활성 `BasisOsc` 구성 요소와, 그 시점에 보유한 구독 또는 게시된 값에 따라 달라집니다.
+
+<Callout type="info">
+수신자 상태는 entity ID별로 중앙 관리되므로 정리가 중요합니다. `OnDisable`, `OnDestroy`에서 구독을 제거하거나 스크립트가 끝나면 `ClearSubscriptions()`를 호출하세요.
+</Callout>
+
+## 예시
+
+브랜치에는 `BasisOscCilboxSubscriptionExample.cs`를 사용하는 `OSC Subscription Example` 예제가 추가됩니다. 명시적 및 암시적 주소 구독을 모두 보여주며, 파괴 시 핸들러를 해제합니다.
+
+<Cards>
+  <Card
+    title="스크립팅 개요"
+    description="Cilbox와 스크립트 설정에 대한 더 넓은 맥락은 메인 스크립팅 가이드로 돌아가세요."
+    href="/docs/scripting"
+  />
+</Cards>
+
+## 문제 해결
+
+- 상대 주소가 예상과 다르게 해석되면 가장 가까운 `BasisAvatar`, `BasisProp`, `BasisScene` 조상을 먼저 확인하세요.
+- 원격 아바타가 `/avatar/parameters/...`를 받지 못하면 `/avatar/public/...`에 구독하거나 상대 경로를 사용하세요.
+- 값 콜백이 실행되지 않으면 들어오는 메시지에 인자가 최소 하나 있는지 확인하세요.
+- 게시된 데이터가 기대한 위치에 나타나지 않으면 구성 요소가 로컬 아바타, prop, scene scope 아래 있는지 확인하세요.
+- 오래된 query 노드나 리스너가 남아 있으면 스크립트 종료 시 구독 해제를 확실히 하세요.
+

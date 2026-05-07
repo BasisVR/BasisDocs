@@ -1,0 +1,373 @@
+---
+title: OSC
+description: Публикация и приём OSC-данных в скриптах Basis
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Обзор
+
+Basis включает shim `BasisOsc` для скриптов авторов, которым нужно принимать OSC-сообщения, подписываться на живые диапазоны адресов или публиковать значения обратно в OSC-bridge во время работы.
+
+Компонент учитывает scope. Один и тот же относительный адрес может разрешаться по-разному в зависимости от того, работает ли объект под локальным аватаром, удалённым аватаром, prop или сценой.
+
+<Callout type="info">
+Используйте `BasisOsc` для OSC-потоков авторского контента внутри props, аватаров и сцен. Bridge отражает активные подписки и опубликованные значения в OSC Query, а опубликованные числовые значения также могут обновлять переменные меню аватара Vixxy.
+</Callout>
+
+## Настройка
+
+1. Добавьте компонент `BasisOsc` к тому же GameObject, что и ваш скрипт, либо к соседнему объекту, на который можно сослаться. Cilbox может добавить shim автоматически, когда вы вызываете `GetComponent<BasisOsc>()`.
+2. Поместите этот объект под распознанный Basis GameObject с такими компонентами, чтобы он оказался в их scope:
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. Считайте компонент через `GetComponent<BasisOsc>()` до подписки или публикации.
+4. Удаляйте подписки, когда объект отключается или уничтожается.
+
+В Unity-редакторе инспектор `BasisOsc` показывает разрешённый scope, префикс публикации, префикс подписки по умолчанию, состояние `ReceiveAll` и текущие точные и префиксные регистрации подписок во время выполнения игры.
+
+```csharp title="Получение ссылки на BasisOsc"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+Если не удаётся определить scope `BasisAvatar`, `BasisProp` или `BasisScene`, относительные подписки по умолчанию откатываются на `/avatar/parameters/...`. Публикация доступна только тогда, когда компонент находится под распознанным scope.
+</Callout>
+
+## Подписка на OSC
+
+Используйте точную подписку, когда нужен один адрес.
+
+```csharp title="Точная подписка"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+Относительные адреса разрешены. На локальном аватаре `"Face/Smile"` разрешается в `/avatar/parameters/Face/Smile`.
+
+```csharp title="Относительная точная подписка"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+Если нужно знать итоговый нормализованный адрес регистрации, используйте перегрузку с `out`-переменной.
+
+```csharp title="Получить разрешённый адрес точной подписки"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+Если подписка должна существовать только на локальном экземпляре, используйте перегрузку `localOnly`. На удалённых аватарах ничего не регистрируется.
+
+```csharp title="Подписаться только на локальном экземпляре"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+Используйте префиксные подписки, когда нужны все совпадающие дочерние адреса.
+
+```csharp title="Префиксная подписка"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="Получить разрешённый адрес префикса"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+Сопоставление по префиксу использует границы сегментов пути. Префикс вроде `/avatar/parameters` совпадает с `/avatar/parameters/Face/Smile`, но не с `/avatar/parametersExtra`.
+
+### Коллбэки значений
+
+Используйте коллбэки значений, когда важен только первый аргумент.
+
+```csharp title="Точный коллбэк значения"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="Коллбэк значения только для локального экземпляра"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="Коллбэк значения по префиксу"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` и `SubscribePrefixValue` срабатывают только если сообщение содержит хотя бы один аргумент.
+
+### Удаление подписок
+
+Удаляйте обработчики, которые вы добавляете, когда скрипт завершается. Это держит router runtime и поверхность OSC Query в синхронизации с активными скриптами.
+
+```csharp title="Удаление точных подписок"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="Удаление префиксных подписок"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+Используйте варианты только с адресом, когда нужно удалить все коллбэки, зарегистрированные для нормализованного адреса или префикса.
+
+```csharp title="Удалить все коллбэки для адреса или префикса"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+Используйте `ClearSubscriptions()`, когда компонент должен сбросить все свои точные и префиксные подписки.
+
+### Получение всех сообщений
+
+Установите `ReceiveAll`, когда нужно, чтобы компонент наблюдал каждое маршрутизированное OSC-сообщение в пределах разрешённого scope.
+
+```csharp title="Получать все сообщения"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` намеренно ограничен безопасностью. Он не обходит обычные границы scope.
+
+- Локальный аватарный `BasisOsc` видит только `/avatar/parameters/*`
+- Удалённый аватарный `BasisOsc` видит только `/avatar/public/*`
+- `BasisOsc` для props и сцен видят тот же scope приёма по умолчанию, что и относительные подписки, то есть `/avatar/public/*`
+
+Это означает, что `ReceiveAll` ведёт себя как wildcard с ограничением по scope, а не как глобальный OSC-канал процесса.
+
+## Публикация OSC
+
+Используйте `PublishValue` для одного аргумента и `PublishValues` для нескольких аргументов.
+
+```csharp title="Публикация одного значения"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="Публикация нескольких значений"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+Если нужно знать итоговый абсолютный адрес публикации, используйте перегрузку с `out`-переменной.
+
+```csharp title="Получить разрешённый адрес публикации"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="Получить разрешённый адрес для публикации нескольких значений"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+Вы можете публиковать несколько типов данных OSC, включая bool, целые числа, float, строки, символы, MIDI-данные, массивы и blob.
+
+Локальные аватары также могут публиковать напрямую в `/avatar/public/...`, если именно этот адрес нужно открыть наружу.
+
+```csharp title="Публикация локального аватара в avatar public"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+Компоненты `BasisOsc` на удалённых аватарах не могут публиковать. Не предполагайте, что публикация на удалённом аватаре ведёт себя так же, как на локальном аватаре, prop или сцене.
+</Callout>
+
+### Поддержка меню аватара Vixxy
+
+Опубликованные числовые значения также отправляются в хранилище переменных Vixxy, когда `BasisOsc` может разрешить их через аватарную коммуникацию или сервис acquisition.
+
+Поддерживаемые типы значений Vixxy:
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+Для `PublishValues` в Vixxy отправляется только первое значение. Нечисловые OSC-значения всё равно публикуются в OSC, но не отправляются как переменные Vixxy.
+
+Адрес переменной Vixxy выводится из разрешённого OSC-адреса. Basis убирает `/avatar/parameters/`, `/avatar/public/` или первый сегмент `/parameters/` из scoped адресов prop и scene перед отправкой значения.
+
+```csharp title="Публикация в OSC и обновление переменной Vixxy"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+На локальном аватаре это публикуется в `/avatar/parameters/Expression/Smile` и отправляет переменную Vixxy `Expression/Smile`.
+
+## Правила адреса и scope
+
+`BasisOsc` нормализует адреса перед маршрутизацией. Это важно и для подписок, и для публикации.
+
+### Локальный аватар
+
+- Относительные подписки по умолчанию разрешаются в `/avatar/parameters/...`.
+- Относительные адреса публикации публикуются в `/avatar/parameters/...`.
+- Абсолютные адреса публикации `/avatar/public/...` тоже разрешены.
+
+### Удалённый аватар
+
+- Относительные подписки по умолчанию разрешаются в `/avatar/public/...`.
+- Абсолютные подписки `/avatar/parameters/...` переписываются в `/avatar/public/...`.
+- Публикация недоступна.
+
+### Prop
+
+- Относительные подписки по умолчанию разрешаются в `/avatar/public/...`.
+- Абсолютные аватарные подписки ограничены `/avatar/public/...`.
+- Относительные адреса публикации scoped на экземпляр prop:
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### Сцена
+
+- Относительные подписки по умолчанию разрешаются в `/avatar/public/...`.
+- Абсолютные аватарные подписки ограничены `/avatar/public/...`.
+- Относительные адреса публикации scoped на экземпляр сцены:
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+Не считайте, что сырой путь используется ровно так, как написан. Если у компонента есть scope, `BasisOsc` может переписывать относительные адреса или отклонять ограниченные абсолютные аватарные пути.
+</Callout>
+
+## Варианты с отчётом адреса
+
+У нескольких методов `BasisOsc` есть перегрузки, которые возвращают нормализованный абсолютный путь через параметр `out string resolvedAddress`.
+
+Основные варианты, которые вы обычно будете использовать:
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+Эти перегрузки полезны, когда:
+
+- нужно залогировать точный путь, в который разрешился относительный адрес
+- нужно сохранить нормализованный адрес для последующих вызовов `unsubscribe`
+- нужно, чтобы скрипты явно знали, куда реально ушла операция публикации
+
+Для `Subscribe(...)` и `SubscribeValue(...)` `localOnly: true` означает, что коллбэк регистрируется только на локальном экземпляре. На удалённых аватарах разрешённый адрес равен `null`, и подписка не добавляется.
+
+Пассивных перегрузок `Subscribe(...)` или `SubscribePrefix(...)` нет. Подписки в `BasisOsc` управляются коллбэками, а `osc.OnMessage` срабатывает только когда совпадает одна из таких callback-based подписок или `ReceiveAll`.
+
+## Типы данных OSC
+
+`OscData` оборачивает декодированные OSC-аргументы и даёт доступ к значению конкретного типа через свойства вроде `BoolValue`, `IntValue`, `FloatValue`, `StringValue`, `BlobValue`, `Elements` и MIDI- или цветовые поля.
+
+Используйте эти factory-методы при публикации:
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## Поведение OSC Query
+
+OSC-bridge обновляет OSC Query из живого runtime-состояния.
+
+- Точные подписки создают query-узлы для подписанного адреса.
+- Префиксные подписки создают query-ветки для подписанного префикса.
+- Опубликованные значения создают query-узлы с последним опубликованным payload.
+- Query-узлы создаются и удаляются динамически по мере изменения подписок.
+
+Это означает, что поверхность OSC Query не является фиксированной статической схемой. Она зависит от активных компонентов `BasisOsc` и от подписок или опубликованных значений, которыми они владеют в данный момент.
+
+<Callout type="info">
+Поскольку состояние приёмника индексируется по ID сущности и управляется централизованно, очистка важна. Удаляйте подписки в `OnDisable`, `OnDestroy` или вызывайте `ClearSubscriptions()`, когда скрипт закончил работу.
+</Callout>
+
+## Пример
+
+В ветку добавлен пример `OSC Subscription Example` с `BasisOscCilboxSubscriptionExample.cs`. Он показывает как явные, так и неявные адресные подписки и снимает свои обработчики при уничтожении.
+
+<Cards>
+  <Card
+    title="Обзор scripting"
+    description="Вернитесь к основному руководству по scripting для более широкого контекста по Cilbox и настройке скриптов."
+    href="/docs/scripting"
+  />
+</Cards>
+
+## Устранение неполадок
+
+- Если относительный адрес разрешается неожиданно, сначала проверьте ближайшего предка `BasisAvatar`, `BasisProp` или `BasisScene`.
+- Если удалённый аватар не получает `/avatar/parameters/...`, подпишитесь на `/avatar/public/...` или используйте относительный путь.
+- Если коллбэк значения не срабатывает, убедитесь, что входящее сообщение содержит хотя бы один аргумент.
+- Если опубликованные данные не появляются там, где вы ожидаете, проверьте, находится ли компонент под scope локального аватара, prop или сцены.
+- Если остаются устаревшие query-узлы или слушатели, убедитесь, что скрипт отписывается во время завершения работы.
+

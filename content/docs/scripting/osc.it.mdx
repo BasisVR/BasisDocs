@@ -1,0 +1,373 @@
+---
+title: OSC
+description: Pubblicare e ricevere dati OSC negli script Basis
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Panoramica
+
+Basis include uno shim `BasisOsc` per gli script dei creator che devono ricevere messaggi OSC, iscriversi a intervalli di indirizzi in tempo reale o pubblicare valori di nuovo nel bridge OSC del runtime.
+
+Il componente è scope-aware. Lo stesso indirizzo relativo può risolversi in modo diverso a seconda che l'oggetto sia eseguito sotto un avatar locale, un avatar remoto, un prop o una scena.
+
+<Callout type="info">
+Usa `BasisOsc` per i flussi OSC rivolti ai creator dentro prop, avatar e scene. Il bridge riflette le iscrizioni attive e i valori pubblicati in OSC Query, e i valori numerici pubblicati possono anche aggiornare le variabili del menu avatar Vixxy.
+</Callout>
+
+## Configurazione
+
+1. Aggiungi un componente `BasisOsc` allo stesso GameObject del tuo script, oppure a un oggetto vicino che puoi referenziare. Cilbox può aggiungere automaticamente lo shim quando chiami `GetComponent<BasisOsc>()`.
+2. Posiziona quell'oggetto sotto un GameObject Basis riconosciuto con questi componenti per essere sotto il loro scope:
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. Leggi il componente con `GetComponent<BasisOsc>()` prima di iscriverti o pubblicare.
+4. Rimuovi le iscrizioni quando l'oggetto viene disabilitato o distrutto.
+
+Nell'editor Unity, l'inspector di `BasisOsc` mostra lo scope risolto, il prefisso di pubblicazione, il prefisso di iscrizione predefinito, lo stato `ReceiveAll` e le registrazioni correnti delle iscrizioni esatte e per prefisso mentre il gioco è in esecuzione.
+
+```csharp title="Ottenere un riferimento a BasisOsc"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+Se non è possibile risolvere alcuno scope `BasisAvatar`, `BasisProp` o `BasisScene`, le iscrizioni relative tornano per impostazione predefinita a `/avatar/parameters/...`. La pubblicazione è disponibile solo quando il componente si trova sotto uno scope riconosciuto.
+</Callout>
+
+## Iscriversi a OSC
+
+Usa un'iscrizione esatta quando vuoi un solo indirizzo.
+
+```csharp title="Iscrizione esatta"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+Gli indirizzi relativi sono consentiti. Su un avatar locale, `"Face/Smile"` si risolve in `/avatar/parameters/Face/Smile`.
+
+```csharp title="Iscrizione esatta relativa"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+Se devi conoscere l'indirizzo normalizzato finale che è stato registrato, usa l'overload con una variabile `out`.
+
+```csharp title="Ottenere l'indirizzo risolto dell'iscrizione esatta"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+Se vuoi che l'iscrizione esista solo sull'istanza locale, usa l'overload `localOnly`. Sugli avatar remoti non viene registrato nulla.
+
+```csharp title="Iscriversi solo sull'istanza locale"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+Usa le iscrizioni per prefisso quando vuoi tutti i figli corrispondenti.
+
+```csharp title="Iscrizione per prefisso"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="Ottenere l'indirizzo risolto del prefisso"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+La corrispondenza per prefisso usa i confini dei segmenti di percorso. Un prefisso come `/avatar/parameters` corrisponde a `/avatar/parameters/Face/Smile`, ma non a `/avatar/parametersExtra`.
+
+### Callback sui valori
+
+Usa i callback sui valori quando ti interessa solo il primo argomento.
+
+```csharp title="Callback esatto sul valore"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="Callback sul valore solo locale"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="Callback sul valore per prefisso"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` e `SubscribePrefixValue` si attivano solo quando il messaggio ha almeno un argomento.
+
+### Rimuovere le iscrizioni
+
+Rimuovi i gestori che aggiungi quando lo script si chiude. Questo mantiene sincronizzati il router del runtime e la superficie OSC Query con gli script attivi.
+
+```csharp title="Rimuovere iscrizioni esatte"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="Rimuovere iscrizioni per prefisso"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+Usa le varianti solo indirizzo quando vuoi rimuovere tutti i callback registrati per un indirizzo o prefisso normalizzato.
+
+```csharp title="Rimuovere tutti i callback per un indirizzo o prefisso"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+Usa `ClearSubscriptions()` quando il componente deve eliminare tutte le iscrizioni esatte e per prefisso di cui è proprietario.
+
+### Ricevere tutti i messaggi
+
+Imposta `ReceiveAll` quando vuoi che il componente osservi ogni messaggio OSC instradato dentro il suo scope consentito.
+
+```csharp title="Ricevere tutti i messaggi"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` è volutamente limitato per motivi di sicurezza. Non aggira i normali confini di scope.
+
+- Un `BasisOsc` di avatar locale vede solo `/avatar/parameters/*`
+- Un `BasisOsc` di avatar remoto vede solo `/avatar/public/*`
+- I `BasisOsc` di prop e scene vedono lo stesso scope di ricezione predefinito delle iscrizioni relative, cioè `/avatar/public/*`
+
+Questo significa che `ReceiveAll` si comporta come un wildcard limitato allo scope, non come un tap OSC globale del processo.
+
+## Pubblicare OSC
+
+Usa `PublishValue` per un singolo argomento e `PublishValues` per più argomenti.
+
+```csharp title="Pubblicare un valore"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="Pubblicare più valori"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+Se devi conoscere l'indirizzo assoluto finale pubblicato, usa l'overload con una variabile `out`.
+
+```csharp title="Ottenere l'indirizzo pubblicato risolto"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="Ottenere l'indirizzo risolto per la pubblicazione multi-valore"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+Puoi pubblicare diversi tipi di dati OSC, inclusi booleani, interi, float, stringhe, simboli, dati MIDI, array e blob.
+
+Gli avatar locali possono anche pubblicare direttamente su `/avatar/public/...` quando è l'indirizzo che devi esporre.
+
+```csharp title="Pubblicare un avatar locale su avatar public"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+I componenti `BasisOsc` di avatar remoti non possono pubblicare. Non dare per scontato che la pubblicazione di un avatar remoto si comporti come quella di un avatar locale, di un prop o di una scena.
+</Callout>
+
+### Supporto al menu avatar Vixxy
+
+I valori numerici pubblicati vengono anche inviati allo store delle variabili Vixxy quando `BasisOsc` riesce a risolverne uno tramite le comunicazioni avatar o il servizio di acquisizione.
+
+I tipi di valore Vixxy supportati sono:
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+Per `PublishValues`, solo il primo valore viene inviato a Vixxy. I valori OSC non numerici vengono comunque pubblicati su OSC, ma non vengono inviati come variabili Vixxy.
+
+L'indirizzo della variabile Vixxy deriva dall'indirizzo OSC risolto. Basis rimuove `/avatar/parameters/`, `/avatar/public/` oppure il primo segmento `/parameters/` dagli indirizzi scope-limitati di prop e scene prima di inviare il valore.
+
+```csharp title="Pubblicare su OSC e aggiornare una variabile Vixxy"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+Su un avatar locale, questo pubblica su `/avatar/parameters/Expression/Smile` e invia la variabile Vixxy `Expression/Smile`.
+
+## Regole di indirizzo e scope
+
+`BasisOsc` normalizza gli indirizzi prima di instradarli. Questo è importante sia per le iscrizioni sia per la pubblicazione.
+
+### Avatar locale
+
+- Le iscrizioni relative si risolvono per impostazione predefinita in `/avatar/parameters/...`.
+- Gli indirizzi di pubblicazione relativi pubblicano su `/avatar/parameters/...`.
+- Sono consentiti anche gli indirizzi di pubblicazione assoluti `/avatar/public/...`.
+
+### Avatar remoto
+
+- Le iscrizioni relative si risolvono per impostazione predefinita in `/avatar/public/...`.
+- Le iscrizioni assolute `/avatar/parameters/...` vengono riscritte in `/avatar/public/...`.
+- La pubblicazione non è disponibile.
+
+### Prop
+
+- Le iscrizioni relative si risolvono per impostazione predefinita in `/avatar/public/...`.
+- Le iscrizioni avatar assolute sono limitate a `/avatar/public/...`.
+- Gli indirizzi di pubblicazione relativi sono limitati all'istanza del prop:
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### Scena
+
+- Le iscrizioni relative si risolvono per impostazione predefinita in `/avatar/public/...`.
+- Le iscrizioni avatar assolute sono limitate a `/avatar/public/...`.
+- Gli indirizzi di pubblicazione relativi sono limitati all'istanza della scena:
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+Non dare per scontato che un percorso grezzo venga usato esattamente come scritto. Se il componente ha scope, `BasisOsc` può riscrivere indirizzi relativi o rifiutare percorsi avatar assoluti limitati.
+</Callout>
+
+## Varianti di report dell'indirizzo
+
+Diversi metodi `BasisOsc` hanno overload che restituiscono il percorso assoluto normalizzato tramite un parametro `out string resolvedAddress`.
+
+Le varianti principali che userai di solito sono:
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+Questi overload sono utili quando:
+
+- vuoi registrare il percorso esatto a cui si è risolta un indirizzo relativo
+- vuoi memorizzare l'indirizzo normalizzato per chiamate `unsubscribe` successive
+- vuoi che gli script sappiano esplicitamente dove è andata davvero un'operazione di pubblicazione
+
+Per `Subscribe(...)` e `SubscribeValue(...)`, `localOnly: true` significa che il callback viene registrato solo sull'istanza locale. Sugli avatar remoti l'indirizzo risolto è `null` e non viene aggiunta alcuna iscrizione.
+
+Non esistono overload passivi `Subscribe(...)` o `SubscribePrefix(...)`. Le iscrizioni in `BasisOsc` sono guidate da callback, e `osc.OnMessage` viene attivato solo quando una di queste iscrizioni basate su callback o `ReceiveAll` corrisponde.
+
+## Tipi di dati OSC
+
+`OscData` incapsula gli argomenti OSC decodificati ed espone il valore specifico del tipo tramite proprietà come `BoolValue`, `IntValue`, `FloatValue`, `StringValue`, `BlobValue`, `Elements` e campi MIDI o colore.
+
+Usa questi metodi factory quando pubblichi:
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## Comportamento di OSC Query
+
+Il bridge OSC aggiorna OSC Query dallo stato runtime live.
+
+- Le iscrizioni esatte creano nodi di query per l'indirizzo iscritto.
+- Le iscrizioni per prefisso creano rami di query per il prefisso iscritto.
+- I valori pubblicati creano nodi di query con l'ultimo payload pubblicato.
+- I nodi di query vengono creati e rimossi dinamicamente man mano che cambiano le iscrizioni.
+
+Questo significa che la superficie OSC Query non è uno schema statico fisso. Dipende dai componenti `BasisOsc` attivi e dalle iscrizioni o dai valori pubblicati che possiedono in quel momento.
+
+<Callout type="info">
+Poiché lo stato del ricevitore è indicizzato per ID entità e gestito centralmente, la pulizia è importante. Rimuovi le iscrizioni in `OnDisable`, `OnDestroy`, oppure chiama `ClearSubscriptions()` quando lo script ha terminato.
+</Callout>
+
+## Esempio
+
+Il branch aggiunge un esempio chiamato `OSC Subscription Example` con `BasisOscCilboxSubscriptionExample.cs`. Mostra sia iscrizioni esplicite sia implicite per indirizzo e deregistra i propri gestori alla distruzione.
+
+<Cards>
+  <Card
+    title="Panoramica scripting"
+    description="Torna alla guida principale di scripting per un contesto più ampio su Cilbox e sulla configurazione degli script."
+    href="/docs/scripting"
+  />
+</Cards>
+
+## Risoluzione problemi
+
+- Se un indirizzo relativo si risolve in modo inatteso, controlla prima l'antenato `BasisAvatar`, `BasisProp` o `BasisScene` più vicino.
+- Se un avatar remoto non riceve `/avatar/parameters/...`, iscriviti a `/avatar/public/...` oppure usa un percorso relativo.
+- Se un callback di valore non si attiva, verifica che il messaggio in ingresso contenga almeno un argomento.
+- Se i dati pubblicati non appaiono dove ti aspetti, verifica se il componente si trova sotto scope avatar locale, prop o scena.
+- Se restano nodi di query o listener obsoleti, assicurati che lo script si disiscriva durante lo shutdown.
+

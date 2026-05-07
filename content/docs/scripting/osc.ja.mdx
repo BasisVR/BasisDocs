@@ -1,0 +1,373 @@
+---
+title: OSC
+description: BasisスクリプトでOSCデータを公開および受信する
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概要
+
+Basis には、OSC メッセージを受信したり、ライブのアドレス範囲に購読したり、値を OSC ブリッジのランタイムへ再公開したりする必要があるクリエイタースクリプト向けに `BasisOsc` シムが用意されています。
+
+このコンポーネントはスコープを認識します。ローカルアバター、リモートアバター、プロップ、シーンのどれで動作しているかによって、同じ相対アドレスでも解決結果が異なることがあります。
+
+<Callout type="info">
+プロップ、アバター、シーン内のクリエイター向け OSC ワークフローには `BasisOsc` を使ってください。ブリッジはアクティブな購読と公開された値を OSC Query に反映し、数値として公開された値は Vixxy のアバターメニュー変数も更新できます。
+</Callout>
+
+## セットアップ
+
+1. スクリプトと同じ GameObject に `BasisOsc` コンポーネントを追加するか、参照可能な近くのオブジェクトに追加します。`GetComponent<BasisOsc>()` を呼ぶと、Cilbox がシムを自動追加できます。
+2. そのオブジェクトを、次のコンポーネントを持つ認識済みの Basis GameObject の下に置き、そのスコープ内に入れます。
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. 購読や公開の前に `GetComponent<BasisOsc>()` でコンポーネントを取得します。
+4. オブジェクトが無効化されたり破棄されたりしたら、購読を解除します。
+
+Unity エディタでは、`BasisOsc` インスペクタが、解決済みスコープ、公開プレフィックス、既定の購読プレフィックス、`ReceiveAll` 状態、そして実行中の正確な購読とプレフィックス購読の登録状況を表示します。
+
+```csharp title="BasisOsc 参照を取得する"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+`BasisAvatar`、`BasisProp`、`BasisScene` のいずれのスコープも解決できない場合、相対購読は既定で `/avatar/parameters/...` にフォールバックします。公開は、コンポーネントが認識済みスコープの下にある場合のみ利用できます。
+</Callout>
+
+## OSC を購読する
+
+1つのアドレスだけ欲しいときは、正確な購読を使います。
+
+```csharp title="正確な購読"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+相対アドレスも使えます。ローカルアバターでは `"Face/Smile"` は `/avatar/parameters/Face/Smile` に解決されます。
+
+```csharp title="相対的な正確な購読"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+登録された最終的な正規化アドレスを知りたい場合は、`out` 変数付きのオーバーロードを使います。
+
+```csharp title="正確な購読の解決先アドレスを取得する"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+購読をローカルインスタンスにのみ存在させたい場合は `localOnly` オーバーロードを使います。リモートアバターでは何も登録されません。
+
+```csharp title="ローカルインスタンスのみに購読する"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+一致する子アドレスをすべて受け取りたい場合は、プレフィックス購読を使います。
+
+```csharp title="プレフィックス購読"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="解決済みプレフィックスアドレスを取得する"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+プレフィックスの一致はパスセグメント境界を使います。`/avatar/parameters` のようなプレフィックスは `/avatar/parameters/Face/Smile` には一致しますが、`/avatar/parametersExtra` には一致しません。
+
+### 値コールバック
+
+最初の引数だけが重要なときは値コールバックを使います。
+
+```csharp title="正確な値コールバック"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="ローカルのみの値コールバック"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="プレフィックス値コールバック"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` と `SubscribePrefixValue` は、メッセージに少なくとも1つの引数がある場合のみ発火します。
+
+### 購読の解除
+
+スクリプト終了時には、追加したハンドラを削除します。これにより、ランタイムルータと OSC Query の表面がアクティブなスクリプトと同期したままになります。
+
+```csharp title="正確な購読を解除する"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="プレフィックス購読を解除する"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+正規化されたアドレスまたはプレフィックスに対して登録されたすべてのコールバックを削除したいときは、アドレスのみの版を使います。
+
+```csharp title="アドレスまたはプレフィックスのすべてのコールバックを削除する"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+コンポーネントが所有するすべての正確な購読とプレフィックス購読を破棄したいときは `ClearSubscriptions()` を使います。
+
+### すべてのメッセージを受信する
+
+許可されたスコープ内のすべてのルーティング済み OSC メッセージを観測したいときは `ReceiveAll` を設定します。
+
+```csharp title="すべてのメッセージを受信する"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` は意図的にセキュリティ制限されています。通常のスコープ境界を迂回しません。
+
+- ローカルアバターの `BasisOsc` は `/avatar/parameters/*` だけを見る
+- リモートアバターの `BasisOsc` は `/avatar/public/*` だけを見る
+- プロップとシーンの `BasisOsc` は、相対購読と同じ既定の受信スコープ、つまり `/avatar/public/*` を見る
+
+つまり `ReceiveAll` はプロセス全体の OSC タップではなく、スコープ付きワイルドカードとして動作します。
+
+## OSC を公開する
+
+1つの引数なら `PublishValue`、複数の引数なら `PublishValues` を使います。
+
+```csharp title="1つの値を公開する"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="複数の値を公開する"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+最終的な絶対公開アドレスを知りたい場合は、`out` 変数付きのオーバーロードを使います。
+
+```csharp title="解決済みの公開アドレスを取得する"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="複数値公開の解決先アドレスを取得する"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+ブール値、整数、浮動小数点、文字列、シンボル、MIDI データ、配列、blob など、複数の OSC データ型を公開できます。
+
+ローカルアバターでは、公開したいアドレスがそれなら `/avatar/public/...` に直接公開することもできます。
+
+```csharp title="ローカルアバターから avatar public に公開する"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+リモートアバターの `BasisOsc` コンポーネントは公開できません。リモートアバターの公開がローカルアバター、プロップ、シーンと同じように動作するとは思わないでください。
+</Callout>
+
+### Vixxy アバターメニュー対応
+
+`BasisOsc` がアバター通信や取得サービスから解決できる場合、公開された数値は Vixxy の変数ストアにも送られます。
+
+対応する Vixxy 値の型は次のとおりです。
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+`PublishValues` では、Vixxy に送られるのは最初の値だけです。数値ではない OSC 値は OSC には公開されますが、Vixxy 変数としては送られません。
+
+Vixxy 変数アドレスは、解決された OSC アドレスから導かれます。Basis は、公開値を送る前に、スコープ付きのプロップ/シーンアドレスから `/avatar/parameters/`、`/avatar/public/`、または最初の `/parameters/` セグメントを取り除きます。
+
+```csharp title="OSC に公開して Vixxy 変数を更新する"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+ローカルアバターでは、これにより `/avatar/parameters/Expression/Smile` に公開され、Vixxy 変数 `Expression/Smile` が送られます。
+
+## アドレスとスコープのルール
+
+`BasisOsc` はルーティング前にアドレスを正規化します。これは購読と公開の両方で重要です。
+
+### ローカルアバター
+
+- 相対購読は既定で `/avatar/parameters/...` に解決されます。
+- 相対公開アドレスは `/avatar/parameters/...` に公開されます。
+- `/avatar/public/...` の絶対公開アドレスも許可されます。
+
+### リモートアバター
+
+- 相対購読は既定で `/avatar/public/...` に解決されます。
+- `/avatar/parameters/...` の絶対購読は `/avatar/public/...` に書き換えられます。
+- 公開は利用できません。
+
+### プロップ
+
+- 相対購読は既定で `/avatar/public/...` に解決されます。
+- 絶対アバター購読は `/avatar/public/...` に制限されます。
+- 相対公開アドレスはプロップインスタンスにスコープされます。
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### シーン
+
+- 相対購読は既定で `/avatar/public/...` に解決されます。
+- 絶対アバター購読は `/avatar/public/...` に制限されます。
+- 相対公開アドレスはシーンインスタンスにスコープされます。
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+生のパスがそのまま使われるとは思わないでください。コンポーネントにスコープがある場合、`BasisOsc` は相対アドレスを書き換えたり、制限された絶対アバターパスを拒否したりします。
+</Callout>
+
+## アドレス報告付きバリアント
+
+いくつかの `BasisOsc` メソッドには、正規化された絶対パスを `out string resolvedAddress` で返すオーバーロードがあります。
+
+通常よく使う主なバリアントは次のとおりです。
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+これらのオーバーロードは次のようなときに役立ちます。
+
+- 相対アドレスがどこに解決されたかを正確にログしたい
+- 後で `unsubscribe` するために正規化されたアドレスを保存したい
+- 公開操作が実際にどこへ行ったのかをスクリプトに明示的に知ってほしい
+
+`Subscribe(...)` と `SubscribeValue(...)` では、`localOnly: true` はコールバックがローカルインスタンスにのみ登録されることを意味します。リモートアバターでは解決先アドレスは `null` で、購読は追加されません。
+
+パッシブな `Subscribe(...)` や `SubscribePrefix(...)` のオーバーロードはありません。`BasisOsc` の購読はコールバック駆動であり、`osc.OnMessage` はこれらのコールバックベース購読または `ReceiveAll` が一致したときだけ発火します。
+
+## OSC データ型
+
+`OscData` はデコード済み OSC 引数をラップし、`BoolValue`、`IntValue`、`FloatValue`、`StringValue`、`BlobValue`、`Elements`、および MIDI や色のフィールドのようなプロパティを通じて型固有の値を公開します。
+
+公開時には次のファクトリーメソッドを使います。
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## OSC Query の動作
+
+OSC ブリッジは、ライブのランタイム状態から OSC Query を更新します。
+
+- 正確な購読は、購読したアドレスのクエリノードを作成します。
+- プレフィックス購読は、購読したプレフィックスのクエリブランチを作成します。
+- 公開された値は、最後に公開されたペイロードを持つクエリノードを作成します。
+- 購読の変化に応じて、クエリノードは動的に作成・削除されます。
+
+つまり OSC Query の表面は固定スキーマではありません。アクティブな `BasisOsc` コンポーネントと、そこが保持する購読や公開値に依存します。
+
+<Callout type="info">
+受信側の状態はエンティティ ID ごとに集中管理されるため、クリーンアップが重要です。`OnDisable`、`OnDestroy` で購読を解除するか、スクリプトが終わったら `ClearSubscriptions()` を呼んでください。
+</Callout>
+
+## 例
+
+このブランチには `BasisOscCilboxSubscriptionExample.cs` を使った `OSC Subscription Example` というサンプルが追加されています。明示的・暗黙的なアドレス購読の両方を示し、破棄時にハンドラを解除します。
+
+<Cards>
+  <Card
+    title="スクリプト概要"
+    description="Cilbox とスクリプト設定のより広い文脈については、メインのスクリプトガイドに戻ってください。"
+    href="/docs/scripting"
+  />
+</Cards>
+
+## トラブルシューティング
+
+- 相対アドレスの解決結果が意外な場合は、まず最寄りの `BasisAvatar`、`BasisProp`、`BasisScene` の祖先を確認してください。
+- リモートアバターが `/avatar/parameters/...` を受信しない場合は、`/avatar/public/...` に購読するか、相対パスを使ってください。
+- 値コールバックが発火しない場合は、入力メッセージに少なくとも1つの引数があるか確認してください。
+- 公開したデータが期待した場所に現れない場合は、コンポーネントがローカルアバター、プロップ、シーンのどのスコープ下にあるか確認してください。
+- 古いクエリノードやリスナーが残っている場合は、終了時にスクリプトが必ず購読解除するようにしてください。
+
