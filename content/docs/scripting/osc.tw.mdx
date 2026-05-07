@@ -1,0 +1,373 @@
+---
+title: OSC
+description: 在 Basis 腳本中發佈與接收 OSC 資料
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概覽
+
+Basis 提供了 `BasisOsc` shim，讓需要接收 OSC 訊息、訂閱即時位址範圍，或將數值重新發佈回 OSC bridge runtime 的創作者腳本使用。
+
+這個元件會感知作用域。同一個相對位址會因為物件是跑在本地 avatar、遠端 avatar、prop 或 scene 底下而有不同解析結果。
+
+<Callout type="info">
+在 prop、avatar 與 scene 內的創作者 OSC 工作流程中，請使用 `BasisOsc`。bridge 會把啟用中的訂閱與已發佈值反映到 OSC Query，而數值型已發佈值也能更新 Vixxy avatar 選單變數。
+</Callout>
+
+## 設定
+
+1. 將 `BasisOsc` 元件加到與你的腳本相同的 GameObject，或加到你可以參照的附近物件。當你呼叫 `GetComponent<BasisOsc>()` 時，Cilbox 可以自動加入這個 shim。
+2. 將該物件放在具備下列元件的已辨識 Basis GameObject 之下，讓它處於其作用域內：
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. 在訂閱或發佈前，先用 `GetComponent<BasisOsc>()` 讀取元件。
+4. 當物件停用或被銷毀時，移除訂閱。
+
+在 Unity 編輯器中，`BasisOsc` inspector 會顯示已解析的作用域、發佈前綴、預設訂閱前綴、`ReceiveAll` 狀態，以及遊戲執行時目前的精確與前綴訂閱註冊。
+
+```csharp title="取得 BasisOsc 參考"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+如果無法解析 `BasisAvatar`、`BasisProp` 或 `BasisScene` 作用域，relative 訂閱會預設回退到 `/avatar/parameters/...`。只有在元件位於已辨識作用域之下時才可以發佈。
+</Callout>
+
+## 訂閱 OSC
+
+當你只想要一個位址時，使用精確訂閱。
+
+```csharp title="精確訂閱"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+可以使用相對位址。在本地 avatar 上，`"Face/Smile"` 會解析成 `/avatar/parameters/Face/Smile`。
+
+```csharp title="相對精確訂閱"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+如果你需要知道最後註冊的正規化位址，請使用帶 `out` 變數的 overload。
+
+```csharp title="取得精確訂閱的解析位址"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+如果你只希望訂閱存在於本地實例，請使用 `localOnly` overload。在遠端 avatar 上不會註冊任何內容。
+
+```csharp title="只在本地實例訂閱"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+當你想要所有匹配的子位址時，使用前綴訂閱。
+
+```csharp title="前綴訂閱"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="取得解析後的前綴位址"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+前綴比對使用路徑段邊界。像 `/avatar/parameters` 這樣的前綴會匹配 `/avatar/parameters/Face/Smile`，但不會匹配 `/avatar/parametersExtra`。
+
+### 值回呼
+
+當你只在乎第一個引數時，使用值回呼。
+
+```csharp title="精確值回呼"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="僅本地的值回呼"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="前綴值回呼"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` 與 `SubscribePrefixValue` 只會在訊息至少包含一個引數時觸發。
+
+### 移除訂閱
+
+當腳本結束時，移除你加入的 handler。這會讓 runtime router 與 OSC Query 表面保持與啟用中的腳本同步。
+
+```csharp title="移除精確訂閱"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="移除前綴訂閱"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+當你想刪除某個正規化位址或前綴下註冊的所有回呼時，請使用僅位址版本。
+
+```csharp title="移除某個位址或前綴的所有回呼"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+當元件需要清除自己擁有的所有精確與前綴訂閱時，使用 `ClearSubscriptions()`。
+
+### 接收所有訊息
+
+當你希望元件觀察其允許範圍內每一條路由過的 OSC 訊息時，設定 `ReceiveAll`。
+
+```csharp title="接收所有訊息"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` 是刻意受安全限制的。它不會繞過正常的作用域邊界。
+
+- 本地 avatar 的 `BasisOsc` 只會看到 `/avatar/parameters/*`
+- 遠端 avatar 的 `BasisOsc` 只會看到 `/avatar/public/*`
+- prop 與 scene 的 `BasisOsc` 看到的預設接收作用域與相對訂閱相同，也就是 `/avatar/public/*`
+
+這表示 `ReceiveAll` 像是一個有作用域限制的 wildcard，而不是整個程序範圍的 OSC tap。
+
+## 發佈 OSC
+
+單一引數使用 `PublishValue`，多個引數使用 `PublishValues`。
+
+```csharp title="發佈一個值"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="發佈多個值"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+如果你需要知道最後發佈到的絕對位址，請使用帶 `out` 變數的 overload。
+
+```csharp title="取得解析後的發佈位址"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="取得多值發佈的解析位址"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+你可以發佈多種 OSC 資料型別，包括布林、整數、浮點數、字串、符號、MIDI 資料、陣列與 blob。
+
+如果本地 avatar 需要公開某個地址，也可以直接發佈到 `/avatar/public/...`。
+
+```csharp title="本地 avatar 發佈到 avatar public"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+遠端 avatar 的 `BasisOsc` 元件無法發佈。不要假設遠端 avatar 的發佈行為和本地 avatar、prop 或 scene 一樣。
+</Callout>
+
+### Vixxy avatar 選單支援
+
+當 `BasisOsc` 能透過 avatar 通訊或取得服務解析出一個數值時，已發佈的數值也會送到 Vixxy 變數儲存區。
+
+支援的 Vixxy 值型別如下：
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+對於 `PublishValues`，只有第一個值會送到 Vixxy。非數值 OSC 值仍會發佈到 OSC，但不會作為 Vixxy 變數送出。
+
+Vixxy 變數位址是從解析後的 OSC 位址導出的。Basis 會在送出數值前，從受作用域限制的 prop 與 scene 位址中移除 `/avatar/parameters/`、`/avatar/public/`，或第一個 `/parameters/` 區段。
+
+```csharp title="發佈到 OSC 並更新 Vixxy 變數"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+在本地 avatar 上，這會發佈到 `/avatar/parameters/Expression/Smile`，並送出 Vixxy 變數 `Expression/Smile`。
+
+## 位址與作用域規則
+
+`BasisOsc` 在路由前會正規化位址。這對訂閱與發佈都很重要。
+
+### 本地 avatar
+
+- 相對訂閱預設會解析成 `/avatar/parameters/...`。
+- 相對發佈位址會發佈到 `/avatar/parameters/...`。
+- 也允許絕對的 `/avatar/public/...` 發佈位址。
+
+### 遠端 avatar
+
+- 相對訂閱預設會解析成 `/avatar/public/...`。
+- 絕對 `/avatar/parameters/...` 訂閱會重寫成 `/avatar/public/...`。
+- 不支援發佈。
+
+### Prop
+
+- 相對訂閱預設會解析成 `/avatar/public/...`。
+- 絕對 avatar 訂閱僅限於 `/avatar/public/...`。
+- 相對發佈位址會作用於 prop 實例：
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### Scene
+
+- 相對訂閱預設會解析成 `/avatar/public/...`。
+- 絕對 avatar 訂閱僅限於 `/avatar/public/...`。
+- 相對發佈位址會作用於 scene 實例：
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+不要假設原始路徑會原封不動地使用。若元件有作用域，`BasisOsc` 可能會重寫相對位址，或拒絕受限的絕對 avatar 路徑。
+</Callout>
+
+## 位址回報變體
+
+有些 `BasisOsc` 方法提供 overload，會透過 `out string resolvedAddress` 回傳正規化後的絕對路徑。
+
+你通常最常用的主要變體如下：
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+這些 overload 在以下情況很有用：
+
+- 你想記錄相對位址最後解析到哪裡
+- 你想保存正規化位址供之後的 `unsubscribe` 使用
+- 你想讓腳本明確知道一次發佈實際送到了哪裡
+
+對於 `Subscribe(...)` 與 `SubscribeValue(...)`，`localOnly: true` 表示 callback 只會註冊到本地實例。在遠端 avatar 上，解析位址會是 `null`，而且不會新增訂閱。
+
+不存在被動式的 `Subscribe(...)` 或 `SubscribePrefix(...)` overload。`BasisOsc` 裡的訂閱都是 callback 驅動，而 `osc.OnMessage` 只有在某個基於 callback 的訂閱或 `ReceiveAll` 匹配時才會觸發。
+
+## OSC 資料型別
+
+`OscData` 會封裝解碼後的 OSC 參數，並透過 `BoolValue`、`IntValue`、`FloatValue`、`StringValue`、`BlobValue`、`Elements` 以及 MIDI 或顏色欄位等屬性提供型別化值。
+
+發佈時請使用這些 factory 方法：
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## OSC Query 行為
+
+OSC bridge 會根據即時 runtime 狀態更新 OSC Query。
+
+- 精確訂閱會為訂閱地址建立 query node。
+- 前綴訂閱會為訂閱前綴建立 query branch。
+- 已發佈值會建立帶有最新 payload 的 query node。
+- 隨著訂閱變化，query node 會動態建立與移除。
+
+這表示 OSC Query 表面不是固定的靜態 schema。它取決於目前啟用的 `BasisOsc` 元件，以及它們當下擁有的訂閱或已發佈值。
+
+<Callout type="info">
+由於接收端狀態是按 entity ID 集中管理，因此清理很重要。請在 `OnDisable`、`OnDestroy` 中移除訂閱，或在腳本完成時呼叫 `ClearSubscriptions()`。
+</Callout>
+
+## 範例
+
+這個分支新增了一個名為 `OSC Subscription Example` 的範例，使用 `BasisOscCilboxSubscriptionExample.cs`。它展示了明確與隱含地址訂閱，並在銷毀時取消註冊 handler。
+
+<Cards>
+  <Card
+    title="腳本概覽"
+    description="回到主腳本指南，了解 Cilbox 與腳本設定的更廣泛脈絡。"
+    href="/docs/scripting"
+  />
+</Cards>
+
+## 疑難排解
+
+- 如果相對位址解析結果不如預期，先檢查最近的 `BasisAvatar`、`BasisProp` 或 `BasisScene` 祖先。
+- 如果遠端 avatar 沒有收到 `/avatar/parameters/...`，請改訂閱 `/avatar/public/...`，或改用相對路徑。
+- 如果值回呼沒有觸發，請確認傳入訊息至少包含一個引數。
+- 如果已發佈資料沒有出現在你預期的位置，請檢查元件是否位於本地 avatar、prop 或 scene 的作用域下。
+- 如果仍有舊的 query node 或 listener 留著，請確保腳本在結束時取消訂閱。
+

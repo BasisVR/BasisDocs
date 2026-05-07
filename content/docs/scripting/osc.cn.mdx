@@ -1,0 +1,373 @@
+---
+title: OSC
+description: 在 Basis 脚本中发布和接收 OSC 数据
+icon: Activity
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## 概览
+
+Basis 为需要接收 OSC 消息、订阅实时地址范围，或将数值重新发布回 OSC bridge 运行时的创作者脚本提供了 `BasisOsc` shim。
+
+该组件会感知作用域。同一个相对地址的解析结果可能不同，取决于对象运行在本地 avatar、远程 avatar、prop 还是场景下。
+
+<Callout type="info">
+在 prop、avatar 和场景中的创作者 OSC 工作流里使用 `BasisOsc`。bridge 会将活动订阅和已发布的值反映到 OSC Query，而数值型已发布值也可以更新 Vixxy avatar 菜单变量。
+</Callout>
+
+## 设置
+
+1. 将 `BasisOsc` 组件添加到与脚本相同的 GameObject 上，或者添加到你可以引用的附近对象上。调用 `GetComponent<BasisOsc>()` 时，Cilbox 可以自动添加这个 shim。
+2. 将该对象放在一个受支持的 Basis GameObject 下，并带有以下组件，从而处于其作用域内：
+   - `Basis.Scripts.BasisSdk.BasisAvatar`
+   - `Basis.Scripts.BasisSdk.BasisProp`
+   - `Basis.Scripts.BasisSdk.BasisScene`
+3. 在订阅或发布之前，先通过 `GetComponent<BasisOsc>()` 读取组件。
+4. 当对象被禁用或销毁时，移除订阅。
+
+在 Unity 编辑器中，`BasisOsc` 检视器会在运行时显示已解析的作用域、发布前缀、默认订阅前缀、`ReceiveAll` 状态，以及当前的精确订阅和前缀订阅注册情况。
+
+```csharp title="获取 BasisOsc 引用"
+using Basis.Shims;
+using UnityEngine;
+
+[Cilboxable]
+public class OscConsumer : MonoBehaviour
+{
+    private BasisOsc osc;
+
+    private void Start()
+    {
+        osc = GetComponent<BasisOsc>();
+        if (osc == null)
+        {
+            Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+}
+```
+
+<Callout type="warn">
+如果无法解析 `BasisAvatar`、`BasisProp` 或 `BasisScene` 作用域，相对订阅会默认回退到 `/avatar/parameters/...`。只有当组件处于受支持的作用域下时，发布才可用。
+</Callout>
+
+## 订阅 OSC
+
+当你只想要一个地址时，使用精确订阅。
+
+```csharp title="精确订阅"
+osc.Subscribe("/avatar/parameters/TestToggle", OnToggleMessage);
+
+private void OnToggleMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Received {message.Path} with {arguments.Length} value(s).");
+}
+```
+
+允许使用相对地址。在本地 avatar 上，`"Face/Smile"` 会解析为 `/avatar/parameters/Face/Smile`。
+
+```csharp title="相对精确订阅"
+osc.Subscribe("Face/Smile", OnSmileChanged);
+```
+
+如果你需要知道最终注册的规范化地址，请使用带 `out` 变量的重载。
+
+```csharp title="获取精确订阅的解析地址"
+osc.Subscribe("Face/Smile", OnSmileChanged, out string resolvedAddress);
+Debug.Log($"Subscribed to {resolvedAddress}");
+```
+
+如果你只想让订阅存在于本地实例上，请使用 `localOnly` 重载。在远程 avatar 上不会注册任何内容。
+
+```csharp title="仅在本地实例上订阅"
+osc.Subscribe("Face/Smile", OnSmileChanged, localOnly: true, out string resolvedAddress);
+if (resolvedAddress != null)
+{
+    Debug.Log($"Local-only subscription resolved to {resolvedAddress}");
+}
+```
+
+当你想要所有匹配的子地址时，使用前缀订阅。
+
+```csharp title="前缀订阅"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage);
+
+private void OnFaceTrackingMessage(OscMessage message, OscData[] arguments)
+{
+    Debug.Log($"Matched prefix for {message.Path}");
+}
+```
+
+```csharp title="获取解析后的前缀地址"
+osc.SubscribePrefix("FT/", OnFaceTrackingMessage, out string resolvedPrefix);
+Debug.Log($"Watching prefix {resolvedPrefix}");
+```
+
+前缀匹配使用路径段边界。像 `/avatar/parameters` 这样的前缀会匹配 `/avatar/parameters/Face/Smile`，但不会匹配 `/avatar/parametersExtra`。
+
+### 值回调
+
+当你只关心第一个参数时，使用值回调。
+
+```csharp title="精确值回调"
+osc.SubscribeValue("Speed", value =>
+{
+    if (value.Kind == OscDataKind.Float32)
+    {
+        Debug.Log($"Speed is now {value.FloatValue}");
+    }
+});
+```
+
+```csharp title="仅本地的值回调"
+osc.SubscribeValue("Speed", value =>
+{
+    Debug.Log($"Only the local instance will receive this callback: {value.Kind}");
+}, localOnly: true, out string resolvedAddress);
+```
+
+```csharp title="前缀值回调"
+osc.SubscribePrefixValue("/avatar/parameters/Hands/", value =>
+{
+    Debug.Log($"First value kind: {value.Kind}");
+});
+```
+
+`SubscribeValue` 和 `SubscribePrefixValue` 只有在消息至少包含一个参数时才会触发。
+
+### 移除订阅
+
+当脚本结束时，移除你添加的处理器。这样可以让运行时路由器和 OSC Query 表面与活动脚本保持同步。
+
+```csharp title="移除精确订阅"
+osc.Unsubscribe("Face/Smile", OnSmileChanged);
+osc.UnsubscribeValue("Speed", OnSpeedChanged);
+```
+
+```csharp title="移除前缀订阅"
+osc.UnsubscribePrefix("FT/", OnFaceTrackingMessage);
+osc.UnsubscribePrefixValue("FT/", OnFaceTrackingValue);
+```
+
+当你想移除某个规范化地址或前缀下注册的所有回调时，请使用仅地址版本。
+
+```csharp title="移除某个地址或前缀的所有回调"
+osc.Unsubscribe("Face/Smile");
+osc.UnsubscribePrefix("FT/");
+```
+
+当组件需要清除自己拥有的所有精确和前缀订阅时，使用 `ClearSubscriptions()`。
+
+### 接收所有消息
+
+当你希望组件观察其允许范围内的每一条路由 OSC 消息时，设置 `ReceiveAll`。
+
+```csharp title="接收所有消息"
+osc.ReceiveAll = true;
+osc.OnMessage += (message, arguments) =>
+{
+    Debug.Log($"Saw {message.Path}");
+};
+```
+
+`ReceiveAll` 故意受到安全限制。它不会绕过正常的作用域边界。
+
+- 本地 avatar 的 `BasisOsc` 只会看到 `/avatar/parameters/*`
+- 远程 avatar 的 `BasisOsc` 只会看到 `/avatar/public/*`
+- prop 和场景的 `BasisOsc` 看到的默认接收作用域与相对订阅相同，即 `/avatar/public/*`
+
+这意味着 `ReceiveAll` 更像一个带作用域的通配符，而不是整个进程范围的 OSC tap。
+
+## 发布 OSC
+
+单个参数使用 `PublishValue`，多个参数使用 `PublishValues`。
+
+```csharp title="发布一个值"
+osc.PublishValue("Status", OscData.String("ready"));
+```
+
+```csharp title="发布多个值"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+});
+```
+
+如果你需要知道最终发布到的绝对地址，请使用带 `out` 变量的重载。
+
+```csharp title="获取解析后的发布地址"
+osc.PublishValue("Status", OscData.String("ready"), out string resolvedAddress);
+Debug.Log($"Published to {resolvedAddress}");
+```
+
+```csharp title="获取多值发布的解析地址"
+osc.PublishValues("Blend", new[]
+{
+    OscData.Float32(0.5f),
+    OscData.String("armed"),
+}, out string resolvedAddress);
+
+Debug.Log($"Published blend packet to {resolvedAddress}");
+```
+
+你可以发布多种 OSC 数据类型，包括布尔值、整数、浮点数、字符串、符号、MIDI 数据、数组和 blob。
+
+本地 avatar 也可以直接发布到 `/avatar/public/...`，如果这正是你要公开的地址。
+
+```csharp title="本地 avatar 发布到 avatar public"
+osc.PublishValue("/avatar/public/Status", OscData.String("shareable"));
+```
+
+<Callout type="warn">
+远程 avatar 的 `BasisOsc` 组件不能发布。不要假设远程 avatar 的发布行为与本地 avatar、prop 或场景相同。
+</Callout>
+
+### Vixxy avatar 菜单支持
+
+当 `BasisOsc` 能通过 avatar 通信或采集服务解析到变量时，发布的数值也会提交到 Vixxy 变量存储。
+
+支持的 Vixxy 值类型如下：
+
+- `OscData.Boolean`
+- `OscData.Int32`
+- `OscData.Int64`
+- `OscData.Float32`
+- `OscData.Float64`
+
+对于 `PublishValues`，只有第一个值会提交给 Vixxy。非数值 OSC 值仍会发布到 OSC，但不会作为 Vixxy 变量提交。
+
+Vixxy 变量地址来源于解析后的 OSC 地址。Basis 会在提交数值前，从受作用域限制的 prop 和 scene 地址中移除 `/avatar/parameters/`、`/avatar/public/`，或第一个 `/parameters/` 段。
+
+```csharp title="发布到 OSC 并更新 Vixxy 变量"
+osc.PublishValue("Expression/Smile", OscData.Float32(1.0f));
+```
+
+在本地 avatar 上，这会发布到 `/avatar/parameters/Expression/Smile`，并提交 Vixxy 变量 `Expression/Smile`。
+
+## 地址与作用域规则
+
+`BasisOsc` 在路由前会规范化地址。这对订阅和发布都很重要。
+
+### 本地 avatar
+
+- 相对订阅默认解析到 `/avatar/parameters/...`。
+- 相对发布地址会发布到 `/avatar/parameters/...`。
+- 也允许绝对 `/avatar/public/...` 发布地址。
+
+### 远程 avatar
+
+- 相对订阅默认解析到 `/avatar/public/...`。
+- 绝对 `/avatar/parameters/...` 订阅会重写为 `/avatar/public/...`。
+- 不支持发布。
+
+### Prop
+
+- 相对订阅默认解析到 `/avatar/public/...`。
+- 绝对 avatar 订阅仅限于 `/avatar/public/...`。
+- 相对发布地址会作用于 prop 实例：
+
+```text
+/prop/<prop-id>/parameters/...
+```
+
+### 场景
+
+- 相对订阅默认解析到 `/avatar/public/...`。
+- 绝对 avatar 订阅仅限于 `/avatar/public/...`。
+- 相对发布地址会作用于 scene 实例：
+
+```text
+/scene/<scene-id>/parameters/...
+```
+
+<Callout type="warn">
+不要假设原始路径会原样使用。如果组件具有作用域，`BasisOsc` 可能会重写相对地址，或拒绝受限的绝对 avatar 路径。
+</Callout>
+
+## 地址报告变体
+
+有些 `BasisOsc` 方法提供重载，会通过 `out string resolvedAddress` 参数返回规范化后的绝对路径。
+
+通常最常用的变体如下：
+
+- `Subscribe(string, OscMessageEvent, out string resolvedAddress)`
+- `Subscribe(string, OscMessageEvent, bool localOnly)`
+- `Subscribe(string, OscMessageEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, out string resolvedAddress)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly)`
+- `SubscribeValue(string, OscValueEvent, bool localOnly, out string resolvedAddress)`
+- `SubscribePrefix(string, OscMessageEvent, out string resolvedAddress)`
+- `SubscribePrefixValue(string, OscValueEvent, out string resolvedAddress)`
+- `PublishValue(string, OscData, out string resolvedAddress)`
+- `PublishValues(string, OscData[], out string resolvedAddress)`
+
+这些重载在以下情况下很有用：
+
+- 你想记录相对地址最终解析到了哪里
+- 你想保存规范化地址供后续 `unsubscribe` 使用
+- 你想让脚本明确知道一次发布实际发送到了哪里
+
+对于 `Subscribe(...)` 和 `SubscribeValue(...)`，`localOnly: true` 表示回调只会注册到本地实例。在远程 avatar 上，解析地址为 `null`，不会添加订阅。
+
+没有被动式的 `Subscribe(...)` 或 `SubscribePrefix(...)` 重载。`BasisOsc` 中的订阅都是回调驱动的，`osc.OnMessage` 只有在某个基于回调的订阅或 `ReceiveAll` 匹配时才会触发。
+
+## OSC 数据类型
+
+`OscData` 封装了解码后的 OSC 参数，并通过 `BoolValue`、`IntValue`、`FloatValue`、`StringValue`、`BlobValue`、`Elements` 以及 MIDI 或颜色字段等属性暴露类型化的值。
+
+发布时请使用这些工厂方法：
+
+- `OscData.Boolean(bool)`
+- `OscData.Nil()`
+- `OscData.Impulse()`
+- `OscData.Int32(int)`
+- `OscData.Float32(float)`
+- `OscData.TimeTag(uint seconds, uint nanoseconds)`
+- `OscData.String(string)`
+- `OscData.Symbol(string)`
+- `OscData.Blob(byte[])`
+- `OscData.Color(byte r, byte g, byte b, byte a)`
+- `OscData.Int64(long)`
+- `OscData.Float64(double)`
+- `OscData.Char(uint)`
+- `OscData.Midi(byte port, byte status, byte data1, byte data2)`
+- `OscData.ArrayValue(params OscData[] elements)`
+
+## OSC Query 行为
+
+OSC bridge 会根据运行时的实时状态更新 OSC Query。
+
+- 精确订阅会为订阅地址创建 query 节点。
+- 前缀订阅会为订阅前缀创建 query 分支。
+- 已发布的值会创建带有最新负载的 query 节点。
+- 随着订阅变化，query 节点会动态创建和移除。
+
+这意味着 OSC Query 表面不是固定静态 schema。它取决于当前活动的 `BasisOsc` 组件，以及它们此刻拥有的订阅或已发布值。
+
+<Callout type="info">
+由于接收器状态按实体 ID 集中管理，清理非常重要。请在 `OnDisable`、`OnDestroy` 中移除订阅，或者在脚本完成时调用 `ClearSubscriptions()`。
+</Callout>
+
+## 示例
+
+该分支添加了一个名为 `OSC Subscription Example` 的示例，使用 `BasisOscCilboxSubscriptionExample.cs`。它展示了显式和隐式地址订阅，并在销毁时注销处理器。
+
+<Cards>
+  <Card
+    title="脚本概览"
+    description="返回主脚本指南，了解 Cilbox 和脚本设置的更广泛背景。"
+    href="/docs/scripting"
+  />
+</Cards>
+
+## 故障排除
+
+- 如果相对地址的解析结果出乎意料，先检查最近的 `BasisAvatar`、`BasisProp` 或 `BasisScene` 祖先。
+- 如果远程 avatar 没有收到 `/avatar/parameters/...`，请改为订阅 `/avatar/public/...`，或者使用相对路径。
+- 如果值回调没有触发，请确认传入消息至少包含一个参数。
+- 如果发布的数据没有出现在预期位置，请检查组件是否位于本地 avatar、prop 或 scene 的作用域下。
+- 如果旧的 query 节点或监听器仍然存在，请确保脚本在关闭时解除订阅。
+
