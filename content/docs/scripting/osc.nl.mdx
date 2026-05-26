@@ -17,6 +17,38 @@ De component is scope-bewust. Hetzelfde relatieve adres kan anders worden opgelo
 Gebruik `BasisOsc` voor makergerichte OSC-workflows in props, avatars en scenes. De bridge spiegelt actieve abonnementen en gepubliceerde waarden naar OSC Query, en numeriek gepubliceerde waarden kunnen ook Vixxy-avatarmenuvariabelen bijwerken.
 </Callout>
 
+## Ingebouwde endpoints
+
+Basis biedt ook een kleine set runtime-OSC-endpoints buiten de `BasisOsc`-scopes van maker-scripts. Deze paden zijn absoluut en zichtbaar in OSC Query wanneer de OSC-bridge actief is.
+
+### ChatBox-invoer
+
+`/chatbox/input` laat een externe OSC-client de Basis-chatinvoer aansturen.
+
+Stuur een chatbericht of open de chatcomposer met vooraf ingevulde tekst:
+
+```text title="Chatinvoer"
+/chatbox/input string message, optional bool shouldOpenKeyboard=false, optional bool playNotificationSound=false
+```
+
+- `message` wordt verzonden na Basis-chatopschoning.
+- `shouldOpenKeyboard` opent de Basis-chatcomposer met `message` wanneer deze `true` is; anders wordt het bericht verzonden.
+- `playNotificationSound` bepaalt de vlag voor uitgaande chatmeldingen.
+
+Stuur alleen de tijdelijke typstatus van de lokale speler:
+
+```text title="Typstatus"
+/chatbox/input bool typing
+```
+
+De string-vorm accepteert voor OSC-clientcompatibiliteit ook de string en maximaal twee booleaanse argumenten in willekeurige volgorde. De eerste boolean wordt gekoppeld aan `shouldOpenKeyboard`; de tweede aan `playNotificationSound`.
+
+Lege of ongeldige signatures worden genegeerd. Ongeldige signatures worden eenmaal per unieke argumentsignature gelogd.
+
+<Callout type="info">
+`/chatbox/input` valt niet onder `/avatar/parameters`. Abonneer of stuur naar het absolute pad `/chatbox/input`.
+</Callout>
+
 ## Instellen
 
 1. Voeg een `BasisOsc`-component toe aan hetzelfde GameObject als je script, of aan een nabijgelegen object waarnaar je kunt verwijzen. Cilbox kan de shim automatisch toevoegen wanneer je `GetComponent<BasisOsc>()` aanroept.

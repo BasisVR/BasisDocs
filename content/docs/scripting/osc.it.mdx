@@ -17,6 +17,38 @@ Il componente è scope-aware. Lo stesso indirizzo relativo può risolversi in mo
 Usa `BasisOsc` per i flussi OSC rivolti ai creator dentro prop, avatar e scene. Il bridge riflette le iscrizioni attive e i valori pubblicati in OSC Query, e i valori numerici pubblicati possono anche aggiornare le variabili del menu avatar Vixxy.
 </Callout>
 
+## Endpoint integrati
+
+Basis espone anche un piccolo insieme di endpoint OSC di runtime al di fuori degli scope `BasisOsc` degli script creator. Questi percorsi sono assoluti e visibili in OSC Query quando il bridge OSC è in esecuzione.
+
+### Input ChatBox
+
+`/chatbox/input` consente a un client OSC esterno di pilotare l'input della chat di Basis.
+
+Invia un messaggio di chat oppure apri il compositore della chat con testo precompilato:
+
+```text title="Input chat"
+/chatbox/input string message, optional bool shouldOpenKeyboard=false, optional bool playNotificationSound=false
+```
+
+- `message` viene inviato dopo la sanitizzazione della chat Basis.
+- `shouldOpenKeyboard` apre il compositore della chat Basis con `message` quando vale `true`; altrimenti il messaggio viene inviato.
+- `playNotificationSound` controlla il flag di notifica chat in uscita.
+
+Invia solo lo stato transitorio di digitazione del giocatore locale:
+
+```text title="Stato di digitazione"
+/chatbox/input bool typing
+```
+
+La forma stringa accetta anche la stringa e fino a due argomenti booleani in qualsiasi ordine per compatibilità con i client OSC. Il primo booleano corrisponde a `shouldOpenKeyboard`; il secondo corrisponde a `playNotificationSound`.
+
+Le firme vuote o non valide vengono ignorate. Le firme non valide vengono registrate una volta per ogni firma di argomento univoca.
+
+<Callout type="info">
+`/chatbox/input` non è sotto lo scope di `/avatar/parameters`. Iscriviti o invia al percorso assoluto `/chatbox/input`.
+</Callout>
+
 ## Configurazione
 
 1. Aggiungi un componente `BasisOsc` allo stesso GameObject del tuo script, oppure a un oggetto vicino che puoi referenziare. Cilbox può aggiungere automaticamente lo shim quando chiami `GetComponent<BasisOsc>()`.
@@ -44,6 +76,15 @@ public class OscConsumer : MonoBehaviour
         if (osc == null)
         {
             Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (osc != null)
+        {
+            osc.ClearSubscriptions();
+            osc = null;
         }
     }
 }

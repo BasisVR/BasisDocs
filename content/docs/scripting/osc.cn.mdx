@@ -17,6 +17,38 @@ Basis 为需要接收 OSC 消息、订阅实时地址范围，或将数值重新
 在 prop、avatar 和场景中的创作者 OSC 工作流里使用 `BasisOsc`。bridge 会将活动订阅和已发布的值反映到 OSC Query，而数值型已发布值也可以更新 Vixxy avatar 菜单变量。
 </Callout>
 
+## 内置端点
+
+Basis 也暴露了一小组运行时 OSC 端点，它们位于创作者脚本 `BasisOsc` 作用域之外。这些路径都是绝对路径，并且当 OSC bridge 运行时会显示在 OSC Query 中。
+
+### ChatBox 输入
+
+`/chatbox/input` 允许外部 OSC 客户端驱动 Basis 聊天输入。
+
+你可以发送聊天消息，或者用预填文本打开聊天输入框：
+
+```text title="聊天输入"
+/chatbox/input string message, optional bool shouldOpenKeyboard=false, optional bool playNotificationSound=false
+```
+
+- `message` 会在经过 Basis 聊天净化后发送。
+- `shouldOpenKeyboard` 为 `true` 时，会用 `message` 打开 Basis 聊天输入框；否则会直接发送消息。
+- `playNotificationSound` 控制外发聊天通知标志。
+
+你也可以只发送本地玩家的临时输入状态：
+
+```text title="输入状态"
+/chatbox/input bool typing
+```
+
+出于 OSC 客户端兼容性考虑，字符串形式也接受字符串以及最多两个布尔参数，顺序不限。第一个布尔值映射到 `shouldOpenKeyboard`，第二个映射到 `playNotificationSound`。
+
+空签名或无效签名会被忽略。无效签名会针对每种唯一参数签名记录一次日志。
+
+<Callout type="info">
+`/chatbox/input` 不在 `/avatar/parameters` 作用域下。请订阅或发送到绝对路径 `/chatbox/input`。
+</Callout>
+
 ## 设置
 
 1. 将 `BasisOsc` 组件添加到与脚本相同的 GameObject 上，或者添加到你可以引用的附近对象上。调用 `GetComponent<BasisOsc>()` 时，Cilbox 可以自动添加这个 shim。
@@ -44,6 +76,15 @@ public class OscConsumer : MonoBehaviour
         if (osc == null)
         {
             Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (osc != null)
+        {
+            osc.ClearSubscriptions();
+            osc = null;
         }
     }
 }
