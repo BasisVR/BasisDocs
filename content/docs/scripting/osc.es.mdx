@@ -17,6 +17,38 @@ El componente es consciente del scope. La misma dirección relativa puede resolv
 Use `BasisOsc` para flujos OSC orientados a creadores dentro de props, avatares y escenas. El puente refleja suscripciones activas y valores publicados en OSC Query, y los valores numéricos publicados también pueden actualizar variables de menú de avatar Vixxy.
 </Callout>
 
+## Endpoints integrados
+
+Basis también expone un pequeño conjunto de endpoints OSC del runtime fuera de los scopes `BasisOsc` de los scripts de creadores. Estas rutas son absolutas y se muestran en OSC Query cuando el puente OSC está en ejecución.
+
+### Entrada de ChatBox
+
+`/chatbox/input` permite que un cliente OSC externo controle la entrada de chat de Basis.
+
+Envíe un mensaje de chat o abra el compositor de chat con texto precargado:
+
+```text title="Entrada de chat"
+/chatbox/input string message, optional bool shouldOpenKeyboard=false, optional bool playNotificationSound=false
+```
+
+- `message` se envía después del saneamiento de chat de Basis.
+- `shouldOpenKeyboard` abre el compositor de chat de Basis con `message` cuando es `true`; de lo contrario, se envía el mensaje.
+- `playNotificationSound` controla el indicador de notificación de chat saliente.
+
+Envíe solo el estado transitorio de escritura del jugador local:
+
+```text title="Estado de escritura"
+/chatbox/input bool typing
+```
+
+La forma de cadena también acepta la cadena y hasta dos argumentos booleanos en cualquier orden por compatibilidad con clientes OSC. El primer booleano se asigna a `shouldOpenKeyboard`; el segundo a `playNotificationSound`.
+
+Las firmas vacías o inválidas se ignoran. Las firmas inválidas se registran una vez por cada firma de argumento única.
+
+<Callout type="info">
+`/chatbox/input` no está dentro del scope de `/avatar/parameters`. Suscríbase o envíe a la ruta absoluta `/chatbox/input`.
+</Callout>
+
 ## Configuración
 
 1. Añada un componente `BasisOsc` al mismo GameObject que su script, o a un objeto cercano que pueda referenciar. Cilbox puede agregar el shim automáticamente cuando llama a `GetComponent<BasisOsc>()`.
@@ -44,6 +76,15 @@ public class OscConsumer : MonoBehaviour
         if (osc == null)
         {
             Debug.LogError("OscConsumer requires a BasisOsc component.");
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (osc != null)
+        {
+            osc.ClearSubscriptions();
+            osc = null;
         }
     }
 }

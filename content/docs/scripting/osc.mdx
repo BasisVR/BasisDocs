@@ -17,6 +17,38 @@ The component is scope-aware. The same relative address can resolve differently 
 Use `BasisOsc` for creator-facing OSC workflows inside props, avatars, and scenes. The bridge reflects live subscriptions and published values into OSC Query, and numeric published values can also update Vixxy avatar menu variables.
 </Callout>
 
+## Built-In Endpoints
+
+Basis also exposes a small set of runtime OSC endpoints outside creator-script `BasisOsc` scopes. These paths are absolute and are visible through OSC Query when the OSC bridge is running.
+
+### ChatBox input
+
+`/chatbox/input` lets an external OSC client drive Basis chat input.
+
+Send a chat message, or open the chat composer with prefilled text:
+
+```text title="Chat input"
+/chatbox/input string message, optional bool shouldOpenKeyboard=false, optional bool playNotificationSound=false
+```
+
+- `message` is sent after Basis chat sanitization.
+- `shouldOpenKeyboard` opens the Basis chat composer with `message` when `true`; otherwise the message is sent.
+- `playNotificationSound` controls the outgoing chat notification flag.
+
+Send only the local player's transient typing state:
+
+```text title="Typing state"
+/chatbox/input bool typing
+```
+
+The string form also accepts the string and up to two boolean arguments in any order for OSC client compatibility. The first boolean maps to `shouldOpenKeyboard`; the second maps to `playNotificationSound`.
+
+Empty or invalid signatures are ignored. Invalid signatures are logged once per unique argument signature.
+
+<Callout type="info">
+`/chatbox/input` is not scoped under `/avatar/parameters`. Subscribe or send to the absolute `/chatbox/input` path.
+</Callout>
+
 ## Setup
 
 1. Add a `BasisOsc` component to the same GameObject as your script, or to a nearby object you can reference. Cilbox can add the shim automatically when you call `GetComponent<BasisOsc>()`.
