@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion impulsa el movimiento cosmético y secundario — colas, orejas, accesorios — mediante un único trabajo por lotes en lugar de un Animator por avatar, por lo que sigue siendo económico incluso en una instancia concurrida.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` está pensado para el movimiento ambiental y en bucle que un avatar reproduce por sí solo: una cola que se balancea, orejas que se mueven, un accesorio que gira, un gesto animado a mano. Tradicionalmente impulsarías estos con un Unity Animator, pero cada copia replicada del avatar paga el coste fijo por instancia de ese Animator — algo que se acumula rápidamente en una instancia concurrida. Authored Motion declara el mismo movimiento como datos puros y evalúa el movimiento de todos los avatares juntos en un único trabajo por lotes, de modo que el coste apenas aumenta a medida que la instancia se llena.
+
+Solo impulsa los transforms que el rig humanoide y la IK no tocan — cadenas de cola y orejas, huesos adicionales, accesorios independientes.
+
+<Callout type="info">
+Authored Motion, Jiggle Physics y el esqueleto en red se complementan en lugar de competir: el esqueleto es la pose principal, Authored Motion aporta la base animada y [Jiggle Physics](/docs/avatar/jiggle) añade el arrastre físico por encima. Authored Motion escribe antes de que jiggle muestree en cada fotograma, por lo que un jiggle rig sobre la misma cola se combina con él automáticamente.
+</Callout>
+
+## Añadir el componente
+
+- Añade un componente `Basis Authored Motion` a cualquier GameObject bajo la raíz de tu avatar (busca "Authored Motion" en el menú **Add Component**). Un componente contiene una lista de **Movements**; agrupa los movimientos que quieras alternar juntos en el mismo componente y añade varios componentes si necesitas grupos de alternancia independientes.
+
+![Menú Add Component mostrando Basis Authored Motion](/img/authored-motion/1.png)
+
+- Haz clic en **+ Add Movement** para añadir una entrada y luego elige su **Kind** (tipo). El inspector muestra solo los campos que ese tipo utiliza realmente, por lo que la tarjeta cambia al cambiar de tipo. Usa los botones **▲ ▼** para reordenar y **✕** para eliminar. La **Label** es solo un nombre para el autor sin efecto en tiempo de ejecución.
+
+![Inspector de Movements con una tarjeta de movimiento expandida](/img/authored-motion/2.png)
+
+<Callout type="info">
+Pasa el cursor sobre cualquier campo para ver una descripción de lo que hace. Cada campo de abajo está documentado en el tooltip del inspector.
+</Callout>
+
+## Tipos de movimiento
+
+| Tipo | Qué hace | Impulsa | Campos clave |
+|------|--------------|--------|-----------|
+| **Oscillate** | Balanceo periódico (seno / triángulo / cuadrada / pulso). Un solo hueso es un balanceo simple; una cadena se convierte en una onda viajera. | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | Giro constante en el sitio. | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | Hace girar un objetivo alrededor de un pivote. | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | Deriva simplex orgánica — más suave que Oscillate, menos repetitiva. | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | En un intervalo fijo, elige una pose ponderada (o reposo) y la atenúa al entrar/salir. Bueno para movimientos de orejas y parpadeos. | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | Reproduce un AnimationClip horneado en varios huesos. | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate y Noise se impulsan mediante la lista `Chain`, no mediante `Target`.** Un balanceo simple de un solo hueso es una `Chain` con una entrada — deja `Target` vacío para estos tipos. `Target` solo lo usan Rotate y Orbit.
+</Callout>
+
+### Oscillate — una cola que se balancea
+
+Asigna los huesos de la cola a **Chain**, primero el hueso superior de la cadena. Con un hueso obtienes un balanceo simple; con varios, `Chain Phase Step` retrasa cada hueso a lo largo de la cadena para producir una onda viajera, y `Chain Falloff` escala la amplitud por hueso (1 = sin atenuación). `Amplitude` está en grados cuando `Channel` es Rotation.
+
+![Movimiento Oscillate configurado en una cadena de huesos de cola](/img/authored-motion/3.png)
+
+### RandomSelect — orejas que se mueven
+
+Añade una **Option** por pose y dale a cada una un `Target`, `Axis`, `Angle` y `Weight`. Una opción que deja su `Target` vacío recurre a `Select Target`, por lo que un movimiento puede posar un solo hueso de varias formas *o* impulsar un hueso distinto por opción. `Idle Weight` es la probabilidad relativa de no hacer nada en un ciclo dado — súbelo para que los movimientos sean ocasionales en lugar de constantes.
+
+![Movimiento RandomSelect con opciones de pose de orejas ponderadas](/img/authored-motion/4.png)
+
+## Reproducir un clip horneado con Sequence
+
+Cuando el movimiento es demasiado complejo para describirlo con una primitiva — un bucle animado a mano que curva una cadena de huesos entera — hornea el AnimationClip en un asset `Basis Motion Clip` compartido y reprodúcelo con un movimiento **Sequence**.
+
+- Abre **Basis ▸ Authored Motion ▸ Bake Clip**.
+
+![Menú Basis Authored Motion Bake Clip](/img/authored-motion/5.png)
+
+- Establece **Animation Clip** en el clip de origen y **Root (in scene)** en el avatar sobre el que se creó el clip — las rutas de los huesos se hornean en relación con esta raíz. Deja **Frame Rate** en 60 a menos que necesites un muestreo más fino. Haz clic en **Bake** y elige dónde guardar el asset.
+
+![Ventana Bake Authored Motion Clip](/img/authored-motion/6.png)
+
+<Callout type="info">
+El horneado es solo de rotación en esta versión y reproduce la pose del clip exactamente, sin importar la pose de reposo del avatar.
+</Callout>
+
+- En el movimiento Sequence, asigna el asset horneado a **Baked Clip** y establece **Sequence Root** en la *misma* raíz contra la que se horneó el clip. Activa **Loop** para un reposo en bucle, o desactívalo para una reproducción única.
+
+![Movimiento Sequence que referencia un clip horneado](/img/authored-motion/7.png)
+
+## Alternar en tiempo de ejecución
+
+Un grupo de movimientos sigue el estado `enabled` del propio componente. Cualquier cosa que active o desactive el componente — incluida una activación de [HVR.Vixxy](/docs/avatar/animation-rigging) — enciende y apaga sus movimientos, sin sondeo por fotograma. Agrupa en un componente los movimientos que deban alternarse juntos.
+
+## Probar tu configuración
+
+Authored Motion solo se inicia una vez que el avatar está calibrado, lo cual **no** ocurre con un **Play** normal. Usa el botón **Test in Editor** del componente `Basis Avatar` — carga el avatar a través de la ruta real del jugador local y lo calibra, de modo que tus movimientos se ejecuten.
+
+<Callout type="warn">
+Si nada se mueve en el modo Play normal, es lo esperado — el componente nunca se registró. Valida siempre con **Test in Editor**.
+</Callout>

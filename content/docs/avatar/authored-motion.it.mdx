@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion gestisce il movimento cosmetico e secondario — code, orecchie, accessori — tramite un unico job batch invece di un Animator per avatar, restando così economico anche in un'istanza affollata.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` è pensato per il movimento ambientale e in loop che un avatar riproduce da solo: una coda che ondeggia, orecchie che si muovono, un accessorio che ruota, un gesto animato a mano. Tradizionalmente li gestiresti con un Unity Animator, ma ogni copia replicata dell'avatar paga il costo fisso per istanza di quell'Animator — cosa che si accumula rapidamente in un'istanza affollata. Authored Motion dichiara lo stesso movimento come dati puri e valuta il movimento di tutti gli avatar insieme in un unico job batch, così il costo aumenta a malapena man mano che l'istanza si riempie.
+
+Gestisce solo i transform che il rig umanoide e l'IK non toccano — catene di coda e orecchie, ossa aggiuntive, accessori autonomi.
+
+<Callout type="info">
+Authored Motion, Jiggle Physics e lo scheletro in rete si integrano anziché competere: lo scheletro è la posa primaria, Authored Motion fornisce la base animata e [Jiggle Physics](/docs/avatar/jiggle) aggiunge lo strascico fisico al di sopra. Authored Motion scrive prima che jiggle campioni a ogni frame, così un jiggle rig sulla stessa coda si combina con esso automaticamente.
+</Callout>
+
+## Aggiungere il componente
+
+- Aggiungi un componente `Basis Authored Motion` a qualsiasi GameObject sotto la radice del tuo avatar (cerca "Authored Motion" nel menu **Add Component**). Un componente contiene un elenco di **Movements**; raggruppa i movimenti che vuoi attivare insieme sullo stesso componente e aggiungi più componenti se ti servono gruppi di attivazione indipendenti.
+
+![Menu Add Component che mostra Basis Authored Motion](/img/authored-motion/1.png)
+
+- Clicca su **+ Add Movement** per aggiungere una voce, poi scegli il suo **Kind** (tipo). L'inspector mostra solo i campi che quel tipo usa effettivamente, quindi la scheda cambia quando cambi tipo. Usa i pulsanti **▲ ▼** per riordinare e **✕** per rimuovere. La **Label** è solo un nome per l'autore senza effetto a runtime.
+
+![Inspector Movements con una scheda di movimento espansa](/img/authored-motion/2.png)
+
+<Callout type="info">
+Passa il mouse su qualsiasi campo per vederne una descrizione. Ogni campo qui sotto è documentato nel tooltip dell'inspector.
+</Callout>
+
+## Tipi di movimento
+
+| Tipo | Cosa fa | Gestisce | Campi chiave |
+|------|--------------|--------|-----------|
+| **Oscillate** | Oscillazione periodica (seno / triangolo / quadra / impulso). Un singolo osso è un'oscillazione semplice; una catena diventa un'onda viaggiante. | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | Rotazione costante sul posto. | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | Fa ruotare un target attorno a un pivot. | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | Deriva simplex organica — più morbida di Oscillate, meno ripetitiva. | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | A un intervallo fisso, sceglie una posa pesata (o riposo) e la dissolve in entrata/uscita. Ottimo per i movimenti delle orecchie e gli ammiccamenti. | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | Riproduce un AnimationClip precalcolato su più ossa. | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate e Noise sono gestiti dall'elenco `Chain`, non da `Target`.** Un'oscillazione semplice di un singolo osso è una `Chain` con una voce — lascia `Target` vuoto per questi tipi. `Target` è usato solo da Rotate e Orbit.
+</Callout>
+
+### Oscillate — una coda che ondeggia
+
+Assegna le ossa della coda a **Chain**, prima l'osso superiore della catena. Con un solo osso ottieni un'oscillazione semplice; con più ossa, `Chain Phase Step` ritarda ciascun osso lungo la catena per produrre un'onda viaggiante, e `Chain Falloff` scala l'ampiezza per osso (1 = nessuna attenuazione). `Amplitude` è in gradi quando `Channel` è Rotation.
+
+![Movimento Oscillate configurato su una catena di ossa della coda](/img/authored-motion/3.png)
+
+### RandomSelect — orecchie che si muovono
+
+Aggiungi una **Option** per posa e dai a ciascuna un `Target`, `Axis`, `Angle` e `Weight`. Un'opzione che lascia il proprio `Target` vuoto ricade su `Select Target`, così un movimento può posare un singolo osso in vari modi *oppure* gestire un osso diverso per opzione. `Idle Weight` è la probabilità relativa di non fare nulla in un dato ciclo — aumentalo per rendere i movimenti occasionali anziché costanti.
+
+![Movimento RandomSelect con opzioni di posa delle orecchie pesate](/img/authored-motion/4.png)
+
+## Riprodurre un clip precalcolato con Sequence
+
+Quando il movimento è troppo complesso per essere descritto con una primitiva — un loop animato a mano che curva un'intera catena di ossa — precalcola l'AnimationClip in un asset `Basis Motion Clip` condiviso e riproducilo con un movimento **Sequence**.
+
+- Apri **Basis ▸ Authored Motion ▸ Bake Clip**.
+
+![Menu Basis Authored Motion Bake Clip](/img/authored-motion/5.png)
+
+- Imposta **Animation Clip** sul clip sorgente e **Root (in scene)** sull'avatar su cui il clip è stato creato — i percorsi delle ossa vengono precalcolati relativamente a questa radice. Lascia **Frame Rate** a 60 a meno che tu non abbia bisogno di un campionamento più fine. Clicca su **Bake** e scegli dove salvare l'asset.
+
+![Finestra Bake Authored Motion Clip](/img/authored-motion/6.png)
+
+<Callout type="info">
+Il precalcolo riguarda solo la rotazione in questa versione e riproduce esattamente la posa del clip, indipendentemente dalla posa di riposo dell'avatar.
+</Callout>
+
+- Nel movimento Sequence, assegna l'asset precalcolato a **Baked Clip** e imposta **Sequence Root** sulla *stessa* radice rispetto a cui è stato precalcolato il clip. Attiva **Loop** per un riposo in loop, o disattivalo per una riproduzione singola.
+
+![Movimento Sequence che fa riferimento a un clip precalcolato](/img/authored-motion/7.png)
+
+## Attivazione a runtime
+
+Un gruppo di movimenti segue lo stato `enabled` del componente stesso. Qualsiasi cosa attivi o disattivi il componente — inclusa un'attivazione [HVR.Vixxy](/docs/avatar/animation-rigging) — accende e spegne i suoi movimenti, senza polling per frame. Raggruppa in un componente i movimenti che devono essere attivati insieme.
+
+## Testare la tua configurazione
+
+Authored Motion si avvia solo dopo che l'avatar è calibrato, cosa che **non** accade con un semplice **Play**. Usa il pulsante **Test in Editor** del componente `Basis Avatar` — carica l'avatar tramite il vero percorso del giocatore locale e lo calibra, così i tuoi movimenti vengono eseguiti.
+
+<Callout type="warn">
+Se nulla si muove nella normale modalità Play, è previsto — il componente non si è mai registrato. Convalida sempre con **Test in Editor**.
+</Callout>

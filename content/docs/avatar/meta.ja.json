@@ -1,1 +1,1 @@
-{ "title": "アバター", "icon": "User", "pages": ["index", "setup", "building", "uploading", "jiggle", "animation-rigging", "face-tracking", "shaders"] }
+{ "title": "アバター", "icon": "User", "pages": ["index", "setup", "building", "uploading", "jiggle", "authored-motion", "animation-rigging", "face-tracking", "shaders"] }
