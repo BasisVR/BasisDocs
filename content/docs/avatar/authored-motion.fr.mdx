@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion pilote les mouvements cosmétiques et secondaires — queues, oreilles, accessoires — via un seul traitement par lots au lieu d'un Animator par avatar, ce qui le maintient peu coûteux même dans une instance bondée.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` est conçu pour le mouvement ambiant et en boucle qu'un avatar joue de lui-même : une queue qui se balance, des oreilles qui frémissent, un accessoire qui tourne, un geste animé à la main. Traditionnellement, vous piloteriez ceux-ci avec un Unity Animator, mais chaque copie répliquée de l'avatar paie le coût fixe par instance de cet Animator — ce qui s'accumule vite dans une instance animée. Authored Motion déclare le même mouvement sous forme de données pures et évalue le mouvement de tous les avatars ensemble en un seul traitement par lots, de sorte que le coût augmente à peine à mesure que l'instance se remplit.
+
+Il pilote uniquement les transforms que le rig humanoïde et l'IK ne touchent pas — chaînes de queue et d'oreilles, os supplémentaires, accessoires autonomes.
+
+<Callout type="info">
+Authored Motion, Jiggle Physics et le squelette en réseau se complètent au lieu de se concurrencer : le squelette est la pose principale, Authored Motion fournit la base animée, et [Jiggle Physics](/docs/avatar/jiggle) ajoute le suivi physique par-dessus. Authored Motion écrit avant que jiggle n'échantillonne à chaque image, de sorte qu'un jiggle rig sur la même queue se combine automatiquement avec lui.
+</Callout>
+
+## Ajouter le composant
+
+- Ajoutez un composant `Basis Authored Motion` à n'importe quel GameObject sous la racine de votre avatar (recherchez « Authored Motion » dans le menu **Add Component**). Un composant contient une liste de **Movements** ; regroupez les mouvements que vous voulez activer ensemble sur le même composant, et ajoutez plusieurs composants si vous avez besoin de groupes d'activation indépendants.
+
+![Menu Add Component affichant Basis Authored Motion](/img/authored-motion/1.png)
+
+- Cliquez sur **+ Add Movement** pour ajouter une entrée, puis choisissez son **Kind** (type). L'inspecteur n'affiche que les champs que ce type utilise réellement, de sorte que la carte change lorsque vous changez de type. Utilisez les boutons **▲ ▼** pour réordonner et **✕** pour supprimer. Le **Label** n'est qu'un nom destiné à l'auteur, sans effet à l'exécution.
+
+![Inspecteur Movements avec une carte de mouvement développée](/img/authored-motion/2.png)
+
+<Callout type="info">
+Survolez n'importe quel champ pour voir une description de sa fonction. Chaque champ ci-dessous est documenté dans l'info-bulle de l'inspecteur.
+</Callout>
+
+## Types de mouvement
+
+| Type | Ce qu'il fait | Pilote | Champs clés |
+|------|--------------|--------|-----------|
+| **Oscillate** | Balancement périodique (sinus / triangle / carré / impulsion). Un seul os est un balancement simple ; une chaîne devient une onde progressive. | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | Rotation constante sur place. | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | Fait tourner une cible autour d'un pivot. | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | Dérive simplex organique — plus douce qu'Oscillate, moins répétitive. | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | À un intervalle fixe, choisit une pose pondérée (ou repos) et la fond en entrée/sortie. Idéal pour les frémissements d'oreilles et les clignements. | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | Joue un AnimationClip précalculé sur plusieurs os. | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate et Noise sont pilotés par la liste `Chain`, pas par `Target`.** Un balancement simple d'un seul os est une `Chain` avec une seule entrée — laissez `Target` vide pour ces types. `Target` n'est utilisé que par Rotate et Orbit.
+</Callout>
+
+### Oscillate — une queue qui se balance
+
+Affectez les os de la queue à **Chain**, l'os supérieur de la chaîne en premier. Avec un seul os, vous obtenez un balancement simple ; avec plusieurs, `Chain Phase Step` retarde chaque os le long de la chaîne pour produire une onde progressive, et `Chain Falloff` met à l'échelle l'amplitude par os (1 = pas d'atténuation). `Amplitude` est en degrés lorsque `Channel` est Rotation.
+
+![Mouvement Oscillate configuré sur une chaîne d'os de queue](/img/authored-motion/3.png)
+
+### RandomSelect — des oreilles qui frémissent
+
+Ajoutez une **Option** par pose et donnez à chacune un `Target`, `Axis`, `Angle` et `Weight`. Une option qui laisse son `Target` vide se rabat sur `Select Target`, de sorte qu'un mouvement peut poser un seul os de plusieurs façons *ou* piloter un os différent par option. `Idle Weight` est la probabilité relative de ne rien faire à un cycle donné — augmentez-le pour rendre les frémissements occasionnels plutôt que constants.
+
+![Mouvement RandomSelect avec des options de pose d'oreilles pondérées](/img/authored-motion/4.png)
+
+## Lire un clip précalculé avec Sequence
+
+Lorsque le mouvement est trop complexe pour être décrit avec une primitive — une boucle animée à la main qui courbe toute une chaîne d'os — précalculez l'AnimationClip dans un asset `Basis Motion Clip` partagé et lisez-le avec un mouvement **Sequence**.
+
+- Ouvrez **Basis ▸ Authored Motion ▸ Bake Clip**.
+
+![Menu Basis Authored Motion Bake Clip](/img/authored-motion/5.png)
+
+- Définissez **Animation Clip** sur le clip source et **Root (in scene)** sur l'avatar sur lequel le clip a été créé — les chemins d'os sont précalculés par rapport à cette racine. Laissez **Frame Rate** à 60 sauf si vous avez besoin d'un échantillonnage plus fin. Cliquez sur **Bake** et choisissez où enregistrer l'asset.
+
+![Fenêtre Bake Authored Motion Clip](/img/authored-motion/6.png)
+
+<Callout type="info">
+Le précalcul ne concerne que la rotation dans cette version et reproduit exactement la pose du clip, quelle que soit la pose de repos de l'avatar.
+</Callout>
+
+- Sur le mouvement Sequence, affectez l'asset précalculé à **Baked Clip** et définissez **Sequence Root** sur la *même* racine contre laquelle le clip a été précalculé. Activez **Loop** pour un repos en boucle, ou désactivez-le pour une lecture unique.
+
+![Mouvement Sequence référençant un clip précalculé](/img/authored-motion/7.png)
+
+## Activation à l'exécution
+
+Un groupe de mouvements suit l'état `enabled` du composant lui-même. Tout ce qui active ou désactive le composant — y compris une activation [HVR.Vixxy](/docs/avatar/animation-rigging) — active et désactive ses mouvements, sans interrogation par image. Regroupez sur un composant les mouvements qui doivent être activés ensemble.
+
+## Tester votre configuration
+
+Authored Motion ne démarre qu'une fois l'avatar calibré, ce qui ne se produit **pas** avec un simple **Play**. Utilisez le bouton **Test in Editor** du composant `Basis Avatar` — il charge l'avatar via le véritable chemin du joueur local et le calibre, afin que vos mouvements s'exécutent.
+
+<Callout type="warn">
+Si rien ne bouge en mode Play normal, c'est attendu — le composant ne s'est jamais enregistré. Validez toujours avec **Test in Editor**.
+</Callout>

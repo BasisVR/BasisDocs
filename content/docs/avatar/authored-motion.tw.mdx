@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion 透過單一批次作業（而非每個 Avatar 一個 Animator）來驅動尾巴、耳朵、配件等裝飾性與次要動作，因此即使在擁擠的執行個體中也能保持低開銷。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` 適用於 Avatar 自行播放的循環、環境性動作：擺動的尾巴、抽動的耳朵、旋轉的配件、手動 K 影格的姿勢。傳統上你會用 Unity Animator 來驅動這些，但 Avatar 的每個複製副本都要為該 Animator 支付固定的每執行個體開銷——在繁忙的執行個體中這會迅速累積。Authored Motion 將相同的動作宣告為純資料，並在單一批次作業中一起評估所有 Avatar 的動作，因此隨著執行個體填滿，開銷幾乎不增加。
+
+它只驅動人形 rig 與 IK 不觸及的 transform——尾巴與耳朵鏈、額外的骨骼、獨立的配件。
+
+<Callout type="info">
+Authored Motion、Jiggle Physics 與連網骨架是疊加而非競爭的關係：骨架是主要姿勢，Authored Motion 提供動畫基礎，[Jiggle Physics](/docs/avatar/jiggle) 在其上疊加物理跟隨。Authored Motion 在每影格 jiggle 取樣之前寫入，因此同一尾巴上的 jiggle rig 會自動與之合成。
+</Callout>
+
+## 新增元件
+
+- 在 Avatar 根階層下的任意 GameObject 上新增 `Basis Authored Motion` 元件（在 **Add Component** 選單中搜尋「Authored Motion」）。一個元件持有一個 **Movements** 清單；將要一起切換的動作分組到同一元件上，如果需要獨立的切換群組，則新增多個元件。
+
+![顯示 Basis Authored Motion 的 Add Component 選單](/img/authored-motion/1.png)
+
+- 點擊 **+ Add Movement** 新增一個項目，然後選擇它的 **Kind**（類型）。Inspector 只顯示該類型實際使用的欄位，因此切換類型時卡片會隨之變化。使用 **▲ ▼** 按鈕重新排序，使用 **✕** 移除。**Label** 僅是面向作者的名稱，對執行階段沒有影響。
+
+![展開了一個動作卡片的 Movements Inspector](/img/authored-motion/2.png)
+
+<Callout type="info">
+將滑鼠停留在任意欄位上可查看其功能說明。下面的每個欄位都在 Inspector 的工具提示中有文件說明。
+</Callout>
+
+## 動作類型
+
+| 類型 | 作用 | 驅動對象 | 關鍵欄位 |
+|------|--------------|--------|-----------|
+| **Oscillate** | 週期性擺動（正弦 / 三角 / 方波 / 脈衝）。單根骨骼是簡單擺動；一條鏈則成為行波。 | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | 原地等速旋轉。 | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | 使目標圍繞一個樞軸公轉。 | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | 有機的單純形雜訊飄移——比 Oscillate 更平滑，更少重複。 | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | 以固定間隔選取一個加權姿勢（或閒置）並淡入/淡出。適合耳朵抽動與眨眼。 | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | 在多根骨骼上播放已烘焙的 AnimationClip。 | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate 與 Noise 由 `Chain` 清單驅動，而不是 `Target`。** 單根骨骼的簡單擺動是只有一個項目的 `Chain`——對這些類型請將 `Target` 留空。`Target` 僅由 Rotate 與 Orbit 使用。
+</Callout>
+
+### Oscillate——擺動的尾巴
+
+將尾巴骨骼指派到 **Chain**，鏈頂端的骨骼在前。使用一根骨骼會得到簡單擺動；使用多根時，`Chain Phase Step` 會沿鏈對每根骨骼進行延遲以產生行波，而 `Chain Falloff` 會逐根縮放振幅（1 = 無衰減）。當 `Channel` 為 Rotation 時，`Amplitude` 以度為單位。
+
+![在尾巴骨骼鏈上設定的 Oscillate 動作](/img/authored-motion/3.png)
+
+### RandomSelect——抽動的耳朵
+
+為每個姿勢新增一個 **Option**，並為每個設定 `Target`、`Axis`、`Angle` 與 `Weight`。將 `Target` 留空的選項會回退到 `Select Target`，因此一個動作可以用多種方式擺放單根骨骼，*或*為每個選項驅動不同的骨骼。`Idle Weight` 是在某個週期內什麼都不做的相對機率——提高它可讓抽動變得偶爾而非持續。
+
+![帶有加權耳朵姿勢選項的 RandomSelect 動作](/img/authored-motion/4.png)
+
+## 用 Sequence 播放已烘焙的剪輯
+
+當動作過於複雜、無法用基本類型描述時——例如手動 K 影格、捲曲整條骨骼鏈的循環——將 AnimationClip 烘焙為共用的 `Basis Motion Clip` 資源，並用 **Sequence** 動作播放它。
+
+- 開啟 **Basis ▸ Authored Motion ▸ Bake Clip**。
+
+![Basis Authored Motion Bake Clip 選單](/img/authored-motion/5.png)
+
+- 將 **Animation Clip** 設為來源剪輯，將 **Root (in scene)** 設為該剪輯所基於創作的 Avatar——骨骼路徑會相對於此根進行烘焙。除非需要更精細的取樣，否則將 **Frame Rate** 保持為 60。點擊 **Bake** 並選擇資源的儲存位置。
+
+![Bake Authored Motion Clip 視窗](/img/authored-motion/6.png)
+
+<Callout type="info">
+此版本的烘焙僅處理旋轉，並且無論 Avatar 的靜止姿勢如何，都能精確重現剪輯的姿勢。
+</Callout>
+
+- 在 Sequence 動作中，將已烘焙的資源指派給 **Baked Clip**，並將 **Sequence Root** 設為與剪輯烘焙時相*同*的根。為循環閒置啟用 **Loop**，或將其停用以進行單次播放。
+
+![參照已烘焙剪輯的 Sequence 動作](/img/authored-motion/7.png)
+
+## 執行階段切換
+
+一個動作群組跟隨元件自身的 `enabled` 狀態。任何能開啟或關閉該元件的方式——包括 [HVR.Vixxy](/docs/avatar/animation-rigging) 啟用——都會開關其動作，且無需逐影格輪詢。將應一起切換的動作分組到一個元件上。
+
+## 測試你的設定
+
+Authored Motion 只在 Avatar 完成校正後才會啟動，而一般的 **Play** **不會**觸發校正。請使用 `Basis Avatar` 元件的 **Test in Editor** 按鈕——它會透過真正的本機玩家路徑載入 Avatar 並對其進行校正，從而讓你的動作執行。
+
+<Callout type="warn">
+如果在一般 Play 模式下沒有任何動作，這是預期的——元件從未註冊。請務必用 **Test in Editor** 進行驗證。
+</Callout>

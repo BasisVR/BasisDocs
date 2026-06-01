@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion stuurt cosmetische en secundaire beweging — staarten, oren, accessoires — aan via één gebundelde job in plaats van een Animator per avatar, zodat het goedkoop blijft, zelfs in een drukke instance.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` is bedoeld voor de loopende, sfeervolle beweging die een avatar uit zichzelf afspeelt: een zwiepende staart, trillende oren, een draaiend accessoire, een handmatig gekeyframede beweging. Traditioneel zou je deze aansturen met een Unity Animator, maar elke gerepliceerde kopie van de avatar betaalt de vaste kosten per instance van die Animator — wat in een drukke instance snel oploopt. Authored Motion declareert dezelfde beweging als pure data en evalueert de beweging van alle avatars samen in één gebundelde job, zodat de kosten nauwelijks toenemen naarmate de instance voller raakt.
+
+Het stuurt alleen de transforms aan die de humanoïde rig en IK niet raken — staart- en oorketens, extra botten, losstaande accessoires.
+
+<Callout type="info">
+Authored Motion, Jiggle Physics en het genetwerkte skelet stapelen op elkaar in plaats van te concurreren: het skelet is de primaire pose, Authored Motion levert de geanimeerde basis, en [Jiggle Physics](/docs/avatar/jiggle) legt er de fysieke nabeweging overheen. Authored Motion schrijft elke frame voordat jiggle bemonstert, zodat een jiggle rig op dezelfde staart er automatisch mee samenwerkt.
+</Callout>
+
+## Het component toevoegen
+
+- Voeg een `Basis Authored Motion`-component toe aan een willekeurig GameObject onder de root van je avatar (zoek naar "Authored Motion" in het menu **Add Component**). Eén component bevat een lijst met **Movements**; groepeer de bewegingen die je samen wilt schakelen op hetzelfde component, en voeg meerdere componenten toe als je onafhankelijke schakelgroepen nodig hebt.
+
+![Add Component-menu met Basis Authored Motion](/img/authored-motion/1.png)
+
+- Klik op **+ Add Movement** om een item toe te voegen en kies vervolgens het **Kind** (type). De inspector toont alleen de velden die dat type daadwerkelijk gebruikt, dus de kaart verandert wanneer je van type wisselt. Gebruik de knoppen **▲ ▼** om te herordenen en **✕** om te verwijderen. Het **Label** is alleen een naam voor de auteur zonder effect tijdens runtime.
+
+![Movements-inspector met één uitgeklapte bewegingskaart](/img/authored-motion/2.png)
+
+<Callout type="info">
+Beweeg over een veld om een beschrijving van de functie ervan te zien. Elk veld hieronder is gedocumenteerd in de tooltip van de inspector.
+</Callout>
+
+## Bewegingstypen
+
+| Type | Wat het doet | Stuurt aan | Belangrijke velden |
+|------|--------------|--------|-----------|
+| **Oscillate** | Periodiek zwaaien (sinus / driehoek / blok / puls). Eén bot is een eenvoudig zwaaien; een keten wordt een lopende golf. | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | Constant draaien op zijn plaats. | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | Laat een target rond een pivot draaien. | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | Organische simplex-drift — soepeler dan Oscillate, minder repetitief. | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | Kiest met een vast interval één gewogen pose (of rust) en blendt deze in/uit. Goed voor oorbewegingen en knipperen. | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | Speelt een gebakken AnimationClip af over meerdere botten. | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate en Noise worden aangestuurd door de lijst `Chain`, niet door `Target`.** Een eenvoudig zwaaien van één bot is een `Chain` met één item — laat `Target` leeg voor deze typen. `Target` wordt alleen gebruikt door Rotate en Orbit.
+</Callout>
+
+### Oscillate — een zwiepende staart
+
+Wijs de staartbotten toe aan **Chain**, het bovenste bot van de keten eerst. Met één bot krijg je een eenvoudig zwaaien; met meerdere vertraagt `Chain Phase Step` elk bot langs de keten om een lopende golf te produceren, en `Chain Falloff` schaalt de amplitude per bot (1 = geen afzwakking). `Amplitude` is in graden wanneer `Channel` op Rotation staat.
+
+![Oscillate-beweging ingesteld op een staartbotketen](/img/authored-motion/3.png)
+
+### RandomSelect — trillende oren
+
+Voeg een **Option** per pose toe en geef elke een `Target`, `Axis`, `Angle` en `Weight`. Een optie die zijn `Target` leeg laat, valt terug op `Select Target`, zodat één beweging een enkel bot op verschillende manieren kan poseren *of* per optie een ander bot kan aansturen. `Idle Weight` is de relatieve kans om in een bepaalde cyclus niets te doen — verhoog dit om bewegingen incidenteel in plaats van constant te maken.
+
+![RandomSelect-beweging met gewogen oorpose-opties](/img/authored-motion/4.png)
+
+## Een gebakken clip afspelen met Sequence
+
+Wanneer de beweging te complex is om met een primitive te beschrijven — een handmatig gekeyframede lus die een hele botketen krult — bak je de AnimationClip in een gedeeld `Basis Motion Clip`-asset en speel je deze af met een **Sequence**-beweging.
+
+- Open **Basis ▸ Authored Motion ▸ Bake Clip**.
+
+![Basis Authored Motion Bake Clip-menu](/img/authored-motion/5.png)
+
+- Stel **Animation Clip** in op de bronclip en **Root (in scene)** op de avatar waarop de clip is gemaakt — de botpaden worden ten opzichte van deze root gebakken. Laat **Frame Rate** op 60 staan, tenzij je een fijnere bemonstering nodig hebt. Klik op **Bake** en kies waar je het asset opslaat.
+
+![Bake Authored Motion Clip-venster](/img/authored-motion/6.png)
+
+<Callout type="info">
+Bakken is in deze versie alleen voor rotatie en reproduceert de pose van de clip exact, ongeacht de ruststand van de avatar.
+</Callout>
+
+- Wijs in de Sequence-beweging het gebakken asset toe aan **Baked Clip** en stel **Sequence Root** in op dezelfde root waartegen de clip is gebakken. Schakel **Loop** in voor een loopende rust, of schakel het uit voor een eenmalige afspeling.
+
+![Sequence-beweging die naar een gebakken clip verwijst](/img/authored-motion/7.png)
+
+## Schakelen tijdens runtime
+
+Een bewegingsgroep volgt de eigen `enabled`-status van het component. Alles wat het component in- of uitschakelt — inclusief een [HVR.Vixxy](/docs/avatar/animation-rigging)-activering — zet de bewegingen aan en uit, zonder polling per frame. Groepeer de bewegingen die samen geschakeld moeten worden op één component.
+
+## Je configuratie testen
+
+Authored Motion start pas zodra de avatar is gekalibreerd, wat **niet** gebeurt bij een gewone **Play**. Gebruik de knop **Test in Editor** van het `Basis Avatar`-component — deze laadt de avatar via het echte local-player-pad en kalibreert hem, zodat je bewegingen draaien.
+
+<Callout type="warn">
+Als er in de gewone Play-modus niets beweegt, is dat te verwachten — het component is nooit geregistreerd. Valideer altijd met **Test in Editor**.
+</Callout>

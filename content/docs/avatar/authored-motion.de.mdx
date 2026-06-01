@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion treibt kosmetische und sekundäre Bewegungen — Schwänze, Ohren, Accessoires — über einen einzigen gebündelten Job statt eines Animators pro Avatar an und bleibt so auch in einer überfüllten Instanz günstig.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` ist für die sich wiederholende, ambiente Bewegung gedacht, die ein Avatar von selbst abspielt: ein wedelnder Schwanz, zuckende Ohren, ein sich drehendes Accessoire, eine handanimierte Geste. Traditionell würden Sie diese mit einem Unity Animator antreiben, aber jede replizierte Kopie des Avatars zahlt die feststehenden Kosten dieses Animators pro Instanz — was sich in einer belebten Instanz schnell summiert. Authored Motion deklariert dieselbe Bewegung als reine Daten und wertet die Bewegung aller Avatare gemeinsam in einem gebündelten Job aus, sodass die Kosten kaum steigen, wenn sich die Instanz füllt.
+
+Es treibt nur die Transforms an, die das humanoide Rig und IK nicht berühren — Schwanz- und Ohrenketten, zusätzliche Knochen, eigenständige Accessoires.
+
+<Callout type="info">
+Authored Motion, Jiggle-Physik und das vernetzte Skelett ergänzen sich, statt zu konkurrieren: Das Skelett ist die primäre Pose, Authored Motion liefert die animierte Basis, und [Jiggle-Physik](/docs/avatar/jiggle) legt die physikalische Nachbewegung darüber. Authored Motion schreibt jeden Frame, bevor Jiggle abtastet, sodass ein Jiggle-Rig auf demselben Schwanz sich automatisch damit verbindet.
+</Callout>
+
+## Hinzufügen der Komponente
+
+- Fügen Sie einem beliebigen GameObject unter dem Stamm Ihres Avatars eine `Basis Authored Motion`-Komponente hinzu (suchen Sie im Menü **Add Component** nach „Authored Motion"). Eine Komponente enthält eine Liste von **Movements**; gruppieren Sie die Bewegungen, die zusammen umgeschaltet werden sollen, auf derselben Komponente, und fügen Sie mehrere Komponenten hinzu, wenn Sie unabhängige Umschaltgruppen benötigen.
+
+![Add Component-Menü mit Basis Authored Motion](/img/authored-motion/1.png)
+
+- Klicken Sie auf **+ Add Movement**, um einen Eintrag hinzuzufügen, und wählen Sie dann seinen **Kind** (Typ). Der Inspektor zeigt nur die Felder, die dieser Typ tatsächlich verwendet, sodass sich die Karte ändert, wenn Sie den Typ wechseln. Verwenden Sie die **▲ ▼**-Schaltflächen zum Umsortieren und **✕** zum Entfernen. Das **Label** ist nur ein autorenseitiger Name ohne Laufzeitwirkung.
+
+![Movements-Inspektor mit einer ausgeklappten Bewegungskarte](/img/authored-motion/2.png)
+
+<Callout type="info">
+Bewegen Sie den Mauszeiger über ein Feld, um eine Beschreibung seiner Funktion zu sehen. Jedes Feld unten ist im Tooltip des Inspektors dokumentiert.
+</Callout>
+
+## Bewegungstypen
+
+| Typ | Was es tut | Treibt an | Wichtige Felder |
+|------|--------------|--------|-----------|
+| **Oscillate** | Periodisches Schwingen (Sinus / Dreieck / Rechteck / Puls). Ein einzelner Knochen ist ein einfaches Schwingen; eine Kette wird zu einer Wanderwelle. | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | Konstante Drehung auf der Stelle. | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | Lässt ein Ziel um einen Drehpunkt kreisen. | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | Organische Simplex-Drift — sanfter als Oscillate, weniger repetitiv. | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | Wählt in einem festen Intervall eine gewichtete Pose (oder Leerlauf) und blendet sie ein/aus. Gut für Ohrenzucken und Blinzeln. | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | Spielt einen gebackenen AnimationClip über mehrere Knochen ab. | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate und Noise werden durch die `Chain`-Liste angetrieben, nicht durch `Target`.** Ein einfaches Schwingen eines einzelnen Knochens ist eine `Chain` mit einem Eintrag — lassen Sie `Target` für diese Typen leer. `Target` wird nur von Rotate und Orbit verwendet.
+</Callout>
+
+### Oscillate — ein wedelnder Schwanz
+
+Weisen Sie die Schwanzknochen der **Chain** zu, oberster Knochen zuerst. Mit einem Knochen erhalten Sie ein einfaches Schwingen; mit mehreren verzögert `Chain Phase Step` jeden Knochen entlang der Kette, um eine Wanderwelle zu erzeugen, und `Chain Falloff` skaliert die Amplitude pro Knochen (1 = kein Abfall). `Amplitude` ist in Grad, wenn `Channel` auf Rotation steht.
+
+![Oscillate-Bewegung auf einer Schwanzknochenkette eingerichtet](/img/authored-motion/3.png)
+
+### RandomSelect — zuckende Ohren
+
+Fügen Sie pro Pose eine **Option** hinzu und geben Sie jeder ein `Target`, `Axis`, `Angle` und `Weight`. Eine Option, die ihr `Target` leer lässt, fällt auf `Select Target` zurück, sodass eine Bewegung einen einzelnen Knochen auf mehrere Arten posieren *oder* pro Option einen anderen Knochen antreiben kann. `Idle Weight` ist die relative Wahrscheinlichkeit, in einem Zyklus nichts zu tun — erhöhen Sie ihn, um das Zucken gelegentlich statt konstant zu machen.
+
+![RandomSelect-Bewegung mit gewichteten Ohrenpose-Optionen](/img/authored-motion/4.png)
+
+## Abspielen eines gebackenen Clips mit Sequence
+
+Wenn die Bewegung zu komplex ist, um sie mit einem Primitiv zu beschreiben — eine handanimierte Schleife, die eine ganze Knochenkette krümmt — backen Sie den AnimationClip in ein gemeinsames `Basis Motion Clip`-Asset und spielen Sie ihn mit einer **Sequence**-Bewegung ab.
+
+- Öffnen Sie **Basis ▸ Authored Motion ▸ Bake Clip**.
+
+![Basis Authored Motion Bake Clip-Menü](/img/authored-motion/5.png)
+
+- Setzen Sie **Animation Clip** auf den Quellclip und **Root (in scene)** auf den Avatar, auf dem der Clip erstellt wurde — die Knochenpfade werden relativ zu diesem Stamm gebacken. Lassen Sie **Frame Rate** bei 60, sofern Sie keine feinere Abtastung benötigen. Klicken Sie auf **Bake** und wählen Sie, wo das Asset gespeichert werden soll.
+
+![Bake Authored Motion Clip-Fenster](/img/authored-motion/6.png)
+
+<Callout type="info">
+Das Backen erfolgt in dieser Version nur für Rotationen und reproduziert die Pose des Clips exakt, unabhängig von der Ruhepose des Avatars.
+</Callout>
+
+- Weisen Sie bei der Sequence-Bewegung das gebackene Asset dem **Baked Clip** zu und setzen Sie **Sequence Root** auf denselben Stamm, gegen den der Clip gebacken wurde. Aktivieren Sie **Loop** für einen sich wiederholenden Leerlauf oder deaktivieren Sie es für einen einmaligen Durchlauf.
+
+![Sequence-Bewegung, die auf einen gebackenen Clip verweist](/img/authored-motion/7.png)
+
+## Umschalten zur Laufzeit
+
+Eine Bewegungsgruppe folgt dem eigenen `enabled`-Zustand der Komponente. Alles, was die Komponente ein- oder ausschaltet — einschließlich einer [HVR.Vixxy](/docs/avatar/animation-rigging)-Aktivierung — schaltet ihre Bewegungen ein und aus, ohne Abfrage pro Frame. Gruppieren Sie die Bewegungen, die zusammen umgeschaltet werden sollen, auf einer Komponente.
+
+## Testen Ihrer Einrichtung
+
+Authored Motion startet erst, sobald der Avatar kalibriert ist, was bei einem einfachen **Play** **nicht** geschieht. Verwenden Sie die Schaltfläche **Test in Editor** der `Basis Avatar`-Komponente — sie lädt den Avatar über den echten lokalen Spielerpfad und kalibriert ihn, sodass Ihre Bewegungen laufen.
+
+<Callout type="warn">
+Wenn sich im einfachen Play-Modus nichts bewegt, ist das zu erwarten — die Komponente wurde nie registriert. Validieren Sie immer mit **Test in Editor**.
+</Callout>

@@ -1,0 +1,87 @@
+---
+title: Authored Motion
+description: Authored Motion は、アバターごとの Animator の代わりに単一のバッチジョブで、しっぽ・耳・アクセサリーといった装飾的・二次的な動きを駆動するため、混雑したインスタンスでも低コストを維持します。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`Basis Authored Motion` は、アバターが自ら再生するループ状の環境的な動き、つまり揺れるしっぽ、ぴくつく耳、回転するアクセサリー、手付けのジェスチャーのためのものです。従来はこれらを Unity Animator で駆動していましたが、アバターの複製されたコピーごとにその Animator のインスタンスあたりの固定コストが発生し、混雑したインスタンスではすぐに積み重なります。Authored Motion は同じ動きを純粋なデータとして宣言し、すべてのアバターの動きを単一のバッチジョブでまとめて評価するため、インスタンスが埋まってもコストはほとんど増えません。
+
+ヒューマノイドリグや IK が触れないトランスフォーム、つまりしっぽや耳のチェーン、追加のボーン、独立したアクセサリーのみを駆動します。
+
+<Callout type="info">
+Authored Motion、Jiggle Physics、ネットワーク化されたスケルトンは競合するのではなく積み重なります。スケルトンが主要なポーズで、Authored Motion がアニメーションのベースを提供し、[Jiggle Physics](/docs/avatar/jiggle) がその上に物理的な追従を重ねます。Authored Motion は毎フレーム jiggle がサンプリングする前に書き込むため、同じしっぽ上の jiggle rig は自動的にそれと合成されます。
+</Callout>
+
+## コンポーネントの追加
+
+- アバターのルート階層下にある任意の GameObject に `Basis Authored Motion` コンポーネントを追加します（**Add Component** メニューで「Authored Motion」を検索）。1 つのコンポーネントは **Movements** のリストを保持します。まとめて切り替えたい動きは同じコンポーネントにグループ化し、独立した切り替えグループが必要な場合は複数のコンポーネントを追加します。
+
+![Basis Authored Motion を表示する Add Component メニュー](/img/authored-motion/1.png)
+
+- **+ Add Movement** をクリックして項目を追加し、その **Kind**（種類）を選びます。インスペクターはその種類が実際に使用するフィールドのみを表示するため、種類を切り替えるとカードが変化します。**▲ ▼** ボタンで並べ替え、**✕** で削除します。**Label** は作者向けの名前にすぎず、ランタイムには影響しません。
+
+![1 つの動きカードが展開された Movements インスペクター](/img/authored-motion/2.png)
+
+<Callout type="info">
+任意のフィールドにカーソルを合わせると、その機能の説明が表示されます。以下の各フィールドはインスペクターのツールチップに記載されています。
+</Callout>
+
+## 動きの種類
+
+| 種類 | 何をするか | 駆動対象 | 主なフィールド |
+|------|--------------|--------|-----------|
+| **Oscillate** | 周期的な揺れ（サイン / 三角 / 矩形 / パルス）。単一ボーンは単純な揺れ、チェーンは進行波になります。 | `Chain` | `Axis`, `Amplitude`, `Frequency (Hz)`, `Waveform`, `Chain Phase Step`, `Chain Falloff` |
+| **Rotate** | その場での一定回転。 | `Target` | `Axis`, `Speed (deg/sec)` |
+| **Orbit** | ターゲットをピボットの周りで公転させます。 | `Target` | `Pivot`, `Axis`, `Radius`, `Orbit Speed (deg/sec)` |
+| **Noise** | 有機的なシンプレックスのドリフト — Oscillate より滑らかで、より変化に富みます。 | `Chain` | `Axis`, `Amplitude`, `Noise Speed`, `Seed`, `Chain Falloff` |
+| **RandomSelect** | 固定間隔で重み付けされたポーズ（またはアイドル）を 1 つ選び、フェードイン/アウトします。耳のぴくつきやまばたきに最適です。 | `Options` / `Select Target` | `Options` (+`weight`), `Idle Weight`, `Interval Range`, `Attack`, `Release` |
+| **Sequence** | ベイク済みの AnimationClip を複数のボーンにわたって再生します。 | `Baked Clip` | `Baked Clip`, `Sequence Root`, `Loop` |
+
+<Callout type="warn">
+**Oscillate と Noise は `Target` ではなく `Chain` リストで駆動されます。** 単一ボーンの単純な揺れは、エントリが 1 つの `Chain` です。これらの種類では `Target` を空のままにしてください。`Target` は Rotate と Orbit のみが使用します。
+</Callout>
+
+### Oscillate — 揺れるしっぽ
+
+しっぽのボーンを **Chain** に、チェーンの先頭のボーンから順に割り当てます。1 つのボーンでは単純な揺れになり、複数のボーンでは `Chain Phase Step` がチェーンに沿って各ボーンを遅延させて進行波を生み出し、`Chain Falloff` がボーンごとに振幅をスケールします（1 = 減衰なし）。`Channel` が Rotation のとき、`Amplitude` は度単位です。
+
+![しっぽのボーンチェーンに設定された Oscillate の動き](/img/authored-motion/3.png)
+
+### RandomSelect — ぴくつく耳
+
+ポーズごとに **Option** を追加し、それぞれに `Target`、`Axis`、`Angle`、`Weight` を設定します。`Target` を空のままにしたオプションは `Select Target` にフォールバックするため、1 つの動きで単一のボーンを複数の方法でポーズさせる *か*、オプションごとに異なるボーンを駆動できます。`Idle Weight` は、あるサイクルで何もしない相対的な確率です。これを上げると、ぴくつきが常時ではなく時折になります。
+
+![重み付けされた耳のポーズオプションを持つ RandomSelect の動き](/img/authored-motion/4.png)
+
+## Sequence でベイク済みクリップを再生する
+
+プリミティブでは記述できないほど複雑な動き、たとえばボーンチェーン全体を巻き込む手付けのループの場合は、AnimationClip を共有の `Basis Motion Clip` アセットにベイクし、**Sequence** の動きで再生します。
+
+- **Basis ▸ Authored Motion ▸ Bake Clip** を開きます。
+
+![Basis Authored Motion Bake Clip メニュー](/img/authored-motion/5.png)
+
+- **Animation Clip** にソースクリップを、**Root (in scene)** にそのクリップが作成されたアバターを設定します。ボーンのパスはこのルートを基準にベイクされます。より細かいサンプリングが必要でない限り、**Frame Rate** は 60 のままにします。**Bake** をクリックして、アセットの保存先を選びます。
+
+![Bake Authored Motion Clip ウィンドウ](/img/authored-motion/6.png)
+
+<Callout type="info">
+このバージョンのベイクは回転のみで、アバターのレストポーズに関係なくクリップのポーズを正確に再現します。
+</Callout>
+
+- Sequence の動きで、ベイク済みアセットを **Baked Clip** に割り当て、**Sequence Root** をクリップがベイクされたのと *同じ* ルートに設定します。ループ状のアイドルには **Loop** を有効に、ワンショットには無効にします。
+
+![ベイク済みクリップを参照する Sequence の動き](/img/authored-motion/7.png)
+
+## ランタイムでの切り替え
+
+動きのグループは、コンポーネント自身の `enabled` 状態に従います。[HVR.Vixxy](/docs/avatar/animation-rigging) のアクティベーションを含め、コンポーネントをオン/オフにするものは何でも、フレームごとのポーリングなしにその動きをオン/オフします。まとめて切り替えるべき動きは 1 つのコンポーネントにグループ化してください。
+
+## 設定のテスト
+
+Authored Motion はアバターがキャリブレーションされた後にのみ開始され、これは通常の **Play** では **発生しません**。`Basis Avatar` コンポーネントの **Test in Editor** ボタンを使用してください。これはアバターを実際のローカルプレイヤーのパスを通じて読み込み、キャリブレーションするため、動きが実行されます。
+
+<Callout type="warn">
+通常の Play モードで何も動かない場合、それは想定どおりです。コンポーネントが登録されていません。常に **Test in Editor** で検証してください。
+</Callout>
