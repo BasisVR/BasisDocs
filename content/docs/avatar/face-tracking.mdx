@@ -1,6 +1,38 @@
 ---
 title: Face Tracking
+description: Setting up face and eye tracking on a Basis avatar — the components and avatar fields involved, and the full step-by-step guide.
 ---
 
-- Hai has created a comprehensive guide on how to add the Automatic Face Tracking component to an avatar in a Basis project
-- You can follow the link [here](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-tracking) for instruction on how this works.
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Basis can drive an avatar's facial expressions and eyes from a face tracker. It does this with **blendshapes** for expressions and visemes, and by rotating the avatar's **eye bones** for gaze. Much of the wiring is automatic: when an avatar loads, Basis detects the blendshape naming convention on the mesh (Unified Expressions or ARKit) and attaches the components that map incoming face-tracking values onto it.
+
+<Callout type="info">
+Hai maintains the comprehensive step-by-step guide for adding the Automatic Face Tracking component to an avatar. Follow it for the full setup: [Face tracking on docs.hai-vr.dev](https://docs.hai-vr.dev/docs/basis/avatar-customization/face-tracking).
+</Callout>
+
+## What gets set up on the avatar
+
+The guide above walks through the process; this is what it's configuring under the hood, so you know what each piece is for.
+
+- **Viseme / expression blendshapes** — your avatar's face mesh and the blendshape indices Basis drives for mouth shapes and expressions. These are picked up from the mesh's blendshape names.
+- **Blink** — the mesh and blendshape used to blink. Basis auto-blinks the avatar when no external face tracker is overriding the eyes.
+- **Eye bones** — the avatar's left and right eye bones. Basis calibrates each eye's local axes on load so gaze rotates correctly regardless of how the bones are oriented in the rig.
+
+When face tracking is connected, incoming expression values are mapped onto the blendshapes and the eye angles drive the eye bones. When it isn't, the avatar falls back to automatic blinking and look-at-target gaze, so faces still feel alive without a tracker.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/avatars/face-tracking-setup.png
+    Show:  the Automatic Face Tracking component on an avatar in the Inspector, with the face/eye fields populated.
+    When ready, replace this comment with:
+    ![Face tracking components set up on an avatar](/img/avatars/face-tracking-setup.png)
+*/}
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/avatars/face-tracking-result.png
+    Show:  an avatar in-client mirroring the wearer's expression and eye gaze from a face tracker.
+    When ready, replace this comment with:
+    ![An avatar's face driven by a face tracker](/img/avatars/face-tracking-result.png)
+*/}

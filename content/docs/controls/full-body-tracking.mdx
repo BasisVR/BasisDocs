@@ -1,0 +1,61 @@
+---
+title: Full Body Tracking
+description: How Basis assigns and calibrates SteamVR / OpenXR trackers to your body for full body tracking, plus pairing and manual role overrides.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Full body tracking (FBT) lets Basis drive your avatar's hips, feet and limbs from physical trackers rather than estimating them from your head and hands alone. Basis reads trackers through **OpenXR** (including the HTC Vive tracker profile), and works out which tracker belongs on which part of your body automatically from a single calibration pose.
+
+The roles Basis can assign a tracker to are:
+
+- **Hips** and **Chest**
+- **Left / Right Foot** and **Left / Right Toes**
+- **Left / Right Lower Leg** (shins)
+- **Left / Right Shoulder**
+- **Left / Right Lower Arm** (forearms)
+
+## Calibrating
+
+Basis uses **constellation calibration**: you stand in a T-pose and it classifies each free tracker by where it sits in space relative to your headset, then assigns it to the closest matching body role.
+
+1. Put on your headset and trackers and make sure each tracker is tracking.
+2. Open the tracker calibration option in **Settings**.
+3. Stand in a **T-pose** — feet roughly shoulder-width apart, arms straight out to the sides.
+4. Trigger calibration and hold the pose until it completes.
+
+Your avatar is put into a reference T-pose during calibration, the trackers are classified, and the FBT roles bind to your avatar's bones.
+
+<Callout type="info">
+Calibration is geometry-based, so a clean T-pose matters. If a tracker ends up on the wrong limb, re-run calibration with a more deliberate pose, or pin that tracker to a role with an override (below).
+</Callout>
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/fbt-calibration.png
+    Show:  a user in a T-pose with the tracker calibration prompt visible in-client.
+    When ready, replace this comment with:
+    ![Calibrating full body trackers in a T-pose](/img/controls/fbt-calibration.png)
+*/}
+
+## Tracker pairing
+
+Symmetrical tracker setups (for example a pair of ankle trackers) can be **paired** so Basis treats them as a linked set during classification. Pairings are saved to disk and reused, so you don't have to re-pair them every session.
+
+## Manual role overrides
+
+If the automatic classifier keeps misassigning a particular tracker — common with unusual mounting positions — you can **force a tracker to a specific role**. An override skips the scoring step for that tracker and assigns it directly, so the rest of the constellation still calibrates around it.
+
+Like pairings, overrides persist between sessions, so a setup you've tuned once keeps working on the next launch with the same trackers.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/fbt-role-override.png
+    Show:  the tracker role override UI with a tracker assigned to a specific body role.
+    When ready, replace this comment with:
+    ![Assigning a tracker to a fixed role](/img/controls/fbt-role-override.png)
+*/}
+
+<Callout type="info">
+Pairings and overrides are stored in your local Basis data folder, alongside the other per-user files documented in [Settings and Controls](/en/docs/controls). Deleting them resets you to fully automatic classification.
+</Callout>

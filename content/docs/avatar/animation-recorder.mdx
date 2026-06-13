@@ -1,0 +1,35 @@
+---
+title: Animation Recorder
+description: Record your local avatar's motion to a file from the Basis client's developer settings.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+The **Animation Recorder** captures your local avatar's motion frame by frame and writes it to a file. It records the avatar's root position and rotation, its full humanoid muscle pose, and its scale — everything needed to reproduce the body's movement.
+
+<Callout type="info">
+Recording uses Unity's humanoid pose system, so it only works with a **humanoid** avatar.
+</Callout>
+
+## Recording
+
+The recorder lives in **Settings → Developer → Recorder**.
+
+1. Open **Settings → Developer** and find the **Recorder** section.
+2. Set the **countdown** — how long the recorder waits before it starts capturing, giving you time to get into position. Set it to `0` to start immediately.
+3. Optionally enable **auto-stop** and set a **maximum duration** to cap the recording length automatically.
+4. Press **Start**. The status shows the countdown, then the elapsed time and frame count while recording.
+5. Press **Stop** when you're done (or let auto-stop end it).
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/avatars/animation-recorder.png
+    Show:  the Settings → Developer → Recorder panel mid-recording, with the countdown/elapsed time and frame count visible.
+    When ready, replace this comment with:
+    ![The animation recorder in the developer settings](/img/avatars/animation-recorder.png)
+*/}
+
+## Where recordings are saved
+
+Each recording is written to an `AvatarRecordings` folder inside your local Basis data folder, with a timestamped filename. The file is a compact binary capture of every frame — the interval since the previous frame, the root rotation and position, the humanoid muscle values and the avatar scale.

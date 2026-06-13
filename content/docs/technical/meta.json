@@ -2,6 +2,7 @@
     "title": "Technical",
     "pages": [
         "linux",
-        "limiting-unity-cpu"
+        "limiting-unity-cpu",
+        "network-syncing"
     ]
 }

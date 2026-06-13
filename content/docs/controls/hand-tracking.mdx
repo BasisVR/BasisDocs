@@ -1,0 +1,34 @@
+---
+title: Hand Tracking
+description: Articulated hand and finger tracking in Basis through OpenXR, and how it falls back to controller input when a hand isn't tracked.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Basis supports **articulated hand tracking** through OpenXR, so your avatar's fingers follow your real hands on runtimes that expose hand tracking — such as Quest's camera-based tracking or a PC OpenXR runtime that provides it. No per-avatar setup is needed: hand tracking drives the same finger pose system that controllers do.
+
+## What gets tracked
+
+For each hand, Basis reads the wrist pose and the curl and spread of all five fingers:
+
+- **Curl** — how far each finger is bent, from open to a full fist.
+- **Spread** — how far the fingers are splayed apart.
+
+These feed your avatar's hand pose every frame, blended smoothly so finger motion looks natural rather than snapping between poses.
+
+## Controllers and fallback
+
+Hand tracking and controllers share one pose pipeline, so you can switch between them without any change in setup. When a hand isn't being optically tracked — you're holding controllers, or a hand leaves the tracking volume — Basis falls back to driving the fingers from the controller's **trigger and grip** instead, so your avatar's hands still close around grips and respond to input.
+
+<Callout type="info">
+Hand tracking availability depends on your headset and OpenXR runtime. On Quest, enable hand tracking in the headset's system settings; Basis picks it up automatically when the runtime reports it.
+</Callout>
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/hand-tracking.png
+    Show:  an avatar's articulated hands following real finger movement in-client.
+    When ready, replace this comment with:
+    ![Articulated hand tracking driving an avatar's fingers](/img/controls/hand-tracking.png)
+*/}

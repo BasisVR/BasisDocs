@@ -1,5 +1,5 @@
 {
   "title": "Controls",
   "icon": "Wrench",
-  "pages": ["index"]
+  "pages": ["index", "full-body-tracking", "hand-tracking", "players-menu", "chatbox"]
 }

@@ -1,0 +1,37 @@
+---
+title: Chatbox
+description: Sending text chat in Basis, the typing indicator, and the OSC bridge for driving the chatbox from external apps.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+The chatbox lets you send short text messages that appear above your avatar for everyone nearby to read — useful when voice isn't an option. Open it with the **Open Chat** key (`Y` by default — see [Settings and Controls](/en/docs/controls)), type a message and send.
+
+- Messages can be up to **256 characters**.
+- A sent message shows above your avatar for about **10 seconds**, then clears.
+- While you're typing, others see a **typing indicator** over your avatar, so they know a message is coming.
+- An optional notification sound can play when a message arrives.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/chatbox.png
+    Show:  a chat message displayed above an avatar in-client, ideally with another avatar's typing indicator visible.
+    When ready, replace this comment with:
+    ![A chatbox message shown above an avatar](/img/controls/chatbox.png)
+*/}
+
+<Callout type="info">
+You can hide an individual player's chat messages from their [player panel](/en/docs/controls/players-menu).
+</Callout>
+
+## Driving the chatbox over OSC
+
+The chatbox can also be controlled from an external application over **OSC**, on the address `/chatbox/input`. This lets tools type into the chatbox for you — for example a speech-to-text app or a status display.
+
+The address accepts:
+
+- A single **bool** — sets the typing indicator on or off without sending anything.
+- A **string** with two optional bools — `(text, openKeyboard, playNotificationSound)`. The text is the message; the first bool chooses whether to open the in-client composer or send straight away; the second chooses whether a notification sound plays.
+
+Text coming in over OSC is sanitised the same way as text typed in-client. See [OSC](/en/docs/scripting/osc) for enabling and configuring the OSC connection.
