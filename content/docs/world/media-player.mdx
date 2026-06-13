@@ -1,0 +1,245 @@
+---
+title: Media Player
+description: Add live video screens to your world with the Basis Media Player — OS hardware-decoded streaming into a Unity texture, with audio, surround sound and networked playback.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Card, Cards } from 'fumadocs-ui/components/card';
+
+## Overview
+
+The **Basis Media Player** (`com.basis.mediaplayer`) plays live video inside a world. It decodes streams with the **operating-system hardware codecs** (Media Foundation on Windows, AMediaCodec on Android/Quest) and presents the picture **zero-copy** into a Unity texture — no transcode server, no per-frame CPU copy.
+
+A working video screen is a small stack of components on one GameObject:
+
+- **`BasisMediaPlayer`** — the core. Owns the stream, decoding and playback (play/pause/stop/seek), and exposes the decoded picture as `OutputTexture`.
+- **A display surface** — `BasisVideoMaterialOutput` paints the picture onto a mesh's material (a quad, a cinema screen), or `BasisVideoDisplay` paints it onto a uGUI `RawImage`.
+- **Audio (optional)** — `BasisMediaPlayerAudio` plays the stream's sound through an `AudioSource`, or `BasisMediaPlayerMultiChannelAudio` spreads a surround stream across several positioned speakers.
+- **Networking (optional)** — `BasisMediaPlayerNetworking` keeps the URL and playback state in sync for everyone in the room.
+
+<Callout type="info">
+The player is designed for **live broadcast** — RTSP, RTMP, MPEG-TS, fMP4 and HLS over the network. Point it at a stream URL and it starts playing; it does not need a local video file.
+</Callout>
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/screen-in-world.png
+    Show:  a finished video screen playing live video in a Basis world (the result the reader is building toward).
+    When ready, replace this comment with:
+    ![A live video screen playing in a Basis world](/img/media-player/screen-in-world.png)
+*/}
+
+## Quick start
+
+The fastest path is the ready-made prefab.
+
+1. Drag **`Prefabs/MediaPlayerStreaming`** from the Media Player package into your scene.
+2. Select it and find the **Basis Media Player Streaming** component.
+3. Set **Stream Url** to your stream (for example `rtspt://stream.example.com/live/mystream`).
+4. Position and scale the screen mesh where you want the video.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/streaming-inspector.png
+    Show:  the MediaPlayerStreaming prefab selected, with the Basis Media Player Streaming component in the Inspector and the Stream Url field filled in.
+    When ready, replace this comment with:
+    ![The Basis Media Player Streaming component with a stream URL set](/img/media-player/streaming-inspector.png)
+*/}
+
+That's it — the prefab carries the player, a display surface and an audio source already wired together, and it loads the URL on play.
+
+To build a screen from scratch instead, add the components yourself:
+
+```csharp
+var player = gameObject.AddComponent<BasisMediaPlayer>();
+gameObject.AddComponent<BasisVideoMaterialOutput>().TargetRenderer = screenRenderer;
+player.LoadUrl("rtspt://stream.example.com/live/mystream"); // auto-plays
+```
+
+## Choosing a stream URL
+
+The player picks the right protocol from the URL scheme. Use the lowest-latency option each platform supports.
+
+| Scheme | Best for | Example |
+| --- | --- | --- |
+| `rtspt://` | PC / VR, lowest latency (RTP over TCP) | `rtspt://stream.example.com/live/mystream` |
+| `https://….ts` | Quest / Android (MPEG-TS over HTTPS) | `https://stream.example.com/live/mystream.ts` |
+| `rtmp://` | RTMP pull | `rtmp://stream.example.com/live/mystream` |
+| `https://….mp4` | Fragmented MP4 over HTTPS | `https://stream.example.com/live/mystream.mp4` |
+| `https://….m3u8` | HLS / Low-Latency HLS (Windows) | `https://stream.example.com/live/index.m3u8` |
+
+<Callout type="info">
+Many streaming services publish the same stream under several schemes. The `BasisMediaPlayerStreaming` helper can pick the right one for you: enable **Auto Select Per Platform** and fill in **Pc Url** (RTSPT) and **Quest Url** (MPEG-TS). On a desktop or VR build it uses the PC URL; on an Android/Quest build it uses the Quest URL.
+</Callout>
+
+## Displaying the video
+
+The player produces a texture; a display component binds that texture to something visible.
+
+### On a mesh (cinema screen, quad)
+
+Add **`BasisVideoMaterialOutput`** to the GameObject and assign **Target Renderer** to the screen mesh's renderer.
+
+- **Texture Property Name** — which shader slot receives the picture. Use `_BaseMap` for URP (the default) or `_MainTex` for the built-in render pipeline.
+- **Flip Vertically** — defaults on, which is correct for the GPU textures the player produces. Turn it off only if your content comes out upside-down.
+- **Projection Mode** — `Mono` for normal flat video, or `SideBySideLR` / `OverUnderTB` for stereoscopic sources, or `Equirect360` / `VR180` for spherical video on a matching sphere mesh and shader.
+- **Aspect Mode** — `FitInside` letterboxes to preserve the source shape, `FitOutside` crops to fill, `Original` samples untransformed.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/material-output-inspector.png
+    Show:  the BasisVideoMaterialOutput component in the Inspector with Target Renderer assigned and Texture Property Name set (e.g. _BaseMap).
+    When ready, replace this comment with:
+    ![BasisVideoMaterialOutput with a target renderer assigned](/img/media-player/material-output-inspector.png)
+*/}
+
+### On a UI canvas (RawImage)
+
+Add **`BasisVideoDisplay`** and assign **Target Raw Image**. Optionally assign an **Aspect Fitter** (`AspectRatioFitter`) so the image tracks the stream's aspect ratio automatically. See [UI Canvas](/en/docs/world/ui-canvas) for setting up the canvas itself.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/video-display-inspector.png
+    Show:  the BasisVideoDisplay component in the Inspector with Target Raw Image (and optionally Aspect Fitter) assigned, on a canvas RawImage object.
+    When ready, replace this comment with:
+    ![BasisVideoDisplay bound to a RawImage on a canvas](/img/media-player/video-display-inspector.png)
+*/}
+
+## Audio
+
+### Stereo
+
+Add **`BasisMediaPlayerAudio`** to the player's GameObject alongside an **`AudioSource`**. The player feeds it the decoded sound. Spatialise it like any other `AudioSource` — set its 3D settings so the audio comes from the screen's position in the world.
+
+The player's **Volume** (0–1) and **Mute** fields on `BasisMediaPlayer` drive the audio path.
+
+### Surround / multichannel (5.1, 7.1)
+
+Instead of mixing surround down to one stereo `AudioSource`, you can send each decoded channel to its **own positioned `AudioSource`** — so the centre, surrounds and LFE come from where their speakers sit in the world, and Basis's spatialisation places them for each listener. The package owns playback; you own where the speakers go.
+
+The channels are really just **content lanes**, so this isn't only for cinema surround: you could put a music mix on channels 1–2 and positioned ambience or effects on channels 3–4 of the same stream.
+
+#### How channels map to the stream
+
+A `BasisMediaAudioChannel` selects a channel by number. For a standard surround stream the channels carry the usual WAVE layout:
+
+| Selection | 5.1 / 7.1 role |
+| --- | --- |
+| Channel 1 | Front Left |
+| Channel 2 | Front Right |
+| Channel 3 | Front Centre |
+| Channel 4 | LFE (subwoofer) |
+| Channel 5 | Surround / Back Left |
+| Channel 6 | Surround / Back Right |
+| Channel 7 | Side Left (7.1) |
+| Channel 8 | Side Right (7.1) |
+| Stereo | A stereo downmix of the whole stream |
+
+#### Set it up
+
+The quickest route is the **`Prefabs/MediaPlayerMultiChannelStreaming`** prefab, which already has the routing, the multichannel sink and a set of channel speakers wired up — position its speaker objects, set the stream URL, and play.
+
+To configure it on your own player:
+
+1. On the `BasisMediaPlayer`, set **Audio Routing** to **Unity Multi Channel Sources**.
+2. Add a **`BasisMediaPlayerMultiChannelAudio`** component to the player's GameObject. This replaces the stereo `BasisMediaPlayerAudio` — the routing decides which sink plays, so you don't need both.
+3. Create one child GameObject with an **`AudioSource`** per speaker, and position each one where that speaker should sit in the world. Set each `AudioSource` to 3D (spatial blend 1) so it localises.
+4. Add a **`BasisMediaAudioChannel`** to each speaker `AudioSource` and set its **Channel** to the channel that speaker should play (see the table above).
+5. Add every speaker `AudioSource` to the **Outputs** list on `BasisMediaPlayerMultiChannelAudio`.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/multichannel-audio.png
+    Show:  the BasisMediaPlayerMultiChannelAudio component with its Outputs list of AudioSources, alongside a BasisMediaAudioChannel component on one output with the Channel dropdown open (Channel 1-8 / Stereo).
+    When ready, replace this comment with:
+    ![Multichannel audio outputs with per-source channel selection](/img/media-player/multichannel-audio.png)
+*/}
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/speaker-layout.png
+    Show:  the speaker AudioSource objects positioned around the screen/listening area in the Scene view (front L/C/R, surrounds, etc.), illustrating the channel-to-world layout.
+    When ready, replace this comment with:
+    ![Channel speaker objects positioned around the listening area](/img/media-player/speaker-layout.png)
+*/}
+
+#### Useful behaviours
+
+- **Stereo downmix output** — set a speaker's channel to **Stereo** and it plays a 2-channel fold-down of the whole stream, regardless of how many channels the source has. Handy for a single fallback speaker or a stereo zone.
+- **Fan-out** — the same channel can drive more than one `AudioSource`. Point two speakers at Channel 3 to play the centre/dialogue in two areas of a large space.
+- **Graceful fallback** — an output whose channel isn't present in the current stream simply stays silent, so a 5.1 speaker layout still behaves sensibly when fed a stereo source (the front pair plays, the rest are quiet).
+- **Volume Gain / Mute** — `BasisMediaPlayerMultiChannelAudio` has its own **Volume Gain** and **Mute** that apply across all channels; use each `AudioSource`'s own volume for per-speaker balance.
+
+<Callout type="info">
+5.1 surround over AAC plays on Windows. For 7.1 (eight channels), or to carry surround on platforms whose decoder caps at 5.1, use **LPCM audio over an m2ts MPEG-TS stream** — uncompressed PCM that needs no platform audio decoder, so any channel count up to 7.1 plays everywhere. It is producible with stock ffmpeg (`-c:a pcm_bluray -f mpegts -mpegts_m2ts_mode 1`).
+</Callout>
+
+## Networked playback
+
+For a shared screen, add **`BasisMediaPlayerNetworking`**. It synchronises the URL and playback state (play / pause / stop / seek) across everyone in the room, and corrects late joiners and drift automatically.
+
+- **Allow Anyone To Take Control** — when on (default), any player can change the video or control playback. When off, only the current owner can.
+- **Admin Only** — restrict control to players with the `basis.mediaplayer.control` (or admin `*`) permission. Overrides the setting above.
+- **Drift Seek Threshold Seconds** — remote viewers seek to catch up when they drift more than this far from the owner's position. Set to 0 to disable.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/media-player/networking-inspector.png
+    Show:  the BasisMediaPlayerNetworking component in the Inspector with the Permissions (Admin Only / Allow Anyone To Take Control) and Sync fields visible.
+    When ready, replace this comment with:
+    ![BasisMediaPlayerNetworking permission and sync settings](/img/media-player/networking-inspector.png)
+*/}
+
+<Callout type="warn">
+Network sources should go through the world's trusted-URL flow so players consent before a screen connects to an arbitrary address. Keep control gated (`Admin Only` or owner-only) on public screens you don't want any visitor re-pointing.
+</Callout>
+
+## Scripting
+
+Drive the player from your own components through its public API.
+
+```csharp
+// Load and control
+player.LoadUrl("rtspt://stream.example.com/live/mystream"); // auto-plays by default
+player.Play();
+player.Pause();
+player.Resume();
+player.Stop();
+player.TogglePause();
+
+// Seek (only for seekable sources; live streams are not seekable)
+player.Seek(System.TimeSpan.FromSeconds(30));
+
+// Volume / mute
+player.Volume = 0.8f;  // 0..1
+player.Mute = false;
+player.Loop = true;
+```
+
+React to playback with events:
+
+```csharp
+player.OnReady += () => { /* stream prepared */ };
+player.OnFirstFrameReady += () => { /* first frame is on screen */ };
+player.OnEnded += () => { /* stream ended */ };
+player.OnError += (ex) => { /* connection or decode error */ };
+player.OnOutputTextureChanged += (tex) => { /* picture texture (re)bound */ };
+```
+
+<Callout type="info">
+When a `BasisMediaPlayerNetworking` component is present, prefer routing playback control through it so the change is synced — calling `Play()`/`LoadUrl()` directly on the player only affects the local client.
+</Callout>
+
+## Platform notes
+
+- **Windows (PC / VR)** — H.264 / H.265 video and AAC audio via Media Foundation. HLS and 5.1 AAC surround are supported here.
+- **Android / Quest** — H.264 / H.265 + AAC via AMediaCodec. Use the MPEG-TS (`.ts`) URL for the most reliable path.
+- Latency depends on the protocol and the buffer: RTSPT on PC/VR is the lowest. The player holds a short jitter buffer for smooth playback, and aligns audio to video so lip-sync stays correct across reconnects.
+
+## Next steps
+
+<Cards>
+  <Card
+    title="UI Canvas"
+    description="Set up a canvas to host a RawImage video display"
+    href="/en/docs/world/ui-canvas"
+  />
+  <Card
+    title="Scripting"
+    description="Write C# components that drive the player"
+    href="/en/docs/scripting/scripting"
+  />
+</Cards>
