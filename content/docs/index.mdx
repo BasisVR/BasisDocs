@@ -70,6 +70,10 @@ If you have the correct Unity version already installed but the "Add Modules" op
 
 ## Acquiring the Basis framework
 
+<Callout type="warn">
+**Install Git first — even if you download the project as a ZIP.** Several of the framework's packages are pulled from Git repositories when Unity first opens the project (for example AudioLink, the Valve OpenXR utilities and RNNoise). If Git isn't installed and on your system `PATH`, those packages fail to resolve and the project opens with compile errors. Install [Git](https://git-scm.com/downloads), restart Unity Hub, then open the project. You can confirm Git is on your `PATH` by running `git --version` in a terminal.
+</Callout>
+
 ### Git
 
 You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `developer` or `long-term-support` branches found at https://github.com/BasisVR/Basis or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository, and then open the resulting Unity project on your local computer.

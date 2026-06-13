@@ -1,0 +1,45 @@
+---
+title: Network Syncing
+description: How Basis keeps players in sync — the authoritative server model, what gets replicated, how movement stays smooth, and client/server version compatibility.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Basis is **client–server**: every client connects to a server, and the server is the authority that relays state between players. There's no direct mesh of clients by default — your client sends its state to the server, and the server forwards it to the others (with an optional peer-to-peer path for specific cases, see below).
+
+The transport is **LiteNetLib over UDP**, with several delivery guarantees chosen per message type:
+
+- **Unreliable** for high-rate state like avatar pose and voice — the occasional dropped packet is cheaper to skip than to resend, because a newer update is always close behind.
+- **Reliable / ordered** for things that must arrive and must arrive in order, such as ownership changes.
+
+## What gets synced
+
+- **Avatar pose** — your body and bone transforms, streamed continuously so others see you move.
+- **Voice** — spatialised by default, so a player's voice comes from their position in the world. There's also a non-spatialised broadcast path.
+- **Object ownership** — networked props track which player currently owns them, so only one client drives a given object at a time. Ownership transfers are sent reliably and in order.
+
+## Keeping movement smooth
+
+A few things work together so other players look smooth even over an imperfect connection:
+
+- **Interpolation** — remote avatars are interpolated between received updates rather than snapped to each one, and bone rotations are blended frame to frame.
+- **Jitter absorption** — a smoothing filter absorbs small variations in packet timing without distorting the actual motion path.
+- **Distance-based update rate** — the server sends pose updates for nearby players more often than distant ones. As a player gets further away, their update interval grows, which keeps bandwidth and CPU under control in busy instances while keeping close interactions crisp.
+
+<Callout type="info">
+Because update rate scales with distance, someone across a large world updates less often than someone next to you. This is deliberate — it's what lets instances hold a lot of players without flooding everyone's connection.
+</Callout>
+
+## Peer-to-peer connections
+
+Alongside the server relay, two players can establish a **direct peer-to-peer connection** to each other — used for the per-player direct-connect feature in the [players menu](/en/docs/controls/players-menu). The server still mediates everyone else; P2P is an addition for a specific pair, not a replacement for the server.
+
+## Client and server versions must match
+
+The network protocol is **versioned**. When a client connects, the server checks the client's protocol version against its own. If the client is older than the server expects, the server **rejects the connection** with an *"Outdated client version"* reason rather than letting a mismatched client join.
+
+<Callout type="warn">
+If you self-host, keep your server and clients on compatible builds. A client that's behind the server's protocol version is refused at connect time; protocol changes ship by bumping this version, so an out-of-date client or server is the usual cause of a connection that's rejected immediately.
+</Callout>

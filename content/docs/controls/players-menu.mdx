@@ -1,0 +1,52 @@
+---
+title: Players Menu
+description: The per-player panel in the Basis client — mute, volume, block, pin, highlight, direct connections and more.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Overview
+
+Selecting another player in the menu opens their **player panel** — a set of per-player controls that only affect how *you* see and hear that person. Mutes, volume changes and blocks are local to your client; they don't change anything for anyone else in the room.
+
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/players-menu.png
+    Show:  the individual player panel open for a selected player, with the per-player controls visible.
+    When ready, replace this comment with:
+    ![The per-player options panel](/img/controls/players-menu.png)
+*/}
+
+## What you can do per player
+
+### Audio
+
+- **Mute / Unmute** — silences that player for you. Your volume setting is remembered, so unmuting restores it.
+- **Volume** — a per-player volume slider from silent up to a boost above normal, with a live level meter so you can see them speaking.
+
+### Visibility and interaction
+
+- **Show / Hide avatar** — hides that player's avatar from your view.
+- **Interactions** — enable or disable interacting with their avatar.
+- **Chat visibility** — show or hide their chat messages for you.
+
+### Block
+
+- **Block / Unblock** — a stronger action that applies both audio and avatar visibility at once, behind a confirmation prompt. Blocking is session-aware, so the other player is told you've blocked them for moderation purposes.
+
+### Find and mark players
+
+- **Highlight** — draws a beacon above the player so you can spot them in a crowd (it turns red if they're blocked).
+- **Pin** — marks a player as a favourite so they're easy to find again later. Pins are saved between sessions.
+
+### Talk privately
+
+- **Private chat** — add a player to a private voice group, or switch to talking to **only** that player.
+- **Direct connection** — request a peer-to-peer connection to a specific player. Once connected, the panel shows the round-trip ping, and you can set a per-player policy to ask, always accept or always decline future requests.
+
+### Moderation
+
+- **Teleport to** — jump to a player's location. This is an admin-only action and only appears if you have the permission for it.
+
+<Callout type="info">
+Most of these settings persist per player, so someone you've muted, blocked or set a custom volume for stays that way the next time you meet them.
+</Callout>

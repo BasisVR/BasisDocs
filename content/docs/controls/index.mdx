@@ -1,19 +1,83 @@
 ---
 title: Settings and Controls
+description: Default keyboard, mouse and VR controller bindings for the Basis client, where to rebind them, and where to find logs and library data.
 ---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
 ## Controls
 
-Let's create a page to cover the available controls in BasisVR
+Basis has a fuller set of controls than most people realise on first launch. This page is a quick reference for the defaults across desktop and VR, and where to change them.
 
+<Callout type="info">
+Every keyboard binding below is **rebindable** in-client under **Settings → Keyboard Bindings**. The button for each control shows its current key, and the default in brackets if you've changed it. **Escape** cancels a rebind in progress, and you can reset everything back to defaults from the same panel.
+</Callout>
 
-## Keyboard Shortcuts
+{/* IMAGE PLACEHOLDER
+    File:  public/img/controls/keyboard-bindings.png
+    Show:  the in-client Settings → Keyboard Bindings panel with the grouped, rebindable controls visible.
+    When ready, replace this comment with:
+    ![The Keyboard Bindings settings panel](/img/controls/keyboard-bindings.png)
+*/}
 
-- F9: switch to Desktop
+### Movement
 
-- F10: switch to OpenXR
+| Action | Default key |
+| --- | --- |
+| Forward / Back / Left / Right | `W` `S` `A` `D` |
+| Movement (alternative) | Arrow keys |
+| Jump | `Space` |
+| Sprint | `Left Shift` |
+| Crouch | `C` |
+| Fly up / down | `R` / `F` |
 
-- F11: Switch to OpenVR
+### Camera (desktop)
+
+| Action | Default |
+| --- | --- |
+| Look | Move the mouse |
+| Look (keyboard alternative) | `I` `K` `J` `L` (and `,` `.`) |
+| Toggle third-person view | `F` |
+| Zoom (in third-person) | Mouse scroll wheel |
+| Interact / select | Left mouse button |
+
+### Communication and menus
+
+| Action | Default key |
+| --- | --- |
+| Toggle microphone | `V` |
+| Open chat | `Y` |
+| Free cursor (unlock mouse for UI) | `Tab` |
+| Open / close menu | `Escape` |
+
+<Callout type="info">
+**Toggle microphone** depends on your microphone mode. With push-to-talk, `V` transmits while held; in toggle mode it switches the mic on and off. Set the mode in the audio settings.
+</Callout>
+
+### Switching input mode
+
+You can move between desktop and the two XR runtimes at runtime:
+
+| Key | Mode |
+| --- | --- |
+| `F9` | Desktop |
+| `F10` | OpenXR |
+| `F11` | OpenVR |
+
+### VR controllers
+
+In VR the same actions map to the controllers rather than the keyboard:
+
+- **Thumbstick** — movement (one controller) and turning (the other).
+- **Trigger** — interact / select, the controller equivalent of left mouse button.
+- **Grip** — used for descending in fly mode and for grabbing.
+- **Primary face button** — jump.
+- **Menu / system button** — opens the menu.
+
+<Callout type="info">
+VR controller bindings aren't part of the keyboard rebinding panel — they're driven by the active OpenXR / OpenVR interaction profile for your headset.
+</Callout>
 
 ## Help with Debugging
 
@@ -42,5 +106,5 @@ Let's create a page to cover the available controls in BasisVR
   It stores a mapping of the avatars, worlds, and props currently contained in your library.
 
 <Callout>
-Within the codebase, you can also find there is an `EmbeddedItems` class containing library items that are embedded into the application.   
+Within the codebase, you can also find there is an `EmbeddedItems` class containing library items that are embedded into the application.
 </Callout>
