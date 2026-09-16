@@ -72,17 +72,40 @@ https://docs.unity3d.com/Manual/system-requirements.html
 
 ### Git
 
-Вы можете напрямую [клонировать](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) ветки `developer` или `long-term-support` с https://github.com/BasisVR/Basis или [форкнуть](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) в собственный локальный репозиторий, а затем открыть полученный проект Unity на своём компьютере.
+Вы можете напрямую [клонировать](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) ветки `developer` или `long-term-support` с https://github.com/BasisVR/Basis или [форкнуть](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) в собственный локальный репозиторий. Проект Unity находится в подпапке `Basis` внутри клона (`Basis/Basis`), см. раздел [Открытие проекта в Unity Hub](#opening-the-project-in-unity-hub) ниже.
 
 ### Прямое скачивание ZIP
 
 Для тех, кто хочет обойтись без Git:
 
 - Выберите выпадающее меню «Code» в правом верхнем углу, затем «Скачать ZIP».
-- Распакуйте ZIP в любую папку.
-- Добавьте подпапку Basis как существующий проект в Unity Hub.
+- Распакуйте ZIP в любую папку. Архив распаковывается в папку с именем ветки, например `Basis-developer`.
+- Добавьте находящуюся внутри неё подпапку `Basis` как существующий проект в Unity Hub, как описано в разделе [Открытие проекта в Unity Hub](#opening-the-project-in-unity-hub).
 
 ![Скачать ZIP с GitHub](/img/getting-started/3.png)
+
+### Открытие проекта в Unity Hub [#opening-the-project-in-unity-hub]
+
+Папка, которую вы клонировали или распаковали, содержит весь репозиторий Basis, а не только проект Unity. Проект Unity находится в подпапке `Basis` внутри неё, рядом с папками сервера и инструментов:
+
+```text
+Basis-developer/         распакованная папка (клон Git называется просто Basis)
+├── Basis/               проект Unity: именно эту папку нужно добавить в Unity Hub
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- В Unity Hub откройте вкладку **Projects**, нажмите **Add** (**Open** в старых версиях Hub) и выберите **Add project from disk**.
+- Перейдите в распакованную или клонированную папку, выберите вложенную папку `Basis` и подтвердите выбор.
+- Проект появится в списке Unity Hub. Нажмите на него, чтобы открыть.
+
+<Callout type="warn">
+Правильная папка содержит `Assets`, `Packages` и `ProjectSettings`. Если вместо неё выбрать папку верхнего уровня (например `Basis-developer`), Unity Hub не распознает её как проект Unity.
+</Callout>
 
 ## Ресурсы
 

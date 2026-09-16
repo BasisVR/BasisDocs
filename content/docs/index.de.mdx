@@ -72,17 +72,40 @@ Wenn Sie bereits die richtige Unity-Version installiert haben, die Option "Modul
 
 ### Git
 
-Sie können die `developer`- oder `long-term-support`-Branches direkt [klonen](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) unter https://github.com/BasisVR/Basis oder in Ihr eigenes lokales Repository [forken](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) und dann das resultierende Unity-Projekt auf Ihrem Computer öffnen.
+Sie können die `developer`- oder `long-term-support`-Branches direkt [klonen](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) unter https://github.com/BasisVR/Basis oder in Ihr eigenes lokales Repository [forken](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo). Das Unity-Projekt ist der Unterordner `Basis` innerhalb des Klons (`Basis/Basis`), siehe [Das Projekt in Unity Hub öffnen](#opening-the-project-in-unity-hub) weiter unten.
 
 ### Direkter ZIP-Download
 
 Für diejenigen, die auf Git verzichten möchten:
 
 - Wählen Sie das Dropdown-Menü "Code" oben rechts und dann ZIP herunterladen.
-- Entpacken Sie die ZIP-Datei in einen beliebigen Ordner.
-- Fügen Sie den Basis-Unterordner als vorhandenes Projekt in Unity Hub hinzu.
+- Entpacken Sie die ZIP-Datei in einen beliebigen Ordner. Sie wird in einen nach dem Branch benannten Ordner entpackt, zum Beispiel `Basis-developer`.
+- Fügen Sie den darin enthaltenen Unterordner `Basis` als vorhandenes Projekt in Unity Hub hinzu, wie unter [Das Projekt in Unity Hub öffnen](#opening-the-project-in-unity-hub) beschrieben.
 
 ![ZIP von GitHub herunterladen](/img/getting-started/3.png)
+
+### Das Projekt in Unity Hub öffnen [#opening-the-project-in-unity-hub]
+
+Der Ordner, den Sie geklont oder entpackt haben, ist das gesamte Basis-Repository, nicht das Unity-Projekt. Das Unity-Projekt ist der Unterordner `Basis` darin, neben den Ordnern für Server und Werkzeuge:
+
+```text
+Basis-developer/         der entpackte Ordner (ein Git-Klon heißt einfach Basis)
+├── Basis/               das Unity-Projekt: diesen Ordner in Unity Hub hinzufügen
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- Öffnen Sie in Unity Hub den Tab **Projects**, klicken Sie auf **Add** (**Open** in älteren Hub-Versionen) und wählen Sie **Add project from disk**.
+- Navigieren Sie in den entpackten bzw. geklonten Ordner, wählen Sie den inneren Ordner `Basis` aus und bestätigen Sie.
+- Das Projekt erscheint jetzt in der Liste von Unity Hub. Klicken Sie darauf, um es zu öffnen.
+
+<Callout type="warn">
+Der richtige Ordner ist derjenige, der `Assets`, `Packages` und `ProjectSettings` enthält. Wenn Sie stattdessen den obersten Ordner (zum Beispiel `Basis-developer`) auswählen, erkennt Unity Hub ihn nicht als Unity-Projekt.
+</Callout>
 
 ## Ressourcen
 

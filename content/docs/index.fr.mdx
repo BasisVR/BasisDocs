@@ -72,17 +72,40 @@ Si vous avez déjà la bonne version de Unity installée mais que l'option "Ajou
 
 ### Git
 
-Vous pouvez directement [cloner](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) les branches `developer` ou `long-term-support` disponibles sur https://github.com/BasisVR/Basis, ou [forker](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) dans votre propre dépôt local, puis ouvrir le projet Unity résultant sur votre ordinateur.
+Vous pouvez directement [cloner](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) les branches `developer` ou `long-term-support` disponibles sur https://github.com/BasisVR/Basis, ou [forker](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) dans votre propre dépôt local. Le projet Unity est le sous-dossier `Basis` situé dans le clone (`Basis/Basis`), voir [Ouvrir le projet dans Unity Hub](#opening-the-project-in-unity-hub) ci-dessous.
 
 ### Téléchargement ZIP direct
 
 Pour ceux qui souhaitent éviter Git :
 
 - Sélectionnez le menu déroulant "Code" en haut à droite, puis Télécharger ZIP.
-- Décompressez le ZIP dans n'importe quel dossier de votre choix.
-- Ajoutez le sous-dossier Basis comme projet existant dans Unity Hub.
+- Décompressez le ZIP dans n'importe quel dossier de votre choix. Il se décompresse dans un dossier portant le nom de la branche, par exemple `Basis-developer`.
+- Ajoutez le sous-dossier `Basis` qu'il contient comme projet existant dans Unity Hub, comme décrit dans [Ouvrir le projet dans Unity Hub](#opening-the-project-in-unity-hub).
 
 ![Télécharger ZIP depuis GitHub](/img/getting-started/3.png)
+
+### Ouvrir le projet dans Unity Hub [#opening-the-project-in-unity-hub]
+
+Le dossier que vous avez cloné ou décompressé est le dépôt Basis complet, pas le projet Unity. Le projet Unity est le sous-dossier `Basis` qu'il contient, à côté des dossiers du serveur et des outils :
+
+```text
+Basis-developer/         le dossier décompressé (un clone Git s'appelle simplement Basis)
+├── Basis/               le projet Unity : c'est ce dossier qu'il faut ajouter dans Unity Hub
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- Dans Unity Hub, ouvrez l'onglet **Projects**, cliquez sur **Add** (**Open** dans les anciennes versions de Hub) et choisissez **Add project from disk**.
+- Naviguez dans le dossier décompressé ou cloné, sélectionnez le dossier intérieur `Basis` et validez.
+- Le projet apparaît maintenant dans la liste de Unity Hub. Cliquez dessus pour l'ouvrir.
+
+<Callout type="warn">
+Le bon dossier est celui qui contient `Assets`, `Packages` et `ProjectSettings`. Si vous choisissez à la place le dossier de premier niveau (par exemple `Basis-developer`), Unity Hub ne le reconnaîtra pas comme un projet Unity.
+</Callout>
 
 ## Ressources
 

@@ -72,17 +72,40 @@ Se hai già installata la versione corretta di Unity ma l'opzione "Aggiungi modu
 
 ### Git
 
-Puoi direttamente [clonare](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) i branch `developer` o `long-term-support` disponibili su https://github.com/BasisVR/Basis oppure [fare un fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) nel tuo repository locale, quindi aprire il progetto Unity risultante sul tuo computer.
+Puoi direttamente [clonare](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) i branch `developer` o `long-term-support` disponibili su https://github.com/BasisVR/Basis oppure [fare un fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) nel tuo repository locale. Il progetto Unity è la sottocartella `Basis` all'interno del clone (`Basis/Basis`), vedi [Aprire il progetto in Unity Hub](#opening-the-project-in-unity-hub) più avanti.
 
 ### Download ZIP diretto
 
 Per chi preferisce non usare Git:
 
 - Seleziona il menu a tendina 'Code' in alto a destra e poi Scarica ZIP.
-- Estrai lo ZIP in qualsiasi cartella o destinazione desideri.
-- Aggiungi la sottocartella Basis come progetto esistente in Unity Hub.
+- Estrai lo ZIP in qualsiasi cartella o destinazione desideri. Viene estratto in una cartella con il nome del branch, ad esempio `Basis-developer`.
+- Aggiungi la sottocartella `Basis` al suo interno come progetto esistente in Unity Hub, come descritto in [Aprire il progetto in Unity Hub](#opening-the-project-in-unity-hub).
 
 ![Scarica ZIP da GitHub](/img/getting-started/3.png)
+
+### Aprire il progetto in Unity Hub [#opening-the-project-in-unity-hub]
+
+La cartella che hai clonato o estratto è l'intero repository Basis, non il progetto Unity. Il progetto Unity è la sottocartella `Basis` al suo interno, accanto alle cartelle del server e degli strumenti:
+
+```text
+Basis-developer/         la cartella estratta (un clone Git si chiama semplicemente Basis)
+├── Basis/               il progetto Unity: questa è la cartella da aggiungere in Unity Hub
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- In Unity Hub apri la scheda **Projects**, fai clic su **Add** (**Open** nelle versioni precedenti di Hub) e scegli **Add project from disk**.
+- Entra nella cartella estratta o clonata, seleziona la cartella interna `Basis` e conferma.
+- Il progetto compare ora nell'elenco di Unity Hub. Fai clic su di esso per aprirlo.
+
+<Callout type="warn">
+La cartella corretta è quella che contiene `Assets`, `Packages` e `ProjectSettings`. Se invece scegli la cartella di primo livello (ad esempio `Basis-developer`), Unity Hub non la riconoscerà come progetto Unity.
+</Callout>
 
 ## Risorse
 

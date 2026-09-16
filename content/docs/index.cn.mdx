@@ -72,17 +72,40 @@ https://docs.unity3d.com/Manual/system-requirements.html
 
 ### Git
 
-您可以直接[克隆](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) https://github.com/BasisVR/Basis 上的 `developer` 或 `long-term-support` 分支，或将其[复刻](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)到您自己的本地仓库，然后在本地计算机上打开生成的 Unity 项目。
+您可以直接[克隆](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) https://github.com/BasisVR/Basis 上的 `developer` 或 `long-term-support` 分支，或将其[复刻](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)到您自己的本地仓库。Unity 项目是克隆目录内的 `Basis` 子文件夹（`Basis/Basis`），请参阅下方的[在 Unity Hub 中打开项目](#opening-the-project-in-unity-hub)。
 
 ### 直接下载 ZIP
 
 对于希望跳过 Git 体验的用户：
 
 - 选择右上角的"Code"下拉菜单，然后点击"下载 ZIP"。
-- 将 ZIP 解压到任意文件夹。
-- 将 Basis 子文件夹作为现有项目添加到 Unity Hub。
+- 将 ZIP 解压到任意文件夹。解压后会得到一个以分支命名的文件夹，例如 `Basis-developer`。
+- 将其中的 `Basis` 子文件夹作为现有项目添加到 Unity Hub，具体步骤见下方的[在 Unity Hub 中打开项目](#opening-the-project-in-unity-hub)。
 
 ![从 GitHub 下载 ZIP](/img/getting-started/3.png)
+
+### 在 Unity Hub 中打开项目 [#opening-the-project-in-unity-hub]
+
+您克隆或解压得到的文件夹是整个 Basis 仓库，而不是 Unity 项目。Unity 项目是其中的 `Basis` 子文件夹，与服务器和工具文件夹并列：
+
+```text
+Basis-developer/         您解压得到的文件夹（Git 克隆的文件夹名为 Basis）
+├── Basis/               Unity 项目：在 Unity Hub 中添加的是这个文件夹
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- 在 Unity Hub 中打开 **Projects** 标签页，点击 **Add**（旧版 Hub 中为 **Open**），然后选择 **Add project from disk**。
+- 进入您解压或克隆得到的文件夹，选择其中的 `Basis` 文件夹并确认。
+- 项目现在会出现在 Unity Hub 的列表中，点击即可打开。
+
+<Callout type="warn">
+正确的文件夹是包含 `Assets`、`Packages` 和 `ProjectSettings` 的那个。如果您选择了顶层文件夹（例如 `Basis-developer`），Unity Hub 不会将其识别为 Unity 项目。
+</Callout>
 
 ## 资源
 

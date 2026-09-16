@@ -72,17 +72,40 @@ Unity Editor 버전 설치 시 "모듈 추가" 화면에서 다음 모듈을 추
 
 ### Git
 
-https://github.com/BasisVR/Basis 에서 `developer` 또는 `long-term-support` 브랜치를 직접 [클론](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)하거나 자신의 로컬 저장소로 [포크](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)한 후 로컬 컴퓨터에서 Unity 프로젝트를 열 수 있습니다.
+https://github.com/BasisVR/Basis 에서 `developer` 또는 `long-term-support` 브랜치를 직접 [클론](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)하거나 자신의 로컬 저장소로 [포크](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)할 수 있습니다. Unity 프로젝트는 클론 안의 `Basis` 하위 폴더(`Basis/Basis`)입니다. 아래의 [Unity Hub에서 프로젝트 열기](#opening-the-project-in-unity-hub)를 참조하세요.
 
 ### ZIP 직접 다운로드
 
 Git을 사용하지 않으려는 경우:
 
 - 오른쪽 상단의 'Code' 드롭다운을 선택한 후 ZIP 다운로드를 클릭합니다.
-- ZIP을 원하는 폴더나 위치에 압축 해제합니다.
-- Unity Hub에서 Basis 하위 폴더를 기존 프로젝트로 추가합니다.
+- ZIP을 원하는 폴더나 위치에 압축 해제합니다. 브랜치 이름이 붙은 폴더(예: `Basis-developer`)로 압축이 풀립니다.
+- 그 안에 있는 `Basis` 하위 폴더를 Unity Hub에서 기존 프로젝트로 추가합니다. 자세한 방법은 아래의 [Unity Hub에서 프로젝트 열기](#opening-the-project-in-unity-hub)를 참조하세요.
 
 ![GitHub에서 ZIP 다운로드](/img/getting-started/3.png)
+
+### Unity Hub에서 프로젝트 열기 [#opening-the-project-in-unity-hub]
+
+클론하거나 압축 해제한 폴더는 Basis 저장소 전체이며 Unity 프로젝트가 아닙니다. Unity 프로젝트는 그 안의 `Basis` 하위 폴더이며, 서버 및 도구 폴더와 나란히 있습니다:
+
+```text
+Basis-developer/         압축 해제한 폴더(Git 클론의 경우 이름은 그냥 Basis)
+├── Basis/               Unity 프로젝트: Unity Hub에 추가할 폴더는 바로 이 폴더
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- Unity Hub에서 **Projects** 탭을 열고 **Add**(구버전 Hub에서는 **Open**)를 클릭한 다음 **Add project from disk**를 선택합니다.
+- 압축 해제하거나 클론한 폴더로 들어가서 안쪽의 `Basis` 폴더를 선택하고 확인합니다.
+- 이제 프로젝트가 Unity Hub 목록에 표시됩니다. 클릭하여 엽니다.
+
+<Callout type="warn">
+올바른 폴더는 `Assets`, `Packages`, `ProjectSettings`가 들어 있는 폴더입니다. 대신 최상위 폴더(예: `Basis-developer`)를 선택하면 Unity Hub가 이를 Unity 프로젝트로 인식하지 않습니다.
+</Callout>
 
 ## 리소스
 

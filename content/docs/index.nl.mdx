@@ -72,17 +72,40 @@ Als je de juiste Unity-versie al hebt geïnstalleerd maar de optie "Modules toev
 
 ### Git
 
-Je kunt de `developer`- of `long-term-support`-branches op https://github.com/BasisVR/Basis rechtstreeks [klonen](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) of [forken](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) naar je eigen lokale repository, en vervolgens het resulterende Unity-project op je computer openen.
+Je kunt de `developer`- of `long-term-support`-branches op https://github.com/BasisVR/Basis rechtstreeks [klonen](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) of [forken](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) naar je eigen lokale repository. Het Unity-project is de submap `Basis` in de kloon (`Basis/Basis`), zie [Het project openen in Unity Hub](#opening-the-project-in-unity-hub) hieronder.
 
 ### Direct ZIP-download
 
 Voor degenen die de Git-ervaring willen overslaan:
 
 - Selecteer het vervolgkeuzemenu 'Code' rechtsboven en klik op Download ZIP.
-- Pak het ZIP-bestand uit naar een map naar keuze.
-- Voeg de Basis-submap toe als een bestaand project in Unity Hub.
+- Pak het ZIP-bestand uit naar een map naar keuze. Het wordt uitgepakt in een map met de naam van de branch, bijvoorbeeld `Basis-developer`.
+- Voeg de submap `Basis` daarin toe als een bestaand project in Unity Hub, zoals beschreven in [Het project openen in Unity Hub](#opening-the-project-in-unity-hub).
 
 ![ZIP downloaden van GitHub](/img/getting-started/3.png)
+
+### Het project openen in Unity Hub [#opening-the-project-in-unity-hub]
+
+De map die je hebt gekloond of uitgepakt is de volledige Basis-repository, niet het Unity-project. Het Unity-project is de submap `Basis` daarin, naast de mappen voor de server en de tools:
+
+```text
+Basis-developer/         de uitgepakte map (een Git-kloon heet gewoon Basis)
+├── Basis/               het Unity-project: dit is de map die je in Unity Hub toevoegt
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- Open in Unity Hub het tabblad **Projects**, klik op **Add** (**Open** in oudere Hub-versies) en kies **Add project from disk**.
+- Blader naar de uitgepakte of gekloonde map, selecteer de binnenste map `Basis` en bevestig.
+- Het project staat nu in de lijst van Unity Hub. Klik erop om het te openen.
+
+<Callout type="warn">
+De juiste map is de map die `Assets`, `Packages` en `ProjectSettings` bevat. Kies je in plaats daarvan de bovenste map (bijvoorbeeld `Basis-developer`), dan herkent Unity Hub deze niet als een Unity-project.
+</Callout>
 
 ## Bronnen
 

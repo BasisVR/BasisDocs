@@ -72,17 +72,40 @@ Unityエディターバージョンのインストール時に「モジュール
 
 ### Git
 
-https://github.com/BasisVR/Basis にある`developer`または`long-term-support`ブランチを直接[クローン](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)するか、自分のローカルリポジトリに[フォーク](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)して、ローカルコンピュータでUnityプロジェクトを開くことができます。
+https://github.com/BasisVR/Basis にある`developer`または`long-term-support`ブランチを直接[クローン](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository)するか、自分のローカルリポジトリに[フォーク](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo)することができます。Unityプロジェクトはクローン内の`Basis`サブフォルダ（`Basis/Basis`）です。下記の[Unity Hubでプロジェクトを開く](#opening-the-project-in-unity-hub)を参照してください。
 
 ### ZIPの直接ダウンロード
 
 Gitを使わずに進めたい方：
 
 - 右上の「Code」ドロップダウンを選択し、「ZIP をダウンロード」をクリックします。
-- ZIPを任意のフォルダに解凍します。
-- BasisサブフォルダをUnity Hubに既存プロジェクトとして追加します。
+- ZIPを任意のフォルダに解凍します。ブランチ名の付いたフォルダ（例：`Basis-developer`）に展開されます。
+- その中の`Basis`サブフォルダをUnity Hubに既存プロジェクトとして追加します。手順は下記の[Unity Hubでプロジェクトを開く](#opening-the-project-in-unity-hub)を参照してください。
 
 ![GitHubからZIPをダウンロード](/img/getting-started/3.png)
+
+### Unity Hubでプロジェクトを開く [#opening-the-project-in-unity-hub]
+
+クローンまたは解凍したフォルダはBasisリポジトリ全体であり、Unityプロジェクトではありません。Unityプロジェクトはその中の`Basis`サブフォルダで、サーバーやツールのフォルダと並んでいます：
+
+```text
+Basis-developer/         解凍したフォルダ（Gitクローンの場合は単にBasis）
+├── Basis/               Unityプロジェクト：Unity Hubに追加するのはこのフォルダ
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- Unity Hubで**Projects**タブを開き、**Add**（古いバージョンのHubでは**Open**）をクリックして**Add project from disk**を選択します。
+- 解凍またはクローンしたフォルダの中に入り、内側の`Basis`フォルダを選択して確定します。
+- プロジェクトがUnity Hubの一覧に表示されます。クリックして開いてください。
+
+<Callout type="warn">
+正しいフォルダは`Assets`、`Packages`、`ProjectSettings`を含むフォルダです。代わりに最上位のフォルダ（例：`Basis-developer`）を選択すると、Unity HubはそれをUnityプロジェクトとして認識しません。
+</Callout>
 
 ## リソース
 

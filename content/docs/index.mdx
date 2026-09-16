@@ -76,17 +76,40 @@ If you have the correct Unity version already installed but the "Add Modules" op
 
 ### Git
 
-You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `developer` or `long-term-support` branches found at https://github.com/BasisVR/Basis or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository, and then open the resulting Unity project on your local computer.
+You can either directly [clone](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) the `developer` or `long-term-support` branches found at https://github.com/BasisVR/Basis or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) it to your own local repository. The Unity project is the `Basis` sub-folder inside the clone (`Basis/Basis`), see [Opening the project in Unity Hub](#opening-the-project-in-unity-hub) below.
 
 ### Direct Zip Download
 
 For those wishing to forgo the Git experience:
 
 - Select 'Code' dropdown in the top right then Download ZIP.
-- Unpack ZIP to any folder or destination you like.
-- Add the Basis sub-folder as an existing Project in Unity Hub
+- Unpack ZIP to any folder or destination you like. It unpacks to a folder named after the branch, for example `Basis-developer`.
+- Add the `Basis` sub-folder inside it as an existing project in Unity Hub, as described in [Opening the project in Unity Hub](#opening-the-project-in-unity-hub) below.
 
 ![Download ZIP from GitHub](/img/getting-started/3.png)
+
+### Opening the project in Unity Hub [#opening-the-project-in-unity-hub]
+
+The folder you cloned or unpacked is the whole Basis repository, not the Unity project. The Unity project is the `Basis` sub-folder inside it, next to the server and tooling folders:
+
+```text
+Basis-developer/         the folder you unpacked (a Git clone is simply named Basis)
+├── Basis/               the Unity project: this is the folder to add in Unity Hub
+│   ├── Assets/
+│   ├── Packages/
+│   └── ProjectSettings/
+├── Basis Server/
+├── tools/
+└── ...
+```
+
+- In Unity Hub open the **Projects** tab, click **Add** (**Open** in older Hub versions) and choose **Add project from disk**.
+- Browse into the folder you unpacked or cloned, select the inner `Basis` folder and confirm.
+- The project now appears in the Unity Hub list. Click it to open it.
+
+<Callout type="warn">
+The correct folder is the one that contains `Assets`, `Packages` and `ProjectSettings`. If you pick the top-level folder (for example `Basis-developer`) instead, Unity Hub will not recognise it as a Unity project.
+</Callout>
 
 ## Resources
 
