@@ -2,12 +2,11 @@
 
 import { useEffect } from "react";
 
-
 type PList = {
   id: string;
-  label: string;
-  href: string;
-  fetchUrl: string;
+  label: string;    // link label
+  href: string;     // backup link in case data cant be loaded
+  fetchUrl: string; // pulls data from this url
 };
 
 export default function PPull({ id, label, href, fetchUrl }: PList) {
@@ -23,8 +22,8 @@ export default function PPull({ id, label, href, fetchUrl }: PList) {
       .then((text) => {
         const pre = document.createElement("pre");
         const code = document.createElement("code");
-        code.textContent = text;
-        pre.appendChild(code);
+        code.textContent = text;  // pull text into new element
+        pre.appendChild(code);   
         status.replaceWith(pre);
       })
       .catch(() => {
@@ -34,7 +33,7 @@ export default function PPull({ id, label, href, fetchUrl }: PList) {
 
   return (
     <p id={id}>
-      <a href={href}>{label}</a>
+      <a href={href}>{label}</a> 
     </p>
-  );
+  ); // throw label only on fail
 }
