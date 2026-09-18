@@ -23,12 +23,12 @@ export default function PPull({ id, label, href, fetchUrl }: PList) {
       .then((text) => {
         const pre = document.createElement("pre");
         const code = document.createElement("code");
-        code.txtI = text;
+        code.textContent = text;
         pre.appendChild(code);
         status.replaceWith(pre);
       })
       .catch(() => {
-        status.querySelector("a").txtI = label;
+        status.querySelector("a").textContent = label;
       });
   }, [id, label, fetchUrl]);
 
