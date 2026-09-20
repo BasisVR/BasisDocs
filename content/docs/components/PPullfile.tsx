@@ -16,7 +16,7 @@ export default function PPull({ id, label, href, fetchUrl }: PList) {
 
     fetch(fetchUrl)
       .then((r) => {
-        if (!r.ok) throw new Error(r.status);
+        if (!r.ok) throw new Error(`${r.status}`);
         return r.text();
       })
       .then((text) => {
@@ -27,7 +27,8 @@ export default function PPull({ id, label, href, fetchUrl }: PList) {
         status.replaceWith(pre);
       })
       .catch(() => {
-        status.querySelector("a").textContent = label;
+        const anchor = status?.querySelector("a");
+        if (anchor) anchor.textContent = label; // show fallback label on fail
       });
   }, [id, label, fetchUrl]);
 
