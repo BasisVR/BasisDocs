@@ -16,8 +16,6 @@ Basis를 사용하면 원격 URL 위치에서 아바타 .BEE 파일을 로드할
 
 이를 지원하려면 원격 위치에 직접 링크해야 합니다. 이 예제에서는 Google Drive를 사용합니다.
 
-(Google Drive는 바이러스 검사 정책으로 인해 최대 100MB 파일의 직접 링크를 지원합니다.)
-
 **BEE 파일**을 Google Drive 또는 로그인 없이 파일에 직접 링크할 수 있는 호스팅 공급자에 업로드합니다.
 
 - 드라이브에 폴더를 만들고 공유 설정을 "링크가 있는 모든 사용자"로 설정합니다.
@@ -44,6 +42,10 @@ https://drive.google.com/uc?export=download&id=
 https://drive.google.com/uc?export=download&id=YourIDBringsAllTheLagToMyYard
 ```
 <UrlConverter />
+
+<Callout type="warn">
+Google Drive는 바이러스 검사 정책으로 인해 최대 100MB 파일의 직접 링크를 지원합니다.
+</Callout>
 
 <Callout type="warn">
 **생성된 비밀번호 파일을 업로드하거나 공유하지 마세요**
