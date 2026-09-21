@@ -1,4 +1,6 @@
-import { dirname } from 'path';
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'; //new rules for Next 16.0+ see: https://nextjs.org/docs/app/api-reference/config/eslint
+import nextTypescript from 'eslint-config-next/typescript';         //new rules for Next 16.0+ see: https://nextjs.org/docs/app/api-reference/config/eslint
+import { dirname } from 'path';                                     //left old approach in just in case.
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
 
@@ -10,7 +12,8 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript'),
+  ...nextCoreWebVitals,
+  ...nextTypescript,
   {
     ignores: [
       'node_modules/**',

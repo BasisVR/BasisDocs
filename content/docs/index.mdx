@@ -5,8 +5,11 @@ icon: BookOpen
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
+import PPull from './components/PPullfile';
 
-Welcome to the Basis wiki!
+
+
+# Welcome to the Basis wiki!
 
 This page will help provide the minimum required steps, in order to get a Basis project up and running, including how-to guides for creating Avatars and World asset bundles.
 
@@ -14,17 +17,25 @@ This page will help provide the minimum required steps, in order to get a Basis 
 
 https://docs.unity3d.com/Manual/system-requirements.html
 
-## Installing Unity
-
-- Hub - https://unity.com/download
-- Standalone - https://unity.com/releases/editor/archive
-
 ### Compatible Unity Versions
 
-Depending on the branch used, please observe the version of Unity Editor that the framework is built upon:
+Basis is developed against and frequently upgraded to recent Unity versions, current project versions are as follows:
 
-✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
-✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+**✓ Developer**
+<PPull id="txt1" label="Dev Project Version"
+  href="https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt"
+  fetchUrl="https://raw.githubusercontent.com/BasisVR/Basis/refs/heads/developer/Basis/ProjectSettings/ProjectVersion.txt" />
+
+**✓ Long-Term-Support**
+<PPull id="txt2" label="LTS Project Version"
+  href="https://github.com/BasisVR/Basis/blob/long-term-support-20260916/Basis/ProjectSettings/ProjectVersion.txt"
+  fetchUrl="https://raw.githubusercontent.com/BasisVR/Basis/refs/heads/long-term-support-20260916/Basis/ProjectSettings/ProjectVersion.txt" /> {/* has to be manually updated for now as new LTS Versions are made, due to different tags */}
+
+## Installing Unity
+
+We recommend installing Unity through Unity Hub. When adding the Basis/ subfolder of the repository, Unity Hub will automatically detect its project version.
+- Hub - https://unity.com/download
+- Standalone - https://unity.com/releases/editor/archive
 
 ### Additional Unity Modules
 
