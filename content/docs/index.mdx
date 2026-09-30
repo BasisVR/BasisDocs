@@ -6,6 +6,7 @@ icon: BookOpen
 
 import { Callout } from 'fumadocs-ui/components/callout';
 import PPull from '@/components/PPullfile';
+import PPullLatestLTS from '@/components/PPullLatestLTS';
 
 
 
@@ -22,14 +23,12 @@ https://docs.unity3d.com/Manual/system-requirements.html
 Basis is developed against and frequently upgraded to recent Unity versions, current project versions are as follows:
 
 **✓ Developer**
-<PPull id="txt1" label="Dev Project Version"
-  href="https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt"
+<PPull id="txt1" label="developer"
+  href="https://github.com/BasisVR/Basis/tree/developer"
   fetchUrl="https://raw.githubusercontent.com/BasisVR/Basis/refs/heads/developer/Basis/ProjectSettings/ProjectVersion.txt" />
 
 **✓ Long-Term-Support**
-<PPull id="txt2" label="LTS Project Version"
-  href="https://github.com/BasisVR/Basis/blob/long-term-support-20260916/Basis/ProjectSettings/ProjectVersion.txt"
-  fetchUrl="https://raw.githubusercontent.com/BasisVR/Basis/refs/heads/long-term-support-20260916/Basis/ProjectSettings/ProjectVersion.txt" /> {/* has to be manually updated for now as new LTS Versions are made, due to different tags */}
+<PPullLatestLTS id="txt2" fallbackBranch="long-term-support-20260916" />
 
 ## Installing Unity
 

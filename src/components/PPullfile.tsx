@@ -1,40 +1,70 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { CodeBlock, Pre } from "fumadocs-ui/components/codeblock";
 
 type PList = {
   id: string;
-  label: string;    // link label
-  href: string;     // backup link in case data cant be loaded
-  fetchUrl: string; // pulls data from this url
+  label: string;   // Link label
+  href: string;     // Link and fallback when the content cannot be loaded
+  fetchUrl: string; // Text file URL
 };
 
-export default function PPull({ id, label, href, fetchUrl }: PList) {
-  useEffect(() => {
-    const status = document.getElementById(id);
-    if (!status) return;
+type PulledContent = { fetchUrl: string } & (
+  | { kind: "unity"; version: string; revision: string }
+  | { kind: "text"; text: string }
+);
 
-    fetch(fetchUrl)
-      .then((r) => {
-        if (!r.ok) throw new Error(`${r.status}`);
-        return r.text();
+export default function PPull({ id, label, href, fetchUrl }: PList) {
+  const [loadedContent, setLoadedContent] = useState<PulledContent | null>(null);
+  const currentContent = loadedContent?.fetchUrl === fetchUrl ? loadedContent : null;
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    fetch(fetchUrl, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error(`${response.status}`);
+        return response.text();
       })
       .then((text) => {
-        const pre = document.createElement("pre");
-        const code = document.createElement("code");
-        code.textContent = text;  // pull text into new element
-        pre.appendChild(code);   
-        status.replaceWith(pre);
+        if (controller.signal.aborted) return;
+
+        const match = text.match(
+          /^m_EditorVersionWithRevision:[ \t]*([0-9][A-Za-z0-9.]*)[ \t]+\(([0-9a-fA-F]{12})\)[ \t]*\r?$/m,
+        );
+        setLoadedContent(match
+          ? { fetchUrl, kind: "unity", version: match[1], revision: match[2] }
+          : { fetchUrl, kind: "text", text });
       })
       .catch(() => {
-        const anchor = status?.querySelector("a");
-        if (anchor) anchor.textContent = label; // show fallback label on fail
+        // The fallback link remains available if the request fails.
       });
-  }, [id, label, fetchUrl]);
+
+    return () => controller.abort();
+  }, [fetchUrl]);
+
+  if (currentContent?.kind === "text") {
+    return (
+      <CodeBlock id={id}>
+        <Pre>
+          <code className="px-4">{currentContent.text}</code>
+        </Pre>
+      </CodeBlock>
+    );
+  }
 
   return (
     <p id={id}>
-      <a href={href}>{label}</a> 
+      {currentContent?.kind === "unity" && (
+        <>
+          <a href={`unityhub://${currentContent.version}/${currentContent.revision}`}>
+            {currentContent.version}
+          </a>{" "}
+          ·{" "}
+        </>
+      )}
+      <a href={href}>{label}</a>
     </p>
-  ); // throw label only on fail
+  );
 }
