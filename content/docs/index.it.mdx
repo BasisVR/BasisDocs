@@ -5,6 +5,8 @@ icon: BookOpen
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
+import PPull from '@/components/PPullfile';
+import PPullLatestLTS from '@/components/PPullLatestLTS';
 
 Benvenuto nel wiki di Basis!
 
@@ -23,8 +25,13 @@ https://docs.unity3d.com/Manual/system-requirements.html
 
 A seconda del branch utilizzato, osserva la versione dell'Unity Editor su cui è costruito il framework:
 
-✓ [Developer](https://github.com/BasisVR/Basis/blob/developer/Basis/ProjectSettings/ProjectVersion.txt#L1)  
-✓ [Long-Term-Support](https://github.com/BasisVR/Basis/blob/long-term-support/Basis/ProjectSettings/ProjectVersion.txt#L1)
+**✓ Developer**
+<PPull id="txt1" label="developer"
+  href="https://github.com/BasisVR/Basis/tree/developer"
+  fetchUrl="https://raw.githubusercontent.com/BasisVR/Basis/refs/heads/developer/Basis/ProjectSettings/ProjectVersion.txt" />
+
+**✓ Long-Term-Support**
+<PPullLatestLTS id="txt2" fallbackBranch="long-term-support-20260916" />
 
 ### Moduli Unity aggiuntivi
 
