@@ -1,0 +1,62 @@
+---
+title: シムリファレンス
+description: Cilboxスクリプトで使えるすべてのBasisシムを分野ごとにまとめ、それぞれに短い例を添えたもの。
+---
+
+シムはCilboxサンドボックスのBasis側にあたるもので、サンドボックス化されたスクリプトにプレイヤー、入力、ネットワーク、保存、メニューなどへのアクセスを与える、小さく安全なAPIです。ほとんどは`Basis.Shims`名前空間にあります。
+
+シムには3つの形があります。
+
+- **静的クラス**: `BasisPlayersShim.Count`のように直接呼び出します。
+- **イベントコンポーネント**: `Start`で`GetComponent<T>()`を呼び出して有効にします。Cilboxがコンポーネントを追加し、Basisがスクリプト上の決まった名前のメソッド（`OnPlatformChanged`など）を呼び出します。
+- **置き換えられる型**: 通常のUnityの名前（`Debug`、`VideoPlayer`、`BasisAvatar`）で書くと、サンドボックスが安全なバージョンを提供します。
+
+| シム | 機能 | ページ |
+| --- | --- | --- |
+| `BasisPlayersShim` | プレイヤー一覧、最も近いプレイヤー、ポーズ | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisVelocityShim` | ローカルプレイヤーを打ち上げる、押す | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | アバターから着用者の移動を操作する | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisSeatShim` | ローカルプレイヤーが座っているか、どこに座っているか | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | プレイヤーがアバターを変更したことを知る | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | 管理者、モデレーター、権限のチェック | [プレイヤー](/ja/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | VRコントローラーのボタン、トリガー、スティック | [入力](/ja/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | マウスボタン、移動、スクロール | [入力](/ja/docs/scripting/shims/input) |
+| `BasisHapticsShim` | コントローラーの振動 | [入力](/ja/docs/scripting/shims/input) |
+| `BasisInteractableShim` | 押せるオブジェクト | [入力](/ja/docs/scripting/shims/input) |
+| `BasisActionTrigger` | UIのポインターイベント | [入力](/ja/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [入力](/ja/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | VRとデスクトップの切り替え | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | 言語の変更 | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | 品質の変更 | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | ローカルの権限の変更 | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | 誰かが揺れボーンを掴む、触れる | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | IKの後、描画の前の遅い更新 | [イベント](/ja/docs/scripting/shims/events) |
+| `BasisNetworkShim` | ネットワークイベント、オーナーシップ | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | 共有のサーバー時計 | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | すべてのクライアントで同じ乱数 | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | 数値やベクトルの高速なパック | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | LZ4圧縮 | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | プレイヤーを別のサーバーに送る | [ネットワーク](/ja/docs/scripting/shims/networking) |
+| `BasisSaveShim` | プレイヤーのマシンにデータを保存する | [データ](/ja/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | サーバーにデータを保存する | [データ](/ja/docs/scripting/shims/data) |
+| `BasisJson` | JSONの解析 | [データ](/ja/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | HTTPSのGETとPOST | [データ](/ja/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | Webサイトを開く | [データ](/ja/docs/scripting/shims/data) |
+| `BasisMenuShim` | 設定タブとメニューパネル | [メニュー](/ja/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | 品質設定の読み取り | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | フレームレート、ボトルネック、接続 | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | コンピュートシェーダーの予算 | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | プレイヤーの声をオブジェクトから再生する | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | URL確認プロンプト付きの`VideoPlayer` | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | プラットフォームの検出 | [レンダリングとオーディオ](/ja/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | 多数のTransformを一度に読み書きする | [バッチ処理](/ja/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | 毎フレームTransformを別のTransformにコピーする | [バッチ処理](/ja/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | 多数のブレンドシェイプを読み取る、書き込む、コピーする | [バッチ処理](/ja/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | ベクトル配列の分割と結合 | [バッチ処理](/ja/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | 配列に対するレイと球のテスト | [バッチ処理](/ja/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | アバター上のアバターコンポーネント | [アバター](/ja/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Vixxyメニュー項目の読み取りと操作 | [アバター](/ja/docs/scripting/shims/avatar) |
+| `BasisOsc` | OSCメッセージ | [OSC](/ja/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | コンテンツのタグ付きログ出力 | [サンドボックスのルール](/ja/docs/scripting/sandbox-rules) |
+
+どのサンドボックスでどのシムが使えるかは、Unityエディターの**Basis > Creator Guide**内、Cilbox API Referenceセクションでリアルタイムに表示されます。

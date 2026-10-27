@@ -1,0 +1,90 @@
+---
+title: Native en Cilbox
+description: De twee manieren om Basis te scripten. Native scripts worden in de applicatie gecompileerd; Cilbox-scripts worden in content meegeleverd en draaien tijdens runtime in een sandbox.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis voert code op twee manieren uit. Welke je gebruikt, hangt af van **waar het script zich bevindt**: in de applicatie die je bouwt, of in content die tijdens runtime wordt geladen.
+
+## Native: gecompileerd in de applicatie
+
+Een native script is een gewone Unity-`MonoBehaviour` die in de Basis-client wordt ingebouwd (of in je eigen app die op het Basis-framework is gebouwd). Het wordt samen met de applicatie gecompileerd, dus het wordt meegeleverd met de volgende client-build, niet met een wereld of prop.
+
+- Volledige C# en de volledige Unity- en Basis-API.
+- Volledige native snelheid.
+- Kan afgeleid worden van Basis-klassen zoals `BasisNetworkBehaviour` en `BasisSyncedObject`.
+- Bestaat alleen in clients die ermee zijn gebouwd. Spelers op de publieke client hebben jouw script niet.
+
+Gebruik native scripts wanneer je **een applicatie of game op Basis bouwt**: je eigen menu's, spelregels, systemen en elk component waar je content op leunt.
+
+## Cilbox: runtime-scripting in content
+
+Een Cilbox-script is een `MonoBehaviour` gemarkeerd met `[Cilboxable]` dat wordt meegeleverd **in** een `.bee`-bestand van een wereld, prop of avatar. Wanneer de content laadt, voert Basis het uit in de Cilbox-interpreter, binnen een sandbox voor dat soort content (Scene, Prop of Avatar).
+
+- Werkt op elke Basis-client die de content laadt. Geen client-build nodig.
+- Gesandboxed: alleen toegestane types en methoden kunnen worden aangeroepen, zodat content de computer van de speler geen schade kan toebrengen.
+- Langzamer dan native, omdat de code wordt geïnterpreteerd.
+- Gebruikt shims in plaats van basisklassen, bijvoorbeeld `BasisNetworkShim` in plaats van afleiden van `BasisNetworkBehaviour`.
+
+Gebruik Cilbox wanneer je **gebruikerscontent maakt**: werelden, props en avatars die andere mensen laden.
+
+## In één oogopslag
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| Bevindt zich in | De applicatie-build | De wereld, prop of avatar |
+| Geladen | Wanneer de app wordt gebouwd | Tijdens runtime, met de content |
+| Gemarkeerd met | Niets | `[Cilboxable]` |
+| API | Alles | Toegestaan per sandbox |
+| Snelheid | Native | Geïnterpreteerd, veel langzamer |
+| Netwerken | Afleiden van `BasisNetworkBehaviour` | `BasisNetworkShim` gebruiken |
+| Wie heeft het | Spelers op jouw build | Iedereen die de content laadt |
+
+## Hetzelfde script op beide manieren
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## Elk van beide uitleveren
+
+- **Native:** voeg het script toe aan je Unity-project en bouw de client. Als een native component in een wereld- of prop-bundle wordt geplaatst, voeg dan ook het type toe aan de bijbehorende content police selector, anders wordt het verwijderd wanneer de content laadt (zie [Toegestane componenten](/nl/docs/scripting/allowed-components)).
+- **Cilbox:** voeg een **Cilbox Scene Basis** (wereld) of **Cilbox Prop Basis** (prop) toe aan je content, markeer scripts met `[Cilboxable]` en bouw de `.bee` zoals gewoonlijk. Zie [Basisprincipes](/nl/docs/scripting/examples/basics).
+
+<Callout type="info">
+Voorbeelden in deze documentatie zijn gelabeld als **Native** of **Cilbox**. De meeste Cilbox-voorbeelden compileren ook als native scripts; native voorbeelden hebben meestal aanpassingen nodig om in Cilbox te draaien. De regels om op te letten staan in [Sandboxregels](/nl/docs/scripting/sandbox-rules).
+</Callout>

@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Los scripts proporcionan funcionalidad avanzada dentro del framework Basis. Esta documentación le guiará en la creación, compilación y prueba de scripts usando Unity y el SDK de Basis.
 
-Basis también hace uso del paquete Unity `Cilbox`, un emulador CIL en sandbox.
+## Native y Cilbox
+
+Basis tiene dos tipos de scripts:
+
+- Los scripts **Native** se compilan dentro de la aplicación. Tienen acceso completo a la API de Unity y de Basis y velocidad nativa, pero solo existen en los clientes compilados con ellos. Úselos cuando cree una aplicación o un juego sobre Basis.
+- Los scripts **Cilbox** son scripts en tiempo de ejecución. Se incluyen dentro de un mundo, prop o avatar, están marcados con `[Cilboxable]` y se ejecutan en un sandbox en cualquier cliente que cargue el contenido. Úselos para contenido de usuario.
+
+Consulte [Native y Cilbox](/es/docs/scripting/native-and-cilbox) para la comparación completa.
 
 ## Guía de inicio rápido
 
 <Cards>
   <Card
+    title="Native y Cilbox"
+    description="Compilados en la aplicación frente a scripts en tiempo de ejecución dentro del contenido"
+    href="/es/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="Scripts"
     description="Cómo usar scripts"
     href="/es/docs/scripting/scripting"
+  />
+  <Card
+    title="Usos comunes"
+    description="Jugadores, entrada, UI, temporizadores, carga de datos, guardado y menús"
+    href="/es/docs/scripting/common-usages"
+  />
+  <Card
+    title="Reglas del sandbox"
+    description="Particularidades de Cilbox y costes de rendimiento"
+    href="/es/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="Scripts de avatar"
+    description="Scripts en avatares, el portador frente a todos los demás"
+    href="/es/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="Redes"
+    description="Variables sincronizadas, eventos de red, propiedad y jugadores que se unen tarde"
+    href="/es/docs/scripting/networking"
+  />
+  <Card
+    title="Ejemplos"
+    description="Scripts completos para funciones comunes de mundos y props"
+    href="/es/docs/scripting/examples"
   />
   <Card
     title="OSC"

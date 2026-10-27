@@ -1,0 +1,64 @@
+---
+title: Menu's
+description: BasisMenuShim, instellingentabbladen en menupanelen met kopjes, labels, knoppen, toggles, sliders en dropdowns.
+---
+
+`BasisMenuShim` voegt UI toe aan het eigen menu van de speler. Beide aanroepen geven null terug als ze worden geweigerd, dus controleer dat altijd.
+
+| Aanroep | Voegt toe |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Een tabblad in de instellingen van de speler (maximaal 4 per content). |
+| `BasisMenuShim.AddPanel(this, title)` | Een paneel met een eigen menuknop (één per content, maximaal 8 tabbladen). |
+
+## Een pagina bouwen
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Items later wijzigen
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Pagina's: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (panelen), `IsOpen` en `Open()`.
+
+## Een paneel openen
+
+`Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt, zodat content niet zelf menu's kan openen.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Limieten: 64 items per pagina, 32 dropdownopties, titels van 48 tekens. Meer: [Voorbeeld Instellingentabblad](/nl/docs/scripting/examples/settings-tab).

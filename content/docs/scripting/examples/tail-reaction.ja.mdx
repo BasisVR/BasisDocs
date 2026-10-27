@@ -1,0 +1,40 @@
+---
+title: しっぽの反応
+description: BasisJiggleEventShimを使い、誰かに掴まれると振れて鳴くアバターのしっぽ。
+---
+
+```csharp title="TailReaction.cs (Cilbox, avatar)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class TailReaction : MonoBehaviour
+{
+    public AudioSource squeak;
+    public Animator animator;
+    BasisJiggleEventShim jiggle;
+    int tail = -1;
+
+    void Start()
+    {
+        jiggle = GetComponent<BasisJiggleEventShim>();
+        tail = jiggle.FindJiggleRig("Tail");
+    }
+
+    void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex != tail) return;
+        if (began) squeak.Play();
+        animator.SetBool("Wagging", began);
+    }
+
+    void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex == tail && began) animator.SetTrigger("Flinch");
+    }
+}
+```
+
+- アバターを描画するすべてのクライアントが掴む動作を認識するため、ネットワーク処理なしで全員に反応が再生されます。
+- 検出はスクリプトが有効化している間だけ実行されるため、これを持たないアバターにはコストがかかりません。

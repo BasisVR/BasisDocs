@@ -1,0 +1,33 @@
+---
+title: Porta dello staff
+description: Una porta che si apre solo per admin e moderatori, aggiornata in tempo reale quando i ruoli cambiano.
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- La porta viene disattivata per lo staff sul proprio client. Nessun altro ne è influenzato, quindi nulla passa per la rete.
+- Per mostrare un badge sopra *altri* membri dello staff, chiedi con `BasisPermissionsShim.IsModerator(player, callback)`; è un viaggio di andata e ritorno verso il server.
+- I controlli lato client tengono fuori i giocatori onesti. Non affidarti a essi per nulla che un client modificato non debba raggiungere.

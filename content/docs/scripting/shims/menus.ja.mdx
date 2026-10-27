@@ -1,0 +1,64 @@
+---
+title: メニュー
+description: BasisMenuShim、見出し、ラベル、ボタン、トグル、スライダー、ドロップダウンを持つ設定タブとメニューパネル。
+---
+
+`BasisMenuShim`はプレイヤー自身のメニューにUIを追加します。どちらの呼び出しも拒否されるとnullを返すため、必ずチェックしてください。
+
+| 呼び出し | 追加されるもの |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | プレイヤーの設定内のタブ（コンテンツごとに最大4つ）。 |
+| `BasisMenuShim.AddPanel(this, title)` | 専用のメニューボタンを持つパネル（コンテンツごとに1つ、最大8タブ）。 |
+
+## ページを作る
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## 後から項目を変更する
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+ページ: `SetTitle`、`SetVisible`、`Clear`、`Remove`、`AddTab`（パネル）、`IsOpen`、`Open()`。
+
+## パネルを開く
+
+`Open()`は、プレイヤーがコンテンツ内の何かを押してから5秒以内しか動作しません。そのため、コンテンツが勝手にメニューを開くことはできません。
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+制限: ページごとに64項目、ドロップダウンの選択肢は32個、タイトルは48文字まで。詳細: [設定タブのサンプル](/ja/docs/scripting/examples/settings-tab)。

@@ -1,0 +1,403 @@
+---
+title: 常見用法
+description: Basis 腳本的日常構成要素：玩家、輸入、UI、計時器、載入資料、儲存、選單與平台檢查，每項都附有簡短範例。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+本頁收集了幾乎每個世界或道具腳本都需要的功能。每個章節都會展示您要撰寫的呼叫，以及通常會讓人踩坑的規則。網路有專屬的指南：請參閱[網路](/tw/docs/scripting/networking)。
+
+<Callout type="info">
+標示為 **Cilbox** 的範例在沙盒內執行，因此也能在以 `.bee` 檔案上傳的內容中運作。標示為 **Native** 的範例使用完整的 Unity 與 Basis API，只能在編譯進客戶端的程式碼中運作。大多數 Cilbox 範例也能以 Native 方式編譯。
+</Callout>
+
+## 撰寫腳本
+
+Cilbox 腳本是帶有 `[Cilboxable]` 屬性的一般 `MonoBehaviour`。建置時，Basis 會將它替換為 `CilboxProxy`，在其所屬內容（Scene、Prop 或 Avatar）的沙盒內執行您的程式碼。
+
+```csharp title="Spinner.cs (Cilbox)"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public float degreesPerSecond = 90f;
+
+    void Update()
+    {
+        transform.Rotate(0f, degreesPerSecond * Time.deltaTime, 0f);
+    }
+}
+```
+
+## 事件執行順序
+
+代理物件會將以下 Unity 訊息轉發給 Cilbox 腳本：
+
+| 訊息 | 備註 |
+| --- | --- |
+| `Awake`、`Start` | 在 `Start` 中進行一次性設定。 |
+| `Update`、`FixedUpdate` | 沒有 `LateUpdate`。 |
+| `OnEnable`、`OnDisable` | **第一次**的 `OnEnable` 永遠不會到達，因此絕對不要在那裡訂閱。 |
+| `OnDestroy` | 在這裡取消訂閱並清理。 |
+| `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | 需要 collider，且其中一方需要 Rigidbody。 |
+
+不會轉發：`LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 和協程。請使用延遲事件取代協程（請參閱[計時器與延遲事件](#timers-and-delayed-events)）。
+
+```csharp
+// Wrong: the first OnEnable is dropped, so this never registers on the first activation.
+void OnEnable() { manager.Register(this); }
+
+// Right.
+void Start() { manager.Register(this); }
+void OnDestroy() { manager.Unregister(this); }
+```
+
+## 玩家
+
+### 本機玩家
+
+`BasisLocalPlayer.Instance` 是這台電腦上的玩家。您可以傳送他們、改變他們的移動方式，或凍結他們。
+
+```csharp title="Cilbox"
+using Basis.Scripts.BasisSdk.Players;
+
+BasisLocalPlayer local = BasisLocalPlayer.Instance;
+local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.SetDefaultMovementSpeed(3.5f);
+local.SetJumpHeight(1.2f);
+local.Immobilize(true);
+```
+
+若要製作只在玩家位於其中時才改變移動方式的區域，請在您自己的鍵下使用覆寫。清除該鍵會還原底下原本的設定，因此兩個區域永遠不會爭奪原始值。
+
+```csharp title="Cilbox"
+// Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
+local.SetWalkSpeedOverride("LowGravityZone", 1.2f);
+local.SetJumpHeightOverride("LowGravityZone", 2.5f);
+local.SetMovementModeOverride("LowGravityZone", 1);
+local.ClearLocomotionOverride("LowGravityZone");
+```
+
+<Callout type="info">
+在客戶端建置中，**Basis Locomotion Zone** 元件（com.basis.examples）不需要程式碼就能做到這件事。它不在預設的內容允許清單上，因此上傳的世界請改用上述的覆寫。
+</Callout>
+
+### 實例中的所有人
+
+`BasisPlayersShim` 以唯讀的 `IBasisPlayer` 回傳玩家。姿勢會以複製的向量回傳，永遠不會是 `Transform`。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+using Basis.Scripts.BasisSdk.Players;
+
+int count = BasisPlayersShim.Count;
+
+IBasisPlayer nearest = BasisPlayersShim.Nearest(transform.position);
+if (nearest != null)
+{
+    Debug.Log($"{nearest.DisplayName} is {nearest.DistanceTo(transform.position):F1}m away");
+}
+
+foreach (IBasisPlayer player in BasisPlayersShim.Within(transform.position, 5f))
+{
+    Vector3 head = player.GetBonePosition(HumanBodyBones.Head);
+}
+```
+
+`IBasisPlayer` 上實用的讀取項目：`IsLocal`、`DisplayName`、`SafeDisplayName`（在告示牌上顯示名稱時請使用它），以及 `UUID`，它在每次造訪和每個伺服器上都相同。
+
+### 彈射玩家
+
+`BasisVelocityShim` 會在世界空間中推動本機玩家。它僅限世界使用。垂直分量由重力接手。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+// A trampoline: keep the run, replace the fall.
+Vector3 velocity = BasisVelocityShim.Velocity;
+BasisVelocityShim.SetVelocity(new Vector3(velocity.x, 9f, velocity.z));
+
+// A boost pad.
+BasisVelocityShim.AddVelocity(transform.forward * 6f);
+```
+
+## 輸入
+
+### 與物件互動
+
+**Basis Pickup Interactable** 會在玩家抓取它並按下使用鍵時引發事件。對於只需按下而不需拿起的東西，請加入 **Basis Interactable Shim** 並處理 `ButtonDown` 和 `ButtonUp`。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+void Start()
+{
+    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+}
+
+void OnPressed() { door.SetActive(!door.activeSelf); }
+```
+
+```csharp title="Cilbox"
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+public BasisPickupInteractable pickup;
+
+void Start()
+{
+    pickup.OnInteractStartEvent.AddListener(OnGrab);
+    pickup.OnInteractEndEvent.AddListener(OnDrop);
+    pickup.OnPickupUse.AddListener(OnUse);
+}
+
+void OnGrab(BasisInput input) { }
+void OnDrop(BasisInput input) { }
+
+void OnUse(BasisPickUpUseMode mode)
+{
+    if (mode == BasisPickUpUseMode.OnPickUpUseDown) Fire();
+}
+```
+
+### 控制器按鈕
+
+`BasisControllerInputShim` 讀取的手部狀態與驅動玩家的相同。僅限世界。當選單開啟或指標位於 UI 上時，所有輸入都會讀取為放開。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return; // desktop
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Trigger))
+        Fire();
+
+    float squeeze = BasisControllerInputShim.GetTrigger(BasisControllerHand.Left);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+### 觸覺回饋
+
+```csharp title="Cilbox"
+// Strength 0..1, at most 1 second. Returns false when nothing played.
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## UI 事件
+
+世界空間的 canvas 可搭配 Basis 指標使用。請從程式碼連接按鈕，讓監聽器存在於沙盒中。canvas 本身的設定請參閱 [UI Canvas](/tw/docs/world/ui-canvas)。
+
+```csharp title="Cilbox"
+using UnityEngine.UI;
+using TMPro;
+
+public Button button;
+public TextMeshProUGUI label;
+
+void Start()
+{
+    button.onClick.AddListener(OnClick);
+    label.text = "Ready";
+}
+
+void OnDestroy() { button.onClick.RemoveAllListeners(); }
+
+void OnClick() { label.text = "Clicked!"; }
+```
+
+Cilbox 中允許：`UnityEngine.UI.*` 類型、`UnityEvent.AddListener`（包括 `UnityEvent<T>`）、建立 `UnityAction`，以及 `RemoveAllListeners`。有兩個限制：
+
+- `RemoveListener(OnClick)` 不會移除監聽器，因為每次將 `OnClick` 作為委派使用時都是新的包裝器。請使用 `RemoveAllListeners`。
+- UI 元件（`Button`、`Toggle`、`Canvas`）允許用於世界和道具，但不允許用於虛擬形象。
+
+## 計時器與延遲事件 [#timers-and-delayed-events]
+
+Cilbox 腳本沒有協程。網路同步的腳本可以改為透過其網路元件排程回呼。
+
+```csharp title="Cilbox"
+using Basis;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
+    net.SendCustomEventDelayedFrames(Rebuild, 2);
+}
+```
+
+若計時器不需要網路元件，請在 `Update` 中倒數：
+
+```csharp
+float remaining = 3f;
+
+void Update()
+{
+    if (remaining <= 0f) return;
+    remaining -= Time.deltaTime;
+    if (remaining <= 0f) CloseDoor();
+}
+```
+
+## 平台檢查
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool vr = BasisPlatformShim.IsVR;
+bool mobile = BasisPlatformShim.IsMobileGpu;
+bool quest = vr && BasisPlatformShim.IsDetected("Android");
+```
+
+若要在玩家於桌面與 VR 之間切換時做出反應，請加入 `BasisPlatformEventShim` 並以名稱定義回呼。加入元件即代表選擇啟用；回呼會立即觸發一次，之後每次變更時再觸發。
+
+```csharp title="Cilbox"
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrControls.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+<Callout type="info">
+不需要程式碼：**Basis Platform Switch**（com.basis.examples）會根據規則清單，依平台啟用或停用物件和元件。
+</Callout>
+
+其他變更也有相同的選擇啟用模式：`BasisLanguageEventShim` 會呼叫 `OnLanguageChanged(string code)`，`BasisGraphicsSettingsEventShim` 會呼叫 `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`，而 `BasisPermissionEventShim` 會呼叫 `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`。
+
+## 載入圖片與文字
+
+下載會在送出任何請求前檢查位址，並拒絕重新導向。玩家第一次遇到新的主機時需要核准。
+
+```csharp title="Cilbox"
+using Basis;
+
+var images = new BasisImageDownloader();
+images.DownloadImage("https://example.com/sign.png", result =>
+{
+    if (result.Success) signMaterial.mainTexture = result.Result;
+    else Debug.LogWarning(result.Error);
+});
+
+var strings = new BasisStringDownloader();
+strings.DownloadString("https://example.github.io/questions.json", result =>
+{
+    if (result.Success) LoadQuestions(result.Result);
+});
+```
+
+使用 `BasisJson` 解析 JSON，它在宿主端執行，因此腳本只會看到單純的數值：
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+BasisJsonNode root = BasisJson.Parse(text);
+if (root == null) return;
+string title = root.GetString("title", "Untitled");
+BasisJsonNode questions = root.Get("questions");
+for (int i = 0; i < (questions != null ? questions.Count : 0); i++)
+{
+    string prompt = questions.Get(i).GetString("q", "");
+}
+```
+
+REST API 請使用 `BasisWebRequestShim.GetText` 和 `PostText`（僅限 https，僅限世界和道具）。
+
+## 外部連結
+
+在玩家自己按下按鈕時開啟網站。玩家會看到位址並加以確認。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+public void OnWebsiteButtonPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com/community", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) addressLabel.text = "example.com/community";
+    });
+}
+```
+
+`BasisConnectionShim.RequestConnect(this, host, port, password, callback)` 的運作方式相同，在玩家接受後會將他們移到另一台伺服器。
+
+## 儲存資料（持久化）
+
+`BasisSaveShim` 會將位元組儲存在玩家的電腦上，並以您內容的 ID 歸檔。在玩家同意之前，`Save` 會回傳 false，`Load` 會回傳 null，而腳本的其餘部分會繼續執行。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool saved = BasisSaveShim.Save(this, "progress", bytes);
+byte[] loaded = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Name a store to share saves between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+```
+
+限制：每個欄位 256 KB，每個儲存區 32 個欄位與 1 MB，每秒 8 次寫入。將數值打包成位元組的方法請參閱[持久化範例](/tw/docs/scripting/examples/persistence)。
+
+## 選單
+
+在玩家的設定中加入分頁，或加入一個在選單中有專屬按鈕的完整面板。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+BasisMenuPage page;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Race Track");
+    if (page == null) return; // refused
+    page.AddHeader("Race");
+    page.AddToggle("Ghost car", true, OnGhost);
+    page.AddSlider("Laps", 1, 10, 3, true, OnLaps);
+    page.AddButton("Reset race", OnReset);
+}
+```
+
+請參閱[設定分頁範例](/tw/docs/scripting/examples/settings-tab)。
+
+## 音訊
+
+```csharp title="Cilbox"
+var source = GetComponent<AudioSource>();
+source.clip = clip;
+source.spatialBlend = 1f;
+source.Play();
+```
+
+若要讓揚聲器傳遞玩家的語音，請參閱 [Shim 參考](/tw/docs/scripting/shims/rendering-and-audio)中的 `BasisVoiceRoutingShim`。
+
+## 效能與品質
+
+讀取玩家的品質等級和影格率，以便在效能吃緊時降低內容的負擔。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool cheap = BasisGraphicsSettingsShim.QualityTier <= BasisGraphicsSettingsShim.TierLow;
+backgroundDetail.SetActive(!cheap);
+
+if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(false);
+```
+
+## 除錯
+
+`Debug.Log` 照常運作；Basis 會為每則訊息標記其來源內容。在編輯器中，**Basis > Tools > Cilbox Permissions** 會顯示每個沙盒允許的項目，其 **Script Check** 分頁會掃描您的腳本中會被封鎖的呼叫。**Basis > Creator Guide** 視窗可離線查看本指南和完整的 Cilbox API 參考。
+
+<Callout type="warn">
+被封鎖的呼叫不會在建置時擲出例外。白名單以外的呼叫會在執行時失敗，因此請在上傳前掃描腳本。
+</Callout>

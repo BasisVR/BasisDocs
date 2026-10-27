@@ -1,0 +1,125 @@
+---
+title: Persistentie
+description: De voortgang van een speler tussen bezoeken opslaan met BasisSaveShim, waarden in bytes inpakken en opgeslagen gegevens delen tussen een wereld en zijn props.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` slaat bytes op op de eigen computer van de speler, gearchiveerd onder de ID van je content. Het is per speler: elke speler heeft een eigen opslag, en er wordt niets gesynchroniseerd.
+
+## Script
+
+Dit slaat op welke checkpoints een speler heeft bereikt en diens beste tijd, en zet de speler terug bij het laatste checkpoint wanneer die terugkomt.
+
+```csharp title="CourseProgress.cs (Cilbox)"
+using System.IO;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class CourseProgress : MonoBehaviour
+{
+    const string Slot = "progress";
+    const byte Version = 1;
+
+    public Transform[] checkpoints;
+    public TextMeshPro bestLabel;
+
+    int reached = -1;
+    float bestTime = float.MaxValue;
+
+    void Start()
+    {
+        Load();
+        if (reached >= 0)
+        {
+            Transform point = checkpoints[reached];
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+        }
+        ShowBest();
+    }
+
+    public void ReachCheckpoint(int index)
+    {
+        if (index <= reached) return;
+        reached = index;
+        Save();
+    }
+
+    public void FinishRun(float seconds)
+    {
+        if (seconds < bestTime) bestTime = seconds;
+        reached = -1;
+        Save();
+        ShowBest();
+    }
+
+    void Save()
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(Version);
+            writer.Write(reached);
+            writer.Write(bestTime);
+            BasisSaveShim.Save(this, Slot, stream.ToArray());
+        }
+    }
+
+    void Load()
+    {
+        byte[] data = BasisSaveShim.Load(this, Slot);
+        if (data == null || data.Length < 9) return;
+        using (var reader = new BinaryReader(new MemoryStream(data)))
+        {
+            if (reader.ReadByte() != Version) return;
+            reached = Mathf.Clamp(reader.ReadInt32(), -1, checkpoints.Length - 1);
+            bestTime = reader.ReadSingle();
+        }
+    }
+
+    void ShowBest()
+    {
+        bestLabel.text = bestTime < float.MaxValue ? $"Best: {bestTime:F1}s" : "No time yet";
+    }
+}
+```
+
+## Regels
+
+- **De speler beslist.** Totdat die opslaan voor je content toestaat, geeft `Save` false terug en `Load` null. Je script blijft draaien, dus handel een ontbrekende opslag altijd af.
+- **Geef je gegevens een versie.** Schrijf eerst een versiebyte en weiger gegevens die je niet begrijpt. Spelers houden oude opslagen wanneer je je wereld bijwerkt.
+- **Valideer bij het laden.** Begrens indices; vertrouw er nooit op dat opgeslagen waarden nog bij je scène passen.
+- **Limieten:** 256 KB per slot, 32 slots en 1 MB per store, 8 schrijfacties per seconde. Sla op bij betekenisvolle events, niet elk frame.
+
+## Delen tussen content
+
+Geef een store een naam om opslagen te delen, bijvoorbeeld tussen een wereld en de props die die spawnt:
+
+```csharp
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "my-game", "progress");
+```
+
+Scopes bepalen wie kan lezen en schrijven:
+
+| Scope | Lezen | Schrijven |
+| --- | --- | --- |
+| `BasisSaveScope.Protected` | Alleen deze content | Alleen deze content |
+| `BasisSaveScope.ReadOnly` | Alle content (met je Content ID) | Alleen deze content |
+| `BasisSaveScope.Shared` | Alle content die de store bij naam noemt | Alle content die de store bij naam noemt |
+
+```csharp
+// Publish a badge other worlds can read.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+
+// Another world reads it.
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+<Callout type="warn">
+Opslagen staan op de computer van de speler en kunnen door die speler worden bewerkt. Gebruik ze niet voor iets dat betrouwbaar moet zijn, zoals ranglijsten.
+</Callout>

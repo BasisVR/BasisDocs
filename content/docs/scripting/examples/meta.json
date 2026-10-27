@@ -13,6 +13,22 @@
     "image-loading",
     "minimap",
     "persistence",
-    "settings-tab"
+    "settings-tab",
+    "day-night-cycle",
+    "round-timer",
+    "trivia-quiz",
+    "server-best-time",
+    "staff-door",
+    "voice-stage",
+    "drawing-board",
+    "random-loot",
+    "elevator",
+    "tail-reaction",
+    "hand-flashlight",
+    "desktop-and-vr-input",
+    "localized-sign",
+    "performance-scaler",
+    "server-portal",
+    "boids"
   ]
 }

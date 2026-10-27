@@ -1,0 +1,94 @@
+---
+title: 픽업 총
+description: 사용하면 발사되는 동기화 픽업. 발사 효과가 모든 플레이어에게 재생됩니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 설정
+
+1. 총을 모델링하거나 가져옵니다. 콜라이더와 **Rigidbody**를 추가합니다.
+2. **Basis Pickup Interactable**을 추가합니다.
+3. **Basis Pickup Sync Networking**을 추가하고 픽업을 할당합니다. 이것이 총의 위치와 들고 있는 사람을 동기화합니다.
+4. 총구 화염을 위한 **AudioSource**와 **ParticleSystem**을 추가하고, 총구 위치에 자식 transform을 추가합니다.
+5. **PickupGun**을 추가하고 모든 것을 할당합니다.
+
+## 스크립트
+
+```csharp title="PickupGun.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PickupGun : MonoBehaviour
+{
+    public BasisPickupInteractable pickup;
+    public Transform muzzle;
+    public AudioSource shotSound;
+    public ParticleSystem flash;
+    public float range = 50f;
+    public float cooldown = 0.2f;
+
+    BasisNetworkShim net;
+    bool held;
+    float nextShot;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        pickup.OnInteractStartEvent.AddListener(OnGrab);
+        pickup.OnInteractEndEvent.AddListener(OnDrop);
+        pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void OnGrab(BasisInput input) { held = true; }
+    void OnDrop(BasisInput input) { held = false; }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        if (!held || mode != BasisPickUpUseMode.OnPickUpUseDown || Time.time < nextShot) return;
+        nextShot = Time.time + cooldown;
+
+        PlayShot();
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.6f, 0.08f);
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableUnordered);
+
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, range))
+        {
+            Debug.Log($"hit {hit.collider.name}");
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1 && buffer[0] == 1) PlayShot();
+    }
+
+    void PlayShot()
+    {
+        shotSound.Play();
+        flash.Play();
+    }
+}
+```
+
+## 작동 방식
+
+- **Basis Pickup Sync Networking**은 잡을 때 소유권을 가져오고 총의 포즈를 스트리밍하므로, 모든 사람이 들고 있는 사람의 손에 있는 총을 봅니다. 이 부분에는 코드가 필요 없습니다.
+- **발사는 상태가 아니라 이벤트입니다.** 나중에 참여하는 사람은 발사가 있었다는 것을 알 필요가 없으므로 늦게 참여한 플레이어 처리가 없습니다.
+- **쏜 사람만 레이캐스트합니다.** 게임플레이에 중요한 명중 결과(대미지, 점수)는 쏜 사람이 결정하여 별도의 이벤트로 보내거나, [점수판](/ko/docs/scripting/examples/scoreboard)처럼 소유자에게 전달해야 합니다.
+
+<Callout type="info">
+다른 플레이어가 누군가의 손에서 총을 빼앗지 못하게 하려면 동기화 컴포넌트의 **CanNetworkSteal**을 끄세요.
+</Callout>

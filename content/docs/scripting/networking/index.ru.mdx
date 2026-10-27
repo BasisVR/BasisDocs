@@ -1,0 +1,91 @@
+---
+title: Сеть
+description: "Как сделать так, чтобы мир или проп Basis вёл себя одинаково для каждого игрока: синхронизированные переменные, сетевые события, владение и поздно подключившиеся игроки."
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Всё, что делает скрипт, выполняется на машине одного игрока. Если игрок открывает дверь, никто другой этого не увидит, пока вы не сообщите об этом сети. В этом руководстве описаны инструменты, которые Basis предоставляет для этого, и когда использовать каждый из них.
+
+О том, как работает сам транспорт (ретрансляция через сервер, методы доставки, частота обновлений в зависимости от расстояния), смотрите [Сетевая синхронизация](/ru/docs/technical/network-syncing).
+
+## Четыре идеи
+
+| Идея | Что это | Для чего использовать |
+| --- | --- | --- |
+| **Синхронизированные переменные** | Значения, которые записывает владелец, а все остальные читают; отправляются непрерывно и интерполируются. | Позиции, угол рычага, счёт, всё, что имеет текущее состояние. |
+| **Сетевые события** | Разовые сообщения с полезной нагрузкой в байтах. | «Был сделан выстрел», «раунд начался», «воспроизвести этот звук». |
+| **Владение** | Каждым сетевым объектом владеет ровно один игрок, и только ему разрешено записывать его. | Решение о том, кто управляет предметом, кто ведёт счёт. |
+| **Поздно подключившиеся** | Игроки, пришедшие после того, как что-то изменилось. | Гарантия того, что они видят текущее состояние, а не значения сцены по умолчанию. |
+
+<Callout type="info">
+Простое правило: если игрок, подключившийся через пять минут, должен это увидеть, это **состояние**, и оно должно храниться в синхронизированной переменной (или быть отправлено ему повторно). Если это важно только в момент, когда происходит, это **событие**.
+</Callout>
+
+## Строительные блоки
+
+- **`BasisNetworkBehaviour`** это базовый класс для сетевых скриптов, скомпилированных в клиент. Он получает сетевой ID, владельца и обратные вызовы `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` и `OnPlayerLeft`.
+- **`BasisNetworkShim`** то же самое для скриптов Cilbox. Скрипт Cilbox не может наследоваться от `BasisNetworkBehaviour`, поэтому он получает `BasisNetworkShim` через `GetComponent` и подписывается на его события.
+- **`BasisSyncedObject`** построен на `BasisNetworkBehaviour` и добавляет компактный интерполируемый поток состояния. **`BasisSyncedParameters`**, **`BasisSyncedTransform`** и **`BasisSyncedRigidbody`** это готовые компоненты поверх него.
+- **`BasisPickupSyncNetworking`** и **`BasisSeatSync`** синхронизируют подбираемые предметы и сиденья без кода.
+
+## Сетевой скрипт от начала до конца
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+Нативные скрипты вроде этого работают в сборках клиента. В загружаемом контенте напишите то же самое как скрипт Cilbox (ниже).
+
+Что здесь показано:
+
+1. Игрок, нажавший кнопку, **берёт владение**, поэтому источник истины один.
+2. Новое значение **отправляется как событие** всем остальным (`Recipients = null` означает всех, кроме вас).
+3. Когда кто-то подключается, **только владелец** отправляет ему текущее значение.
+
+Тот же скрипт для Cilbox находится в разделе [Сетевые события](/ru/docs/scripting/networking/network-events#cilbox).
+
+## Страницы этого руководства
+
+- [Сетевые события](/ru/docs/scripting/networking/network-events): отправка сообщений, получатели, методы доставки, полезная нагрузка.
+- [Синхронизированные переменные](/ru/docs/scripting/networking/synced-variables): `BasisSyncedParameters` и собственные поля `BasisSyncedObject`.
+- [Владение](/ru/docs/scripting/networking/ownership): кто чем владеет, получение и проверка владения, что происходит, когда владелец уходит.
+- [Поздно подключившиеся](/ru/docs/scripting/networking/late-joiners): как привести новых игроков в актуальное состояние.
+- [Сетевые компоненты](/ru/docs/scripting/networking/network-components): компоненты синхронизации без кода.
+- [Производительность и отладка](/ru/docs/scripting/networking/performance): пропускная способность, частота отправки и поиск ошибок синхронизации.

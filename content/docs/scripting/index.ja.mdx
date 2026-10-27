@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 スクリプティングはBasisフレームワーク内で高度な機能を提供します。このドキュメントでは、UnityとBasis SDKを使用してスクリプトを作成、ビルド、テストする方法を説明します。
 
-BasisはサンドボックスCILエミュレーターであるUnityパッケージ`Cilbox`も使用しています。
+## NativeとCilbox
+
+Basisには2種類のスクリプトがあります。
+
+- **Native**スクリプトはアプリケーションにコンパイルされます。UnityとBasisのAPIをすべて利用でき、ネイティブの速度で動作しますが、それらを含めてビルドされたクライアントにしか存在しません。Basis上でアプリやゲームを作る場合に使用してください。
+- **Cilbox**スクリプトはランタイムスクリプトです。ワールド、プロップ、アバターの中に含めて配布され、`[Cilboxable]`でマークされ、そのコンテンツを読み込んだどのクライアントでもサンドボックス内で実行されます。ユーザーコンテンツに使用してください。
+
+詳しい比較は[NativeとCilbox](/ja/docs/scripting/native-and-cilbox)を参照してください。
 
 ## クイックスタートガイド
 
 <Cards>
   <Card
+    title="NativeとCilbox"
+    description="アプリにコンパイルされるスクリプトとコンテンツ内のランタイムスクリプトの違い"
+    href="/ja/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="スクリプティング"
     description="スクリプトの使い方"
     href="/ja/docs/scripting/scripting"
+  />
+  <Card
+    title="よくある使い方"
+    description="プレイヤー、入力、UI、タイマー、データの読み込み、保存、メニュー"
+    href="/ja/docs/scripting/common-usages"
+  />
+  <Card
+    title="サンドボックスのルール"
+    description="Cilboxの注意点とパフォーマンスコスト"
+    href="/ja/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="アバタースクリプティング"
+    description="アバター上のスクリプト、装着者と全員の違い"
+    href="/ja/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="ネットワーク"
+    description="同期変数、ネットワークイベント、オーナーシップ、途中参加者"
+    href="/ja/docs/scripting/networking"
+  />
+  <Card
+    title="サンプル"
+    description="ワールドやプロップのよくある機能を実装した完全なスクリプト"
+    href="/ja/docs/scripting/examples"
   />
   <Card
     title="OSC"

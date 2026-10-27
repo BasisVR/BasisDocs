@@ -1,0 +1,94 @@
+---
+title: 同步切換開關
+description: 一個為每位玩家（包括之後加入的玩家）開啟或關閉物件的按鈕。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+這是最小的完整網路腳本：一個位元組的狀態，在變更時傳送，並重新傳送給任何加入的人。
+
+## 設定
+
+1. 建立一個包含 **Button** 的世界空間 canvas。
+2. 將 **SyncedToggle** 加入 canvas。指定按鈕和要切換的物件（燈、鏡子、門）。
+
+## 腳本
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## 運作方式
+
+- **按下按鈕**會取得擁有權，在本機翻轉數值讓按下的人立即看到，並將新數值傳送給其他所有人。
+- **`ReliableSequenced`** 保證最新的數值會抵達並丟棄較舊的數值，這對切換開關來說恰到好處。
+- **加入的玩家**只會從擁有者那裡收到目前的數值。由於訊息就是完整的狀態，同一個 `OnMessage` 能同時處理即時變更與追上進度。
+
+<Callout type="info">
+Native 版本：繼承 `BasisNetworkBehaviour`，將 shim 事件替換為 `OnNetworkMessage` 和 `OnPlayerJoined` 覆寫，並直接呼叫 `TakeOwnership()` 和 `SendCustomNetworkEvent`。
+</Callout>

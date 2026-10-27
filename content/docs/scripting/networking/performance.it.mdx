@@ -1,0 +1,37 @@
+---
+title: Prestazioni e debug
+description: Mantenere leggeri i contenuti di rete e individuare gli oggetti che perdono la sincronizzazione.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Mantenerlo leggero
+
+- **Invia lo stato, non i frame.** Le variabili sincronizzate inviano solo quando i valori cambiano. Non chiamare `SendCustomNetworkEvent` da `Update`.
+- **Usa il tipo più piccolo.** Un `Byte` o un `Bool` invece di un `Int`, un float ranged invece di uno grezzo.
+- **Usa la consegna non affidabile per i dati ad alta frequenza.** I messaggi affidabili vengono reinviati finché non arrivano, il che costa di più e aggiunge ritardo quando si perdono pacchetti.
+- **Lascia attivo `DistanceReduction`.** I giocatori lontani ricevono meno aggiornamenti. Attiva `RelevanceCulling` per gli oggetti che nessuno fuori da una stanza ha bisogno di vedere.
+- **Un oggetto, molti valori.** Un `BasisSyncedParameters` con dieci valori costa meno di dieci oggetti con un valore ciascuno, perché ogni oggetto porta con sé la propria intestazione e i propri keyframe.
+- **Raggruppa gli eventi.** Impacchetta diverse modifiche in un solo messaggio invece di inviare un messaggio per ogni modifica.
+
+<Callout type="info">
+Gli oggetti sincronizzati inattivi non costano quasi nulla: non viene inviato nulla finché i valori restano invariati e i keyframe si diradano. Il costo da evitare sono i valori che cambiano a ogni frame quando non ce n'è bisogno.
+</Callout>
+
+## Bug di sincronizzazione comuni
+
+| Sintomo | Causa abituale |
+| --- | --- |
+| Funziona per te, nessun altro lo vede | La modifica è stata applicata localmente e mai inviata, oppure l'oggetto non era ancora pronto per la rete (`HasNetworkID` false). |
+| I giocatori arrivati in ritardo vedono il valore predefinito della scena | Lo stato è stato inviato come evento e non reinviato in `OnPlayerJoined`. Vedi [Giocatori arrivati in ritardo](/it/docs/scripting/networking/late-joiners). |
+| Due giocatori si contendono un valore | Entrambi lo scrivono. Solo il proprietario dovrebbe scrivere; prendi l'ownership quando un giocatore agisce. |
+| Il valore torna indietro dopo che lo hai cambiato | Hai scritto una variabile sincronizzata senza possedere l'oggetto, quindi il flusso del proprietario l'ha sovrascritta. |
+| Tutto si resetta quando qualcuno entra | L'ownership viene presa in `Start` o `OnNetworkReady`, quindi il nuovo arrivato diventa proprietario con i valori predefiniti. |
+| I gestori degli eventi si attivano due volte | Sottoscritti in `Start` e di nuovo in `OnEnable`, oppure mai annullati in `OnDestroy`. |
+
+## Strumenti
+
+- **Inspector in play mode.** Gli inspector di oggetti sincronizzati, pickup e sedili mostrano il proprietario, l'ID di rete, la profondità del buffer e i byte al secondo.
+- **Gizmo di sincronizzazione.** Gli oggetti sincronizzati remoti disegnano dove si trovavano e dove si stanno dirigendo, mostrando a colpo d'occhio interpolazione ed estrapolazione.
+- **Più client.** Costruisci un client ed eseguilo accanto all'editor, entrambi connessi a un server locale. Vedi [Test](/it/docs/world/testing).
+- **`BasisStatsShim`** (Cilbox) riporta il tempo di andata e ritorno e i secondi trascorsi dall'ultimo pacchetto, utile per mostrare un cartello "riconnessione in corso".

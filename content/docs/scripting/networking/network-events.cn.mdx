@@ -1,0 +1,175 @@
+---
+title: 网络事件
+description: 在玩家之间发送一次性消息：接收者、传输方式、载荷打包以及 Cilbox 中的对应写法。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+网络事件是一个字节数组，从某位玩家机器上的对象副本发送到其他玩家机器上的同一对象。它会到达 `OnNetworkMessage`（Native）或 `NetworkMessageReceived` 事件（Cilbox）。
+
+## 发送
+
+```csharp
+SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
+```
+
+- **`recipients = null`** 会发送给除您之外的所有人。
+- 传入玩家 ID 数组即可发送给特定玩家。包含您自己的 ID 可以让消息通过网络回传给您。
+- 对象必须已网络就绪（`HasNetworkID` 为 true）。过早发送会记录错误且不执行任何操作，因此请在 `OnNetworkReady` 或之后发送。
+
+<Callout type="warn">
+事件**不会被记住**。在事件发送之后才加入的玩家永远不会收到它。如果事件改变了持久状态，还需要处理[后加入者](/cn/docs/scripting/networking/late-joiners)。
+</Callout>
+
+## 传输方式
+
+| 方式 | 是否送达？ | 是否有序？ | 用于 |
+| --- | --- | --- | --- |
+| `Unreliable` | 不一定 | 否 | 高频更新，下一次更新会取代本次。 |
+| `Sequenced` | 不一定 | 丢弃旧消息 | 以最新值为准，例如实时滑块。 |
+| `ReliableUnordered` | 是 | 否 | 相互独立的一次性操作。 |
+| `ReliableSequenced` | 最新的 | 是 | 只有最终值才重要的开关。 |
+| `ReliableOrdered` | 是 | 是 | 每条消息及其顺序都很重要的任何情况：分数、游戏步骤。 |
+
+不确定时，请使用 `ReliableOrdered`。
+
+## 接收
+
+```csharp title="Native"
+public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+{
+    if (buffer == null || buffer.Length == 0) return;
+    switch (buffer[0])
+    {
+        case 1: Open(); break;
+        case 2: Close(); break;
+    }
+}
+```
+
+`playerId` 是发送者。可以用 `BasisNetworkPlayers.GetPlayerById(playerId, out BasisNetworkPlayer player)` 查找该玩家。
+
+读取之前务必验证缓冲区长度。实例中的任何人都可以向您的对象发送消息。
+
+## 打包载荷 [#packing-a-payload]
+
+对于一两个值，`BitConverter` 就足够了。更多值时请使用 `BinaryWriter`。将消息类型字节放在最前面，这样一个对象就能处理多种事件。
+
+```csharp
+using System.IO;
+
+byte[] PackHit(ushort target, float damage, Vector3 point)
+{
+    using (var stream = new MemoryStream())
+    using (var writer = new BinaryWriter(stream))
+    {
+        writer.Write((byte)3);
+        writer.Write(target);
+        writer.Write(damage);
+        writer.Write(point.x); writer.Write(point.y); writer.Write(point.z);
+        return stream.ToArray();
+    }
+}
+
+void ReadHit(byte[] buffer)
+{
+    using (var reader = new BinaryReader(new MemoryStream(buffer)))
+    {
+        reader.ReadByte();
+        ushort target = reader.ReadUInt16();
+        float damage = reader.ReadSingle();
+        Vector3 point = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+    }
+}
+```
+
+大型载荷（一幅绘画、一个关卡布局）可以用 `BasisCompressionShim.Compress` 和 `Decompress` 进行压缩（LZ4，解压后最大 1 MB）。
+
+## Cilbox
+
+Cilbox 脚本无法派生自 `BasisNetworkBehaviour`。请改为获取 `BasisNetworkShim`；当您调用 `GetComponent` 时，Cilbox 会添加该组件。在 `Start` 中订阅，在 `OnDestroy` 中取消订阅。
+
+```csharp title="NetworkedCounter.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class NetworkedCounter : MonoBehaviour
+{
+    public TextMeshPro label;
+    BasisNetworkShim net;
+    int count;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    public void Increment()
+    {
+        net.TakeOwnership();
+        count++;
+        Show();
+        net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer)
+        {
+            net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+`BasisNetworkShim` 上的事件与 `BasisNetworkBehaviour` 上的重写方法一一对应：
+
+| `BasisNetworkBehaviour` 重写方法 | `BasisNetworkShim` 事件 |
+| --- | --- |
+| `OnNetworkReady()` | `NetworkReady` |
+| `OnNetworkMessage(...)` | `NetworkMessageReceived` |
+| `OnOwnershipTransfer(...)` | `OwnershipTransfer` |
+| `OnServerOwnershipDestroyed()` | `ServerOwnershipDestroyed` |
+| `OnPlayerJoined(...)` | `PlayerJoined` |
+| `OnPlayerLeft(...)` | `PlayerLeft` |
+
+<Callout type="info">
+`SafeUtil.MakeNetworkable(this)` 的作用与 `GetComponent<BasisNetworkShim>()` 相同，并返回该 shim。
+</Callout>
+
+## 无需消息即可在每个客户端上得到相同结果
+
+如果每个客户端只需要就一个随机数达成一致，`BasisSharedRandomShim` 会在每台机器上为相同的种子和索引给出相同的值：
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Same weather for everyone, changing every 5 minutes of server time.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+```

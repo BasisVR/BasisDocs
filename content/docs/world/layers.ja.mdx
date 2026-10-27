@@ -1,0 +1,34 @@
+---
+title: レイヤー
+description: Basisが使用するUnityのレイヤー、それぞれが衝突、インタラクション、カメラにとって何を意味するか、オブジェクトにどれを使うべきか。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+BasisはいくつかのUnityレイヤーを予約しています。プレイヤー、ポインター、カメラがオブジェクトを正しく扱えるよう、説明どおりに使用してください。
+
+| # | レイヤー | 用途 |
+| --- | --- | --- |
+| 0 | Default | 通常のワールドのジオメトリ。プレイヤーが衝突し、ポインターが当たります。 |
+| 1 | TransparentFX | Unityのデフォルト。 |
+| 2 | Ignore Raycast | ポインターやレイキャストが当たらず、三人称カメラからも無視されます。 |
+| 3 | Player | ローカルプレイヤーのキャラクターコントローラー。 |
+| 4 | Water | Unityのデフォルト。 |
+| 5 | UI | ワールド空間のUI。 |
+| 6 | LocalPlayerAvatar | 自分のアバター。必要に応じて一人称視点から非表示になります。 |
+| 7 | RemotePlayerAvatar | 他のプレイヤーのアバター。 |
+| 8 | Interactable | ポインターがハイライトし、インタラクトすべきオブジェクト。 |
+| 9 | OverlayUI | メニューなど、すべての上に描画されるUI。 |
+| 10 | IgnoredByInteractable | 見えて衝突もしますが、ポインターは通り抜けます。ボタンの手前にあるガラスやトリガーボリュームに使用します。 |
+| 11 | HandHeldCameraUI | ハンドヘルドカメラ自身のUI。 |
+
+## レイヤーの選び方
+
+- **壁、床、プロップ:** Default。
+- **ボタンの手前にあるトリガーボリュームや見えない障害物:** IgnoredByInteractable。ポインターがその奥にあるものに届くようになります。
+- **ポインターが決して当たるべきでない装飾用のコライダー:** Ignore Raycast。
+- Player、LocalPlayerAvatar、RemotePlayerAvatar、OverlayUIには**自分のオブジェクトを決して置かないでください**。
+
+<Callout type="info">
+レイヤーの名前と番号はBasisプロジェクトのTag Managerに由来します。コンテンツはそれらを使ってビルドされるため、プロジェクト内でBasisのレイヤーの名前を変えたり並べ替えたりしないでください。
+</Callout>

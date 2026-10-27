@@ -1,0 +1,65 @@
+---
+title: Rondetimer
+description: Een aftelling die iedereen synchroon ziet. De eigenaar stuurt één keer de eindtijd en elke client telt af op de serverklok.
+---
+
+Elk frame de resterende seconden versturen verspilt bandbreedte en loopt uit de pas. Stuur één keer de **eindtijd** en laat elke client aftellen tegen de gedeelde serverklok.
+
+```csharp title="RoundTimer.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class RoundTimer : MonoBehaviour
+{
+    public float roundSeconds = 120f;
+    public TextMeshPro label;
+
+    BasisNetworkShim net;
+    double endTime;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void StartRound()
+    {
+        net.TakeOwnership();
+        endTime = BasisNetworkTimeShim.ServerTimeSeconds + roundSeconds;
+        Send(null);
+    }
+
+    void Send(ushort[] to)
+    {
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(BitConverter.GetBytes(endTime), DeliveryMethod.ReliableOrdered, to);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data != null && data.Length == 8) endTime = BitConverter.ToDouble(data, 0);
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        double left = endTime - BasisNetworkTimeShim.ServerTimeSeconds;
+        label.text = left > 0 ? $"{(int)left / 60}:{(int)left % 60:00}" : "Round over";
+    }
+}
+```
+
+- Eén bericht per ronde, hoe lang die ook duurt.
+- Late joiners krijgen de eindtijd en tonen meteen de juiste aftelling.

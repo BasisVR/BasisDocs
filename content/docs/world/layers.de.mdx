@@ -1,0 +1,34 @@
+---
+title: Layer
+description: Die Unity-Layer, die Basis verwendet, was jeder für Kollisionen, Interaktion und Kameras bedeutet und welchen Sie für Ihre Objekte verwenden sollten.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis reserviert mehrere Unity-Layer. Verwenden Sie sie wie beschrieben, damit Spieler, Pointer und Kameras Ihre Objekte korrekt behandeln.
+
+| # | Layer | Verwendet für |
+| --- | --- | --- |
+| 0 | Default | Gewöhnliche Weltgeometrie. Spieler kollidieren damit und Pointer treffen sie. |
+| 1 | TransparentFX | Unity-Standard. |
+| 2 | Ignore Raycast | Wird von Pointern und Raycasts nicht getroffen und von der Third-Person-Kamera ignoriert. |
+| 3 | Player | Der Character Controller des lokalen Spielers. |
+| 4 | Water | Unity-Standard. |
+| 5 | UI | World-Space-UI. |
+| 6 | LocalPlayerAvatar | Ihr eigener Avatar. Wird bei Bedarf in Ihrer First-Person-Ansicht ausgeblendet. |
+| 7 | RemotePlayerAvatar | Die Avatare anderer Spieler. |
+| 8 | Interactable | Objekte, die der Pointer hervorheben und mit denen er interagieren soll. |
+| 9 | OverlayUI | UI, die über allem gezeichnet wird, etwa das Menü. |
+| 10 | IgnoredByInteractable | Sichtbar und fest, aber Pointer gehen hindurch. Für Glas oder Trigger-Volumes vor Buttons. |
+| 11 | HandHeldCameraUI | Die eigene UI der Handkamera. |
+
+## Einen Layer auswählen
+
+- **Wände, Böden, Props:** Default.
+- **Trigger-Volumes und unsichtbare Blocker vor Buttons:** IgnoredByInteractable, damit Pointer erreichen, was dahinter liegt.
+- **Dekorative Collider, die der Pointer nie treffen soll:** Ignore Raycast.
+- **Legen Sie Ihre Objekte niemals auf** Player, LocalPlayerAvatar, RemotePlayerAvatar oder OverlayUI.
+
+<Callout type="info">
+Die Layer-Namen und -Nummern stammen aus dem Tag Manager des Basis-Projekts. Inhalte werden damit gebaut, benennen Sie Basis-Layer in Ihrem Projekt daher nicht um und ändern Sie nicht ihre Reihenfolge.
+</Callout>

@@ -1,0 +1,40 @@
+---
+title: 桌面與 VR 輸入
+description: 一個腳本就能透過 VR 扳機或滑鼠點擊發射爆能槍，並在 VR 中提供觸覺回饋。
+---
+
+```csharp title="Blaster.cs (Cilbox, world)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Blaster : MonoBehaviour
+{
+    public Transform muzzle;
+    public AudioSource shot;
+    public float cooldown = 0.25f;
+    float next;
+
+    void Update()
+    {
+        bool fire = false;
+        if (BasisPlatformShim.IsVR)
+        {
+            fire = BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Trigger);
+        }
+        else if (BasisDesktopInputShim.HasMouse)
+        {
+            fire = BasisDesktopInputShim.GetMouseButtonDown(0);
+        }
+        if (!fire || Time.time < next) return;
+        next = Time.time + cooldown;
+        shot.Play();
+        if (BasisPlatformShim.IsVR) BasisHapticsShim.Play(this, BasisHapticHand.Right, 0.7f, 0.06f);
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, 50f)) Debug.Log(hit.collider.name);
+    }
+}
+```
+
+- 對於手持物品，建議使用 **Basis Pickup Interactable** 與 `OnPickupUse`（[拾取槍](/tw/docs/scripting/examples/pickup-gun)），它在每個平台上的運作方式都相同。
+- 選單開啟時，控制器輸入會讀取為放開，因此玩家在點擊選單按鈕時不會開火。

@@ -1,0 +1,53 @@
+---
+title: 語音舞台
+description: 使用 BasisVoiceRoutingShim，從大型揚聲器播放講者語音的舞台。
+---
+
+```csharp title="VoiceStage.cs (Cilbox, world)"
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class VoiceStage : MonoBehaviour
+{
+    public Collider stageArea;
+    public Transform speaker;
+    public float range = 60f;
+
+    int route = -1;
+    ushort routedPlayer;
+    float nextCheck;
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 0.5f;
+
+        BasisNetworkPlayer onStage = null;
+        foreach (BasisNetworkPlayer p in BasisNetworkPlayer.GetAllPlayers())
+        {
+            if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
+        }
+
+        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        Stop();
+        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
+        routedPlayer = onStage.playerId;
+    }
+
+    void Stop()
+    {
+        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = -1;
+    }
+
+    void OnDestroy() => Stop();
+}
+```
+
+- 每個客戶端都根據已有的位置在本機路由語音，因此不會產生額外的網路流量。
+- 會先檢查講者的同意。尚未允許語音路由的玩家會以正常方式被聽到。
+- 請在 **Basis > Tools > Cilbox Permissions** 中確認您的沙盒允許 `BasisNetworkPlayer.GetAllPlayers`。

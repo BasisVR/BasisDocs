@@ -1,0 +1,98 @@
+---
+title: Événements
+description: Les shims d'événement à activer. Récupérez le composant dans Start, puis déclarez le callback par son nom.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Tous les shims d'événement fonctionnent de la même façon : appelez `GetComponent<T>()` une fois dans `Start` (Cilbox l'ajoute pour vous), puis déclarez une méthode portant le nom de callback du shim. Basis l'appelle directement, il n'y a donc rien à quoi s'abonner ni se désabonner.
+
+<Callout type="info">
+La plupart des shims d'événement vous appellent une fois juste après l'activation, avec la valeur actuelle, vous n'avez donc pas besoin de code d'initialisation séparé.
+</Callout>
+
+## BasisPlatformEventShim
+
+```csharp
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrHud.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+## BasisLanguageEventShim
+
+```csharp
+void Start() { GetComponent<BasisLanguageEventShim>(); }
+
+void OnLanguageChanged(string code)
+{
+    sign.text = code == "de" ? "Willkommen" : "Welcome";
+}
+```
+
+## BasisGraphicsSettingsEventShim
+
+Regroupé en au plus un appel par image.
+
+```csharp
+void Start() { GetComponent<BasisGraphicsSettingsEventShim>(); }
+
+void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+{
+    detail.SetActive(qualityTier >= BasisGraphicsSettingsShim.TierMedium);
+}
+```
+
+## BasisPermissionEventShim
+
+```csharp
+void Start() { GetComponent<BasisPermissionEventShim>(); }
+
+void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+{
+    staffPanel.SetActive(isAdmin || isModerator);
+}
+```
+
+## BasisJiggleEventShim
+
+Se déclenche quand quelqu'un attrape ou touche la physique jiggle de cet objet. Les deux callbacks se déclenchent une fois au début (`began` à true) et une fois à la fin.
+
+```csharp
+BasisJiggleEventShim jiggle;
+int tail;
+
+void Start()
+{
+    jiggle = GetComponent<BasisJiggleEventShim>();
+    tail = jiggle.FindJiggleRig("Tail");
+}
+
+void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+{
+    if (rigIndex == tail && began) squeak.Play();
+}
+
+void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
+```
+
+`GetJiggleRigCount()` et `GetJiggleRigName(index)` listent les rigs. La détection ne tourne que tant qu'un script s'y est abonné.
+
+## BasisBeforeRenderShim
+
+S'exécute après tout le travail de pose et d'IK, juste avant que l'image soit dessinée. Utilisez-le pour fixer quelque chose à une main ou à la tête sans une image de retard. Gardez-le court ; le rendu l'attend.
+
+```csharp
+void Start() { GetComponent<BasisBeforeRenderShim>(); }
+
+void OnBeforeRender()
+{
+    IBasisPlayer me = BasisPlayersShim.Local;
+    if (me == null) return;
+    transform.position = me.GetBonePosition(HumanBodyBones.RightHand);
+}
+```

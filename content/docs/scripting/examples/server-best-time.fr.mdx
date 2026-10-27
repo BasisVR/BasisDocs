@@ -1,0 +1,50 @@
+---
+title: Meilleur temps serveur
+description: Sauvegarder le meilleur tour de chaque joueur sur le serveur avec BasisServerStorageShim, pour qu'il le suive d'un appareil à l'autre.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` sauvegarde sur la machine du joueur. `BasisServerStorageShim` sauvegarde sur le **serveur**, par joueur, donc un meilleur temps réalisé sur PC est toujours là quand il revient depuis un Quest.
+
+```csharp title="ServerBestTime.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerBestTime : MonoBehaviour
+{
+    const string Key = "best-lap";
+    public TextMeshPro label;
+    float best = float.MaxValue;
+
+    void Start()
+    {
+        if (!BasisServerStorageShim.IsAvailable(this)) { label.text = "Times are not saved on this server"; return; }
+        BasisServerStorageShim.LoadString(this, Key, (result, text) =>
+        {
+            if (result == BasisServerStorageResult.Ok && float.TryParse(text, out float saved)) best = saved;
+            Show();
+        });
+    }
+
+    public void LapFinished(float seconds)
+    {
+        if (seconds >= best) return;
+        best = seconds;
+        Show();
+        BasisServerStorageShim.SaveString(this, Key, best.ToString("F3"), result =>
+        {
+            if (result != BasisServerStorageResult.Ok) Debug.LogWarning($"best lap not saved: {result}");
+        });
+    }
+
+    void Show() => label.text = best < float.MaxValue ? $"Your best: {best:F2}s" : "No lap yet";
+}
+```
+
+<Callout type="info">
+Le stockage est par joueur et par serveur, avec un petit total (16 Ko par défaut) partagé entre tous les contenus. Stockez des valeurs compactes, pas des journaux.
+</Callout>

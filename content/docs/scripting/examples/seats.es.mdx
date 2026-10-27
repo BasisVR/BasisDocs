@@ -1,0 +1,60 @@
+---
+title: Asientos
+description: Sentar jugadores desde un script, una silla giratoria y un botón de expulsión, con Basis Seat y Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configuración
+
+1. Añada **Basis Seat** a una silla y coloque su punto de asiento. El prefab `SimpleSeat` de com.basis.examples es uno ya preparado.
+2. Añada **Basis Seat Sync** para que todos vean quién está sentado y dos jugadores no puedan ocupar el mismo asiento.
+
+Los jugadores pueden sentarse apuntando al asiento. El siguiente script añade un botón que los sienta, gira la silla y les permite levantarse.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Miembro | Significado |
+| --- | --- |
+| `IsAvailable` | No hay nadie sentado y los asientos no están desactivados en los ajustes del jugador. |
+| `IsLocalPlayerSeated` | El jugador local está en este asiento. |
+| `HasOccupant` | Hay alguien en este asiento. |
+| `TrySeatLocalPlayer()` | Sienta al jugador local si el asiento está libre. |
+| `SetOccupantYaw(degrees)` | Gira al jugador sentado, dentro de los límites de rotación del asiento. |
+| `EjectLocalPlayer()` | Levanta al jugador local. |
+
+<Callout type="info">
+Los asientos solo mueven al jugador local, por lo que el script no necesita red propia. **Basis Seat Sync** se encarga de quién está sentado.
+</Callout>

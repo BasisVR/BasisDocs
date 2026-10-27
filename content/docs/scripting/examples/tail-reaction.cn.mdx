@@ -1,0 +1,40 @@
+---
+title: 尾巴反应
+description: 使用 BasisJiggleEventShim，让虚拟形象的尾巴在被人抓住时摇摆并发出吱吱声。
+---
+
+```csharp title="TailReaction.cs (Cilbox, avatar)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class TailReaction : MonoBehaviour
+{
+    public AudioSource squeak;
+    public Animator animator;
+    BasisJiggleEventShim jiggle;
+    int tail = -1;
+
+    void Start()
+    {
+        jiggle = GetComponent<BasisJiggleEventShim>();
+        tail = jiggle.FindJiggleRig("Tail");
+    }
+
+    void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex != tail) return;
+        if (began) squeak.Play();
+        animator.SetBool("Wagging", began);
+    }
+
+    void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex == tail && began) animator.SetTrigger("Flinch");
+    }
+}
+```
+
+- 每个渲染该虚拟形象的客户端都能看到抓取动作，因此无需网络同步，反应就会为所有人播放。
+- 只有在有脚本启用时才会进行检测，因此没有此脚本的虚拟形象不会产生任何开销。

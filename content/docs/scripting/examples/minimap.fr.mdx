@@ -1,0 +1,67 @@
+---
+title: Minicarte
+description: Une minicarte en vue de dessus en temps réel qui suit le joueur local, avec une caméra, une render texture et un masque Graphics.Blit facultatif.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configuration
+
+1. Créez un asset **Render Texture**, par exemple de 512 x 512.
+2. Créez une **Camera** orientée vers le bas. Réglez **Projection** sur Orthographic, **Target Texture** sur la render texture, et un **Culling Mask** qui exclut les joueurs et l'UI.
+3. Affichez la render texture sur une **Raw Image** dans un canvas, ou sur un matériau.
+4. Ajoutez **Minimap** à la caméra.
+
+## Script
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Carte ronde avec Graphics.Blit
+
+Pour masquer la texture carrée en cercle, faites-en un blit à travers un matériau à chaque frame. `Graphics.Blit` est le seul appel de dessin disponible pour les scripts Cilbox.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+Une caméra de minicarte rend la scène une seconde fois. Gardez sa render texture petite, son culling mask restreint, et désactivez-la sur les niveaux de qualité bas avec `BasisGraphicsSettingsShim.QualityTier`.
+</Callout>

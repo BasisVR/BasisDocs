@@ -1,0 +1,94 @@
+---
+title: 拾取枪
+description: 使用时会开火的同步拾取物，射击效果会为每位玩家播放。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 设置
+
+1. 建模或导入一把枪。添加碰撞体和 **Rigidbody**。
+2. 添加 **Basis Pickup Interactable**。
+3. 添加 **Basis Pickup Sync Networking** 并分配拾取物。它会同步枪的位置以及谁持有它。
+4. 为枪口闪光添加一个 **AudioSource** 和一个 **ParticleSystem**，并在枪口处添加一个子变换。
+5. 添加 **PickupGun** 并分配所有内容。
+
+## 脚本
+
+```csharp title="PickupGun.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PickupGun : MonoBehaviour
+{
+    public BasisPickupInteractable pickup;
+    public Transform muzzle;
+    public AudioSource shotSound;
+    public ParticleSystem flash;
+    public float range = 50f;
+    public float cooldown = 0.2f;
+
+    BasisNetworkShim net;
+    bool held;
+    float nextShot;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        pickup.OnInteractStartEvent.AddListener(OnGrab);
+        pickup.OnInteractEndEvent.AddListener(OnDrop);
+        pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void OnGrab(BasisInput input) { held = true; }
+    void OnDrop(BasisInput input) { held = false; }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        if (!held || mode != BasisPickUpUseMode.OnPickUpUseDown || Time.time < nextShot) return;
+        nextShot = Time.time + cooldown;
+
+        PlayShot();
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.6f, 0.08f);
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableUnordered);
+
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, range))
+        {
+            Debug.Log($"hit {hit.collider.name}");
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1 && buffer[0] == 1) PlayShot();
+    }
+
+    void PlayShot()
+    {
+        shotSound.Play();
+        flash.Play();
+    }
+}
+```
+
+## 工作原理
+
+- **Basis Pickup Sync Networking** 在被抓取时获取所有权并传输枪的姿态，因此所有人都能看到它在持有者手中。这部分无需代码。
+- **射击是事件**，而不是状态。之后加入的人不需要知道曾经开过枪，因此无需处理后加入者。
+- **只有射击者进行射线检测**。对游戏玩法有影响的命中结果（伤害、分数）应当由射击者决定并作为单独的事件发送，或者像[计分板](/cn/docs/scripting/examples/scoreboard)中那样转发给所有者。
+
+<Callout type="info">
+如果其他玩家不应能从别人手中夺走这把枪，请在同步组件上关闭 **CanNetworkSteal**。
+</Callout>

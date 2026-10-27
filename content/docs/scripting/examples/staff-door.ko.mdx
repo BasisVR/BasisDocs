@@ -1,0 +1,33 @@
+---
+title: 스태프 문
+description: 관리자와 모더레이터에게만 열리고, 역할이 바뀌면 실시간으로 갱신되는 문.
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- 문은 스태프 자신의 클라이언트에서만 꺼집니다. 다른 사람에게는 영향이 없으므로 네트워크로 보낼 것이 없습니다.
+- *다른* 스태프 위에 배지를 표시하려면 `BasisPermissionsShim.IsModerator(player, callback)`로 물어보세요. 서버까지 왕복이 필요합니다.
+- 클라이언트 측 확인은 정직한 플레이어를 막는 용도입니다. 수정된 클라이언트가 절대 접근하면 안 되는 것에는 이것에 의존하지 마세요.

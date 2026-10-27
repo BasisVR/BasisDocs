@@ -1,0 +1,60 @@
+---
+title: Stoelen
+description: Spelers vanuit een script laten zitten, een draaistoel en een uitwerpknop, met Basis Seat en Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup
+
+1. Voeg **Basis Seat** toe aan een stoel en positioneer het zitpunt. De prefab `SimpleSeat` in com.basis.examples is een kant-en-klare.
+2. Voeg **Basis Seat Sync** toe, zodat iedereen ziet wie er zit en twee spelers niet dezelfde stoel kunnen nemen.
+
+Spelers kunnen gaan zitten door naar de stoel te wijzen. Het script hieronder voegt een knop toe die ze laat zitten, de stoel draait en ze laat opstaan.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Lid | Betekenis |
+| --- | --- |
+| `IsAvailable` | Niemand zit erin en stoelen zijn niet uitgeschakeld in de instellingen van de speler. |
+| `IsLocalPlayerSeated` | De lokale speler zit in deze stoel. |
+| `HasOccupant` | Er zit iemand in deze stoel. |
+| `TrySeatLocalPlayer()` | Laat de lokale speler zitten als de stoel vrij is. |
+| `SetOccupantYaw(degrees)` | Draait de zittende speler, binnen de rotatielimieten van de stoel. |
+| `EjectLocalPlayer()` | Laat de lokale speler opstaan. |
+
+<Callout type="info">
+Stoelen verplaatsen alleen de lokale speler, dus het script heeft zelf geen netwerkcode nodig. **Basis Seat Sync** regelt wie er zit.
+</Callout>

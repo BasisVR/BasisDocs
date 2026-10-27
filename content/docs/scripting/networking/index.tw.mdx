@@ -1,0 +1,91 @@
+---
+title: 網路
+description: 如何讓 Basis 世界或道具對每位玩家都表現一致：同步變數、網路事件、擁有權與晚加入者。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+腳本所做的一切都在某一位玩家的電腦上執行。如果一位玩家開了門，在您通知網路之前，其他人都看不到。本指南介紹 Basis 為此提供的工具，以及各自的使用時機。
+
+傳輸層本身的運作方式（伺服器中繼、傳遞方式、依距離調整的更新頻率），請參閱[網路同步](/tw/docs/technical/network-syncing)。
+
+## 四個概念
+
+| 概念 | 說明 | 用途 |
+| --- | --- | --- |
+| **同步變數** | 由擁有者寫入、其他所有人讀取的數值，會持續傳送並進行插值。 | 位置、拉桿角度、分數，任何具有目前狀態的東西。 |
+| **網路事件** | 帶有位元組資料的一次性訊息。 | 「開了一槍」、「回合開始」、「播放這個音效」。 |
+| **擁有權** | 每個網路物件都恰好由一位玩家擁有，且只有他能寫入。 | 決定誰操控拾取物、誰負責記分。 |
+| **晚加入者** | 在事物改變之後才抵達的玩家。 | 確保他們看到的是目前狀態，而不是場景預設值。 |
+
+<Callout type="info">
+經驗法則：如果五分鐘後才加入的玩家也需要看到它，它就是**狀態**，應該放在同步變數中（或必須重新傳送給他們）。如果它只在發生的當下才重要，它就是**事件**。
+</Callout>
+
+## 構成要素
+
+- **`BasisNetworkBehaviour`** 是編譯進客戶端的網路腳本的基底類別。它擁有網路 ID、擁有者，以及 `OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined` 和 `OnPlayerLeft` 回呼。
+- **`BasisNetworkShim`** 是 Cilbox 腳本的對應版本。Cilbox 腳本無法繼承 `BasisNetworkBehaviour`，因此它會透過 `GetComponent` 取得 `BasisNetworkShim` 並訂閱其事件。
+- **`BasisSyncedObject`** 建立在 `BasisNetworkBehaviour` 之上，提供精簡且經插值的狀態串流。**`BasisSyncedParameters`**、**`BasisSyncedTransform`** 和 **`BasisSyncedRigidbody`** 是以它為基礎的現成元件。
+- **`BasisPickupSyncNetworking`** 和 **`BasisSeatSync`** 不需程式碼即可同步拾取物和座位。
+
+## 一個網路腳本，從頭到尾
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+像這樣的 Native 腳本可在客戶端建置中運作。在上傳的內容中，請將同樣的功能寫成 Cilbox 腳本（見下文）。
+
+它展示了：
+
+1. 按下按鈕的玩家會**取得擁有權**，因此只有一個權威來源。
+2. 新數值會**以事件形式傳送**給其他所有人（`Recipients = null` 表示除了您以外的所有人）。
+3. 有人加入時，**只有擁有者**會將目前的數值傳送給他們。
+
+同一個腳本的 Cilbox 版本請參閱[網路事件](/tw/docs/scripting/networking/network-events#cilbox)。
+
+## 本指南的頁面
+
+- [網路事件](/tw/docs/scripting/networking/network-events)：傳送訊息、接收者、傳遞方式、資料內容。
+- [同步變數](/tw/docs/scripting/networking/synced-variables)：`BasisSyncedParameters` 和自訂的 `BasisSyncedObject` 欄位。
+- [擁有權](/tw/docs/scripting/networking/ownership)：誰擁有什麼、取得與檢查擁有權、擁有者離開時會發生什麼事。
+- [晚加入者](/tw/docs/scripting/networking/late-joiners)：讓新玩家跟上最新狀態。
+- [網路元件](/tw/docs/scripting/networking/network-components)：無需程式碼的同步元件。
+- [效能與除錯](/tw/docs/scripting/networking/performance)：頻寬、傳送頻率與找出同步錯誤。

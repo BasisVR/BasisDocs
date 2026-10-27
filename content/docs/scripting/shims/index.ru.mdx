@@ -1,0 +1,62 @@
+---
+title: Справочник по шимам
+description: Все шимы Basis, доступные скриптам Cilbox, сгруппированные по областям, с коротким примером для каждого.
+---
+
+Шимы это сторона Basis в песочнице Cilbox: небольшие безопасные API, которые дают изолированному скрипту доступ к игрокам, вводу, сети, сохранениям, меню и многому другому. Большинство из них находятся в пространстве имён `Basis.Shims`.
+
+Шимы бывают трёх видов:
+
+- **Статические классы**, которые вызываются напрямую, например `BasisPlayersShim.Count`.
+- **Компоненты событий**, на которые вы подписываетесь вызовом `GetComponent<T>()` в `Start`. Cilbox сам добавляет компонент, а Basis вызывает в вашем скрипте метод с известным именем, например `OnPlatformChanged`.
+- **Подменённые типы**: вы пишете обычное имя Unity (`Debug`, `VideoPlayer`, `BasisAvatar`), а песочница подставляет безопасную версию.
+
+| Шим | Что делает | Страница |
+| --- | --- | --- |
+| `BasisPlayersShim` | Список игроков, ближайший игрок, позы | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisVelocityShim` | Подбросить или толкнуть локального игрока | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | Управлять движением владельца аватара из аватара | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisSeatShim` | Сидит ли локальный игрок и где | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | Узнать, когда игрок меняет аватар | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | Проверки администратора, модератора и разрешений | [Игроки](/ru/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | Кнопки, триггеры и стики VR-контроллеров | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | Кнопки мыши, движение и прокрутка | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisHapticsShim` | Вибрация контроллеров | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisInteractableShim` | Нажимаемые объекты | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisActionTrigger` | События указателя в UI | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [Ввод](/ru/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | Переключения VR / десктоп | [События](/ru/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | Смена языка | [События](/ru/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | Смена качества графики | [События](/ru/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | Изменения локальных разрешений | [События](/ru/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | Кто-то хватает или касается jiggle-костей | [События](/ru/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | Позднее обновление после IK, перед отрисовкой | [События](/ru/docs/scripting/shims/events) |
+| `BasisNetworkShim` | Сетевые события, владение | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | Общие серверные часы | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | Одинаковые случайные числа на всех клиентах | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | Быстрая упаковка чисел и векторов | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | Сжатие LZ4 | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | Отправить игрока на другой сервер | [Сеть](/ru/docs/scripting/shims/networking) |
+| `BasisSaveShim` | Сохранять данные на компьютере игрока | [Данные](/ru/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | Сохранять данные на сервере | [Данные](/ru/docs/scripting/shims/data) |
+| `BasisJson` | Разбор JSON | [Данные](/ru/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | HTTPS GET и POST | [Данные](/ru/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | Открыть веб-сайт | [Данные](/ru/docs/scripting/shims/data) |
+| `BasisMenuShim` | Вкладки настроек и панели меню | [Меню](/ru/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | Чтение настроек качества | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | Частота кадров, узкое место, соединение | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | Бюджет compute-шейдеров | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | Воспроизводить голос игрока из объекта | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | `VideoPlayer` с запросом URL | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | Определение платформы | [Рендеринг и звук](/ru/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | Чтение или запись множества трансформов за раз | [Пакетная обработка](/ru/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | Копировать трансформы в трансформы каждый кадр | [Пакетная обработка](/ru/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | Чтение, запись или копирование множества blendshape | [Пакетная обработка](/ru/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | Разделение и объединение массивов векторов | [Пакетная обработка](/ru/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | Проверки лучами и сферами по массивам | [Пакетная обработка](/ru/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | Компонент аватара на аватарах | [Аватар](/ru/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Чтение и управление пунктами меню Vixxy | [Аватар](/ru/docs/scripting/shims/avatar) |
+| `BasisOsc` | Сообщения OSC | [OSC](/ru/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | Логи с пометкой вашего контента | [Правила песочницы](/ru/docs/scripting/sandbox-rules) |
+
+Какая песочница разрешает какой шим, показано в реальном времени в редакторе Unity в **Basis > Creator Guide**, в разделе Cilbox API Reference.

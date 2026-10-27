@@ -1,0 +1,90 @@
+---
+title: Native und Cilbox
+description: Die zwei Arten, Basis zu skripten. Native Skripte werden in die Anwendung kompiliert; Cilbox-Skripte werden mit Inhalten ausgeliefert und laufen zur Laufzeit in einer Sandbox.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis führt Code auf zwei Arten aus. Welche Sie verwenden, hängt davon ab, **wo das Skript liegt**: in der Anwendung, die Sie erstellen, oder in Inhalten, die zur Laufzeit geladen werden.
+
+## Native: in die Anwendung kompiliert
+
+Ein natives Skript ist ein gewöhnliches Unity-`MonoBehaviour`, das in den Basis-Client (oder Ihre eigene App auf Basis des Basis-Frameworks) eingebaut wird. Es wird mit der Anwendung kompiliert und daher mit dem nächsten Client-Build ausgeliefert, nicht mit einer Welt oder einem Prop.
+
+- Vollständiges C# und die vollständige Unity- und Basis-API.
+- Volle native Geschwindigkeit.
+- Kann von Basis-Klassen wie `BasisNetworkBehaviour` und `BasisSyncedObject` erben.
+- Existiert nur in Clients, die damit gebaut wurden. Spieler mit dem öffentlichen Client haben Ihr Skript nicht.
+
+Verwenden Sie native Skripte, wenn Sie **eine Anwendung oder ein Spiel auf Basis entwickeln**: Ihre eigenen Menüs, Spielregeln, Systeme und alle Komponenten, auf die Ihre Inhalte angewiesen sind.
+
+## Cilbox: Laufzeit-Scripting in Inhalten
+
+Ein Cilbox-Skript ist ein mit `[Cilboxable]` markiertes `MonoBehaviour`, das **in** einer Welt-, Prop- oder Avatar-`.bee`-Datei ausgeliefert wird. Wenn der Inhalt geladen wird, führt Basis es im Cilbox-Interpreter aus, in einer Sandbox für die jeweilige Art von Inhalt (Scene, Prop oder Avatar).
+
+- Funktioniert auf jedem Basis-Client, der den Inhalt lädt. Kein Client-Build nötig.
+- Sandboxed: Nur freigegebene Typen und Methoden können aufgerufen werden, sodass Inhalte dem Rechner des Spielers nicht schaden können.
+- Langsamer als nativ, weil der Code interpretiert wird.
+- Verwendet Shims statt Basisklassen, zum Beispiel `BasisNetworkShim` statt von `BasisNetworkBehaviour` zu erben.
+
+Verwenden Sie Cilbox, wenn Sie **Benutzerinhalte erstellen**: Welten, Props und Avatare, die andere Leute laden.
+
+## Auf einen Blick
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| Liegt in | Dem Anwendungs-Build | Der Welt, dem Prop oder dem Avatar |
+| Geladen | Beim Bauen der App | Zur Laufzeit, mit dem Inhalt |
+| Markiert mit | Nichts | `[Cilboxable]` |
+| API | Alles | Freigegeben pro Sandbox |
+| Geschwindigkeit | Nativ | Interpretiert, deutlich langsamer |
+| Netzwerk | Von `BasisNetworkBehaviour` erben | `BasisNetworkShim` verwenden |
+| Wer hat es | Spieler mit Ihrem Build | Jeder, der den Inhalt lädt |
+
+## Dasselbe Skript auf beide Arten
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## Auslieferung der beiden Varianten
+
+- **Native:** Fügen Sie das Skript Ihrem Unity-Projekt hinzu und bauen Sie den Client. Wenn eine native Komponente in einem Welt- oder Prop-Bundle platziert wird, fügen Sie ihren Typ außerdem dem passenden Content-Police-Selector hinzu, sonst wird sie beim Laden des Inhalts entfernt (siehe [Erlaubte Komponenten](/de/docs/scripting/allowed-components)).
+- **Cilbox:** Fügen Sie Ihrem Inhalt eine **Cilbox Scene Basis** (Welt) oder **Cilbox Prop Basis** (Prop) hinzu, markieren Sie Skripte mit `[Cilboxable]` und bauen Sie die `.bee` wie gewohnt. Siehe [Grundlagen](/de/docs/scripting/examples/basics).
+
+<Callout type="info">
+Beispiele in dieser Dokumentation sind mit **Native** oder **Cilbox** gekennzeichnet. Die meisten Cilbox-Beispiele lassen sich auch als native Skripte kompilieren; native Beispiele brauchen meist Änderungen, um in Cilbox zu laufen. Die Regeln, auf die Sie achten müssen, stehen in den [Sandbox-Regeln](/de/docs/scripting/sandbox-rules).
+</Callout>

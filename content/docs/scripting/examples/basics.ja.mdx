@@ -1,0 +1,79 @@
+---
+title: 基本
+description: 最初のBasisスクリプト。回転するオブジェクトとUIボタンを、シーンやプロップの中に含めて配布するCilboxスクリプトとして作ります。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## セットアップ
+
+1. 空のGameObjectを作成し、**Basis Scene**（ワールドの場合）または**Basis Prop**（プロップの場合）を追加します。
+2. **Cilbox Scene Basis**（ワールド）、またはコンテンツの種類に対応するCilboxコンポーネントを追加します。これが、そのコンテンツ内のすべてのスクリプトが実行されるサンドボックスです。
+3. その下のオブジェクトにスクリプトを追加します。
+
+<Callout type="info">
+エディターが`Cilbox`名前空間を見つけられない場合は、自分の`.asmdef`にCilboxアセンブリへの参照を追加するか、Cilboxアセンブリの**Auto Referenced**をオンにしてください。
+</Callout>
+
+## 回転するオブジェクト
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+publicフィールドと`[SerializeField]`フィールドはコンテンツと一緒に保存されるため、インスペクターで設定できます。
+
+## テキストを変更するボタン
+
+1. **Button**と**TextMeshPro - Text (UI)** を持つワールド空間の**Canvas**を作成します。
+2. このスクリプトをキャンバスに追加し、ボタンとテキストを割り当てます。
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+このカウンターはローカルです。プレイヤーはそれぞれ自分のカウントを持ちます。[同期トグル](/ja/docs/scripting/examples/synced-toggle)のサンプルでは、全員で共有するボタンを作ります。
+
+## テスト
+
+シーンでプレイモードに入ります。Basisは各`[Cilboxable]`スクリプトを`CilboxProxy`に差し替えるため、アップロード後に実行されるものとまったく同じものをテストできます。その後、[ビルド](/ja/docs/world/building)の説明に従ってコンテンツをビルドし、クライアントで読み込んでください。

@@ -1,0 +1,80 @@
+---
+title: 設定タブ
+description: BasisMenuShimでプレイヤーの設定メニューにワールドのオプションを追加し、BasisSaveShimで記憶する方法。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim`は、コンテンツが読み込まれている間、プレイヤーの設定にタブを追加します。タブはワールドがアンロードされると消えます。
+
+## スクリプト
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## パネル全体
+
+オプションではなくゲームメニューにしたい場合は、パネルを追加します。パネルはメニュー内に専用のボタンを持ち、複数のタブを持つことができます。
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()`は、プレイヤーがコンテンツ内で何かを押してから5秒以内にしか動作しません。そのため、コンテンツが勝手にメニューを開くことはできません。
+
+## ルール
+
+- **タブを追加できるもの:** ワールド、ローカルプレイヤーがスポーンしたプロップ、ローカルプレイヤー自身のアバター。`null`は拒否を意味するので、必ずチェックしてください。
+- **オプションはローカル。** 各プレイヤーが自分で設定します。選択を同期するのは、それが全員のワールドを変えるべき場合だけにしてください。
+- 次回の訪問まで残すべき選択は、[BasisSaveShim](/ja/docs/scripting/examples/persistence)で**記憶してください**。
+
+<Callout type="info">
+アバターでは、`isOwner`がtrueのときに`BasisAvatarShim.OnAvatarReady`からタブを追加してください。そうすれば装着者だけがタブを受け取ります。
+</Callout>

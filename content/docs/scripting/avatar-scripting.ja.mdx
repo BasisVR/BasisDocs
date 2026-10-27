@@ -1,0 +1,79 @@
+---
+title: アバタースクリプティング
+description: アバター上のCilboxスクリプト、装着者とそれ以外の全員の違い、アバター準備完了イベント、アバターの状態の同期。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+アバターのCilboxスクリプトは、装着者のクライアントだけでなく、そのアバターを読み込む**すべてのクライアント**で実行されます。ほとんどのアバターロジックでは、誰が実行しているかをチェックする必要があります。
+
+## アバターコンポーネント
+
+アバターのサンドボックス内では、`BasisAvatar`は`BasisAvatarShim`に解決されます。いつもどおり`BasisAvatar`と書いてください。
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| メンバー | 用途 |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | アバターのセットアップが完了すると一度発火します。装着者のクライアントでは`isOwner`がtrueになります。 |
+| `IsOwnedLocally` | 装着者のクライアントでtrueになります。 |
+| `Animator`、`FaceVisemeMesh`、`HumanScale` | アバターのリグを読み取ります。 |
+| `TryGetLinkedPlayer(out ushort playerId)` | 装着者のプレイヤーID。 |
+| `PlayspaceInput` | 装着者自身の移動を制御します（装着者のみ）。 |
+
+## 装着者のみと全員
+
+| 実行対象 | 用途 |
+| --- | --- |
+| **装着者のみ**（`IsOwnedLocally`） | メニュー、ハプティクス、保存、入力、ネットワークイベントの送信。 |
+| **全員** | 同期された状態に従う視覚効果: パーティクル、マテリアル、サウンド。 |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## アバターの状態の同期
+
+- **カスタム値:** `BasisNetworkShim`を取得し、装着者から[ネットワークイベント](/ja/docs/scripting/networking/network-events#cilbox)を送信して、すべてのクライアントで適用します。
+- **動くパーツ:** アバターでは`BasisSyncedTransform`が許可されています。
+
+## アバターの設定タブ
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+アバターのサンドボックスが許可することは何でも、見知らぬ人のアバターがあなたのマシン上で実行できます。そのため、アバターのサンドボックスは3つの中で最も厳格です。カメラ、ライト、Webリクエストは使えず、ハプティクスは装着者にしか届きません。
+</Callout>

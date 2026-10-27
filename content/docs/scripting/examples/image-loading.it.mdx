@@ -1,0 +1,64 @@
+---
+title: Caricamento immagini
+description: Mostrare un'immagine da un URL su un cartello, con un'immagine di riserva durante il caricamento o quando il giocatore rifiuta.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurazione
+
+1. Crea un **Quad** per il cartello e assegnagli un materiale con uno slot texture unlit o lit.
+2. Aggiungi **RemoteImage** e assegna il renderer. Imposta l'URL e una texture segnaposto facoltativa.
+
+## Script
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## Regole
+
+- **Solo https.** Http semplice, indirizzi IP diretti e qualsiasi cosa si risolva in un indirizzo di rete locale vengono rifiutati prima che parta una richiesta.
+- **Niente reindirizzamenti.** Ospita l'immagine al suo indirizzo definitivo.
+- **I giocatori approvano gli host.** La prima volta che un contenuto richiede un nuovo host, al giocatore viene chiesta conferma. Finché non accetta, il download fallisce e resta il tuo segnaposto.
+- Ogni giocatore scarica l'immagine per conto proprio; non c'è nulla da sincronizzare. Per far mostrare a tutti la stessa immagine variabile, sincronizza l'**indice dell'URL** (vedi [Interruttore sincronizzato](/it/docs/scripting/examples/synced-toggle) per lo schema) e caricala localmente.
+
+<Callout type="info">
+Per il testo, usa `BasisStringDownloader.DownloadString` con le stesse regole, e `BasisJson.Parse` per leggere il JSON.
+</Callout>

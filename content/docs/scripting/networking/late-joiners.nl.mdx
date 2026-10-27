@@ -1,0 +1,44 @@
+---
+title: Late joiners
+description: Zorgen dat spelers die binnenkomen nadat er iets is veranderd de huidige status zien in plaats van de standaardwaarden van de scène.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Een speler die binnenkomt, laadt de scène precies zoals je die hebt gebouwd. Alles wat sindsdien is veranderd (een deur ging open, een score ging omhoog, een lamp werd uitgezet) is onzichtbaar voor die speler totdat iemand het vertelt.
+
+## Gesynchroniseerde variabelen: voor je afgehandeld
+
+`BasisSyncedObject` en alles wat erop is gebouwd (`BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`, `BasisPickupSyncNetworking`) versturen een volledig keyframe wanneer een speler binnenkomt. Als de eigenaar is vertrokken en nog niemand eigenaar van het object is, stuurt een speler die de status heeft die in plaats daarvan naar de nieuwkomer. Je hoeft niets te doen.
+
+## Netwerkevents: stuur de status opnieuw
+
+Events worden niet onthouden. Als een event blijvende status heeft veranderd, stuur dan die **status** (niet de geschiedenis van events) opnieuw naar de nieuwe speler. Alleen de eigenaar doet dit, zodat de nieuwkomer één bericht krijgt in plaats van één van iedereen.
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+Ontwerp je berichten zo dat het toepassen van de volledige status hetzelfde codepad is als het toepassen van een wijziging. Het [voorbeeld van de gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) doet dit met één byte.
+
+<Callout type="warn">
+Speel geen lijst met eerdere events opnieuw af voor een nieuwkomer (bijvoorbeeld "deur open, deur dicht, deur open"). Stuur het huidige resultaat. Herhalingen worden lang, komen verouderd aan en gaan kapot wanneer een event van timing afhangt.
+</Callout>
+
+## Dingen om te controleren
+
+- **Werkt het als de eigenaar niet de eerste speler is?** Test met drie clients: A komt binnen, B komt binnen en verandert iets, A vertrekt, C komt binnen.
+- **Wordt er iets vanuit `Start` ingesteld dat van het netwerk zou moeten komen?** De `Start` van een late joiner draait vóór het eerste netwerkbericht. Toon een neutrale status totdat het eerste bericht of de eerste gesynchroniseerde waarde binnenkomt.
+- **Persistente props.** Props die vanuit een load config worden gespawnd, moeten **Persistent** ingesteld hebben zodat ze bestaan voor spelers die later binnenkomen. Zie [Scène-props](/nl/docs/world/scene-props).

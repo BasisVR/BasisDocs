@@ -1,0 +1,33 @@
+---
+title: 낮과 밤 주기
+description: 서버 시계에 따라 움직이는 태양. 네트워킹 코드 없이도 모든 플레이어가 같은 시간대를 봅니다.
+---
+
+`Time.time`으로 구동하는 낮 주기는 서로 다른 시점에 참여한 플레이어 사이에서 어긋납니다. 서버 시계로 구동하면 추가 비용 없이 모두가 맞춰집니다.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- 소유권도, 늦게 참여한 플레이어용 코드도 없습니다. 시계 자체가 공유 상태입니다.
+- 무거운 씬에서는 태양을 매 프레임이 아니라 초당 몇 번만 갱신하세요.

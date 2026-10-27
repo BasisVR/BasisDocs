@@ -1,0 +1,79 @@
+---
+title: Scripts de avatar
+description: Scripts Cilbox en avatares, el portador frente a todos los demás, eventos de avatar listo y sincronización del estado del avatar.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Los scripts Cilbox de un avatar se ejecutan en **todos los clientes** que cargan el avatar, no solo en el del portador. La mayor parte de la lógica de avatar debería comprobar quién la está ejecutando.
+
+## El componente de avatar
+
+Dentro del sandbox de avatar, `BasisAvatar` se resuelve como `BasisAvatarShim`. Escriba `BasisAvatar` como de costumbre.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| Miembro | Uso |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | Se dispara una vez que el avatar está configurado. `isOwner` es true en el cliente del portador. |
+| `IsOwnedLocally` | True en el cliente del portador. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | Leer el rig del avatar. |
+| `TryGetLinkedPlayer(out ushort playerId)` | El ID de jugador del portador. |
+| `PlayspaceInput` | Controlar el movimiento propio del portador (solo el portador). |
+
+## Solo el portador frente a todos
+
+| Se ejecuta en | Para |
+| --- | --- |
+| **Solo el portador** (`IsOwnedLocally`) | Menús, hápticos, guardados, entrada, envío de eventos de red. |
+| **Todos** | Efectos visuales que siguen el estado sincronizado: partículas, materiales, sonidos. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## Sincronizar el estado del avatar
+
+- **Valores personalizados:** obtenga un `BasisNetworkShim` y envíe [eventos de red](/es/docs/scripting/networking/network-events#cilbox) desde el portador, y luego aplíquelos en todos los clientes.
+- **Partes móviles:** `BasisSyncedTransform` está permitido en avatares.
+
+## Pestaña de ajustes en un avatar
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+Todo lo que permite el sandbox de avatar, el avatar de un desconocido puede hacerlo en su máquina. Por eso el sandbox de avatar es el más estricto de los tres: sin cámaras, sin luces, sin peticiones web, y los hápticos solo llegan al portador.
+</Callout>

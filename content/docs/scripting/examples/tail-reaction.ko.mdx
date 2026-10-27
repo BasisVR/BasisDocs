@@ -1,0 +1,40 @@
+---
+title: 꼬리 반응
+description: BasisJiggleEventShim을 사용해 누군가 잡으면 흔들리며 소리를 내는 아바타 꼬리.
+---
+
+```csharp title="TailReaction.cs (Cilbox, avatar)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class TailReaction : MonoBehaviour
+{
+    public AudioSource squeak;
+    public Animator animator;
+    BasisJiggleEventShim jiggle;
+    int tail = -1;
+
+    void Start()
+    {
+        jiggle = GetComponent<BasisJiggleEventShim>();
+        tail = jiggle.FindJiggleRig("Tail");
+    }
+
+    void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex != tail) return;
+        if (began) squeak.Play();
+        animator.SetBool("Wagging", began);
+    }
+
+    void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex == tail && began) animator.SetTrigger("Flinch");
+    }
+}
+```
+
+- 아바타를 렌더링하는 모든 클라이언트가 잡는 것을 보므로, 네트워킹 없이도 모두에게 반응이 재생됩니다.
+- 감지는 스크립트가 사용을 선택한 동안에만 실행되므로, 이를 쓰지 않는 아바타에는 비용이 없습니다.

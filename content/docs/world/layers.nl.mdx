@@ -1,0 +1,34 @@
+---
+title: Lagen
+description: De Unity-lagen die Basis gebruikt, wat elk ervan betekent voor botsingen, interactie en camera's, en welke je voor je objecten gebruikt.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis reserveert verschillende Unity-lagen. Gebruik ze zoals beschreven, zodat spelers, pointers en camera's je objecten correct behandelen.
+
+| # | Laag | Gebruikt voor |
+| --- | --- | --- |
+| 0 | Default | Gewone wereldgeometrie. Spelers botsen ermee en pointers raken het. |
+| 1 | TransparentFX | Unity-standaard. |
+| 2 | Ignore Raycast | Wordt niet geraakt door pointers of raycasts, en wordt genegeerd door de derdepersoonscamera. |
+| 3 | Player | De character controller van de lokale speler. |
+| 4 | Water | Unity-standaard. |
+| 5 | UI | UI in wereldruimte. |
+| 6 | LocalPlayerAvatar | Je eigen avatar. Waar nodig verborgen in je eerstepersoonsweergave. |
+| 7 | RemotePlayerAvatar | De avatars van andere spelers. |
+| 8 | Interactable | Objecten die de pointer moet markeren en waarmee interactie mogelijk is. |
+| 9 | OverlayUI | UI die over alles heen wordt getekend, zoals het menu. |
+| 10 | IgnoredByInteractable | Zichtbaar en massief, maar pointers gaan erdoorheen. Gebruik voor glas of trigger-volumes voor knoppen. |
+| 11 | HandHeldCameraUI | De eigen UI van de handcamera. |
+
+## Een laag kiezen
+
+- **Muren, vloeren, props:** Default.
+- **Trigger-volumes en onzichtbare blokkades voor knoppen:** IgnoredByInteractable, zodat pointers kunnen bereiken wat erachter zit.
+- **Decoratieve colliders die de pointer nooit mag raken:** Ignore Raycast.
+- **Zet je objecten nooit op** Player, LocalPlayerAvatar, RemotePlayerAvatar of OverlayUI.
+
+<Callout type="info">
+De laagnamen en -nummers komen uit de Tag Manager van het Basis-project. Content wordt ermee gebouwd, dus hernoem of herorden Basis-lagen niet in je project.
+</Callout>

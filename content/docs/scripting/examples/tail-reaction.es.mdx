@@ -1,0 +1,40 @@
+---
+title: Reacción de la cola
+description: Una cola de avatar que se menea y chirría cuando alguien la agarra, usando BasisJiggleEventShim.
+---
+
+```csharp title="TailReaction.cs (Cilbox, avatar)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class TailReaction : MonoBehaviour
+{
+    public AudioSource squeak;
+    public Animator animator;
+    BasisJiggleEventShim jiggle;
+    int tail = -1;
+
+    void Start()
+    {
+        jiggle = GetComponent<BasisJiggleEventShim>();
+        tail = jiggle.FindJiggleRig("Tail");
+    }
+
+    void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex != tail) return;
+        if (began) squeak.Play();
+        animator.SetBool("Wagging", began);
+    }
+
+    void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex == tail && began) animator.SetTrigger("Flinch");
+    }
+}
+```
+
+- Todos los clientes que renderizan el avatar ven el agarre, así que la reacción se reproduce para todos sin código de red.
+- La detección solo se ejecuta mientras algún script la tenga activada, así que los avatares que no la usan no tienen ningún coste.

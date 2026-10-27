@@ -1,0 +1,65 @@
+---
+title: 場景元件
+description: 您放置在世界中的 Basis 元件、各自的用途，以及可以在哪裡閱讀更多資訊。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+這些元件是 Basis 世界的構成要素。它們都不需要程式碼。標示為 *（客戶端建置）* 的項目不在上傳內容的預設允許清單上；請參閱[允許的元件](/tw/docs/scripting/allowed-components)。
+
+## 必要
+
+| 元件 | 用途 |
+| --- | --- |
+| **Basis Scene** | 將場景標記為 Basis 世界。設定 **Spawn Point**、玩家掉落時重生的 **Respawn Height**、音訊混音器群組以及主攝影機。每個世界一個。請參閱[建置](/tw/docs/world/building)。 |
+
+## 互動
+
+| 元件 | 用途 |
+| --- | --- |
+| **Basis Interactable Shim** | 讓物件可以從腳本按下：`ButtonDown` 和 `ButtonUp`，並具有懸停與按下時的顏色。 |
+| **Basis Pickup Interactable** | 讓玩家抓取、握持和使用物件。在握持時按下扳機會引發 `OnPickupUse`。 |
+| **Basis Interactable Button** | 現成的可按按鈕（com.basis.examples，`ExampleInteractableButton` 預製件）。 |
+| **Basis Seat** | 讓玩家坐下。提供旋轉限制、突顯模式，以及透過 `TrySeatLocalPlayer`、`EjectLocalPlayer` 和 `IsAvailable` 進行腳本控制。 |
+| **Basis Avatar Pedestal** | 展示虛擬形象並讓玩家切換成它。僅限世界。 |
+| **Basis Runtime Loader** *（客戶端建置）* | 從載入設定生成道具，例如透過按鈕。請參閱[場景道具](/tw/docs/world/scene-props)。 |
+
+## 網路
+
+| 元件 | 用途 |
+| --- | --- |
+| **Basis Pickup Sync Networking** | 同步拾取物的姿勢和握持者。 |
+| **Basis Synced Transform** | 同步移動中的物件。**Basis Synced Rigidbody** *（客戶端建置）* 另外加入速度。 |
+| **Basis Synced Parameters** *（客戶端建置）* | 同步具名數值（浮點數、整數、布林值、顏色）。 |
+| **Basis Seat Sync** | 同步誰坐在座位上。 |
+| **Basis Networked Vehicle** | 同步的可駕駛載具，由車身、車輪、推進器和駕駛座部件組成。 |
+
+請參閱[網路元件](/tw/docs/scripting/networking/network-components)。
+
+## 媒體與渲染
+
+| 元件 | 用途 |
+| --- | --- |
+| **Basis Media Player** | 同步的影片與串流播放。請參閱[媒體播放器](/tw/docs/world/media-player)。 |
+| **Basis SDK Mirror** | 鏡子。可設定 render texture 大小、遠裁切面，以及反射中是否渲染後處理。鏡子會再渲染一次場景，因此請保持小巧並預設關閉。 |
+| **TextMesh Pro** | 告示牌和 UI 上的文字。在世界和 Cilbox 腳本中皆受支援。 |
+| **Canvas** | 可搭配 Basis 指標使用的世界空間 UI。請參閱 [UI Canvas](/tw/docs/world/ui-canvas)。 |
+
+## 玩家與平台
+
+| 元件 | 用途 |
+| --- | --- |
+| **Basis Locomotion Zone** *（客戶端建置）* | 在本機玩家位於其觸發器內時，改變跳躍高度、步行與奔跑速度、重力或移動模式。 |
+| **Basis Platform Switch** | 根據規則清單，依平台（VR、桌面、行動裝置）啟用或停用物件和元件。 |
+
+## 腳本
+
+| 元件 | 用途 |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | 您的世界或道具的 `[Cilboxable]` 腳本執行所在的沙盒。請參閱[腳本](/tw/docs/scripting/scripting)。 |
+| **Basis OSC** | 發佈與訂閱 OSC 訊息。請參閱 [OSC](/tw/docs/scripting/osc)。 |
+| **Basis Action Trigger** | 將 UI 指標事件（進入、離開、點擊、拖曳）轉發給 Cilbox 腳本。 |
+
+<Callout type="info">
+每個元件都在 Unity 編輯器中有說明文件：選取它並使用其檢查器中的說明文件按鈕，或開啟 **Basis > Creator Guide** 離線查看本指南。
+</Callout>

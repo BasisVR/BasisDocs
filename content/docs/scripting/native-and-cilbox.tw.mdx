@@ -1,0 +1,90 @@
+---
+title: Native 與 Cilbox
+description: 為 Basis 撰寫腳本的兩種方式。Native 腳本會編譯進應用程式；Cilbox 腳本隨內容一起發佈，並在執行階段於沙盒中執行。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis 以兩種方式執行程式碼。要使用哪一種，取決於**腳本存放的位置**：是在您建置的應用程式中，還是在執行階段載入的內容中。
+
+## Native：編譯進應用程式
+
+Native 腳本是一般的 Unity `MonoBehaviour`，會建置進 Basis 客戶端（或您以 Basis 框架打造的應用程式）。它與應用程式一起編譯，因此會隨下一次客戶端建置發佈，而不是隨世界或道具發佈。
+
+- 完整的 C# 以及完整的 Unity 與 Basis API。
+- 完整的原生速度。
+- 可以繼承 Basis 類別，例如 `BasisNetworkBehaviour` 和 `BasisSyncedObject`。
+- 只存在於包含它一起建置的客戶端中。使用公開客戶端的玩家沒有您的腳本。
+
+當您**在 Basis 上開發應用程式或遊戲**時，請使用 Native 腳本：您自己的選單、遊戲規則、系統，以及您的內容所依賴的任何元件。
+
+## Cilbox：內容中的執行階段腳本
+
+Cilbox 腳本是標記為 `[Cilboxable]` 的 `MonoBehaviour`，它會**包含在**世界、道具或虛擬形象的 `.bee` 檔案中發佈。內容載入時，Basis 會在 Cilbox 直譯器中執行它，並置於該類內容（Scene、Prop 或 Avatar）的沙盒內。
+
+- 可在任何載入該內容的 Basis 客戶端上運作。不需要建置客戶端。
+- 沙盒化：只能呼叫白名單中的類型和方法，因此內容無法傷害玩家的電腦。
+- 比 Native 慢，因為程式碼是直譯執行的。
+- 使用 shim 取代基底類別，例如使用 `BasisNetworkShim`，而不是繼承 `BasisNetworkBehaviour`。
+
+當您**製作使用者內容**時，請使用 Cilbox：也就是其他人會載入的世界、道具和虛擬形象。
+
+## 一覽表
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| 存放於 | 應用程式建置 | 世界、道具或虛擬形象 |
+| 載入時機 | 建置應用程式時 | 執行階段，隨內容載入 |
+| 標記 | 無 | `[Cilboxable]` |
+| API | 全部 | 依各沙盒的白名單 |
+| 速度 | 原生 | 直譯執行，慢很多 |
+| 網路 | 繼承 `BasisNetworkBehaviour` | 使用 `BasisNetworkShim` |
+| 誰擁有它 | 使用您建置版本的玩家 | 任何載入該內容的人 |
+
+## 同一個腳本的兩種寫法
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## 各自的發佈方式
+
+- **Native：** 將腳本加入您的 Unity 專案並建置客戶端。如果 Native 元件放在世界或道具的資源包中，還需要將其類型加入對應的 content police 選擇器，否則內容載入時它會被移除（請參閱[允許的元件](/tw/docs/scripting/allowed-components)）。
+- **Cilbox：** 在您的內容中加入 **Cilbox Scene Basis**（世界）或 **Cilbox Prop Basis**（道具），將腳本標記為 `[Cilboxable]`，然後照常建置 `.bee`。請參閱[基礎](/tw/docs/scripting/examples/basics)。
+
+<Callout type="info">
+本文件中的範例都標示為 **Native** 或 **Cilbox**。大多數 Cilbox 範例也能作為 Native 腳本編譯；Native 範例通常需要修改才能在 Cilbox 中執行。需要注意的規則請參閱[沙盒規則](/tw/docs/scripting/sandbox-rules)。
+</Callout>

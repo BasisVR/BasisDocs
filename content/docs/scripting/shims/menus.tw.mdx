@@ -1,0 +1,64 @@
+---
+title: 選單
+description: BasisMenuShim、設定分頁與選單面板，包含標題、標籤、按鈕、切換開關、滑桿與下拉選單。
+---
+
+`BasisMenuShim` 會將 UI 加入玩家自己的選單。兩種呼叫在遭拒時都會傳回 null，因此請務必檢查。
+
+| 呼叫 | 加入的內容 |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家設定中的一個分頁（每個內容最多 4 個）。 |
+| `BasisMenuShim.AddPanel(this, title)` | 一個擁有專屬選單按鈕的面板（每個內容一個，最多 8 個分頁）。 |
+
+## 建立頁面
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## 之後變更項目
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+頁面：`SetTitle`、`SetVisible`、`Clear`、`Remove`、`AddTab`（面板）、`IsOpen` 與 `Open()`。
+
+## 開啟面板
+
+`Open()` 只有在玩家按下您內容中的某樣東西後 5 秒內才有效，因此內容無法自行彈出選單。
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+限制：每頁 64 個項目、32 個下拉選項、標題 48 個字元。更多內容：[設定分頁範例](/tw/docs/scripting/examples/settings-tab)。

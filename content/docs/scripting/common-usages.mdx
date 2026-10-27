@@ -212,6 +212,11 @@ void OnDestroy() { button.onClick.RemoveAllListeners(); }
 void OnClick() { label.text = "Clicked!"; }
 ```
 
+Allowed in Cilbox: `UnityEngine.UI.*` types, `UnityEvent.AddListener` (including `UnityEvent<T>`), creating a `UnityAction`, and `RemoveAllListeners`. Two limits:
+
+- `RemoveListener(OnClick)` does not remove the listener, because each use of `OnClick` as a delegate is a new wrapper. Use `RemoveAllListeners`.
+- UI components (`Button`, `Toggle`, `Canvas`) are allowed in worlds and props, not avatars.
+
 ## Timers and delayed events
 
 Cilbox scripts have no coroutines. A networked script can schedule a callback through its network component instead.
@@ -372,10 +377,9 @@ var source = GetComponent<AudioSource>();
 source.clip = clip;
 source.spatialBlend = 1f;
 source.Play();
-
-// Sources added after load need routing so the player's World / Props volume applies.
-BasisAudioRoutingShim.Route(this, source);
 ```
+
+To let a speaker carry a player's voice, see `BasisVoiceRoutingShim` in the [Shim Reference](/en/docs/scripting/shims/rendering-and-audio).
 
 ## Performance and quality
 

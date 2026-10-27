@@ -1,0 +1,60 @@
+---
+title: 座位
+description: 使用 Basis Seat 和 Basis Seat Sync，通过脚本让玩家就座、制作转椅以及弹出按钮。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 设置
+
+1. 向椅子添加 **Basis Seat** 并调整其坐点位置。com.basis.examples 中的 `SimpleSeat` 预制体就是现成的座位。
+2. 添加 **Basis Seat Sync**，让所有人都能看到谁坐着，并且两位玩家不能占用同一个座位。
+
+玩家可以通过指向座位来坐下。下面的脚本添加了一个按钮，可以让玩家就座、转动椅子，并让他们站起来。
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| 成员 | 含义 |
+| --- | --- |
+| `IsAvailable` | 无人就座，且玩家设置中未禁用座位。 |
+| `IsLocalPlayerSeated` | 本地玩家坐在这个座位上。 |
+| `HasOccupant` | 有人坐在这个座位上。 |
+| `TrySeatLocalPlayer()` | 如果座位空闲，让本地玩家坐下。 |
+| `SetOccupantYaw(degrees)` | 在座位的旋转限制范围内转动就座的玩家。 |
+| `EjectLocalPlayer()` | 让本地玩家站起来。 |
+
+<Callout type="info">
+座位只会移动本地玩家，因此脚本本身不需要任何网络处理。**Basis Seat Sync** 负责处理谁在就座。
+</Callout>

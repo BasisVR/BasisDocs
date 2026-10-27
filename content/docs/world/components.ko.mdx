@@ -1,0 +1,65 @@
+---
+title: 씬 컴포넌트
+description: 월드에 배치하는 Basis 컴포넌트, 각 컴포넌트의 기능, 그리고 더 읽을 곳.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+이 컴포넌트들은 Basis 월드의 구성 요소입니다. 모두 코드가 필요 없습니다. *(client builds)*로 표시된 항목은 업로드된 콘텐츠의 기본 허용 목록에 없습니다. [허용된 컴포넌트](/ko/docs/scripting/allowed-components)를 참조하세요.
+
+## 필수
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Basis Scene** | 씬을 Basis 월드로 표시합니다. **Spawn Point**, 플레이어가 떨어졌을 때 되돌아오는 기준인 **Respawn Height**, 오디오 믹서 그룹, 메인 카메라를 설정합니다. 월드당 하나. [빌드](/ko/docs/world/building)를 참조하세요. |
+
+## 상호작용
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Basis Interactable Shim** | 스크립트에서 오브젝트를 누를 수 있게 합니다. 호버 및 누름 색상과 함께 `ButtonDown`, `ButtonUp`을 제공합니다. |
+| **Basis Pickup Interactable** | 플레이어가 오브젝트를 잡고, 들고, 사용할 수 있게 합니다. 들고 있는 동안 트리거를 누르면 `OnPickupUse`를 발생시킵니다. |
+| **Basis Interactable Button** | 바로 사용할 수 있는 누름 버튼(com.basis.examples, `ExampleInteractableButton` 프리팹). |
+| **Basis Seat** | 플레이어가 앉을 수 있게 합니다. 회전 제한, 하이라이트 모드, 그리고 `TrySeatLocalPlayer`, `EjectLocalPlayer`, `IsAvailable`을 통한 스크립팅. |
+| **Basis Avatar Pedestal** | 아바타를 보여주고 플레이어가 그 아바타로 전환할 수 있게 합니다. 월드 전용. |
+| **Basis Runtime Loader** *(client builds)* | 로드 설정에서 소품을 스폰합니다. 예를 들어 버튼으로 스폰할 수 있습니다. [씬 소품](/ko/docs/world/scene-props)을 참조하세요. |
+
+## 네트워킹
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Basis Pickup Sync Networking** | 픽업의 포즈와 들고 있는 사람을 동기화합니다. |
+| **Basis Synced Transform** | 움직이는 오브젝트를 동기화합니다. **Basis Synced Rigidbody** *(client builds)*는 속도를 추가합니다. |
+| **Basis Synced Parameters** *(client builds)* | 이름이 지정된 값(float, int, bool, 색상)을 동기화합니다. |
+| **Basis Seat Sync** | 좌석에 누가 앉아 있는지 동기화합니다. |
+| **Basis Networked Vehicle** | 차체, 바퀴, 추진기, 조종석 부품으로 구성된 동기화되는 운전 가능한 차량. |
+
+[네트워크 컴포넌트](/ko/docs/scripting/networking/network-components)를 참조하세요.
+
+## 미디어와 렌더링
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Basis Media Player** | 동기화되는 비디오 및 스트림 재생. [미디어 플레이어](/ko/docs/world/media-player)를 참조하세요. |
+| **Basis SDK Mirror** | 거울. 렌더 텍스처 크기, 원거리 클립, 반사에서 포스트 프로세싱을 렌더링할지 여부를 설정합니다. 거울은 씬을 다시 렌더링하므로 작게 유지하고 기본적으로 꺼 두세요. |
+| **TextMesh Pro** | 표지판과 UI의 텍스트. 월드와 Cilbox 스크립트에서 지원됩니다. |
+| **Canvas** | Basis 포인터와 함께 작동하는 월드 공간 UI. [UI 캔버스](/ko/docs/world/ui-canvas)를 참조하세요. |
+
+## 플레이어와 플랫폼
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Basis Locomotion Zone** *(client builds)* | 로컬 플레이어가 트리거 안에 있는 동안 점프 높이, 걷기 및 달리기 속도, 중력 또는 이동 모드를 변경합니다. |
+| **Basis Platform Switch** | 규칙 목록에 따라 플랫폼(VR, 데스크톱, 모바일)별로 오브젝트와 컴포넌트를 활성화하거나 비활성화합니다. |
+
+## 스크립팅
+
+| 컴포넌트 | 기능 |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | 월드나 소품의 `[Cilboxable]` 스크립트가 실행되는 샌드박스. [스크립팅](/ko/docs/scripting/scripting)을 참조하세요. |
+| **Basis OSC** | OSC 메시지를 게시하고 구독합니다. [OSC](/ko/docs/scripting/osc)를 참조하세요. |
+| **Basis Action Trigger** | UI 포인터 이벤트(enter, exit, click, drag)를 Cilbox 스크립트로 전달합니다. |
+
+<Callout type="info">
+모든 컴포넌트는 Unity 에디터에 문서화되어 있습니다. 컴포넌트를 선택하고 인스펙터의 문서 버튼을 사용하거나, 이 가이드를 오프라인으로 보려면 **Basis > Creator Guide**를 여세요.
+</Callout>

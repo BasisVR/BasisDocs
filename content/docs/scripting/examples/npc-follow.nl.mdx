@@ -1,0 +1,102 @@
+---
+title: NPC volgen
+description: Een navigation mesh-agent die de dichtstbijzijnde speler volgt, gesimuleerd door één eigenaar en naar alle anderen verstuurd.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Navigatie is beschikbaar in werelden (niet in props of avatars).
+
+## Setup
+
+1. Bake een NavMesh voor je beloopbare vloeren (**Window > AI > Navigation**).
+2. Maak de NPC aan met een **NavMeshAgent** en voeg **NpcFollow** toe.
+
+## Script
+
+```csharp title="NpcFollow.cs (Cilbox, world)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.AI;
+
+[Cilboxable]
+public class NpcFollow : MonoBehaviour
+{
+    public NavMeshAgent agent;
+    public float stopDistance = 1.5f;
+
+    BasisNetworkShim net;
+    float nextPath, nextSend;
+    Vector3 remotePosition;
+    float remoteYaw;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.RequestOwnershipIfNone();
+        remotePosition = transform.position;
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void Update()
+    {
+        bool owner = net.HasNetworkID && net.IsOwnedLocallyOnServer;
+        agent.enabled = owner;
+        if (!owner)
+        {
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, remotePosition, Time.deltaTime * 10f), Quaternion.Euler(0f, remoteYaw, 0f));
+            return;
+        }
+        if (Time.time >= nextPath)
+        {
+            nextPath = Time.time + 0.5f;
+            IBasisPlayer target = BasisPlayersShim.Nearest(transform.position);
+            if (target != null)
+            {
+                Vector3 goal = target.GetPosition();
+                if ((goal - transform.position).sqrMagnitude < stopDistance * stopDistance) agent.ResetPath();
+                else agent.SetDestination(goal);
+            }
+        }
+        if (Time.time >= nextSend)
+        {
+            nextSend = Time.time + 0.1f;
+            Vector3 p = transform.position;
+            byte[] data = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(p.x), 0, data, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.y), 0, data, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.z), 0, data, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(transform.eulerAngles.y), 0, data, 12, 4);
+            net.SendCustomNetworkEvent(data, DeliveryMethod.Sequenced);
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 16) return;
+        remotePosition = new Vector3(BitConverter.ToSingle(buffer, 0), BitConverter.ToSingle(buffer, 4), BitConverter.ToSingle(buffer, 8));
+        remoteYaw = BitConverter.ToSingle(buffer, 12);
+    }
+}
+```
+
+## Hoe het werkt
+
+- **Eén simulatie.** Alleen de eigenaar draait de agent; alle anderen schakelen die uit en bewegen geleidelijk naar de ontvangen positie. Twee clients die paden berekenen voor dezelfde NPC zouden met elkaar vechten.
+- **`Sequenced`-levering** gooit late pakketten weg, zodat een oude positie nooit een nieuwere overschrijft. Tien updates per seconde is ruim voldoende met smoothing.
+- **Geen code voor late joiners.** De volgende update komt binnen 0.1 seconde aan.
+- **Wisselen van eigenaar kost niets.** Als de eigenaar vertrekt, schakelt de nieuwe eigenaar zijn agent in op de laatste positie die die heeft ontvangen.
+
+<Callout type="info">
+Controleer in **Basis > Tools > Cilbox Permissions** of `Buffer` en `BitConverter` zijn toegestaan in je sandbox; `BinaryWriter` (zie [Netwerkevents](/nl/docs/scripting/networking/network-events#packing-a-payload)) werkt ook.
+</Callout>

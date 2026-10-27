@@ -1,0 +1,33 @@
+---
+title: Ciclo de día y noche
+description: Un sol que se mueve según el reloj del servidor, de modo que todos los jugadores ven la misma hora del día sin código de red.
+---
+
+Un ciclo de día controlado por `Time.time` se desincroniza entre jugadores que se unieron en momentos distintos. Controlarlo desde el reloj del servidor mantiene a todos sincronizados sin coste.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- Sin propiedad y sin código para los que se unen tarde: el reloj es el estado compartido.
+- En una escena pesada, actualice el sol unas pocas veces por segundo en lugar de en cada fotograma.

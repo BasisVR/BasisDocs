@@ -1,0 +1,80 @@
+---
+title: Onglet de paramètres
+description: Ajouter des options de monde au menu des paramètres du joueur avec BasisMenuShim, et les mémoriser avec BasisSaveShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` ajoute un onglet aux paramètres du joueur tant que votre contenu est chargé. L'onglet disparaît quand le monde est déchargé.
+
+## Script
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Un panneau complet
+
+Pour un menu de jeu plutôt que des options, ajoutez un panneau. Il obtient son propre bouton dans le menu et peut avoir plusieurs onglets.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` ne fonctionne que dans les 5 secondes suivant une action du joueur dans votre contenu, ainsi le contenu ne peut pas ouvrir de menus de lui-même.
+
+## Règles
+
+- **Qui peut ajouter un onglet :** les mondes, les props que le joueur local a fait apparaître, et l'avatar du joueur local. `null` signifie refusé ; vérifiez-le.
+- **Les options sont locales.** Chaque joueur règle les siennes. Ne synchronisez un choix que s'il doit changer le monde pour tout le monde.
+- **Mémorisez les choix** avec [BasisSaveShim](/fr/docs/scripting/examples/persistence) s'ils doivent persister jusqu'à la prochaine visite.
+
+<Callout type="info">
+Sur un avatar, ajoutez l'onglet depuis `BasisAvatarShim.OnAvatarReady` quand `isOwner` vaut true, afin que seul le porteur l'obtienne.
+</Callout>

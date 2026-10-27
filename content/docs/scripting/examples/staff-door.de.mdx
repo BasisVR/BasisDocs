@@ -1,0 +1,33 @@
+---
+title: Personaltür
+description: Eine Tür, die sich nur für Admins und Moderatoren öffnet und sich live aktualisiert, wenn sich Rollen ändern.
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- Die Tür wird für Teammitglieder auf ihrem eigenen Client ausgeschaltet. Niemand sonst ist betroffen, daher wird nichts über das Netzwerk gesendet.
+- Um ein Abzeichen über *anderen* Teammitgliedern anzuzeigen, fragen Sie mit `BasisPermissionsShim.IsModerator(player, callback)` nach; das ist ein Roundtrip zum Server.
+- Clientseitige Prüfungen halten ehrliche Spieler fern. Verlassen Sie sich nicht darauf für etwas, das ein modifizierter Client nicht erreichen darf.

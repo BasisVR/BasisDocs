@@ -1,0 +1,79 @@
+---
+title: Скрипты аватаров
+description: Скрипты Cilbox на аватарах, владелец в сравнении со всеми остальными, события готовности аватара и синхронизация состояния аватара.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Скрипты Cilbox аватара выполняются на **каждом клиенте**, который загружает аватар, а не только у владельца. Большая часть логики аватара должна проверять, кто её выполняет.
+
+## Компонент аватара
+
+Внутри песочницы аватара `BasisAvatar` разрешается в `BasisAvatarShim`. Пишите `BasisAvatar` как обычно.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| Член | Назначение |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | Срабатывает, когда аватар настроен. `isOwner` равен true на клиенте владельца. |
+| `IsOwnedLocally` | True на клиенте владельца. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | Чтение рига аватара. |
+| `TryGetLinkedPlayer(out ushort playerId)` | ID игрока-владельца. |
+| `PlayspaceInput` | Управление собственным движением владельца (только для владельца). |
+
+## Только владелец или все
+
+| Выполнять на | Для |
+| --- | --- |
+| **Только у владельца** (`IsOwnedLocally`) | Меню, вибрация, сохранения, ввод, отправка сетевых событий. |
+| **У всех** | Визуальные эффекты, следующие за синхронизированным состоянием: частицы, материалы, звуки. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## Синхронизация состояния аватара
+
+- **Собственные значения:** получите `BasisNetworkShim` и отправляйте [сетевые события](/ru/docs/scripting/networking/network-events#cilbox) от владельца, затем применяйте их на каждом клиенте.
+- **Движущиеся части:** `BasisSyncedTransform` разрешён на аватарах.
+
+## Вкладка настроек на аватаре
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+Всё, что разрешает песочница аватара, чужой аватар может сделать на вашем компьютере. Поэтому песочница аватара самая строгая из трёх: без камер, без источников света, без веб-запросов, а вибрация доходит только до владельца.
+</Callout>

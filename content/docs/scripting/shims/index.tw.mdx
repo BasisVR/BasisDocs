@@ -1,0 +1,62 @@
+---
+title: Shim 參考
+description: Cilbox 腳本可使用的所有 Basis shim，依領域分組，每個都附有簡短範例。
+---
+
+Shim 是 Cilbox 沙盒中屬於 Basis 的那一側：小巧且安全的 API，讓沙盒中的腳本能夠存取玩家、輸入、網路、存檔、選單等功能。大多數位於 `Basis.Shims` 命名空間中。
+
+Shim 有三種形式：
+
+- **靜態類別**，直接呼叫即可，例如 `BasisPlayersShim.Count`。
+- **事件元件**，在 `Start` 中呼叫 `GetComponent<T>()` 即可啟用。Cilbox 會為您加入該元件，而 Basis 會呼叫您腳本上具有特定名稱的方法，例如 `OnPlatformChanged`。
+- **替換型別**：您照常寫 Unity 的名稱（`Debug`、`VideoPlayer`、`BasisAvatar`），沙盒會提供安全的版本。
+
+| Shim | 用途 | 頁面 |
+| --- | --- | --- |
+| `BasisPlayersShim` | 玩家名單、最近的玩家、姿勢 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisVelocityShim` | 彈射或推動本機玩家 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | 從虛擬形象驅動穿戴者的移動 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisSeatShim` | 本機玩家是否入座，以及坐在哪裡 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | 得知玩家何時更換虛擬形象 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | 管理員、版主與權限檢查 | [玩家](/tw/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | VR 控制器按鈕、扳機、搖桿 | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | 滑鼠按鍵、移動與滾輪 | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisHapticsShim` | 控制器震動 | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisInteractableShim` | 可按下的物件 | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisActionTrigger` | UI 指標事件 | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [輸入](/tw/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | VR / 桌面模式切換 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | 語言變更 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | 品質變更 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | 本機權限變更 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | 有人抓住或觸碰 jiggle 骨骼 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | 在 IK 之後、繪製之前的延遲更新 | [事件](/tw/docs/scripting/shims/events) |
+| `BasisNetworkShim` | 網路事件、擁有權 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | 共享的伺服器時鐘 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | 每個客戶端都相同的隨機數 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | 快速打包數字與向量 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | LZ4 壓縮 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | 將玩家送往另一台伺服器 | [網路](/tw/docs/scripting/shims/networking) |
+| `BasisSaveShim` | 將資料儲存在玩家的電腦上 | [資料](/tw/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | 將資料儲存在伺服器上 | [資料](/tw/docs/scripting/shims/data) |
+| `BasisJson` | 解析 JSON | [資料](/tw/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | HTTPS GET 與 POST | [資料](/tw/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | 開啟網站 | [資料](/tw/docs/scripting/shims/data) |
+| `BasisMenuShim` | 設定分頁與選單面板 | [選單](/tw/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | 讀取品質設定 | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | 影格率、效能瓶頸、連線 | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | Compute shader 預算 | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | 從物件播放玩家的語音 | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | 附帶 URL 提示的 `VideoPlayer` | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | 平台偵測 | [渲染與音訊](/tw/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | 一次讀取或寫入大量 transform | [批次處理](/tw/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | 每幀將 transform 複製到其他 transform | [批次處理](/tw/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | 讀取、寫入或複製大量 blendshape | [批次處理](/tw/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | 拆分與合併向量陣列 | [批次處理](/tw/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | 對陣列進行射線與球體測試 | [批次處理](/tw/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | 虛擬形象上的 avatar 元件 | [虛擬形象](/tw/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | 讀取與驅動 Vixxy 選單項目 | [虛擬形象](/tw/docs/scripting/shims/avatar) |
+| `BasisOsc` | OSC 訊息 | [OSC](/tw/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | 標記了您內容的日誌 | [沙盒規則](/tw/docs/scripting/sandbox-rules) |
+
+哪個沙盒允許哪個 shim，會即時顯示在 Unity 編輯器的 **Basis > Creator Guide** 中的 Cilbox API Reference 區段。

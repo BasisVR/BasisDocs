@@ -1,0 +1,80 @@
+---
+title: Einstellungs-Tab
+description: Weltoptionen mit BasisMenuShim zum Einstellungsmenü des Spielers hinzufügen und sie mit BasisSaveShim speichern.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` fügt den Einstellungen des Spielers einen Tab hinzu, solange Ihr Inhalt geladen ist. Der Tab verschwindet, wenn die Welt entladen wird.
+
+## Skript
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Ein ganzes Panel
+
+Für ein Spielmenü statt Optionen fügen Sie ein Panel hinzu. Es erhält einen eigenen Button im Menü und kann mehrere Tabs haben.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` funktioniert nur innerhalb von 5 Sekunden, nachdem der Spieler etwas in Ihrem Inhalt gedrückt hat, damit Inhalte Menüs nicht von selbst öffnen können.
+
+## Regeln
+
+- **Wer einen Tab hinzufügen darf:** Welten, Props, die der lokale Spieler gespawnt hat, und der eigene Avatar des lokalen Spielers. `null` bedeutet abgelehnt; prüfen Sie es.
+- **Optionen sind lokal.** Jeder Spieler stellt seine eigenen ein. Synchronisieren Sie eine Auswahl nur, wenn sie die Welt für alle ändern soll.
+- **Merken Sie sich Auswahlen** mit [BasisSaveShim](/de/docs/scripting/examples/persistence), wenn sie den nächsten Besuch überdauern sollen.
+
+<Callout type="info">
+Auf einem Avatar fügen Sie den Tab in `BasisAvatarShim.OnAvatarReady` hinzu, wenn `isOwner` true ist, damit nur der Träger ihn erhält.
+</Callout>

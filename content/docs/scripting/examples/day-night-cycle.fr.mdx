@@ -1,0 +1,33 @@
+---
+title: Cycle jour/nuit
+description: Un soleil qui se déplace selon l'horloge du serveur, pour que chaque joueur voie la même heure de la journée sans aucun code réseau.
+---
+
+Un cycle jour/nuit piloté par `Time.time` se désynchronise entre des joueurs arrivés à des moments différents. Le piloter avec l'horloge du serveur garde tout le monde synchronisé gratuitement.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- Pas de propriété ni de code pour les joueurs arrivés en retard : l'horloge est l'état partagé.
+- Dans une scène lourde, mettez à jour le soleil quelques fois par seconde plutôt qu'à chaque image.

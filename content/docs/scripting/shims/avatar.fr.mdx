@@ -1,0 +1,56 @@
+---
+title: Avatar
+description: BasisAvatarShim et BasisVixxyShim, pour les scripts sur les avatars.
+---
+
+## BasisAvatarShim
+
+Dans la sandbox des avatars, `BasisAvatar` est fourni sous la forme de `BasisAvatarShim`. Écrivez `BasisAvatar`.
+
+```csharp
+using Basis.Scripts.BasisSdk;
+
+BasisAvatar avatar;
+
+void Start()
+{
+    avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+    avatar.OnAvatarReady += OnReady;
+}
+
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    Animator animator = avatar.Animator;
+    SkinnedMeshRenderer face = avatar.FaceVisemeMesh;
+    float scale = avatar.HumanScale;
+    if (avatar.TryGetLinkedPlayer(out ushort playerId)) { }
+}
+```
+
+Plus : [Scripting d'avatar](/fr/docs/scripting/avatar-scripting).
+
+## BasisVixxyShim
+
+Lit et pilote les éléments de menu d'avatar Vixxy. Les valeurs ne sont résolues que sur le client du porteur.
+
+```csharp
+using Basis.Shims;
+using HVR.Vixxy;
+
+public HVRVixxyMenuItem glow;
+
+void OnReady(bool isOwner)
+{
+    if (!isOwner || !BasisVixxyShim.HasControl(glow)) return;
+
+    string title = BasisVixxyShim.Title(glow);
+    if (BasisVixxyShim.IsToggle(glow)) glow.ApplyValue(1f);
+    if (BasisVixxyShim.IsSlider(glow)) glow.ApplyValue(Mathf.Lerp(BasisVixxyShim.MinValue(glow), BasisVixxyShim.MaxValue(glow), 0.5f));
+
+    for (int i = 0; i < BasisVixxyShim.ChoiceCount(glow); i++)
+    {
+        Debug.Log($"{BasisVixxyShim.ChoiceTitle(glow, i)} = {BasisVixxyShim.ChoiceValue(glow, i)}");
+    }
+}
+```

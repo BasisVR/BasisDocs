@@ -1,0 +1,37 @@
+---
+title: Portal a servidor
+description: Un portal que ofrece trasladar al jugador a otro servidor de Basis, usando BasisConnectionShim.
+---
+
+```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerPortal : MonoBehaviour
+{
+    public string host = "play.example.com";
+    public int port = 4296;
+    public TextMeshPro sign;
+
+    void Start()
+    {
+        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        sign.text = host;
+    }
+
+    void OnPressed()
+    {
+        BasisConnectionShim.RequestConnect(this, host, port, null, result =>
+        {
+            if (result == BasisConnectionResult.Declined) sign.text = "Maybe next time";
+            else if (result != BasisConnectionResult.Accepted) sign.text = $"Can't connect: {result}";
+        });
+    }
+}
+```
+
+- La solicitud debe venir de una pulsación del propio jugador, y el jugador siempre ve la dirección y confirma.
+- Para servidores privados, pase una contraseña como cuarto argumento.

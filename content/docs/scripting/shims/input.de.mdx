@@ -1,0 +1,98 @@
+---
+title: Eingabe
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger und BasisUIExtensions.
+---
+
+## BasisControllerInputShim
+
+Nur in Welten. Der Zustand der VR-Controller. Solange das Menü offen ist oder der Pointer über einer UI liegt, gilt alles als losgelassen.
+
+```csharp
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return;
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Primary)) Jump();
+    bool holding = BasisControllerInputShim.GetButton(BasisControllerHand.Left, BasisControllerButton.Grip);
+    float trigger = BasisControllerInputShim.GetTrigger(BasisControllerHand.Right);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+Tasten: `Trigger`, `Grip`, `Primary`, `Secondary`, `StickClick`, `Menu`.
+
+## BasisDesktopInputShim
+
+Mauseingabe auf dem Desktop. Taste 0 ist links, 1 rechts, 2 die mittlere Taste.
+
+```csharp
+if (!BasisDesktopInputShim.HasMouse) return;
+if (BasisDesktopInputShim.GetMouseButtonDown(0)) Shoot();
+Vector2 delta = BasisDesktopInputShim.MouseDelta;
+float scroll = BasisDesktopInputShim.MouseScroll.y;
+Vector2 screen = BasisDesktopInputShim.MousePosition;
+```
+
+## BasisHapticsShim
+
+Lässt die Controller des lokalen Spielers vibrieren. Stärke 0 bis 1, höchstens 1 Sekunde, 10 Impulse pro Sekunde pro Inhalt. Gibt false zurück, wenn nichts abgespielt wurde.
+
+```csharp
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## BasisInteractableShim
+
+Macht ein Objekt mit dem Pointer drückbar, mit Hover- und Druckfarben auf seinem Renderer.
+
+```csharp
+BasisInteractableShim button;
+
+void Start()
+{
+    button = GetComponent<BasisInteractableShim>();
+    button.ButtonDown += OnDown;
+    button.ButtonUp += OnUp;
+}
+
+void OnDown() { lamp.SetActive(!lamp.activeSelf); }
+void OnUp() { }
+```
+
+Inspector-Felder: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (die Farbeigenschaft des Materials).
+
+## BasisActionTrigger
+
+Leitet Unity-UI-Pointer-Events an Ihr Skript weiter. Fügen Sie ihn zu einem UI-Element hinzu.
+
+```csharp
+using UnityEngine.EventSystems;
+
+void Start()
+{
+    var trigger = GetComponent<BasisActionTrigger>();
+    trigger.PointerEnter += e => highlight.SetActive(true);
+    trigger.PointerExit += e => highlight.SetActive(false);
+    trigger.PointerClick += e => Select();
+}
+```
+
+Ebenfalls verfügbar: `PointerDown`, `PointerUp`, `BeginDrag`, `Drag`, `EndDrag`, `Drop`, `Scroll`.
+
+## BasisUIExtensions
+
+`Toggle.onValueChanged` erwartet eine `UnityAction<bool>`. Mit dieser Erweiterung können Sie stattdessen eine Methode übergeben.
+
+```csharp
+using Basis.Shims;
+using UnityEngine.UI;
+
+public Toggle musicToggle;
+
+void Start() { musicToggle.AddListener(OnMusic); }
+
+void OnMusic(bool on) { music.SetActive(on); }
+```

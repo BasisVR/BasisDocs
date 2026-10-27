@@ -1,0 +1,80 @@
+---
+title: Scheda delle impostazioni
+description: Aggiungere opzioni del mondo al menu delle impostazioni del giocatore con BasisMenuShim, e ricordarle con BasisSaveShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` aggiunge una scheda alle impostazioni del giocatore mentre il tuo contenuto è caricato. La scheda scompare quando il mondo viene scaricato.
+
+## Script
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Un pannello completo
+
+Per un menu di gioco invece che di opzioni, aggiungi un pannello. Ottiene il proprio pulsante nel menu e può avere diverse schede.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` funziona solo entro 5 secondi da quando il giocatore ha premuto qualcosa nel tuo contenuto, così i contenuti non possono aprire menu di propria iniziativa.
+
+## Regole
+
+- **Chi può aggiungere una scheda:** i mondi, i prop generati dal giocatore locale e l'avatar del giocatore locale stesso. `null` significa rifiutato; controllalo.
+- **Le opzioni sono locali.** Ogni giocatore imposta le proprie. Sincronizza una scelta solo se deve cambiare il mondo per tutti.
+- **Ricorda le scelte** con [BasisSaveShim](/it/docs/scripting/examples/persistence) se devono sopravvivere alla visita successiva.
+
+<Callout type="info">
+Su un avatar, aggiungi la scheda da `BasisAvatarShim.OnAvatarReady` quando `isOwner` è true, così la riceve solo chi lo indossa.
+</Callout>

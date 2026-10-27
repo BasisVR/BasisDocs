@@ -1,0 +1,49 @@
+---
+title: Boids
+description: Una bandada de 200 pájaros animada de forma económica en Cilbox agrupando las escrituras de transforms con BasisTransformBatchShim.
+---
+
+Mover 200 transforms uno a uno desde un script de Cilbox cuesta cientos de llamadas interpretadas por fotograma. El procesamiento por lotes lo reduce a una.
+
+```csharp title="Flock.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Flock : MonoBehaviour
+{
+    public Transform[] birds;
+    public float radius = 10f;
+    public float speed = 0.4f;
+
+    float[] xyz;
+    float[] phase;
+
+    void Start()
+    {
+        xyz = new float[birds.Length * 3];
+        phase = new float[birds.Length];
+        for (int i = 0; i < phase.Length; i++) phase[i] = i * 0.37f;
+    }
+
+    void Update()
+    {
+        float t = Time.time * speed;
+        Vector3 c = transform.position;
+        float cx = c.x, cy = c.y, cz = c.z;
+        for (int i = 0; i < birds.Length; i++)
+        {
+            float a = t + phase[i];
+            xyz[i * 3] = cx + Mathf.Cos(a) * radius;
+            xyz[i * 3 + 1] = cy + Mathf.Sin(a * 2f) * 2f;
+            xyz[i * 3 + 2] = cz + Mathf.Sin(a) * radius;
+        }
+        BasisTransformBatchShim.SetPositions(birds, xyz);
+    }
+}
+```
+
+- Los cálculos se hacen sobre floats simples, lo cual es mucho más barato en el intérprete que los operadores de `Vector3`.
+- `SetPositions(Transform[], float[])` escribe todos los pájaros en una sola llamada nativa.
+- Use `BasisNetworkTimeShim.ServerTimeSeconds` en lugar de `Time.time` si la bandada debe coincidir exactamente entre jugadores.

@@ -1,0 +1,114 @@
+---
+title: Anzeigetafel
+description: Ein vernetzter Punktestand, bei dem ein Besitzer den maßgeblichen Wert verwaltet und andere Spieler den Besitzer bitten, Punkte hinzuzufügen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> Dies ist ein natives Beispiel für Client-Builds: `BasisSyncedParameters` und benutzerdefinierte Skripte stehen für hochgeladene Inhalte nicht auf der Standard-Allowlist. Für eine Cilbox-Anzeigetafel verwenden Sie das unten beschriebene Anfrage-an-den-Besitzer-Muster mit Netzwerkereignissen, wie beim [Synchronisierten Schalter](/de/docs/scripting/examples/synced-toggle).
+
+Ein Punktestand muss exakt sein und das Beitreten und Verlassen von Spielern überstehen. Wenn zwei Spieler im selben Moment einen Punkt hinzufügen, muss das +2 ergeben, nicht +1. Dieses Beispiel hält den Punktestand bei einem Besitzer und leitet jede Änderung über ihn.
+
+## Einrichtung
+
+1. Fügen Sie **Basis Synced Parameters** zum Anzeigetafel-Objekt hinzu. Fügen Sie zwei Parameter namens `Red` und `Blue` hinzu, Typ **Int**, **Interpolate** aus.
+2. Fügen Sie **Scoreboard** zum selben Objekt hinzu und weisen Sie die Parameter-Komponente und zwei Beschriftungen zu.
+3. Verbinden Sie Buttons (oder Tor-Trigger) mit `AddRed`, `AddBlue` und `ResetScores`.
+
+## Skript
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` empfängt bereits Netzwerknachrichten für seinen eigenen Stream. Leiten Sie Anfragen daher mit einer kleinen Unterklasse an die Anzeigetafel weiter:
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+Verwenden Sie bei der Einrichtung **ScoreboardParameters** anstelle von **Basis Synced Parameters**.
+
+## Funktionsweise
+
+- **Nur der Besitzer schreibt** den Punktestand, sodass gleichzeitige Eingaben beim Besitzer nacheinander angewendet werden.
+- **Alle anderen senden eine Anfrage** an `CurrentOwnerId`, anstatt den Besitz zu übernehmen. Eine Besitzübernahme würde es zwei Spielern ermöglichen, jeweils 1 zum selben alten Wert zu addieren.
+- **Später beitretende Spieler** benötigen nichts weiter: Synchronisierte Parameter senden neuen Spielern einen Keyframe.
+- **Wenn der Besitzer geht**, wechselt der Besitz zu dem Spieler, der am längsten verbunden ist und den aktuellen Punktestand bereits hat.
+
+<Callout type="info">
+Anfragen sind ein Byte groß, Sync-Pakete sind größer, daher reicht hier die Prüfung der Länge, um sie zu unterscheiden. Für weitere Nachrichtentypen stellen Sie Ihren eigenen Nachrichten ein Marker-Byte voran, mit dem der Sync-Stream nie beginnt, oder legen Sie die Anfrageverarbeitung auf ein separates `BasisNetworkBehaviour`.
+</Callout>

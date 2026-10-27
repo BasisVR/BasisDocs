@@ -1,0 +1,110 @@
+---
+title: ネットワーク
+description: BasisNetworkShim、BasisNetworkTimeShim、BasisSharedRandomShim、BasisBinaryShim、BasisCompressionShim、BasisConnectionShim。
+---
+
+## BasisNetworkShim
+
+Cilboxでネットワークイベントを送信し、オーナーシップを追跡する方法です。詳しいガイド: [ネットワーク](/ja/docs/scripting/networking)。
+
+```csharp
+using Basis;
+using Basis.Network.Core;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.NetworkReady += () => Debug.Log("ready");
+    net.NetworkMessageReceived += OnMessage;
+    net.OwnershipTransfer += owner => Debug.Log($"owner {owner.playerId}");
+    net.PlayerJoined += player => { };
+    net.PlayerLeft += player => { };
+}
+
+void Send() => net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered);
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method) { }
+void Grab() => net.TakeOwnership();
+bool Mine => net.HasNetworkID && net.IsOwnedLocallyOnServer;
+```
+
+コルーチンの代わりに遅延コールバックを使います: `net.SendCustomEventDelayedSeconds(Close, 3f)`と`net.SendCustomEventDelayedFrames(Rebuild, 2)`。
+
+## BasisNetworkTimeShim
+
+サーバーの時計で、すべてのクライアントで（ネットワーク遅延の範囲内で）同じです。全員が同時に見るカウントダウンや昼夜サイクルに使用します。
+
+```csharp
+using Basis.Shims;
+
+double now = BasisNetworkTimeShim.ServerTimeSeconds;
+System.DateTime utc = BasisNetworkTimeShim.ServerUtcNow;
+
+// A 24 minute day cycle that matches for everyone.
+float dayFraction = (float)(now % 1440.0 / 1440.0);
+sun.transform.rotation = Quaternion.Euler(dayFraction * 360f - 90f, 30f, 0f);
+```
+
+## BasisSharedRandomShim
+
+同じシードとインデックスから、メッセージなしですべてのクライアントで同じ数値が得られます。
+
+```csharp
+float roll = BasisSharedRandomShim.Value(42, round);
+float speed = BasisSharedRandomShim.Range(42, round, 2f, 5f);
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Index taken from the server clock: a new value every 5 minutes, the same for everyone.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+long window = BasisSharedRandomShim.WindowIndex(300d);
+```
+
+## BasisBinaryShim
+
+数値やベクトルを1回の呼び出しでバイト配列にパックします。サンドボックス内では`BinaryWriter`よりずっと高速です。各`Write`は次のオフセットを返します。
+
+```csharp
+byte[] buffer = new byte[4 + 12 + 16];
+int at = BasisBinaryShim.WriteInt32(buffer, 0, score);
+at = BasisBinaryShim.WriteVector3(buffer, at, transform.position);
+at = BasisBinaryShim.WriteQuaternion(buffer, at, transform.rotation);
+net.SendCustomNetworkEvent(buffer, DeliveryMethod.Sequenced);
+
+// Receiving
+int s = BasisBinaryShim.ReadInt32(data, 0);
+Vector3 p = BasisBinaryShim.ReadVector3(data, 4);
+Quaternion r = BasisBinaryShim.ReadQuaternion(data, 16);
+```
+
+配列版（`WriteSingles`、`WriteVector3s`、`ReadQuaternions`など）は多数の値を一度にパックします。
+
+## BasisCompressionShim
+
+LZ4圧縮です。縮まないデータは1バイト余分にかかります。`Decompress`は、不正なデータや展開後に1 MBを超えるデータに対してnullを返します。
+
+```csharp
+net.SendCustomNetworkEvent(BasisCompressionShim.Compress(drawing), DeliveryMethod.ReliableOrdered);
+
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+{
+    byte[] drawing = BasisCompressionShim.Decompress(data);
+    if (drawing == null) return;
+}
+```
+
+## BasisConnectionShim
+
+プレイヤーに別のサーバーへの移動を求めます。プレイヤー自身の押下やクリックから呼び出す必要があります。プレイヤーにはアドレスが表示され、承諾する必要があります。
+
+```csharp
+public void OnPortalPressed()
+{
+    BasisConnectionShim.RequestConnect(this, "play.example.com", 4296, null, result =>
+    {
+        if (result != BasisConnectionResult.Accepted) sign.text = "Maybe next time";
+    });
+}
+
+public void OnLeavePressed() => BasisConnectionShim.RequestDisconnect(this);
+```

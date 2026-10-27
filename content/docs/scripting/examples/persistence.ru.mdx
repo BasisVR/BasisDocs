@@ -1,0 +1,125 @@
+---
+title: Сохранение данных
+description: Сохранение прогресса игрока между посещениями с помощью BasisSaveShim, упаковка значений в байты и совместное использование сохранений между миром и его пропами.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` хранит байты на компьютере самого игрока, под ID вашего контента. Сохранения индивидуальны: у каждого игрока своё сохранение, и ничего не синхронизируется.
+
+## Скрипт
+
+Этот скрипт сохраняет, до каких контрольных точек дошёл игрок, и его лучшее время, а когда игрок возвращается, переносит его на последнюю контрольную точку.
+
+```csharp title="CourseProgress.cs (Cilbox)"
+using System.IO;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class CourseProgress : MonoBehaviour
+{
+    const string Slot = "progress";
+    const byte Version = 1;
+
+    public Transform[] checkpoints;
+    public TextMeshPro bestLabel;
+
+    int reached = -1;
+    float bestTime = float.MaxValue;
+
+    void Start()
+    {
+        Load();
+        if (reached >= 0)
+        {
+            Transform point = checkpoints[reached];
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+        }
+        ShowBest();
+    }
+
+    public void ReachCheckpoint(int index)
+    {
+        if (index <= reached) return;
+        reached = index;
+        Save();
+    }
+
+    public void FinishRun(float seconds)
+    {
+        if (seconds < bestTime) bestTime = seconds;
+        reached = -1;
+        Save();
+        ShowBest();
+    }
+
+    void Save()
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(Version);
+            writer.Write(reached);
+            writer.Write(bestTime);
+            BasisSaveShim.Save(this, Slot, stream.ToArray());
+        }
+    }
+
+    void Load()
+    {
+        byte[] data = BasisSaveShim.Load(this, Slot);
+        if (data == null || data.Length < 9) return;
+        using (var reader = new BinaryReader(new MemoryStream(data)))
+        {
+            if (reader.ReadByte() != Version) return;
+            reached = Mathf.Clamp(reader.ReadInt32(), -1, checkpoints.Length - 1);
+            bestTime = reader.ReadSingle();
+        }
+    }
+
+    void ShowBest()
+    {
+        bestLabel.text = bestTime < float.MaxValue ? $"Best: {bestTime:F1}s" : "No time yet";
+    }
+}
+```
+
+## Правила
+
+- **Решает игрок.** Пока он не разрешит сохранение для вашего контента, `Save` возвращает false, а `Load` возвращает null. Ваш скрипт продолжает работать, поэтому всегда обрабатывайте отсутствие сохранения.
+- **Версионируйте данные.** Сначала записывайте байт версии и отказывайтесь от данных, которые не понимаете. У игроков остаются старые сохранения, когда вы обновляете мир.
+- **Проверяйте при загрузке.** Ограничивайте индексы; никогда не рассчитывайте, что сохранённые значения всё ещё соответствуют вашей сцене.
+- **Ограничения:** 256 КБ на слот, 32 слота и 1 МБ на хранилище, 8 записей в секунду. Сохраняйте при значимых событиях, а не каждый кадр.
+
+## Совместное использование между контентом
+
+Дайте хранилищу имя, чтобы делиться сохранениями, например между миром и пропами, которые он создаёт:
+
+```csharp
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "my-game", "progress");
+```
+
+Области видимости определяют, кто может читать и писать:
+
+| Область | Чтение | Запись |
+| --- | --- | --- |
+| `BasisSaveScope.Protected` | Только этот контент | Только этот контент |
+| `BasisSaveScope.ReadOnly` | Любой контент (с вашим Content ID) | Только этот контент |
+| `BasisSaveScope.Shared` | Любой контент, указавший имя хранилища | Любой контент, указавший имя хранилища |
+
+```csharp
+// Publish a badge other worlds can read.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+
+// Another world reads it.
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+<Callout type="warn">
+Сохранения хранятся на компьютере игрока, и он может их изменить. Не используйте их для того, чему нужно доверять, например для таблиц лидеров.
+</Callout>

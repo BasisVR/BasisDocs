@@ -1,0 +1,65 @@
+---
+title: Componentes de escena
+description: Los componentes de Basis que se colocan en un mundo, qué hace cada uno y dónde obtener más información.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Estos componentes son los elementos básicos de un mundo Basis. Ninguno necesita código. Los elementos marcados con *(compilaciones del cliente)* no están en la lista de permitidos predeterminada para el contenido subido; consulte [Componentes permitidos](/es/docs/scripting/allowed-components).
+
+## Obligatorios
+
+| Componente | Qué hace |
+| --- | --- |
+| **Basis Scene** | Marca la escena como un mundo Basis. Define el **Spawn Point**, la **Respawn Height** desde la que los jugadores reaparecen al caer, el grupo del mezclador de audio y la cámara principal. Uno por mundo. Consulte [Compilación](/es/docs/world/building). |
+
+## Interacción
+
+| Componente | Qué hace |
+| --- | --- |
+| **Basis Interactable Shim** | Hace que un objeto se pueda pulsar desde un script: `ButtonDown` y `ButtonUp`, con colores de hover y de pulsación. |
+| **Basis Pickup Interactable** | Permite a los jugadores agarrar, sostener y usar un objeto. Lanza `OnPickupUse` cuando se pulsa el gatillo mientras se sostiene. |
+| **Basis Interactable Button** | Un botón pulsable listo para usar (com.basis.examples, prefab `ExampleInteractableButton`). |
+| **Basis Seat** | Permite a los jugadores sentarse. Límites de rotación, modo de resaltado y scripting mediante `TrySeatLocalPlayer`, `EjectLocalPlayer` e `IsAvailable`. |
+| **Basis Avatar Pedestal** | Muestra un avatar y permite a los jugadores cambiar a él. Solo en mundos. |
+| **Basis Runtime Loader** *(compilaciones del cliente)* | Genera props desde una configuración de carga, por ejemplo desde un botón. Consulte [Props de escena](/es/docs/world/scene-props). |
+
+## Red
+
+| Componente | Qué hace |
+| --- | --- |
+| **Basis Pickup Sync Networking** | Sincroniza la pose y el portador de un objeto recogible. |
+| **Basis Synced Transform** | Sincroniza un objeto en movimiento. **Basis Synced Rigidbody** *(compilaciones del cliente)* añade velocidades. |
+| **Basis Synced Parameters** *(compilaciones del cliente)* | Sincroniza valores con nombre (floats, ints, bools, colores). |
+| **Basis Seat Sync** | Sincroniza quién está sentado en un asiento. |
+| **Basis Networked Vehicle** | Vehículos conducibles sincronizados, construidos a partir de piezas de carrocería, ruedas, propulsores y asiento de piloto. |
+
+Consulte [Componentes de red](/es/docs/scripting/networking/network-components).
+
+## Multimedia y renderizado
+
+| Componente | Qué hace |
+| --- | --- |
+| **Basis Media Player** | Reproducción sincronizada de vídeo y streams. Consulte [Reproductor multimedia](/es/docs/world/media-player). |
+| **Basis SDK Mirror** | Un espejo. Establezca el tamaño de la render texture, el far clip y si el postprocesado se renderiza en el reflejo. Los espejos renderizan la escena de nuevo, así que manténgalos pequeños y desactivados por defecto. |
+| **TextMesh Pro** | Texto en carteles y UI. Compatible en mundos y en scripts de Cilbox. |
+| **Canvas** | UI en espacio de mundo que funciona con el puntero de Basis. Consulte [UI Canvas](/es/docs/world/ui-canvas). |
+
+## Jugador y plataforma
+
+| Componente | Qué hace |
+| --- | --- |
+| **Basis Locomotion Zone** *(compilaciones del cliente)* | Cambia la altura del salto, la velocidad al caminar y correr, la gravedad o el modo de movimiento mientras el jugador local está dentro de su trigger. |
+| **Basis Platform Switch** | Activa o desactiva objetos y componentes por plataforma (VR, escritorio, móvil) a partir de una lista de reglas. |
+
+## Scripting
+
+| Componente | Qué hace |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | El sandbox en el que se ejecutan los scripts `[Cilboxable]` de su mundo o prop. Consulte [Scripts](/es/docs/scripting/scripting). |
+| **Basis OSC** | Publica y se suscribe a mensajes OSC. Consulte [OSC](/es/docs/scripting/osc). |
+| **Basis Action Trigger** | Reenvía los eventos de puntero de la UI (entrar, salir, clic, arrastrar) a un script de Cilbox. |
+
+<Callout type="info">
+Cada componente está documentado en el editor de Unity: selecciónelo y use el botón de documentación de su inspector, o abra **Basis > Creator Guide** para consultar esta guía sin conexión.
+</Callout>

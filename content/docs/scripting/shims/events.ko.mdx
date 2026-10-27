@@ -1,0 +1,98 @@
+---
+title: 이벤트
+description: 선택해서 쓰는 이벤트 심. Start에서 컴포넌트를 가져온 뒤 이름으로 콜백을 선언합니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+모든 이벤트 심은 같은 방식으로 동작합니다. `Start`에서 `GetComponent<T>()`를 한 번 호출하고(Cilbox가 대신 추가합니다), 심의 콜백 이름으로 메서드를 선언하세요. Basis가 직접 호출하므로 구독하거나 구독을 해제할 것이 없습니다.
+
+<Callout type="info">
+대부분의 이벤트 심은 사용을 선택한 직후 현재 값으로 한 번 호출해 주므로, 별도의 초기화 코드가 필요 없습니다.
+</Callout>
+
+## BasisPlatformEventShim
+
+```csharp
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrHud.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+## BasisLanguageEventShim
+
+```csharp
+void Start() { GetComponent<BasisLanguageEventShim>(); }
+
+void OnLanguageChanged(string code)
+{
+    sign.text = code == "de" ? "Willkommen" : "Welcome";
+}
+```
+
+## BasisGraphicsSettingsEventShim
+
+프레임당 최대 한 번의 호출로 합쳐집니다.
+
+```csharp
+void Start() { GetComponent<BasisGraphicsSettingsEventShim>(); }
+
+void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+{
+    detail.SetActive(qualityTier >= BasisGraphicsSettingsShim.TierMedium);
+}
+```
+
+## BasisPermissionEventShim
+
+```csharp
+void Start() { GetComponent<BasisPermissionEventShim>(); }
+
+void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+{
+    staffPanel.SetActive(isAdmin || isModerator);
+}
+```
+
+## BasisJiggleEventShim
+
+누군가 이 오브젝트의 지글 물리를 잡거나 만질 때 발생합니다. 두 콜백 모두 시작할 때(`began`이 true) 한 번, 끝날 때 한 번 발생합니다.
+
+```csharp
+BasisJiggleEventShim jiggle;
+int tail;
+
+void Start()
+{
+    jiggle = GetComponent<BasisJiggleEventShim>();
+    tail = jiggle.FindJiggleRig("Tail");
+}
+
+void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+{
+    if (rigIndex == tail && began) squeak.Play();
+}
+
+void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
+```
+
+`GetJiggleRigCount()`와 `GetJiggleRigName(index)`로 리그 목록을 얻을 수 있습니다. 감지는 스크립트가 사용을 선택한 동안에만 실행됩니다.
+
+## BasisBeforeRenderShim
+
+모든 포즈와 IK 작업이 끝난 뒤, 프레임을 그리기 직전에 실행됩니다. 한 프레임의 지연 없이 무언가를 손이나 머리에 고정할 때 사용하세요. 렌더링이 이 호출을 기다리므로 짧게 유지하세요.
+
+```csharp
+void Start() { GetComponent<BasisBeforeRenderShim>(); }
+
+void OnBeforeRender()
+{
+    IBasisPlayer me = BasisPlayersShim.Local;
+    if (me == null) return;
+    transform.position = me.GetBonePosition(HumanBodyBones.RightHand);
+}
+```

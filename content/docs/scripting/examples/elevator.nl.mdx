@@ -1,0 +1,76 @@
+---
+title: Lift
+description: Een bewegend platform waar iedereen samen op meerijdt. Alleen de doelverdieping wordt gesynchroniseerd; elke client beweegt het platform ernaartoe.
+---
+
+De positie van het platform streamen kost elk frame bandbreedte. Een lift beweegt altijd alleen naar een verdieping, dus synchroniseer de **doelverdieping** en laat elke client het platform zelf bewegen.
+
+## Setup
+
+1. Maak het platform met een collider.
+2. Voeg **Elevator** toe en knoppen die `GoTo(floor)` aanroepen. Stel de verdiepingshoogten in de inspector in.
+
+```csharp title="Elevator.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Elevator : MonoBehaviour
+{
+    public Transform platform;
+    public float[] floorHeights;
+    public float speed = 1.5f;
+
+    BasisNetworkShim net;
+    int target;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void GoTo(int floor)
+    {
+        net.TakeOwnership();
+        target = floor;
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)floor }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length >= 1) target = data[0];
+        if (data.Length == 5)
+        {
+            Vector3 p = platform.localPosition;
+            platform.localPosition = new Vector3(p.x, BasisBinaryShim.ReadSingle(data, 1), p.z);
+        }
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] state = new byte[5];
+        state[0] = (byte)target;
+        BasisBinaryShim.WriteSingle(state, 1, platform.localPosition.y);
+        net.SendCustomNetworkEvent(state, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        Vector3 p = platform.localPosition;
+        float y = Mathf.MoveTowards(p.y, floorHeights[target], speed * Time.deltaTime);
+        platform.localPosition = new Vector3(p.x, y, p.z);
+    }
+}
+```
+
+- Elke client voert dezelfde beweging uit, dus passagiers zien een vloeiend platform zonder positiestream.
+- Een late joiner krijgt de doelverdieping en de huidige hoogte in één bericht van 5 bytes.
+- Let op de `new Vector3(...)`: `p.y` direct wijzigen zou in Cilbox ook de waarde wijzigen waarvan hij is gekopieerd (zie [Sandboxregels](/nl/docs/scripting/sandbox-rules)).

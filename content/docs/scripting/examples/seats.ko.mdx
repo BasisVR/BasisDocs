@@ -1,0 +1,60 @@
+---
+title: 좌석
+description: Basis Seat와 Basis Seat Sync를 사용하여 스크립트에서 플레이어를 앉히기, 회전의자, 그리고 내보내기 버튼.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 설정
+
+1. 의자에 **Basis Seat**를 추가하고 앉는 지점을 배치합니다. com.basis.examples의 `SimpleSeat` 프리팹이 바로 사용할 수 있는 예입니다.
+2. 모든 사람이 누가 앉아 있는지 볼 수 있고 두 플레이어가 같은 좌석을 차지할 수 없도록 **Basis Seat Sync**를 추가합니다.
+
+플레이어는 좌석을 가리켜서 앉을 수 있습니다. 아래 스크립트는 플레이어를 앉히고, 의자를 돌리고, 일어설 수 있게 하는 버튼을 추가합니다.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| 멤버 | 의미 |
+| --- | --- |
+| `IsAvailable` | 아무도 앉아 있지 않고 플레이어 설정에서 좌석이 비활성화되어 있지 않습니다. |
+| `IsLocalPlayerSeated` | 로컬 플레이어가 이 좌석에 앉아 있습니다. |
+| `HasOccupant` | 누군가 이 좌석에 앉아 있습니다. |
+| `TrySeatLocalPlayer()` | 좌석이 비어 있으면 로컬 플레이어를 앉힙니다. |
+| `SetOccupantYaw(degrees)` | 좌석의 회전 제한 안에서 앉은 플레이어를 회전시킵니다. |
+| `EjectLocalPlayer()` | 로컬 플레이어를 일으켜 세웁니다. |
+
+<Callout type="info">
+좌석은 로컬 플레이어만 움직이므로 스크립트 자체에는 네트워킹이 필요 없습니다. 누가 앉아 있는지는 **Basis Seat Sync**가 처리합니다.
+</Callout>

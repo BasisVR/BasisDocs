@@ -1,0 +1,34 @@
+---
+title: Layers
+description: Les layers Unity utilisés par Basis, ce que chacun signifie pour les collisions, l'interaction et les caméras, et lesquels utiliser pour vos objets.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis réserve plusieurs layers Unity. Utilisez-les comme décrit afin que les joueurs, les pointeurs et les caméras traitent correctement vos objets.
+
+| # | Layer | Utilisé pour |
+| --- | --- | --- |
+| 0 | Default | Géométrie ordinaire du monde. Les joueurs entrent en collision avec elle et les pointeurs la touchent. |
+| 1 | TransparentFX | Par défaut dans Unity. |
+| 2 | Ignore Raycast | Non touché par les pointeurs ni les raycasts, et ignoré par la caméra à la troisième personne. |
+| 3 | Player | Le character controller du joueur local. |
+| 4 | Water | Par défaut dans Unity. |
+| 5 | UI | UI en espace monde. |
+| 6 | LocalPlayerAvatar | Votre propre avatar. Masqué de votre vue à la première personne lorsque nécessaire. |
+| 7 | RemotePlayerAvatar | Les avatars des autres joueurs. |
+| 8 | Interactable | Objets que le pointeur doit mettre en surbrillance et avec lesquels il interagit. |
+| 9 | OverlayUI | UI dessinée par-dessus tout, comme le menu. |
+| 10 | IgnoredByInteractable | Visible et solide, mais les pointeurs le traversent. À utiliser pour une vitre ou des volumes de trigger devant des boutons. |
+| 11 | HandHeldCameraUI | L'UI propre à la caméra tenue en main. |
+
+## Choisir un layer
+
+- **Murs, sols, props :** Default.
+- **Volumes de trigger et bloqueurs invisibles devant des boutons :** IgnoredByInteractable, afin que les pointeurs puissent atteindre ce qui se trouve derrière.
+- **Colliders décoratifs que le pointeur ne doit jamais toucher :** Ignore Raycast.
+- **Ne placez jamais vos objets sur** Player, LocalPlayerAvatar, RemotePlayerAvatar ou OverlayUI.
+
+<Callout type="info">
+Les noms et numéros des layers proviennent du Tag Manager du projet Basis. Le contenu est construit avec eux, ne renommez donc pas et ne réordonnez pas les layers Basis dans votre projet.
+</Callout>

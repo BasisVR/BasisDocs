@@ -1,0 +1,80 @@
+---
+title: Pestaña de ajustes
+description: Añadir opciones del mundo al menú de ajustes del jugador con BasisMenuShim y recordarlas con BasisSaveShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` añade una pestaña a los ajustes del jugador mientras su contenido está cargado. La pestaña desaparece cuando el mundo se descarga.
+
+## Script
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Un panel completo
+
+Para un menú de juego en lugar de opciones, añada un panel. Tiene su propio botón en el menú y puede tener varias pestañas.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` solo funciona dentro de los 5 segundos posteriores a que el jugador pulse algo en su contenido, de modo que el contenido no puede abrir menús por sí solo.
+
+## Reglas
+
+- **Quién puede añadir una pestaña:** los mundos, los props que generó el jugador local y el propio avatar del jugador local. `null` significa rechazado; compruébelo.
+- **Las opciones son locales.** Cada jugador establece las suyas. Sincronice una elección solo si debe cambiar el mundo para todos.
+- **Recuerde las elecciones** con [BasisSaveShim](/es/docs/scripting/examples/persistence) si deben conservarse para la próxima visita.
+
+<Callout type="info">
+En un avatar, añada la pestaña desde `BasisAvatarShim.OnAvatarReady` cuando `isOwner` sea true, para que solo quien lo lleva puesto la obtenga.
+</Callout>

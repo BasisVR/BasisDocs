@@ -1,0 +1,64 @@
+---
+title: 圖片載入
+description: 在告示牌上顯示來自 URL 的圖片，並在載入期間或玩家拒絕時顯示替代圖片。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 設定
+
+1. 為告示牌建立一個 **Quad**，並給它一個具有 unlit 或 lit 貼圖欄位的材質。
+2. 加入 **RemoteImage** 並指定 renderer。設定 URL 以及可選的佔位貼圖。
+
+## 腳本
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## 規則
+
+- **僅限 https。** 純 http、原始 IP 位址，以及任何解析為區域網路位址的請求，都會在送出前被拒絕。
+- **不允許重新導向。** 請將圖片放在其最終位址。
+- **玩家需核准主機。** 內容第一次要求新的主機時，會提示玩家。在他們接受之前，下載會失敗，您的佔位圖會保持顯示。
+- 每位玩家都會自行下載圖片；沒有需要同步的東西。若要讓所有人顯示相同且會變換的圖片，請同步 **URL 索引**（模式請參閱[同步切換開關](/tw/docs/scripting/examples/synced-toggle)）並在本機載入。
+
+<Callout type="info">
+文字請使用遵循相同規則的 `BasisStringDownloader.DownloadString`，並使用 `BasisJson.Parse` 讀取 JSON。
+</Callout>

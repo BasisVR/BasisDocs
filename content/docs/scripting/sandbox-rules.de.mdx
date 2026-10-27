@@ -1,0 +1,75 @@
+---
+title: Sandbox-Regeln
+description: Die Cilbox-Regeln, die sich nicht aus der API ergeben, und die Performance-Kosten, die Sie einplanen sollten.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox interpretiert den kompilierten Code Ihres Skripts in einer Sandbox. Das meiste C# funktioniert, aber über diese Regeln stolpert fast jeder einmal.
+
+## Lebenszyklus
+
+- **Kein `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` und keine Coroutines.** Verwenden Sie `Update` und [verzögerte Ereignisse](/de/docs/scripting/common-usages#timers-and-delayed-events).
+- **Das erste `OnEnable` wird verworfen.** Initialisieren Sie in `Start` und räumen Sie in `OnDestroy` auf.
+- **Erben Sie nicht von `BasisNetworkBehaviour`.** Der Proxy, der Ihr Skript ersetzt, ist keines. Verwenden Sie `BasisNetworkShim` (siehe [Netzwerkereignisse](/de/docs/scripting/networking/network-events#cilbox)).
+
+## Structs werden geteilt, nicht kopiert
+
+Wenn Sie ein Unity-Struct (`Vector3`, `Quaternion`, `Color`) in eine Variable kopieren, teilen sich beide denselben Wert. Ändern Sie ein Feld der Kopie, ändert sich auch das Original.
+
+```csharp
+// Wrong: also moves `target`.
+Vector3 p = target;
+p.y = 0f;
+
+// Right: build a new value.
+Vector3 p = new Vector3(target.x, 0f, target.z);
+```
+
+- `points[i].x = 5f` auf einem Array geht stillschweigend verloren. Schreiben Sie `points[i] = new Vector3(5f, points[i].y, points[i].z)`.
+- `points[i] += offset` wirft eine Exception. Schreiben Sie `points[i] = points[i] + offset`.
+- Werte aus Unity-Aufrufen und Operatoren (`a + b`, `transform.position`, `new Vector3(...)`) sind neu und können gefahrlos geändert werden.
+
+## Aufrufe und Berechtigungen
+
+- **Ein freigegebener Typ erlaubt alle seine öffentlichen Methoden**, sofern dieser Typ nicht zusätzlich eine Methodeneinschränkung hat. **Felder sind verboten**, sofern sie nicht aufgeführt sind.
+- **Parameter-, generische und Rückgabetypen werden ebenfalls geprüft.** Ein Aufruf kann die Namensprüfung bestehen und trotzdem wegen eines seiner Typen abgelehnt werden.
+- **`this.GetComponent` funktioniert immer.** `gameObject.GetComponent` ist eingeschränkt, und die Prop-Sandbox erlaubt nicht, damit die Hierarchie zu durchlaufen.
+- **`AddComponent`, `SendMessage` und `BroadcastMessage` sind immer blockiert.** Cilbox fügt bei `GetComponent` automatisch einen `BasisNetworkShim` und die Event-Shims für Sie hinzu.
+- **`Debug.DrawLine` und `Debug.DrawRay` existieren nicht** im `Debug` der Sandbox, und ein Verweis darauf verhindert, dass irgendein Skript im Inhalt geladen wird.
+- **Konstanten sind kostenlos.** Eine `const` braucht keinen Whitelist-Eintrag.
+
+## Events und Delegates
+
+Jedes Mal, wenn Sie eine Methode als Delegate verwenden, entsteht ein neuer Wrapper, sodass `-=` den hinzugefügten möglicherweise nicht entfernt. Bei Publishern, die Ihr Skript überdauern, fragen Sie besser einen Wert in `Update` ab, statt sich zu abonnieren.
+
+## Content Police
+
+Jede Komponente in Ihrem Inhalt, die weder `[Cilboxable]` ist noch auf der Allowlist steht, wird **beim Laden zerstört**. Ein Skript zu konvertieren und eine Komponente zu erlauben sind zwei getrennte Dinge. Siehe [Erlaubte Komponenten](/de/docs/scripting/allowed-components).
+
+## Avatar-Skripte laufen auf dem Rechner jedes Spielers
+
+Jedes Cilbox-Skript auf einem Avatar läuft auf jedem Client, der den Avatar lädt, bis zum Behaviour-Limit pro Avatar. Beschränken Sie Logik, die nur für den Träger gedacht ist, mit `avatar.IsOwnedLocally` (siehe [Avatar-Scripting](/de/docs/scripting/avatar-scripting)).
+
+## Performance
+
+Interpretierter Code ist deutlich langsamer als nativer Code. Grobe Kosten auf einem Desktop-PC:
+
+| Operation | Kosten |
+| --- | --- |
+| Einfache Arithmetik mit Floats | ~15 ns |
+| Aufruf einer Ihrer eigenen Methoden | ~270 ns |
+| Ein `Vector3`-Operator (`a + b`) | ~1,7 µs, plus Garbage |
+| Ein Unity-Aufruf wie `Mathf.Sqrt` | ~0,9 µs |
+
+Daher:
+
+- **Arbeiten Sie ereignisgesteuert, nicht in jedem Frame.** Prüfen Sie Timer, Abstände und UI ein paar Mal pro Sekunde.
+- **Bevorzugen Sie in Schleifen Floats gegenüber `Vector3`-Mathematik.** Vektormathematik in einer heißen Schleife ist etwa 100-mal langsamer als dieselbe Rechnung mit einzelnen Floats.
+- **Lassen Sie Komponenten die schwere Arbeit erledigen.** Animatoren, Partikelsysteme, Physik und Constraints laufen nativ.
+- **Verwenden Sie Object Pooling**, statt bei jedem Schuss `Instantiate` aufzurufen.
+- **Bündeln Sie Transform-Arbeit.** `BasisTransformSyncShim` liest, schreibt oder kopiert ganze Arrays von Transforms in einem Aufruf, und `BasisBlendShapeSyncShim` macht dasselbe für Blendshapes.
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions** zeigt die Whitelist jeder Sandbox, und der Tab **Script Check** durchsucht Ihre Skripte vor dem Hochladen nach blockierten Aufrufen.
+</Callout>

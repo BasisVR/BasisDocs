@@ -1,0 +1,64 @@
+---
+title: Меню
+description: BasisMenuShim, вкладки настроек и панели меню с заголовками, надписями, кнопками, переключателями, ползунками и выпадающими списками.
+---
+
+`BasisMenuShim` добавляет UI в собственное меню игрока. Оба вызова возвращают null при отказе, поэтому всегда проверяйте результат.
+
+| Вызов | Добавляет |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Вкладку в настройках игрока (до 4 на единицу контента). |
+| `BasisMenuShim.AddPanel(this, title)` | Панель с собственной кнопкой меню (одна на единицу контента, до 8 вкладок). |
+
+## Создание страницы
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Изменение элементов позже
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Страницы: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (панели), `IsOpen` и `Open()`.
+
+## Открытие панели
+
+`Open()` работает только в течение 5 секунд после того, как игрок нажал что-то в вашем контенте, поэтому контент не может сам открывать меню.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Ограничения: 64 элемента на страницу, 32 варианта в выпадающем списке, заголовки до 48 символов. Подробнее: [пример вкладки настроек](/ru/docs/scripting/examples/settings-tab).

@@ -1,0 +1,91 @@
+---
+title: Networking
+description: So verhält sich eine Basis-Welt oder ein Prop für jeden Spieler gleich, mit synchronisierten Variablen, Netzwerk-Events, Ownership und Late Joinern.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Alles, was ein Skript tut, läuft auf dem Rechner eines einzelnen Spielers. Wenn ein Spieler eine Tür öffnet, sieht das niemand sonst, bis Sie es dem Netzwerk mitteilen. Diese Anleitung behandelt die Werkzeuge, die Basis Ihnen dafür bietet, und wann Sie welches verwenden.
+
+Wie der Transport selbst funktioniert (Server-Relay, Zustellmethoden, entfernungsabhängige Update-Raten), erfahren Sie unter [Network Syncing](/de/docs/technical/network-syncing).
+
+## Die vier Konzepte
+
+| Konzept | Was es ist | Wofür Sie es verwenden |
+| --- | --- | --- |
+| **Synchronisierte Variablen** | Werte, die der Owner schreibt und alle anderen lesen, fortlaufend gesendet und interpoliert. | Positionen, der Winkel eines Hebels, ein Punktestand, alles mit einem aktuellen Zustand. |
+| **Netzwerk-Events** | Einmalige Nachrichten mit einem Byte-Payload. | "Ein Schuss wurde abgefeuert", "die Runde hat begonnen", "spiele diesen Sound ab". |
+| **Ownership** | Genau ein Spieler besitzt jedes vernetzte Objekt und darf als Einziger darauf schreiben. | Festlegen, wer ein Pickup steuert und wer den Punktestand führt. |
+| **Late Joiner** | Spieler, die ankommen, nachdem sich etwas geändert hat. | Sicherstellen, dass sie den aktuellen Zustand sehen und nicht die Standardwerte der Szene. |
+
+<Callout type="info">
+Faustregel: Wenn ein Spieler, der fünf Minuten später beitritt, es sehen muss, ist es **Zustand** und gehört in eine synchronisierte Variable (oder muss ihm erneut gesendet werden). Wenn es nur in dem Moment zählt, in dem es passiert, ist es ein **Event**.
+</Callout>
+
+## Die Bausteine
+
+- **`BasisNetworkBehaviour`** ist die Basisklasse für vernetzte Skripte, die in den Client kompiliert werden. Sie erhält eine Netzwerk-ID, einen Owner und die Callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` und `OnPlayerLeft`.
+- **`BasisNetworkShim`** ist dasselbe für Cilbox-Skripte. Ein Cilbox-Skript kann nicht von `BasisNetworkBehaviour` erben, daher holt es sich mit `GetComponent` einen `BasisNetworkShim` und abonniert dessen Events.
+- **`BasisSyncedObject`** baut auf `BasisNetworkBehaviour` auf und bietet einen kompakten, interpolierten Zustandsstrom. **`BasisSyncedParameters`**, **`BasisSyncedTransform`** und **`BasisSyncedRigidbody`** sind fertige Komponenten darauf.
+- **`BasisPickupSyncNetworking`** und **`BasisSeatSync`** synchronisieren Pickups und Sitze ganz ohne Code.
+
+## Ein vernetztes Skript von Anfang bis Ende
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+Native-Skripte wie dieses funktionieren in Client-Builds. In hochgeladenen Inhalten schreiben Sie dasselbe als Cilbox-Skript (siehe unten).
+
+Was es zeigt:
+
+1. Der Spieler, der den Button drückt, **übernimmt die Ownership**, sodass es eine einzige Quelle der Wahrheit gibt.
+2. Der neue Wert wird **als Event** an alle anderen gesendet (`Recipients = null` bedeutet alle außer Ihnen).
+3. Wenn jemand beitritt, sendet ihm **nur der Owner** den aktuellen Wert.
+
+Dasselbe Skript für Cilbox finden Sie unter [Network Events](/de/docs/scripting/networking/network-events#cilbox).
+
+## Seiten in dieser Anleitung
+
+- [Network Events](/de/docs/scripting/networking/network-events): Nachrichten senden, Empfänger, Zustellmethoden, Payloads.
+- [Synchronisierte Variablen](/de/docs/scripting/networking/synced-variables): `BasisSyncedParameters` und eigene `BasisSyncedObject`-Felder.
+- [Ownership](/de/docs/scripting/networking/ownership): wem was gehört, Ownership übernehmen und prüfen, was passiert, wenn der Owner geht.
+- [Late Joiner](/de/docs/scripting/networking/late-joiners): neue Spieler auf den aktuellen Stand bringen.
+- [Netzwerk-Komponenten](/de/docs/scripting/networking/network-components): die Sync-Komponenten ohne Code.
+- [Performance und Debugging](/de/docs/scripting/networking/performance): Bandbreite, Senderaten und das Aufspüren von Sync-Fehlern.

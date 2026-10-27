@@ -1,0 +1,92 @@
+---
+title: All'interno di un file BEE
+description: Cosa contiene un file .bee, come è organizzato su disco, come è cifrato e come un client scarica solo la parte di cui ha bisogno.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un file `.bee` (Basis Encrypted Experience) è il file unico con cui viene distribuito ogni mondo, prop e avatar. Contiene una descrizione del contenuto più una build Unity per ogni piattaforma, tutte cifrate con la password che imposti durante la build.
+
+## Struttura
+
+```
+┌──────────────────────────────┐
+│ Header: connector length     │  8 bytes, little endian Int64
+├──────────────────────────────┤
+│ Connector (encrypted JSON)   │  metadata, sections table
+├──────────────────────────────┤
+│ Section 1 (encrypted)        │  e.g. StandaloneWindows64
+├──────────────────────────────┤
+│ Section 2 (encrypted)        │  e.g. Android
+├──────────────────────────────┤
+│ ...                          │
+└──────────────────────────────┘
+```
+
+Le sezioni seguono il connector una dopo l'altra, nell'ordine in cui il connector le elenca. La lunghezza di ogni sezione è memorizzata nel connector, così un lettore può calcolare dove inizia ogni sezione senza scansionare il file.
+
+## Il connector
+
+Il connector è un documento JSON (`BasisBundleConnector`) che descrive il contenuto senza caricarlo:
+
+| Campo | Contenuto |
+| --- | --- |
+| `UniqueVersion` | Un ID di build. Cambia a ogni build. |
+| `BasisBundleDescription` | Nome, descrizione, tag, gruppo di contenuti e paternità (autore, contatto, licenza, crediti). |
+| `BasisBundleGenerated[]` | Una voce per sezione: piattaforma, modalità dell'asset, nome dell'asset, CRC, hash, lunghezza e API grafiche. |
+| `ImageBase64` | La miniatura mostrata nei menu e sulle content orb. |
+| `FarLodBase64` | Solo avatar: un piccolo sostituto disegnato a grande distanza. |
+| `DateOfCreation` | Ora della build (UTC). |
+| `Bounds` | Le dimensioni del contenuto, così può essere posizionato prima del caricamento. |
+| `MetaData` | Numero di triangoli, materiali e ossa, memoria delle texture, render pipeline, tipo di contenuto (Avatar, Prop o Scene), posizionamento di spawn dei prop e un conteggio di ogni tipo di componente. |
+
+Poiché il connector è piccolo e viene per primo, i menu possono mostrare nomi, miniature e statistiche di prestazioni dopo aver scaricato solo i primi kilobyte.
+
+## Sezioni
+
+Ogni voce `BasisBundleGenerated` descrive una sezione:
+
+| Campo | Significato |
+| --- | --- |
+| `Platform` | Il target di build, come `StandaloneWindows64` o `Android`. `Generic` indica il fallback glTF. |
+| `AssetMode` | `Scene` per i mondi, `GameObject` per avatar e prop, `GLTF` per il fallback generico. |
+| `AssetToLoadName` | La scena o il prefab da aprire dal bundle. |
+| `AssetBundleCRC`, `AssetBundleHash` | Controlli di integrità per il bundle Unity decifrato. |
+| `EndByte` | La lunghezza della sezione nel file. |
+| `AssetBundleEndByte` | Dove termina il bundle Unity all'interno della sezione decifrata, quando è seguito da dati aggiuntivi. |
+| `GraphicsStatePayloads` | Offset dei dati incorporati di prewarm degli shader per API grafica e livello di qualità. |
+
+Una sezione decifrata è un **AssetBundle** di Unity, eventualmente seguito da dati di **graphics state** usati per il prewarm degli shader, così il contenuto non scatta la prima volta che viene visto.
+
+La sezione **Generic** è solo per gli avatar: un `.glb` cifrato (glTF 2.0 binario) più i dati di configurazione dell'avatar. Un client la usa solo quando il file non ha una sezione per la sua piattaforma, così un avatar appare comunque sulle piattaforme per cui non è stato costruito.
+
+## Cifratura
+
+Il connector e ogni sezione vengono cifrati separatamente con la password del contenuto:
+
+- **Cifrario:** AES con una chiave a 256 bit.
+- **Chiave:** derivata dalla password con PBKDF2 (SHA-1, 10.000 iterazioni) e un salt casuale di 16 byte.
+- **Struttura di ogni blocco cifrato:** `salt (16 bytes) | IV (16 bytes) | ciphertext`.
+
+Le sezioni di oltre qualche megabyte vengono decifrate in blocchi paralleli. Una sezione decifrata può essere al massimo di circa 2 GB; il file nel suo complesso non ha questo limite, perché viene decifrata sempre una sola sezione.
+
+<Callout type="warn">
+La password protegge i contenuti dalla copia occasionale e ti permette di controllare chi può caricarli. Chiunque abbia l'URL e la password può decifrarli. Non inserire segreti nei contenuti.
+</Callout>
+
+## Come un client carica un BEE
+
+1. **Legge l'header** con una richiesta HTTP range: i primi 8 byte.
+2. **Scarica e decifra il connector.** I menu possono ora mostrare nome, miniatura e statistiche.
+3. **Scorre la tabella delle sezioni** per trovare quella per questa piattaforma, calcolandone l'intervallo di byte dalle lunghezze.
+4. **Scarica solo quella sezione** con una richiesta range. Le sezioni delle altre piattaforme non vengono mai scaricate.
+5. **La decifra**, controlla il CRC e carica l'AssetBundle (o costruisce l'avatar dal glTF).
+6. **Mette in cache** il file localmente, così alla visita successiva controlla solo se il contenuto è cambiato.
+
+Ecco perché un solo `.bee` può contenere build per Windows, Linux e Android senza costare ai giocatori Quest la dimensione del download della build per PC.
+
+## Hosting
+
+- Funziona qualsiasi host statico che supporti le **richieste HTTP range**.
+- Carica il `.bee` e condividi il suo URL e la sua password. La password è ciò che i giocatori o la tua load config usano per sbloccarlo.
+- Ricostruire produce un nuovo `UniqueVersion`, che permette ai client di distinguere le build. I client riconvalidano le copie in cache con l'host, quindi sostituire il file allo stesso URL lo aggiorna.

@@ -1,0 +1,152 @@
+---
+title: Gesynchroniseerde variabelen
+description: Een waarde voor iedereen gelijk houden met BasisSyncedParameters of een aangepast BasisSyncedObject, inclusief compressie en interpolatie.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Een gesynchroniseerde variabele is een waarde die de **eigenaar** schrijft en elke andere speler leest. Basis verstuurt die als een compacte deltastroom, interpoleert continue waarden aan de ontvangende kant en stuurt een volledig keyframe naar spelers die later binnenkomen. Je schrijft geen serialisatiecode.
+
+## Continu of betrouwbaar kiezen
+
+| Je hebt nodig | Gebruik |
+| --- | --- |
+| Een waarde die vaak verandert en vloeiend moet ogen (een hendel, een draaiknop, een kleurovergang) | Een gesynchroniseerde variabele met **Interpolate** aan. |
+| Een waarde die exact moet zijn en zelden verandert (een score, een modus, een vlag voor een open deur) | Een gesynchroniseerde variabele met **Interpolate** uit (`Int`, `Bool`, `Byte`), of een betrouwbaar [netwerkevent](/nl/docs/scripting/networking/network-events). |
+| Een bewegend object | [`BasisSyncedTransform`, `BasisSyncedRigidbody` of `BasisPickupSyncNetworking`](/nl/docs/scripting/networking/network-components). |
+
+<Callout type="warn">
+`BasisSyncedParameters` en je eigen `BasisSyncedObject`-subklassen staan niet op de standaard allowlists voor geüploade content, dus ze worden uit een `.bee` verwijderd, tenzij het type aan de content police selectors wordt toegevoegd. Synchroniseer in geüploade Cilbox-content waarden met [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox) en bewegende objecten met **Basis Synced Transform**.
+</Callout>
+
+## BasisSyncedParameters: geen serialisatiecode
+
+Voeg een **Basis Synced Parameters**-component toe en declareer benoemde parameters in de inspector. Elk heeft een type (`Float`, `Angle`, `Vector2`, `Vector3`, `Vector4`, `Color`, `Rotation`, `Int`, `UInt`, `UShort`, `Bool`, `Byte`), een **Interpolate**-vlag en compressie per as.
+
+Lees en schrijf ze daarna op naam vanuit elk script:
+
+```csharp title="Lever.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Lever : MonoBehaviour
+{
+    public BasisSyncedParameters sync;
+    public Transform handle;
+    int angleId;
+
+    void Start()
+    {
+        angleId = sync.GetParameterId("Angle");
+    }
+
+    public void SetAngleFromHand(float degrees)
+    {
+        if (!sync.IsLocalOwner()) sync.TakeOwnership();
+        sync.SetAngle(angleId, degrees);
+    }
+
+    void Update()
+    {
+        handle.localRotation = Quaternion.Euler(sync.GetAngle(angleId), 0f, 0f);
+    }
+}
+```
+
+- **Schrijfacties tellen alleen bij de eigenaar.** Neem het eigenaarschap voordat je schrijft (zie [Eigenaarschap](/nl/docs/scripting/networking/ownership)).
+- **Lezen werkt overal.** Bij de eigenaar krijg je de waarde die je hebt geschreven; bij alle anderen krijg je de geïnterpoleerde netwerkwaarde.
+- Zet de naam een keer om naar een id met `GetParameterId` en gebruik de id-overloads in `Update` om het opzoeken op naam over te slaan.
+
+Er zijn geen wijzigingscallbacks. Lees de waarde in `Update` en reageer wanneer die verschilt van wat je de vorige keer zag:
+
+```csharp
+int lastScore = -1;
+
+void Update()
+{
+    int score = sync.GetInt(scoreId);
+    if (score == lastScore) return;
+    lastScore = score;
+    scoreLabel.text = score.ToString();
+}
+```
+
+## Aangepast BasisSyncedObject
+
+Wanneer je waarden uit je eigen velden komen, leid je af van `BasisSyncedObject`. Registreer de velden in `Awake`, zet je live waarden klaar in `OnBeforeTransmit` (eigenaar) en lees ze terug op externe clients.
+
+```csharp title="Turret.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Turret : BasisSyncedObject
+{
+    public Transform barrel;
+    public float yaw;
+    public bool firing;
+
+    BasisSyncHandle yawHandle, firingHandle;
+
+    protected void Awake()
+    {
+        yawHandle = RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 12));
+        firingHandle = RegisterBool();
+    }
+
+    protected override void OnBeforeTransmit()
+    {
+        LocalSet(yawHandle, yaw);
+        LocalSet(firingHandle, firing);
+    }
+
+    void Update()
+    {
+        if (!IsOwnedLocallyOnClient)
+        {
+            yaw = GetFloat(yawHandle);
+            firing = GetBool(firingHandle);
+        }
+        barrel.localRotation = Quaternion.Euler(0f, yaw, 0f);
+    }
+}
+```
+
+<Callout type="warn">
+Registreer elk veld in `Awake`, voordat het object netwerkklaar wordt. De veldindeling is het wire-formaat, dus elke client moet dezelfde velden in dezelfde volgorde registreren.
+</Callout>
+
+`OnBeforeTransmit` draait alleen in de frames waarin daadwerkelijk een pakket verstuurd moet worden, niet elk frame, dus houd het een pure kopie van je waarden.
+
+Om een transform direct vanuit geregistreerde velden aan te sturen, roep je `BindTransform(target, position, rotation, scale, worldSpace)` aan; de driver past de geïnterpoleerde waarden dan toe in een job, zonder dat je `Update` draait.
+
+## Compressie
+
+Elke float kan onbewerkt worden verstuurd (32 bits), als halve precisie (16 bits) of **ranged**: een minimum, maximum en aantal bits. Een hendel tussen 0 en 90 graden heeft veel minder bits nodig dan een wereldpositie.
+
+```csharp
+RegisterFloat(BasisQuantSpec.Ranged(0f, 1f, 8));      // 0..1 in 256 steps
+RegisterFloat(BasisQuantSpec.Half);                    // 16 bit float
+RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
+```
+
+In `BasisSyncedParameters` is dezelfde keuze de instelling **Compression** op elke as.
+
+## Instellingen voor verzendfrequentie
+
+`BasisSyncedObject` toont zijn timing in de inspector:
+
+| Instelling | Standaard | Betekenis |
+| --- | --- | --- |
+| `SendIntervalSeconds` | 0.05 | Hoe vaak de eigenaar mag versturen (20 per seconde). Er wordt niets verstuurd zolang waarden ongewijzigd zijn. |
+| `KeyframeIntervalSeconds` | 0.5 | Hoe vaak een volledige status wordt verstuurd zodat verloren delta's herstellen. Vertraagt wanneer inactief. |
+| `DistanceReduction` | aan | Minder vaak versturen naar spelers die ver weg zijn. |
+| `RelevanceCulling` / `RelevanceRadius` | uit / 50 | Helemaal niet versturen naar spelers buiten de straal. |
+| `Extrapolate` | uit | Externe waarden kort laten doorbewegen wanneer pakketten laat zijn. |
+| `UseDirectP2P` | aan | Een directe peer-verbinding gebruiken wanneer die bestaat. |
+
+## Cilbox
+
+Een Cilbox-script kan niet afleiden van `BasisSyncedObject`. In geüploade content:
+
+- **Bewegende objecten:** voeg een **Basis Synced Transform**- of **Basis Pickup Sync Networking**-component toe. Geen script nodig.
+- **Waarden:** houd ze bij de eigenaar en verstuur ze als [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox), en stuur ze opnieuw naar [late joiners](/nl/docs/scripting/networking/late-joiners). Het voorbeeld [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) is het sjabloon.

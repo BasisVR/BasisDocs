@@ -1,0 +1,79 @@
+---
+title: Grundlagen
+description: Ihre ersten Basis-Skripte, ein rotierendes Objekt und ein UI-Button, als Cilbox-Skripte, die in einer Szene oder einem Prop ausgeliefert werden.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Einrichtung
+
+1. Erstellen Sie ein leeres GameObject und fügen Sie **Basis Scene** (für eine Welt) oder **Basis Prop** (für ein Prop) hinzu.
+2. Fügen Sie **Cilbox Scene Basis** (Welt) oder die passende Cilbox-Komponente für Ihren Inhaltstyp hinzu. Das ist die Sandbox, in der alle Skripte des Inhalts laufen.
+3. Fügen Sie Ihre Skripte zu Objekten darunter hinzu.
+
+<Callout type="info">
+Wenn Ihr Editor den Namespace `Cilbox` nicht finden kann, fügen Sie in Ihrer eigenen `.asmdef` eine Referenz auf die Cilbox-Assembly hinzu oder aktivieren Sie **Auto Referenced** an der Cilbox-Assembly.
+</Callout>
+
+## Ein rotierendes Objekt
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+Öffentliche Felder und `[SerializeField]`-Felder werden mit dem Inhalt gespeichert, sodass Sie sie im Inspector festlegen können.
+
+## Ein Button, der Text ändert
+
+1. Erstellen Sie ein World-Space-**Canvas** mit einem **Button** und einem **TextMeshPro - Text (UI)**.
+2. Fügen Sie dieses Skript zum Canvas hinzu und weisen Sie den Button und den Text zu.
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+Dieser Zähler ist lokal: Jeder Spieler hat seinen eigenen Zählerstand. Das Beispiel [Synchronisierter Schalter](/de/docs/scripting/examples/synced-toggle) erstellt einen Button, den alle teilen.
+
+## Testen
+
+Wechseln Sie in Ihrer Szene in den Play Mode. Basis ersetzt jedes `[Cilboxable]`-Skript durch einen `CilboxProxy`, sodass Sie genau das testen, was nach dem Hochladen läuft. Erstellen Sie dann den Inhalt und laden Sie ihn im Client, wie unter [Erstellen](/de/docs/world/building) beschrieben.

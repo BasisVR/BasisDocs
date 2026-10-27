@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Scripting biedt geavanceerde functionaliteit binnen het Basis-framework. Deze documentatie begeleidt je bij het maken, bouwen en testen van scripts met Unity en de Basis SDK.
 
-Basis maakt ook gebruik van het `Cilbox`-gesandboxed CIL-emulator Unity-pakket.
+## Native en Cilbox
+
+Basis kent twee soorten scripts:
+
+- **Native** scripts worden in de applicatie gecompileerd. Ze hebben de volledige Unity- en Basis-API en native snelheid, maar bestaan alleen in clients die ermee zijn gebouwd. Gebruik ze wanneer je een app of game op Basis bouwt.
+- **Cilbox** scripts zijn runtime-scripts. Ze worden meegeleverd in een wereld, prop of avatar, zijn gemarkeerd met `[Cilboxable]` en draaien in een sandbox op elke client die de content laadt. Gebruik ze voor gebruikerscontent.
+
+Zie [Native en Cilbox](/nl/docs/scripting/native-and-cilbox) voor de volledige vergelijking.
 
 ## Snelstartgids
 
 <Cards>
   <Card
+    title="Native en Cilbox"
+    description="Gecompileerd in de app versus runtime-scripts in content"
+    href="/nl/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="Scripting"
     description="Hoe scripts te gebruiken"
     href="/nl/docs/scripting/scripting"
+  />
+  <Card
+    title="Veelvoorkomend gebruik"
+    description="Spelers, invoer, UI, timers, gegevens laden, opslaan en menu's"
+    href="/nl/docs/scripting/common-usages"
+  />
+  <Card
+    title="Sandboxregels"
+    description="Valkuilen en prestatiekosten van Cilbox"
+    href="/nl/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="Avatar-scripting"
+    description="Scripts op avatars, de drager versus iedereen"
+    href="/nl/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="Netwerken"
+    description="Gesynchroniseerde variabelen, netwerkevents, eigenaarschap en late joiners"
+    href="/nl/docs/scripting/networking"
+  />
+  <Card
+    title="Voorbeelden"
+    description="Complete scripts voor veelvoorkomende wereld- en prop-functies"
+    href="/nl/docs/scripting/examples"
   />
   <Card
     title="OSC"

@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Скриптинг предоставляет расширенную функциональность в рамках Basis. Данная документация проведёт вас через создание, сборку и тестирование скриптов с помощью Unity и Basis SDK.
 
-Basis также использует пакет Unity `Cilbox` — эмулятор CIL в песочнице.
+## Native и Cilbox
+
+В Basis есть два вида скриптов:
+
+- Скрипты **Native** компилируются в само приложение. Им доступен полный API Unity и Basis и нативная скорость, но они существуют только в клиентах, собранных с ними. Используйте их, когда создаёте приложение или игру на Basis.
+- Скрипты **Cilbox** выполняются во время работы. Они поставляются внутри мира, пропа или аватара, помечены `[Cilboxable]` и работают в песочнице на любом клиенте, который загружает этот контент. Используйте их для пользовательского контента.
+
+Полное сравнение смотрите в разделе [Native и Cilbox](/ru/docs/scripting/native-and-cilbox).
 
 ## Руководство по быстрому старту
 
 <Cards>
   <Card
+    title="Native и Cilbox"
+    description="Компиляция в приложение против скриптов в контенте во время работы"
+    href="/ru/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="Скриптинг"
     description="Как использовать скрипты"
     href="/ru/docs/scripting/scripting"
+  />
+  <Card
+    title="Типичные задачи"
+    description="Игроки, ввод, UI, таймеры, загрузка данных, сохранение и меню"
+    href="/ru/docs/scripting/common-usages"
+  />
+  <Card
+    title="Правила песочницы"
+    description="Подводные камни Cilbox и затраты на производительность"
+    href="/ru/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="Скрипты на аватарах"
+    description="Скрипты на аватарах: владелец аватара и все остальные"
+    href="/ru/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="Сеть"
+    description="Синхронизированные переменные, сетевые события, владение и поздно подключившиеся игроки"
+    href="/ru/docs/scripting/networking"
+  />
+  <Card
+    title="Примеры"
+    description="Готовые скрипты для типичных функций миров и пропов"
+    href="/ru/docs/scripting/examples"
   />
   <Card
     title="OSC"

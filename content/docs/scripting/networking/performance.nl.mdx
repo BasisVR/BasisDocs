@@ -1,0 +1,37 @@
+---
+title: Prestaties en debuggen
+description: Genetwerkte content goedkoop houden, en objecten opsporen die uit sync raken.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Houd het goedkoop
+
+- **Verstuur status, geen frames.** Gesynchroniseerde variabelen versturen alleen wanneer waarden veranderen. Roep `SendCustomNetworkEvent` niet aan vanuit `Update`.
+- **Gebruik het kleinste type.** Een `Byte` of `Bool` in plaats van een `Int`, een ranged float in plaats van een onbewerkte.
+- **Gebruik onbetrouwbare levering voor gegevens met hoge frequentie.** Betrouwbare berichten worden opnieuw verzonden totdat ze aankomen, wat meer kost en vertraging toevoegt wanneer pakketten wegvallen.
+- **Laat `DistanceReduction` aan.** Spelers ver weg krijgen minder updates. Zet `RelevanceCulling` aan voor objecten die niemand buiten een ruimte hoeft te zien.
+- **Eén object, veel waarden.** Eén `BasisSyncedParameters` met tien waarden is goedkoper dan tien objecten met elk één waarde, omdat elk object zijn eigen header en keyframes meedraagt.
+- **Bundel events.** Pak meerdere wijzigingen in één bericht in, in plaats van één bericht per wijziging te versturen.
+
+<Callout type="info">
+Inactieve gesynchroniseerde objecten kosten bijna niets: er wordt niets verstuurd zolang waarden ongewijzigd zijn, en keyframes worden minder frequent. De kosten die je moet vermijden, zijn waarden die elk frame veranderen terwijl dat niet nodig is.
+</Callout>
+
+## Veelvoorkomende synchronisatiefouten
+
+| Symptoom | Gebruikelijke oorzaak |
+| --- | --- |
+| Werkt bij jou, niemand anders ziet het | De wijziging is lokaal toegepast en nooit verstuurd, of het object was nog niet netwerkklaar (`HasNetworkID` false). |
+| Late joiners zien de standaardstatus van de scène | De status is als event verstuurd en niet opnieuw verstuurd in `OnPlayerJoined`. Zie [Late joiners](/nl/docs/scripting/networking/late-joiners). |
+| Twee spelers vechten om een waarde | Ze schrijven het allebei. Alleen de eigenaar zou moeten schrijven; neem eigenaarschap wanneer een speler iets doet. |
+| De waarde springt terug nadat je die verandert | Je hebt een gesynchroniseerde variabele geschreven zonder eigenaar van het object te zijn, dus de stroom van de eigenaar heeft die overschreven. |
+| Alles wordt gereset wanneer iemand binnenkomt | Eigenaarschap wordt genomen in `Start` of `OnNetworkReady`, dus de nieuwkomer wordt eigenaar met standaardwaarden. |
+| Event-handlers worden twee keer aangeroepen | Geabonneerd in `Start` en opnieuw in `OnEnable`, of nooit afgemeld in `OnDestroy`. |
+
+## Hulpmiddelen
+
+- **Inspectors in play mode.** De inspectors van gesynchroniseerde objecten, pickups en stoelen tonen de eigenaar, netwerk-ID, bufferdiepte en bytes per seconde.
+- **Synchronisatie-gizmo's.** Externe gesynchroniseerde objecten tekenen waar ze waren en waar ze naartoe gaan, wat interpolatie en extrapolatie in één oogopslag laat zien.
+- **Meerdere clients.** Bouw een client en draai die naast de editor, beide verbonden met een lokale server. Zie [Testen](/nl/docs/world/testing).
+- **`BasisStatsShim`** (Cilbox) rapporteert de round trip time en het aantal seconden sinds het laatste pakket, handig voor het tonen van een "opnieuw verbinden"-bord.

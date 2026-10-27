@@ -1,0 +1,75 @@
+---
+title: 沙盒規則
+description: 從 API 上看不出來的 Cilbox 規則，以及需要事先規劃的效能成本。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox 會在沙盒內直譯您腳本的編譯後程式碼。大多數 C# 都能運作，但以下規則幾乎每個人都會踩到一次。
+
+## 生命週期
+
+- **沒有 `LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 或協程。** 請使用 `Update` 和[延遲事件](/tw/docs/scripting/common-usages#timers-and-delayed-events)。
+- **第一次的 `OnEnable` 會被丟棄。** 請在 `Start` 中設定，在 `OnDestroy` 中清理。
+- **不要繼承 `BasisNetworkBehaviour`。** 取代您腳本的代理物件並不是它。請使用 `BasisNetworkShim`（請參閱[網路事件](/tw/docs/scripting/networking/network-events#cilbox)）。
+
+## 結構是共用的，而非複製
+
+將 Unity 結構（`Vector3`、`Quaternion`、`Color`）複製到變數中，會共用同一個值。修改複本上的欄位也會修改原始值。
+
+```csharp
+// Wrong: also moves `target`.
+Vector3 p = target;
+p.y = 0f;
+
+// Right: build a new value.
+Vector3 p = new Vector3(target.x, 0f, target.z);
+```
+
+- 對陣列執行 `points[i].x = 5f` 會無聲無息地失效。請寫成 `points[i] = new Vector3(5f, points[i].y, points[i].z)`。
+- `points[i] += offset` 會擲出例外。請寫成 `points[i] = points[i] + offset`。
+- 來自 Unity 呼叫和運算子的值（`a + b`、`transform.position`、`new Vector3(...)`）都是全新的，可以安全修改。
+
+## 呼叫與權限
+
+- **白名單中的類型會允許其所有公開方法**，除非該類型另外設有方法限制。**欄位預設被拒絕**，除非有列出。
+- **參數、泛型和回傳類型也會被檢查。** 一個呼叫可能通過名稱檢查，卻仍因其中某個類型而遭拒絕。
+- **`this.GetComponent` 永遠可用。** `gameObject.GetComponent` 受到限制，且道具沙盒不允許用它走訪階層。
+- **`AddComponent`、`SendMessage` 和 `BroadcastMessage` 永遠被封鎖。** Cilbox 會在 `GetComponent` 時為您加入 `BasisNetworkShim` 和事件 shim。
+- **沙盒的 `Debug` 中不存在 `Debug.DrawLine` 和 `Debug.DrawRay`**，引用它們會導致內容中的所有腳本都無法載入。
+- **常數是免費的。** `const` 不需要白名單項目。
+
+## 事件與委派
+
+每次將方法作為委派使用時，它都會變成新的包裝器，因此 `-=` 可能無法移除您先前加入的那一個。對於壽命比您的腳本更長的發布者，請在 `Update` 中輪詢數值，而不是訂閱。
+
+## Content police
+
+內容中任何既不是 `[Cilboxable]`、也不在允許清單上的元件，都會**在載入時被摧毀**。轉換腳本和允許元件是兩件不同的事。請參閱[允許的元件](/tw/docs/scripting/allowed-components)。
+
+## 虛擬形象腳本會在每個人的電腦上執行
+
+虛擬形象上的每個 Cilbox 腳本都會在每個載入該虛擬形象的客戶端上執行，上限為每個虛擬形象的行為數量限制。只限穿戴者的邏輯請以 `avatar.IsOwnedLocally` 判斷（請參閱[虛擬形象腳本](/tw/docs/scripting/avatar-scripting)）。
+
+## 效能
+
+直譯程式碼比原生程式碼慢很多。在桌上型電腦上的大致成本：
+
+| 操作 | 成本 |
+| --- | --- |
+| 浮點數的簡單算術 | 約 15 ns |
+| 呼叫您自己的方法 | 約 270 ns |
+| `Vector3` 運算子（`a + b`） | 約 1.7 µs，外加垃圾回收 |
+| Unity 呼叫，例如 `Mathf.Sqrt` | 約 0.9 µs |
+
+因此：
+
+- **在事件發生時處理工作，而不是每一幀。** 每秒檢查計時器、距離和 UI 幾次即可。
+- **在迴圈中優先使用浮點數，而非 `Vector3` 運算。** 在熱迴圈中做向量運算，大約比用個別浮點數做同樣的運算慢 100 倍。
+- **讓元件負責繁重的工作。** Animator、粒子系統、物理和約束都以原生方式執行。
+- **使用物件池**，而不是每次射擊都呼叫 `Instantiate`。
+- **批次處理變換工作。** `BasisTransformSyncShim` 可在一次呼叫中讀取、寫入或複製整個變換陣列，`BasisBlendShapeSyncShim` 則對 blendshape 做同樣的事。
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions** 會顯示每個沙盒的白名單，其 **Script Check** 分頁會在您上傳前掃描腳本中被封鎖的呼叫。
+</Callout>

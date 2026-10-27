@@ -1,0 +1,67 @@
+---
+title: Миникарта
+description: Живая миникарта с видом сверху, которая следует за локальным игроком, на основе камеры, render texture и необязательной маски через Graphics.Blit.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Настройка
+
+1. Создайте ассет **Render Texture**, например 512 x 512.
+2. Создайте **Camera**, смотрящую строго вниз. Установите **Projection** в Orthographic, **Target Texture** в эту render texture, а **Culling Mask** настройте так, чтобы исключить игроков и UI.
+3. Покажите render texture на **Raw Image** в canvas или на материале.
+4. Добавьте **Minimap** на камеру.
+
+## Скрипт
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Круглая карта с Graphics.Blit
+
+Чтобы обрезать квадратную текстуру до круга, каждый кадр выполняйте blit через материал. `Graphics.Blit` это единственный вызов отрисовки, доступный скриптам Cilbox.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+Камера миникарты рендерит сцену второй раз. Держите её render texture маленькой, culling mask узкой и отключайте её на низких уровнях качества с помощью `BasisGraphicsSettingsShim.QualityTier`.
+</Callout>

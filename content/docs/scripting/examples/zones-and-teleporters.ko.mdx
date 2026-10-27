@@ -1,0 +1,139 @@
+---
+title: 구역과 텔레포터
+description: 로컬 플레이어가 영역 안에 있는지 감지하고, 텔레포트시키고, 날려 보내고, 로비의 플레이어 수를 세는 방법.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 로컬 플레이어 구역
+
+로컬 플레이어의 위치를 트리거의 바운드와 비교하여 폴링하는 방법은 Native와 Cilbox 스크립트에서 똑같이 작동하며 물리 레이어에 의존하지 않습니다.
+
+```csharp title="LocalPlayerZone.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LocalPlayerZone : MonoBehaviour
+{
+    public Collider area;
+    public GameObject showWhileInside;
+    bool inside;
+
+    void Start()
+    {
+        showWhileInside.SetActive(false);
+    }
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        bool now = area.bounds.Contains(position);
+        if (now == inside) return;
+        inside = now;
+        showWhileInside.SetActive(inside);
+    }
+}
+```
+
+<Callout type="info">
+영역 안에서 이동 방식을 바꾸려면(낮은 중력, 비행, 더 빠른 걷기) com.basis.examples의 **Basis Locomotion Zone** 컴포넌트를 사용하세요. 코드가 필요 없습니다.
+</Callout>
+
+## 텔레포터
+
+발판이나 버튼에 추가하세요. 텔레포트는 로컬 플레이어에게만 영향을 주므로 네트워킹이 필요 없습니다. 모든 플레이어가 각자 자신을 텔레포트합니다.
+
+```csharp title="Teleporter.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Teleporter : MonoBehaviour
+{
+    public Collider pad;
+    public Transform destination;
+    bool wasOnPad;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        bool onPad = pad.bounds.Contains(position);
+        if (onPad && !wasOnPad) TeleportNow();
+        wasOnPad = onPad;
+    }
+
+    public void TeleportNow()
+    {
+        BasisLocalPlayer.Instance.Teleport(destination.position, destination.rotation, BasisTeleportMode.Instant);
+    }
+}
+```
+
+## 트램펄린
+
+`BasisVelocityShim`은 월드에서 사용할 수 있습니다. 수평 속도는 유지하고 낙하를 튕김으로 바꿉니다.
+
+```csharp title="Trampoline.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Trampoline : MonoBehaviour
+{
+    public Collider surface;
+    public float bounce = 9f;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        if (!surface.bounds.Contains(position)) return;
+        Vector3 velocity = BasisVelocityShim.Velocity;
+        if (velocity.y > 0.5f) return;
+        BasisVelocityShim.SetVelocity(new Vector3(velocity.x, bounce, velocity.z));
+    }
+}
+```
+
+## 로비 인원 수
+
+로비 영역에 몇 명의 플레이어가 서 있는지 보여줍니다. 모든 클라이언트가 플레이어 위치로부터 직접 세므로 메시지가 필요 없습니다.
+
+```csharp title="LobbyCounter.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class LobbyCounter : MonoBehaviour
+{
+    public Transform center;
+    public float radius = 4f;
+    public int needed = 4;
+    public TextMeshPro label;
+    float nextCheck;
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 0.5f;
+        int count = 0;
+        foreach (IBasisPlayer player in BasisPlayersShim.Within(center.position, radius)) count++;
+        label.text = count >= needed ? "Ready!" : $"{count} / {needed} players";
+    }
+}
+```
+
+표지판에는 매 프레임이 아니라 초당 두 번 확인하는 것으로 충분합니다.

@@ -1,0 +1,94 @@
+---
+title: Interruptor sincronizado
+description: Un botón que activa o desactiva un objeto para todos los jugadores, incluidos los que se unen más tarde.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Este es el script en red completo más pequeño: un byte de estado, enviado cuando cambia y reenviado a cualquiera que se una.
+
+## Configuración
+
+1. Cree un canvas en espacio de mundo con un **Button**.
+2. Añada **SyncedToggle** al canvas. Asigne el botón y el objeto que se va a alternar (una luz, un espejo, una puerta).
+
+## Script
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## Cómo funciona
+
+- **Al pulsar**, el script toma la propiedad, invierte el valor localmente para que quien pulsa lo vea al instante y envía el nuevo valor a todos los demás.
+- **`ReliableSequenced`** garantiza que llegue el valor más reciente y descarta los anteriores, que es exactamente lo adecuado para un interruptor.
+- **Un jugador que se une** recibe el valor actual solo del propietario. Como el mensaje contiene todo el estado, el mismo `OnMessage` gestiona tanto los cambios en vivo como la puesta al día.
+
+<Callout type="info">
+Versión nativa: derive de `BasisNetworkBehaviour`, sustituya los eventos del shim por sobrescrituras de `OnNetworkMessage` y `OnPlayerJoined`, y llame directamente a `TakeOwnership()` y `SendCustomNetworkEvent`.
+</Callout>

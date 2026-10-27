@@ -1,0 +1,99 @@
+---
+title: 渲染與音訊
+description: BasisGraphicsSettingsShim、BasisStatsShim、BasisComputeShim、BasisPlatformShim、BasisVoiceRoutingShim 與 VideoPlayerShim。
+---
+
+## BasisGraphicsSettingsShim
+
+讀取玩家的圖形設定。等級以數字表示，最低成本的在前：從 `TierVeryLow` 0 到 `TierUltra` 4。
+
+```csharp
+using Basis.Shims;
+
+int quality = BasisGraphicsSettingsShim.QualityTier;
+int shadows = BasisGraphicsSettingsShim.ShadowTier;
+float resolution = BasisGraphicsSettingsShim.RenderResolution;
+
+mirror.SetActive(quality >= BasisGraphicsSettingsShim.TierHigh);
+bool hdr = BasisGraphicsSettingsShim.GetFlag(BasisGraphicsSettingsShim.KeyHdrSupport, false);
+string[] readable = BasisGraphicsSettingsShim.ReadableKeys;
+```
+
+## BasisStatsShim
+
+玩家自己的效能疊加層所顯示的內容。只有在腳本持續讀取時才會測量，因此請輪詢它。
+
+```csharp
+float fps = BasisStatsShim.FramesPerSecond;
+float target = BasisStatsShim.TargetFramesPerSecond;
+if (target > 0f && fps < target * 0.8f)
+{
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) particles.SetActive(false);
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu) crowd.SetActive(false);
+}
+
+bool online = BasisStatsShim.IsConnected;
+int ping = BasisStatsShim.RoundTripTimeMs;
+bool stalled = BasisStatsShim.SecondsSinceLastPacket > 2f;
+int maxPlayers = BasisStatsShim.PlayerLimit;
+```
+
+## BasisComputeShim
+
+Compute shader 可透過一般的 `ComputeShader` 與 `ComputeBuffer` 呼叫來使用。此 shim 會回報是否支援以及您的預算。
+
+```csharp
+if (!BasisComputeShim.IsSupported) { fallback.SetActive(true); return; }
+long bytesLeft = BasisComputeShim.RemainingBytes(this);
+long threadsLeft = BasisComputeShim.RemainingThreads(this);
+```
+
+超出記憶體預算的緩衝區會擲回例外；超出該幀執行緒預算的 dispatch 會被略過。內容卸載時，Basis 會釋放所有緩衝區。
+
+## BasisPlatformShim
+
+```csharp
+bool vr = BasisPlatformShim.IsVR;
+bool desktop = BasisPlatformShim.IsDesktop;
+bool mobile = BasisPlatformShim.IsMobileGpu;
+bool worn = BasisPlatformShim.IsHeadsetWorn;
+string platform = BasisPlatformShim.Platform;
+bool android = BasisPlatformShim.IsDetected("Android");
+string[] conditions = BasisPlatformShim.Conditions;
+```
+
+## BasisVoiceRoutingShim
+
+從物件播放玩家的語音，例如連接到揚聲器的舞台麥克風。會先檢查同意，而且無法略過。
+
+```csharp
+using Basis.Scripts.Networking.NetworkedAvatar;
+
+int route = -1;
+
+public void StartBroadcast(BasisNetworkPlayer speaker)
+{
+    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
+    route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
+}
+
+public void StopBroadcast()
+{
+    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = -1;
+}
+```
+
+## VideoPlayerShim
+
+照常撰寫 `VideoPlayer`；沙盒會換上一個在載入 URL 之前先詢問玩家的版本。
+
+```csharp
+using UnityEngine.Video;
+
+var video = GetComponent<VideoPlayer>();
+video.url = "https://example.com/trailer.mp4";
+video.Play();
+```
+
+若要同步播放影片，請使用 **Basis Media Player** 元件（[媒體播放器](/tw/docs/world/media-player)）。腳本可以讀取它的 `OutputTexture`；播放控制則被封鎖，以免 URL 提示被略過。

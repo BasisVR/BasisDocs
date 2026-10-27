@@ -1,0 +1,38 @@
+---
+title: Handtaschenlampe
+description: Eine Taschenlampe, die mit BasisBeforeRenderShim und Controller-Eingabe ohne Verzögerung an der Hand des lokalen Spielers fixiert ist.
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- Würden Sie die Position in `Update` schreiben, würde sie in VR der Hand um einen Frame hinterherhinken, weil die IK später fertig wird. `OnBeforeRender` läuft nach der IK.
+- Das Licht ist lokal: Jeder Spieler bekommt sein eigenes, und andere sehen es nicht.

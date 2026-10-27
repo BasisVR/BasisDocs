@@ -1,0 +1,80 @@
+---
+title: Instellingentabblad
+description: Wereldopties toevoegen aan het instellingenmenu van de speler met BasisMenuShim, en ze onthouden met BasisSaveShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` voegt een tabblad toe aan de instellingen van de speler zolang je content geladen is. Het tabblad verdwijnt wanneer de wereld wordt ontladen.
+
+## Script
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Een heel paneel
+
+Voeg voor een gamemenu in plaats van opties een paneel toe. Dat krijgt een eigen knop in het menu en kan meerdere tabbladen hebben.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt, zodat content niet uit zichzelf menu's kan openen.
+
+## Regels
+
+- **Wie een tabblad mag toevoegen:** werelden, props die de lokale speler heeft gespawnd, en de eigen avatar van de lokale speler. `null` betekent geweigerd; controleer dat.
+- **Opties zijn lokaal.** Elke speler stelt die zelf in. Synchroniseer een keuze alleen als die de wereld voor iedereen moet veranderen.
+- **Onthoud keuzes** met [BasisSaveShim](/nl/docs/scripting/examples/persistence) als ze het volgende bezoek moeten overleven.
+
+<Callout type="info">
+Voeg op een avatar het tabblad toe vanuit `BasisAvatarShim.OnAvatarReady` wanneer `isOwner` true is, zodat alleen de drager het krijgt.
+</Callout>

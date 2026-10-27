@@ -1,0 +1,102 @@
+---
+title: NPC-Verfolgung
+description: Ein Navigation-Mesh-Agent, der dem nächsten Spieler folgt, von einem Besitzer simuliert und an alle anderen gesendet.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Navigation ist in Welten verfügbar (nicht in Props oder Avataren).
+
+## Einrichtung
+
+1. Backen Sie ein NavMesh für Ihre begehbaren Böden (**Window > AI > Navigation**).
+2. Erstellen Sie den NPC mit einem **NavMeshAgent** und fügen Sie **NpcFollow** hinzu.
+
+## Skript
+
+```csharp title="NpcFollow.cs (Cilbox, world)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.AI;
+
+[Cilboxable]
+public class NpcFollow : MonoBehaviour
+{
+    public NavMeshAgent agent;
+    public float stopDistance = 1.5f;
+
+    BasisNetworkShim net;
+    float nextPath, nextSend;
+    Vector3 remotePosition;
+    float remoteYaw;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.RequestOwnershipIfNone();
+        remotePosition = transform.position;
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void Update()
+    {
+        bool owner = net.HasNetworkID && net.IsOwnedLocallyOnServer;
+        agent.enabled = owner;
+        if (!owner)
+        {
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, remotePosition, Time.deltaTime * 10f), Quaternion.Euler(0f, remoteYaw, 0f));
+            return;
+        }
+        if (Time.time >= nextPath)
+        {
+            nextPath = Time.time + 0.5f;
+            IBasisPlayer target = BasisPlayersShim.Nearest(transform.position);
+            if (target != null)
+            {
+                Vector3 goal = target.GetPosition();
+                if ((goal - transform.position).sqrMagnitude < stopDistance * stopDistance) agent.ResetPath();
+                else agent.SetDestination(goal);
+            }
+        }
+        if (Time.time >= nextSend)
+        {
+            nextSend = Time.time + 0.1f;
+            Vector3 p = transform.position;
+            byte[] data = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(p.x), 0, data, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.y), 0, data, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.z), 0, data, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(transform.eulerAngles.y), 0, data, 12, 4);
+            net.SendCustomNetworkEvent(data, DeliveryMethod.Sequenced);
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 16) return;
+        remotePosition = new Vector3(BitConverter.ToSingle(buffer, 0), BitConverter.ToSingle(buffer, 4), BitConverter.ToSingle(buffer, 8));
+        remoteYaw = BitConverter.ToSingle(buffer, 12);
+    }
+}
+```
+
+## Funktionsweise
+
+- **Eine Simulation.** Nur der Besitzer führt den Agent aus; alle anderen deaktivieren ihn und bewegen sich sanft zur empfangenen Position. Würden zwei Clients denselben NPC navigieren, kämen sie sich in die Quere.
+- **`Sequenced`-Zustellung** verwirft verspätete Pakete, sodass eine alte Position nie eine neuere überschreibt. Zehn Updates pro Sekunde reichen mit Glättung völlig aus.
+- **Kein Code für Late Joiner.** Das nächste Update kommt innerhalb von 0,1 Sekunden an.
+- **Besitzerwechsel kosten nichts.** Verlässt der Besitzer die Sitzung, aktiviert der neue Besitzer seinen Agent an der zuletzt empfangenen Position.
+
+<Callout type="info">
+Prüfen Sie unter **Basis > Tools > Cilbox Permissions**, ob `Buffer` und `BitConverter` in Ihrer Sandbox erlaubt sind; `BinaryWriter` (siehe [Network Events](/de/docs/scripting/networking/network-events#packing-a-payload)) funktioniert ebenfalls.
+</Callout>

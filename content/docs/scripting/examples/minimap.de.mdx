@@ -1,0 +1,67 @@
+---
+title: Minimap
+description: Eine live mitlaufende Minimap aus der Vogelperspektive, die dem lokalen Spieler folgt, mit einer Kamera, einer Render Texture und einer optionalen Graphics.Blit-Maske.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Einrichtung
+
+1. Erstellen Sie ein **Render Texture**-Asset, zum Beispiel 512 x 512.
+2. Erstellen Sie eine **Camera**, die senkrecht nach unten blickt. Stellen Sie **Projection** auf Orthographic, **Target Texture** auf die Render Texture und eine **Culling Mask** ein, die Spieler und UI ausschließt.
+3. Zeigen Sie die Render Texture auf einem **Raw Image** in einem Canvas oder auf einem Material an.
+4. Fügen Sie der Kamera **Minimap** hinzu.
+
+## Skript
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Runde Karte mit Graphics.Blit
+
+Um die quadratische Textur zu einem Kreis zu maskieren, blitten Sie sie in jedem Frame durch ein Material. `Graphics.Blit` ist der einzige Zeichenaufruf, der Cilbox-Skripten zur Verfügung steht.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+Eine Minimap-Kamera rendert die Szene ein zweites Mal. Halten Sie ihre Render Texture klein und ihre Culling Mask eng, und schalten Sie sie auf niedrigen Qualitätsstufen mit `BasisGraphicsSettingsShim.QualityTier` ab.
+</Callout>

@@ -1,0 +1,79 @@
+---
+title: Basisprincipes
+description: Je eerste Basis-scripts, een draaiend object en een UI-knop, als Cilbox-scripts die in een scène of prop worden meegeleverd.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup
+
+1. Maak een leeg GameObject aan en voeg **Basis Scene** (voor een wereld) of **Basis Prop** (voor een prop) toe.
+2. Voeg **Cilbox Scene Basis** (wereld) of het bijbehorende Cilbox-component voor jouw contenttype toe. Dit is de sandbox waarin alle scripts in de content draaien.
+3. Voeg je scripts toe aan objecten daaronder.
+
+<Callout type="info">
+Als je editor de namespace `Cilbox` niet kan vinden, voeg dan een verwijzing naar de Cilbox-assembly toe in je eigen `.asmdef`, of zet **Auto Referenced** aan op de Cilbox-assembly.
+</Callout>
+
+## Een draaiend object
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+Publieke velden en `[SerializeField]`-velden worden met de content opgeslagen, zodat je ze in de inspector kunt instellen.
+
+## Een knop die tekst verandert
+
+1. Maak een **Canvas** in wereldruimte aan met een **Button** en een **TextMeshPro - Text (UI)**.
+2. Voeg dit script toe aan het canvas en wijs de knop en de tekst toe.
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+Deze teller is lokaal: elke speler heeft zijn eigen telling. Het voorbeeld [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) maakt een knop die iedereen deelt.
+
+## Testen
+
+Ga naar play mode in je scène. Basis vervangt elk `[Cilboxable]`-script door een `CilboxProxy`, dus je test precies wat er na het uploaden draait. Bouw daarna de content en laad die in de client zoals beschreven in [Bouwen](/nl/docs/world/building).

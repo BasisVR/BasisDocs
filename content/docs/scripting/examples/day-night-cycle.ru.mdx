@@ -1,0 +1,33 @@
+---
+title: Смена дня и ночи
+description: Солнце, движущееся по серверным часам, чтобы каждый игрок видел одно и то же время суток без сетевого кода.
+---
+
+Цикл дня на основе `Time.time` расходится между игроками, которые подключились в разные моменты. Если управлять им от серверных часов, все остаются синхронными бесплатно.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- Ни владения, ни кода для поздно подключившихся: общим состоянием являются сами часы.
+- В тяжёлой сцене обновляйте солнце несколько раз в секунду, а не каждый кадр.

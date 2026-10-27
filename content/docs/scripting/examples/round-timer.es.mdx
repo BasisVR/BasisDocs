@@ -1,0 +1,65 @@
+---
+title: Temporizador de ronda
+description: Una cuenta atrás que todos ven sincronizada. El propietario envía la hora de fin una vez y cada cliente cuenta hacia atrás con el reloj del servidor.
+---
+
+Enviar los segundos restantes en cada fotograma desperdicia ancho de banda y se desincroniza. Envíe la **hora de fin** una vez y deje que cada cliente cuente hacia atrás con el reloj compartido del servidor.
+
+```csharp title="RoundTimer.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class RoundTimer : MonoBehaviour
+{
+    public float roundSeconds = 120f;
+    public TextMeshPro label;
+
+    BasisNetworkShim net;
+    double endTime;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void StartRound()
+    {
+        net.TakeOwnership();
+        endTime = BasisNetworkTimeShim.ServerTimeSeconds + roundSeconds;
+        Send(null);
+    }
+
+    void Send(ushort[] to)
+    {
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(BitConverter.GetBytes(endTime), DeliveryMethod.ReliableOrdered, to);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data != null && data.Length == 8) endTime = BitConverter.ToDouble(data, 0);
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        double left = endTime - BasisNetworkTimeShim.ServerTimeSeconds;
+        label.text = left > 0 ? $"{(int)left / 60}:{(int)left % 60:00}" : "Round over";
+    }
+}
+```
+
+- Un mensaje por ronda, dure lo que dure.
+- Los que se unen tarde reciben la hora de fin y muestran de inmediato la cuenta atrás correcta.

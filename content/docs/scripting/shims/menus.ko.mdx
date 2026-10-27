@@ -1,0 +1,64 @@
+---
+title: 메뉴
+description: BasisMenuShim, 헤더, 라벨, 버튼, 토글, 슬라이더, 드롭다운이 있는 설정 탭과 메뉴 패널.
+---
+
+`BasisMenuShim`은 플레이어 자신의 메뉴에 UI를 추가합니다. 두 호출 모두 거부되면 null을 반환하므로 항상 확인하세요.
+
+| 호출 | 추가되는 것 |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | 플레이어 설정의 탭(콘텐츠당 최대 4개). |
+| `BasisMenuShim.AddPanel(this, title)` | 자체 메뉴 버튼이 있는 패널(콘텐츠당 1개, 탭 최대 8개). |
+
+## 페이지 만들기
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## 나중에 항목 변경하기
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+페이지: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab`(패널), `IsOpen`, `Open()`.
+
+## 패널 열기
+
+`Open()`은 플레이어가 콘텐츠에서 무언가를 누른 뒤 5초 이내에만 동작하므로, 콘텐츠가 스스로 메뉴를 띄울 수 없습니다.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+제한: 페이지당 항목 64개, 드롭다운 옵션 32개, 제목 48자. 더 보기: [설정 탭 예제](/ko/docs/scripting/examples/settings-tab).

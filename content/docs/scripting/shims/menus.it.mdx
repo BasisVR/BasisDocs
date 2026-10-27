@@ -1,0 +1,64 @@
+---
+title: Menu
+description: BasisMenuShim, schede delle impostazioni e pannelli del menu con intestazioni, etichette, pulsanti, interruttori, slider e menu a tendina.
+---
+
+`BasisMenuShim` aggiunge UI al menu del giocatore. Entrambe le chiamate restituiscono null quando vengono rifiutate, quindi controlla sempre.
+
+| Chiamata | Aggiunge |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Una scheda nelle impostazioni del giocatore (fino a 4 per contenuto). |
+| `BasisMenuShim.AddPanel(this, title)` | Un pannello con un proprio pulsante nel menu (uno per contenuto, fino a 8 schede). |
+
+## Costruire una pagina
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Modificare gli elementi in seguito
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Pagine: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (pannelli), `IsOpen` e `Open()`.
+
+## Aprire un pannello
+
+`Open()` funziona solo entro 5 secondi da quando il giocatore ha premuto qualcosa nel tuo contenuto, così un contenuto non può aprire menu da solo.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Limiti: 64 elementi per pagina, 32 opzioni per menu a tendina, titoli di 48 caratteri. Altro: [esempio di scheda delle impostazioni](/it/docs/scripting/examples/settings-tab).

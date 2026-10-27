@@ -1,0 +1,32 @@
+---
+title: Willekeurige buit
+description: Een buitkist die elke speler hetzelfde willekeurige voorwerp toont zonder een bericht te versturen, met BasisSharedRandomShim.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- Elke 10 minuten servertijd gooit de kist opnieuw, en elke client gooit hetzelfde voorwerp.
+- Geef elke kist een eigen `seed` zodat ze niet allemaal hetzelfde tonen.
+- Voor een worp die een speler zelf start, stuur je alleen het rondenummer als netwerkevent en laat je elke client `RangeInt(seed, round, ...)` berekenen.

@@ -1,0 +1,115 @@
+---
+title: オーナーシップ
+description: ネットワーク化されたオブジェクトを誰が所有するか、オーナーシップの取得と確認の方法、移譲への反応の仕方、オーナーが退出したときに起きること。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+ネットワーク化されたすべてのオブジェクトには、最大1人の**オーナー**がいます。オーナーとは、そのコピーが正となるプレイヤーです。オーナーが同期変数を書き込み、物理をシミュレーションし、途中参加者が受け取るのもオーナーのバージョンです。他の全員はそれに従います。
+
+オーナーシップはサーバーが決定するため、2人のプレイヤーが同時に1つのオブジェクトを所有することはありません。
+
+## オーナーシップの読み取り
+
+| メンバー | 意味 |
+| --- | --- |
+| `IsLocalOwner()` | 自分が所有していることをサーバーが確認したときにtrue。判断にはこれを使用してください。 |
+| `IsOwnedLocallyOnServer` | 上と同じものをフィールドとして提供します。Cilboxで利用できます。 |
+| `IsOwnedLocallyOnClient` | サーバーが応答する前、オーナーシップを**要求**した瞬間に設定されます。往復の通信を待たずにオブジェクトの操作を始められます。 |
+| `CurrentOwnerId` | オーナーのプレイヤーID。 |
+| `currentOwnedPlayer` | `BasisNetworkPlayer`としてのオーナー。 |
+| `HasNetworkID` | オブジェクトがネットワーク準備完了になるまでfalse。それまではオーナーシップに意味はありません。 |
+
+## オーナーシップの取得
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+`TakeOwnership()`は、他の誰かが所有していてもオブジェクトを取得します。結果を知る必要がある場合は、非同期版をawaitしてください。
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+取得せずに誰が所有しているかを問い合わせる:
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+オーナーシップは、プレイヤーがオブジェクトに対して**行動した**瞬間に取得してください。掴んだとき、ボタンを押したとき、座ったときなどです。`Start`や`OnNetworkReady`で取得しないでください。すべてのプレイヤーが読み込み時に取得しようとし、最後の1人が勝つことになります。
+</Callout>
+
+## 移譲への反応
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## 最初に誰がオブジェクトを所有するか
+
+ネットワーク化されたオブジェクトがサーバーに初めて認識されたとき、それについて最初に問い合わせたプレイヤーがオーナーになります。実際にはインスタンス内の最初のプレイヤーです。`BasisNetworkShim`の`RequestOwnershipIfNone()`はサーバーに問い合わせ、誰も所有していない場合にのみオーナーシップを取得します。
+
+## オーナーが退出したとき
+
+オーナーが切断すると、サーバーはそのオーナーの各オブジェクトを、**インスタンスに残っている中で最も長く接続しているプレイヤー**に渡します。全員が`OnOwnershipTransfer`を受け取り、新しいオーナーはすでに持っていた状態から続行します。スクリプトは退出ではなく、移譲に反応するだけで構いません。
+
+## パターン
+
+**オーナーが処理を行い、全員が結果を表示する。** 物理、タイマー、ゲームルールはオーナー上でのみ実行します。他のプレイヤーは同期変数を読み取るか、イベントを受け取ります。
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**オーナーを通して要求する。** オーナーでないプレイヤーが、オーナーシップを奪わずに共有状態を変更する必要がある場合（他の人のスコアボードにポイントを追加するなど）は、オーナーにイベントを送り、オーナーに適用させます。
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**ピックアップは自動的にオーナーシップを取得する。** `BasisPickupSyncNetworking`は掴まれたときにオーナーシップを取得します。他のプレイヤーが誰かの手からアイテムを奪えないようにするには、`CanNetworkSteal`をオフにしてください。

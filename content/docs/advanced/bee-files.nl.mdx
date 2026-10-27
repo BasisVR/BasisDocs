@@ -1,0 +1,92 @@
+---
+title: Binnen een BEE-bestand
+description: Wat een .bee-bestand bevat, hoe het op schijf is ingedeeld, hoe het is versleuteld en hoe een client alleen het deel downloadt dat die nodig heeft.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Een `.bee`-bestand (Basis Encrypted Experience) is het enkele bestand waarin elke wereld, prop en avatar wordt uitgeleverd. Het bevat een beschrijving van de content plus één Unity-build per platform, allemaal versleuteld met het wachtwoord dat je bij het bouwen instelt.
+
+## Indeling
+
+```
+┌──────────────────────────────┐
+│ Header: connector length     │  8 bytes, little endian Int64
+├──────────────────────────────┤
+│ Connector (encrypted JSON)   │  metadata, sections table
+├──────────────────────────────┤
+│ Section 1 (encrypted)        │  e.g. StandaloneWindows64
+├──────────────────────────────┤
+│ Section 2 (encrypted)        │  e.g. Android
+├──────────────────────────────┤
+│ ...                          │
+└──────────────────────────────┘
+```
+
+Secties volgen direct na de connector, aaneengesloten, in de volgorde waarin de connector ze vermeldt. De lengte van elke sectie staat in de connector, zodat een lezer kan berekenen waar elke sectie begint zonder het bestand te scannen.
+
+## De connector
+
+De connector is een JSON-document (`BasisBundleConnector`) dat de content beschrijft zonder die te laden:
+
+| Veld | Inhoud |
+| --- | --- |
+| `UniqueVersion` | Een build-ID. Verandert bij elke build. |
+| `BasisBundleDescription` | Naam, beschrijving, tags, contentgroep en auteurschap (auteur, contact, licentie, credits). |
+| `BasisBundleGenerated[]` | Eén vermelding per sectie: platform, asset-modus, assetnaam, CRC, hash, lengte en grafische API's. |
+| `ImageBase64` | De miniatuur die in menu's en op content-orbs wordt getoond. |
+| `FarLodBase64` | Alleen avatars: een kleine vervanger die op grote afstand wordt getekend. |
+| `DateOfCreation` | Buildtijd (UTC). |
+| `Bounds` | De grootte van de content, zodat die kan worden geplaatst voordat die laadt. |
+| `MetaData` | Aantallen driehoeken, materialen en botten, texturegeheugen, render pipeline, soort content (Avatar, Prop of Scene), plaatsing bij het spawnen van props en een telling van elk componenttype. |
+
+Omdat de connector klein is en vooraan staat, kunnen menu's namen, miniaturen en prestatiestatistieken tonen nadat alleen de eerste paar kilobytes zijn gedownload.
+
+## Secties
+
+Elke `BasisBundleGenerated`-vermelding beschrijft één sectie:
+
+| Veld | Betekenis |
+| --- | --- |
+| `Platform` | Het builddoel, zoals `StandaloneWindows64` of `Android`. `Generic` markeert de glTF-terugvaloptie. |
+| `AssetMode` | `Scene` voor werelden, `GameObject` voor avatars en props, `GLTF` voor de generieke terugvaloptie. |
+| `AssetToLoadName` | De scène of prefab die uit de bundle moet worden geopend. |
+| `AssetBundleCRC`, `AssetBundleHash` | Integriteitscontroles voor de ontsleutelde Unity-bundle. |
+| `EndByte` | De lengte van de sectie in het bestand. |
+| `AssetBundleEndByte` | Waar de Unity-bundle eindigt binnen de ontsleutelde sectie, wanneer er extra gegevens op volgen. |
+| `GraphicsStatePayloads` | Offsets van ingebedde shader-prewarmgegevens per grafische API en kwaliteitsniveau. |
+
+Een ontsleutelde sectie is een Unity-**AssetBundle**, optioneel gevolgd door **graphics state**-gegevens die worden gebruikt om shaders voor te verwarmen, zodat de content niet hapert de eerste keer dat die wordt gezien.
+
+De **Generic**-sectie is alleen voor avatars: een versleuteld `.glb`-bestand (glTF 2.0 binair) plus avatar-setupgegevens. Een client gebruikt die alleen wanneer het bestand geen sectie voor zijn platform heeft, zodat een avatar toch verschijnt op platforms waarvoor die niet is gebouwd.
+
+## Versleuteling
+
+De connector en elke sectie worden afzonderlijk versleuteld met het contentwachtwoord:
+
+- **Cipher:** AES met een sleutel van 256 bits.
+- **Sleutel:** afgeleid van het wachtwoord met PBKDF2 (SHA-1, 10.000 iteraties) en een willekeurige salt van 16 bytes.
+- **Indeling van elk versleuteld blok:** `salt (16 bytes) | IV (16 bytes) | ciphertext`.
+
+Secties van meer dan een paar megabytes worden in parallelle stukken ontsleuteld. Eén ontsleutelde sectie kan maximaal ongeveer 2 GB zijn; het bestand als geheel heeft zo'n limiet niet, omdat er altijd maar één sectie wordt ontsleuteld.
+
+<Callout type="warn">
+Het wachtwoord beschermt content tegen eenvoudig kopiëren en laat je bepalen wie die kan laden. Iedereen met de URL en het wachtwoord kan de content ontsleutelen. Zet geen geheimen in content.
+</Callout>
+
+## Hoe een client een BEE laadt
+
+1. **Lees de header** met een HTTP range request: de eerste 8 bytes.
+2. **Download en ontsleutel de connector.** Menu's kunnen nu de naam, miniatuur en statistieken tonen.
+3. **Loop de sectietabel door** om die voor dit platform te vinden, en bereken het bytebereik op basis van de lengtes.
+4. **Download alleen die sectie** met een range request. Secties van andere platforms worden nooit gedownload.
+5. **Ontsleutel** die, controleer de CRC en laad de AssetBundle (of bouw de avatar vanuit glTF).
+6. **Cache** het bestand lokaal, zodat bij het volgende bezoek alleen wordt gecontroleerd of de content is veranderd.
+
+Daarom kan één `.bee` builds voor Windows, Linux en Android bevatten zonder dat Quest-spelers de downloadgrootte van de pc-build kwijt zijn.
+
+## Hosting
+
+- Elke statische host die **HTTP range requests** ondersteunt, werkt.
+- Upload de `.bee` en deel de URL en het wachtwoord. Met het wachtwoord ontgrendelen spelers of je load config de content.
+- Opnieuw bouwen levert een nieuwe `UniqueVersion` op, waarmee clients builds uit elkaar kunnen houden. Clients valideren gecachte kopieën opnieuw tegen de host, dus het bestand op dezelfde URL vervangen werkt het bij.

@@ -1,0 +1,60 @@
+---
+title: Sitze
+description: Spieler per Skript hinsetzen, ein Drehstuhl und ein Auswurf-Button, mit Basis Seat und Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Einrichtung
+
+1. Fügen Sie einem Stuhl **Basis Seat** hinzu und positionieren Sie dessen Sitzpunkt. Das Prefab `SimpleSeat` in com.basis.examples ist eine fertige Variante.
+2. Fügen Sie **Basis Seat Sync** hinzu, damit alle sehen, wer sitzt, und zwei Spieler nicht denselben Sitz belegen können.
+
+Spieler können sich hinsetzen, indem sie auf den Sitz zeigen. Das folgende Skript fügt einen Button hinzu, der sie hinsetzt, den Stuhl dreht und sie wieder aufstehen lässt.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Member | Bedeutung |
+| --- | --- |
+| `IsAvailable` | Niemand sitzt und Sitze sind in den Einstellungen des Spielers nicht deaktiviert. |
+| `IsLocalPlayerSeated` | Der lokale Spieler sitzt auf diesem Sitz. |
+| `HasOccupant` | Irgendjemand sitzt auf diesem Sitz. |
+| `TrySeatLocalPlayer()` | Setzt den lokalen Spieler hin, wenn der Sitz frei ist. |
+| `SetOccupantYaw(degrees)` | Dreht den sitzenden Spieler innerhalb der Rotationsgrenzen des Sitzes. |
+| `EjectLocalPlayer()` | Lässt den lokalen Spieler aufstehen. |
+
+<Callout type="info">
+Sitze bewegen nur den lokalen Spieler, daher braucht das Skript kein eigenes Networking. **Basis Seat Sync** regelt, wer sitzt.
+</Callout>

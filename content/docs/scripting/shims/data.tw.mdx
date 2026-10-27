@@ -1,0 +1,118 @@
+---
+title: 資料
+description: BasisSaveShim、BasisServerStorageShim、BasisJson、BasisWebRequestShim、BasisExternalLinkShim，以及圖片與文字下載器。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+存檔、伺服器儲存與網路請求會先徵求玩家同意。在他們同意之前，呼叫會溫和地失敗（false、null 或 `NotAllowed`），而您腳本的其餘部分會繼續執行。
+</Callout>
+
+## BasisSaveShim
+
+儲存在玩家電腦上的位元組。每個槽位 256 KB，共 32 個槽位，每個儲存區 1 MB。
+
+```csharp
+using Basis.Shims;
+
+BasisSaveShim.Save(this, "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Shared between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+
+// Readable by other content.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+更多內容：[持久化範例](/tw/docs/scripting/examples/persistence)。
+
+## BasisServerStorageShim
+
+**儲存在伺服器上**、依玩家區分的資料，因此在該伺服器上它會跟著玩家跨裝置移動。每個呼叫都是非同步的。鍵最多 64 位元組，值最多 64 KB；伺服器會設定每位玩家的總量（預設為 16 KB）。
+
+```csharp
+if (!BasisServerStorageShim.IsAvailable(this)) return;
+
+BasisServerStorageShim.SaveString(this, "best-lap", lap.ToString("F2"), result =>
+{
+    if (result != BasisServerStorageResult.Ok) Debug.LogWarning(result.ToString());
+});
+
+BasisServerStorageShim.LoadString(this, "best-lap", (result, text) =>
+{
+    if (result == BasisServerStorageResult.Ok) bestLabel.text = text;
+});
+
+BasisServerStorageShim.Keys(this, (result, keys) => { });
+BasisServerStorageShim.Usage(this, (result, used, limit) => usage.text = $"{used} / {limit} bytes");
+```
+
+結果包括 `Ok`、`NotFound`、`Full`、`RateLimited`、`NotConnected` 與 `NotAllowed`。更多內容：[伺服器排行榜範例](/tw/docs/scripting/examples/server-best-time)。
+
+## BasisJson
+
+在主機端解析 JSON；您的腳本只會看到節點與一般值。
+
+```csharp
+BasisJsonNode root = BasisJson.Parse(text, out string error);
+if (root == null) { Debug.LogWarning(error); return; }
+
+string title = root.GetString("title", "Untitled");
+BasisJsonNode items = root.Get("items");
+for (int i = 0; i < items.Count; i++)
+{
+    BasisJsonNode item = items.Get(i);
+    string name = item.GetString("name", "");
+    int price = item.GetInt("price", 0);
+    string[] tags = item.GetStringArray("tags");
+}
+bool hasKey = root.Has("version");
+string[] keys = root.Keys;
+```
+
+## BasisWebRequestShim
+
+供世界與道具使用的 HTTPS GET 與 POST。上傳 256 KB、下載 4 MB、15 秒逾時、每分鐘 30 次請求。
+
+```csharp
+BasisWebRequestShim.GetText(this, "https://api.example.com/scores", (result, status, text) =>
+{
+    if (result == BasisWebResult.Ok) ShowScores(text);
+});
+
+BasisWebRequestShim.PostText(this, "https://api.example.com/scores", "{\"score\":42}", BasisWebRequestShim.Json, (result, status, reply) => { });
+```
+
+## BasisImageDownloader 與 BasisStringDownloader
+
+```csharp
+using Basis;
+
+new BasisImageDownloader().DownloadImage(url, result =>
+{
+    if (result.Success) poster.material.mainTexture = result.Result;
+});
+
+new BasisStringDownloader().DownloadString(url, result =>
+{
+    if (result.Success) Load(result.Result);
+});
+```
+
+## BasisExternalLinkShim
+
+在玩家確認後，於其瀏覽器中開啟網站。請從他們自己的按下動作呼叫它。
+
+```csharp
+public void OnLinkPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) label.text = "example.com";
+    });
+}
+```

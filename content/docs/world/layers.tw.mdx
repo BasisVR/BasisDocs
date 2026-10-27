@@ -1,0 +1,34 @@
+---
+title: 圖層
+description: Basis 使用的 Unity 圖層、各自對碰撞、互動和攝影機的意義，以及您的物件應使用哪一個。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis 保留了數個 Unity 圖層。請依照說明使用它們，讓玩家、指標和攝影機能正確對待您的物件。
+
+| # | 圖層 | 用途 |
+| --- | --- | --- |
+| 0 | Default | 一般的世界幾何體。玩家會與其碰撞，指標也會擊中它。 |
+| 1 | TransparentFX | Unity 預設。 |
+| 2 | Ignore Raycast | 不會被指標或射線檢測擊中，且第三人稱攝影機會忽略它。 |
+| 3 | Player | 本機玩家的角色控制器。 |
+| 4 | Water | Unity 預設。 |
+| 5 | UI | 世界空間 UI。 |
+| 6 | LocalPlayerAvatar | 您自己的虛擬形象。必要時會從您的第一人稱視角中隱藏。 |
+| 7 | RemotePlayerAvatar | 其他玩家的虛擬形象。 |
+| 8 | Interactable | 指標應該突顯並與之互動的物件。 |
+| 9 | OverlayUI | 繪製在所有東西之上的 UI，例如選單。 |
+| 10 | IgnoredByInteractable | 可見且為實體，但指標會穿過。適用於按鈕前方的玻璃或觸發器體積。 |
+| 11 | HandHeldCameraUI | 手持攝影機自身的 UI。 |
+
+## 選擇圖層
+
+- **牆壁、地板、道具：** Default。
+- **按鈕前方的觸發器體積和隱形阻擋物：** IgnoredByInteractable，讓指標能觸及其後方的東西。
+- **指標永遠不應擊中的裝飾用 collider：** Ignore Raycast。
+- **絕對不要將您的物件放在** Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 上。
+
+<Callout type="info">
+圖層名稱和編號來自 Basis 專案的 Tag Manager。內容是以它們建置的，因此請勿在您的專案中重新命名或重新排序 Basis 圖層。
+</Callout>

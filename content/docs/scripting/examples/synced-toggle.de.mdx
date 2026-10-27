@@ -1,0 +1,94 @@
+---
+title: Synchronisierter Schalter
+description: Ein Button, der ein Objekt für jeden Spieler ein- oder ausschaltet, auch für Spieler, die später beitreten.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Dies ist das kleinste vollständige vernetzte Skript: ein Byte Zustand, das gesendet wird, wenn es sich ändert, und erneut an jeden gesendet wird, der beitritt.
+
+## Einrichtung
+
+1. Erstellen Sie ein World-Space-Canvas mit einem **Button**.
+2. Fügen Sie **SyncedToggle** zum Canvas hinzu. Weisen Sie den Button und das umzuschaltende Objekt zu (ein Licht, einen Spiegel, eine Tür).
+
+## Skript
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## Funktionsweise
+
+- **Drücken** übernimmt den Besitz, kehrt den Wert lokal um, sodass der Drückende ihn sofort sieht, und sendet den neuen Wert an alle anderen.
+- **`ReliableSequenced`** garantiert, dass der neueste Wert ankommt, und verwirft ältere, was für einen Schalter genau richtig ist.
+- **Ein beitretender Spieler** erhält den aktuellen Wert nur vom Besitzer. Da die Nachricht den gesamten Zustand enthält, verarbeitet derselbe `OnMessage`-Handler sowohl Live-Änderungen als auch das Aufholen.
+
+<Callout type="info">
+Native Version: Leiten Sie von `BasisNetworkBehaviour` ab, ersetzen Sie die Shim-Ereignisse durch Überschreibungen von `OnNetworkMessage` und `OnPlayerJoined` und rufen Sie `TakeOwnership()` und `SendCustomNetworkEvent` direkt auf.
+</Callout>

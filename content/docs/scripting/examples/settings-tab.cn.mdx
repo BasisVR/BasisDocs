@@ -1,0 +1,80 @@
+---
+title: 设置标签页
+description: 使用 BasisMenuShim 将世界选项添加到玩家的设置菜单中，并使用 BasisSaveShim 记住这些选项。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` 会在您的内容加载期间向玩家的设置中添加一个标签页。世界卸载时，该标签页会消失。
+
+## 脚本
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## 完整面板
+
+对于游戏菜单而非选项，请添加一个面板。它在菜单中拥有自己的按钮，并且可以包含多个标签页。
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效，因此内容无法自行弹出菜单。
+
+## 规则
+
+- **谁可以添加标签页**：世界、本地玩家生成的道具，以及本地玩家自己的虚拟形象。`null` 表示被拒绝；请检查它。
+- **选项是本地的**。每位玩家各自设置。只有当某个选择应当为所有人改变世界时，才需要同步它。
+- 如果选择应当在下次访问时保留，请使用 [BasisSaveShim](/cn/docs/scripting/examples/persistence) **记住选择**。
+
+<Callout type="info">
+在虚拟形象上，请在 `isOwner` 为 true 时从 `BasisAvatarShim.OnAvatarReady` 中添加标签页，这样只有穿戴者才会获得它。
+</Callout>

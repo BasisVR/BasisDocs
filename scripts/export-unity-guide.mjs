@@ -15,7 +15,9 @@ const sections = [
   { title: 'Scripting', pages: ['scripting/native-and-cilbox', 'scripting/common-usages', 'scripting/sandbox-rules', 'scripting/allowed-components', 'scripting/avatar-scripting'] },
   { folder: 'scripting/networking' },
   { folder: 'scripting/examples' },
+  { folder: 'scripting/shims' },
   { title: 'World', pages: ['world/components', 'world/layers'] },
+  { title: 'Advanced', pages: ['advanced/bee-files'] },
 ];
 
 function readMeta(folder) {

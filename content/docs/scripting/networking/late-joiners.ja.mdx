@@ -1,0 +1,44 @@
+---
+title: 途中参加者
+description: 何かが変わった後に参加したプレイヤーに、シーンのデフォルトではなく現在の状態が見えるようにする方法。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+参加したプレイヤーは、あなたが作ったとおりのシーンを読み込みます。その後に変わったこと（ドアが開いた、スコアが上がった、ライトが消された）は、誰かが伝えるまでそのプレイヤーには見えません。
+
+## 同期変数: 自動で処理される
+
+`BasisSyncedObject`とそれを基にしたすべてのもの（`BasisSyncedParameters`、`BasisSyncedTransform`、`BasisSyncedRigidbody`、`BasisPickupSyncNetworking`）は、プレイヤーが参加するたびに完全なキーフレームを送信します。オーナーが退出してまだ誰もオブジェクトを所有していない場合は、状態を持っているプレイヤーが代わりに新しく来たプレイヤーへ送信します。何もする必要はありません。
+
+## ネットワークイベント: 状態を再送する
+
+イベントは記憶されません。イベントが永続的な状態を変更した場合は、その**状態**（イベントの履歴ではなく）を新しいプレイヤーに再送してください。オーナーだけが送信するため、新しく来たプレイヤーは全員からではなく1通のメッセージを受け取ります。
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+完全な状態の適用と変更の適用が同じコードパスになるように、メッセージを設計してください。[同期トグルのサンプル](/ja/docs/scripting/examples/synced-toggle)は1バイトでこれを実現しています。
+
+<Callout type="warn">
+新しく来たプレイヤーに過去のイベントのリスト（例えば「ドアが開いた、ドアが閉じた、ドアが開いた」）を再生しないでください。現在の結果を送信してください。再生は長くなり、届く頃には古くなっており、イベントがタイミングに依存する場合は壊れます。
+</Callout>
+
+## 確認すべきこと
+
+- **オーナーが最初のプレイヤーでなくても動作するか?** 3つのクライアントでテストしてください。Aが参加し、Bが参加して何かを変更し、Aが退出し、Cが参加します。
+- **ネットワークから来るべきものを`Start`で設定していないか?** 途中参加者の`Start`は最初のネットワークメッセージより前に実行されます。最初のメッセージや同期値が届くまでは中立的な状態を表示してください。
+- **永続的なプロップ。** ロード設定からスポーンされるプロップは、後から参加したプレイヤーにも存在するように**Persistent**を設定する必要があります。[Scene Props](/ja/docs/world/scene-props)を参照してください。

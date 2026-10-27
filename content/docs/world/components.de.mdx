@@ -1,0 +1,65 @@
+---
+title: Szenenkomponenten
+description: Die Basis-Komponenten, die Sie in einer Welt platzieren, was jede davon macht und wo Sie mehr darüber lesen können.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Diese Komponenten sind die Bausteine einer Basis-Welt. Keine davon benötigt Code. Mit *(Client-Builds)* gekennzeichnete Einträge stehen nicht auf der Standard-Allowlist für hochgeladene Inhalte; siehe [Erlaubte Komponenten](/de/docs/scripting/allowed-components).
+
+## Erforderlich
+
+| Komponente | Funktion |
+| --- | --- |
+| **Basis Scene** | Kennzeichnet die Szene als Basis-Welt. Legt den **Spawn Point**, die **Respawn Height**, ab der Spieler zurückgesetzt werden, die Audio-Mixer-Gruppe und die Hauptkamera fest. Eine pro Welt. Siehe [Erstellen](/de/docs/world/building). |
+
+## Interaktion
+
+| Komponente | Funktion |
+| --- | --- |
+| **Basis Interactable Shim** | Macht ein Objekt aus einem Skript heraus drückbar: `ButtonDown` und `ButtonUp`, mit Hover- und Druckfarben. |
+| **Basis Pickup Interactable** | Lässt Spieler ein Objekt greifen, halten und benutzen. Löst `OnPickupUse` aus, wenn der Trigger gedrückt wird, während es gehalten wird. |
+| **Basis Interactable Button** | Ein fertiger, drückbarer Button (com.basis.examples, Prefab `ExampleInteractableButton`). |
+| **Basis Seat** | Lässt Spieler sitzen. Rotationsgrenzen, Hervorhebungsmodus und Scripting über `TrySeatLocalPlayer`, `EjectLocalPlayer` und `IsAvailable`. |
+| **Basis Avatar Pedestal** | Zeigt einen Avatar an und lässt Spieler zu ihm wechseln. Nur in Welten. |
+| **Basis Runtime Loader** *(Client-Builds)* | Spawnt Props aus einer Load-Config, zum Beispiel über einen Button. Siehe [Szenen-Props](/de/docs/world/scene-props). |
+
+## Netzwerk
+
+| Komponente | Funktion |
+| --- | --- |
+| **Basis Pickup Sync Networking** | Synchronisiert die Pose und den Halter eines Pickups. |
+| **Basis Synced Transform** | Synchronisiert ein bewegtes Objekt. **Basis Synced Rigidbody** *(Client-Builds)* ergänzt Geschwindigkeiten. |
+| **Basis Synced Parameters** *(Client-Builds)* | Synchronisiert benannte Werte (Floats, Ints, Bools, Farben). |
+| **Basis Seat Sync** | Synchronisiert, wer auf einem Sitz sitzt. |
+| **Basis Networked Vehicle** | Synchronisierte, fahrbare Fahrzeuge, zusammengesetzt aus Fahrzeugkörper, Rädern, Triebwerken und Pilotensitz. |
+
+Siehe [Netzwerkkomponenten](/de/docs/scripting/networking/network-components).
+
+## Medien und Rendering
+
+| Komponente | Funktion |
+| --- | --- |
+| **Basis Media Player** | Synchronisierte Video- und Stream-Wiedergabe. Siehe [Mediaplayer](/de/docs/world/media-player). |
+| **Basis SDK Mirror** | Ein Spiegel. Legen Sie die Render-Texture-Größe, die Far Clip und fest, ob Post-Processing in der Spiegelung gerendert wird. Spiegel rendern die Szene erneut, halten Sie sie daher klein und standardmäßig ausgeschaltet. |
+| **TextMesh Pro** | Text auf Schildern und in der UI. Unterstützt in Welten und in Cilbox-Skripten. |
+| **Canvas** | World-Space-UI, die mit dem Basis-Pointer funktioniert. Siehe [UI-Canvas](/de/docs/world/ui-canvas). |
+
+## Spieler und Plattform
+
+| Komponente | Funktion |
+| --- | --- |
+| **Basis Locomotion Zone** *(Client-Builds)* | Ändert Sprunghöhe, Geh- und Laufgeschwindigkeit, Schwerkraft oder Bewegungsmodus, solange sich der lokale Spieler in ihrem Trigger befindet. |
+| **Basis Platform Switch** | Aktiviert oder deaktiviert Objekte und Komponenten pro Plattform (VR, Desktop, Mobil) anhand einer Liste von Regeln. |
+
+## Scripting
+
+| Komponente | Funktion |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | Die Sandbox, in der die `[Cilboxable]`-Skripte Ihrer Welt oder Ihres Props laufen. Siehe [Scripting](/de/docs/scripting/scripting). |
+| **Basis OSC** | OSC-Nachrichten veröffentlichen und abonnieren. Siehe [OSC](/de/docs/scripting/osc). |
+| **Basis Action Trigger** | Leitet UI-Pointer-Ereignisse (Enter, Exit, Click, Drag) an ein Cilbox-Skript weiter. |
+
+<Callout type="info">
+Jede Komponente ist im Unity-Editor dokumentiert: Wählen Sie sie aus und verwenden Sie den Dokumentations-Button in ihrem Inspector, oder öffnen Sie **Basis > Creator Guide**, um diese Anleitung offline zu lesen.
+</Callout>

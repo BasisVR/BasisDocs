@@ -1,0 +1,79 @@
+---
+title: Avatar-Scripting
+description: Cilbox-Skripte auf Avataren, der Träger im Vergleich zu allen anderen, Avatar-Ready-Ereignisse und das Synchronisieren von Avatar-Zuständen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Die Cilbox-Skripte eines Avatars laufen auf **jedem Client**, der den Avatar lädt, nicht nur auf dem des Trägers. Die meiste Avatar-Logik sollte prüfen, wer sie gerade ausführt.
+
+## Die Avatar-Komponente
+
+In der Avatar-Sandbox wird `BasisAvatar` zu `BasisAvatarShim` aufgelöst. Schreiben Sie `BasisAvatar` wie gewohnt.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| Member | Verwendung |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | Wird ausgelöst, sobald der Avatar eingerichtet ist. `isOwner` ist auf dem Client des Trägers true. |
+| `IsOwnedLocally` | True auf dem Client des Trägers. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | Das Rig des Avatars auslesen. |
+| `TryGetLinkedPlayer(out ushort playerId)` | Die Spieler-ID des Trägers. |
+| `PlayspaceInput` | Die eigene Bewegung des Trägers steuern (nur Träger). |
+
+## Nur Träger oder alle
+
+| Läuft bei | Für |
+| --- | --- |
+| **Nur Träger** (`IsOwnedLocally`) | Menüs, Haptik, Speichern, Eingabe, Senden von Netzwerkereignissen. |
+| **Allen** | Visuelle Effekte, die einem synchronisierten Zustand folgen: Partikel, Materialien, Sounds. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## Avatar-Zustand synchronisieren
+
+- **Eigene Werte:** Holen Sie sich einen `BasisNetworkShim`, senden Sie [Netzwerkereignisse](/de/docs/scripting/networking/network-events#cilbox) vom Träger aus und wenden Sie sie dann auf jedem Client an.
+- **Bewegliche Teile:** `BasisSyncedTransform` ist auf Avataren erlaubt.
+
+## Einstellungs-Tab auf einem Avatar
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+Alles, was die Avatar-Sandbox erlaubt, kann der Avatar eines Fremden auf Ihrem Rechner tun. Deshalb ist die Avatar-Sandbox die strengste der drei: keine Kameras, keine Lichter, keine Web-Anfragen, und Haptik erreicht nur den Träger.
+</Callout>

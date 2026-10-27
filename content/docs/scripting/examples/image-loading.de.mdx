@@ -1,0 +1,64 @@
+---
+title: Bilder laden
+description: Ein Bild von einer URL auf einem Schild anzeigen, mit einem Platzhalter während des Ladens oder wenn der Spieler ablehnt.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Einrichtung
+
+1. Erstellen Sie ein **Quad** für das Schild und geben Sie ihm ein Material mit einem Unlit- oder Lit-Texturslot.
+2. Fügen Sie **RemoteImage** hinzu und weisen Sie den Renderer zu. Legen Sie die URL und optional eine Platzhaltertextur fest.
+
+## Skript
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## Regeln
+
+- **Nur https.** Einfaches http, rohe IP-Adressen und alles, was zu einer lokalen Netzwerkadresse aufgelöst wird, werden abgelehnt, bevor eine Anfrage gestellt wird.
+- **Keine Weiterleitungen.** Hosten Sie das Bild unter seiner endgültigen Adresse.
+- **Spieler genehmigen Hosts.** Wenn Inhalte zum ersten Mal einen neuen Host anfragen, wird der Spieler gefragt. Bis er zustimmt, schlägt der Download fehl und Ihr Platzhalter bleibt sichtbar.
+- Jeder Spieler lädt das Bild selbst herunter; es gibt nichts zu synchronisieren. Damit alle dasselbe wechselnde Bild anzeigen, synchronisieren Sie den **URL-Index** (siehe [Synchronisierter Schalter](/de/docs/scripting/examples/synced-toggle) für das Muster) und laden lokal.
+
+<Callout type="info">
+Für Text verwenden Sie `BasisStringDownloader.DownloadString` mit denselben Regeln und `BasisJson.Parse`, um JSON zu lesen.
+</Callout>

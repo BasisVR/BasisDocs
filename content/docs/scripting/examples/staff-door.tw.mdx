@@ -1,0 +1,33 @@
+---
+title: 員工專用門
+description: 只為管理員與版主開啟的門，角色變更時會即時更新。
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- 這扇門是在員工自己的客戶端上關閉的。其他人不受影響，因此不需要任何網路同步。
+- 若要在*其他*員工頭上顯示徽章，請使用 `BasisPermissionsShim.IsModerator(player, callback)` 詢問；這需要與伺服器進行一次往返。
+- 客戶端檢查能擋住守規矩的玩家。對於任何絕不能讓修改過的客戶端存取的東西，請不要依賴它們。

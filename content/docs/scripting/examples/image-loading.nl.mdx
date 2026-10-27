@@ -1,0 +1,64 @@
+---
+title: Afbeeldingen laden
+description: Een afbeelding van een URL op een bord tonen, met een terugvaloptie tijdens het laden of wanneer de speler weigert.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup
+
+1. Maak een **Quad** aan voor het bord en geef het een materiaal met een unlit of lit texture-slot.
+2. Voeg **RemoteImage** toe en wijs de renderer toe. Stel de URL in en optioneel een placeholder-texture.
+
+## Script
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## Regels
+
+- **Alleen https.** Gewone http, kale IP-adressen en alles wat naar een lokaal netwerkadres verwijst, worden geweigerd voordat er een verzoek wordt gedaan.
+- **Geen redirects.** Host de afbeelding op het uiteindelijke adres.
+- **Spelers keuren hosts goed.** De eerste keer dat content om een nieuwe host vraagt, krijgt de speler een melding. Totdat die accepteert, mislukt de download en blijft je placeholder staan.
+- Elke speler downloadt de afbeelding zelf; er valt niets te synchroniseren. Om iedereen dezelfde wisselende afbeelding te laten tonen, synchroniseer je de **URL-index** (zie [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) voor het patroon) en laad je lokaal.
+
+<Callout type="info">
+Gebruik voor tekst `BasisStringDownloader.DownloadString` met dezelfde regels, en `BasisJson.Parse` om JSON te lezen.
+</Callout>

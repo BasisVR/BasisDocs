@@ -1,0 +1,37 @@
+---
+title: 在地化告示牌
+description: 使用 BasisLanguageEventShim，以玩家的語言顯示文字，並在玩家變更語言時即時切換的告示牌。
+---
+
+```csharp title="LocalizedSign.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class LocalizedSign : MonoBehaviour
+{
+    public TextMeshPro label;
+    public string[] languageCodes = { "en", "de", "fr", "ja" };
+    public string[] texts = { "Welcome", "Willkommen", "Bienvenue", "ようこそ" };
+
+    void Start()
+    {
+        GetComponent<BasisLanguageEventShim>();
+    }
+
+    void OnLanguageChanged(string code)
+    {
+        label.text = texts[0];
+        for (int i = 0; i < languageCodes.Length; i++)
+        {
+            if (code.StartsWith(languageCodes[i])) { label.text = texts[i]; return; }
+        }
+    }
+}
+```
+
+- `OnLanguageChanged` 會立即以目前的語言被呼叫一次。
+- 使用 `StartsWith` 比對，讓 `es` 也能涵蓋 `es-MX`。
+- 如果您的沙盒拒絕陣列初始設定式，請改在檢查器中設定陣列，並確認字型包含您需要的字符。

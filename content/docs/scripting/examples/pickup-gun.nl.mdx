@@ -1,0 +1,94 @@
+---
+title: Pickup-geweer
+description: Een gesynchroniseerde pickup die schiet wanneer hij wordt gebruikt, waarbij het schoteffect voor elke speler wordt afgespeeld.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup
+
+1. Modelleer of importeer een geweer. Voeg een collider en een **Rigidbody** toe.
+2. Voeg **Basis Pickup Interactable** toe.
+3. Voeg **Basis Pickup Sync Networking** toe en wijs de pickup toe. Dit synchroniseert de positie van het geweer en wie het vasthoudt.
+4. Voeg een **AudioSource** en een **ParticleSystem** toe voor de mondingsflits, en een child-transform bij de loopmonding.
+5. Voeg **PickupGun** toe en wijs alles toe.
+
+## Script
+
+```csharp title="PickupGun.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PickupGun : MonoBehaviour
+{
+    public BasisPickupInteractable pickup;
+    public Transform muzzle;
+    public AudioSource shotSound;
+    public ParticleSystem flash;
+    public float range = 50f;
+    public float cooldown = 0.2f;
+
+    BasisNetworkShim net;
+    bool held;
+    float nextShot;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        pickup.OnInteractStartEvent.AddListener(OnGrab);
+        pickup.OnInteractEndEvent.AddListener(OnDrop);
+        pickup.OnPickupUse.AddListener(OnUse);
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void OnGrab(BasisInput input) { held = true; }
+    void OnDrop(BasisInput input) { held = false; }
+
+    void OnUse(BasisPickUpUseMode mode)
+    {
+        if (!held || mode != BasisPickUpUseMode.OnPickUpUseDown || Time.time < nextShot) return;
+        nextShot = Time.time + cooldown;
+
+        PlayShot();
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.6f, 0.08f);
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableUnordered);
+
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, range))
+        {
+            Debug.Log($"hit {hit.collider.name}");
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1 && buffer[0] == 1) PlayShot();
+    }
+
+    void PlayShot()
+    {
+        shotSound.Play();
+        flash.Play();
+    }
+}
+```
+
+## Hoe het werkt
+
+- **Basis Pickup Sync Networking** neemt het eigenaarschap bij vastpakken en streamt de pose van het geweer, zodat iedereen het in de hand van de houder ziet. Voor dat deel is geen code nodig.
+- **Het schot is een event**, geen status. Niemand die later binnenkomt hoeft te weten dat er een schot is gelost, dus er is geen afhandeling voor late joiners.
+- **Alleen de schutter doet de raycast.** Trefferresultaten die voor de gameplay ertoe doen (schade, score) moeten door de schutter worden bepaald en als eigen event worden verstuurd, of naar een eigenaar worden geleid zoals in het [Scorebord](/nl/docs/scripting/examples/scoreboard).
+
+<Callout type="info">
+Zet **CanNetworkSteal** uit op het synchronisatiecomponent als andere spelers het geweer niet uit iemands hand mogen trekken.
+</Callout>

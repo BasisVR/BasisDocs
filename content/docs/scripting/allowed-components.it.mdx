@@ -1,0 +1,41 @@
+---
+title: Componenti consentiti
+description: Quali componenti sopravvivono in mondi, prop e avatar caricati, come verificarlo e come le build del client ne aggiungono altri.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Quando un contenuto viene caricato, la **content police** di Basis rimuove ogni componente il cui tipo non è nella allowlist per quel tipo di contenuto. Gli script contrassegnati con `[Cilboxable]` vengono prima convertiti in proxy in sandbox, quindi sopravvivono.
+
+## Le allowlist
+
+Le liste si trovano in `Packages/com.basis.sdk/Settings/`:
+
+| Asset | Si applica a |
+| --- | --- |
+| `SceneContentPoliceSelector` | Mondi |
+| `PropContentPoliceSelector` | Prop |
+| `AvatarContentPoliceSelector` | Avatar |
+
+Ognuno è una lista di nomi di tipo completi. La corrispondenza è esatta: una sottoclasse di un tipo consentito **non** è consentita a meno che non sia elencata essa stessa.
+
+## Cosa è consentito per impostazione predefinita
+
+**Mondi e prop:** rendering (componenti mesh, skinned mesh, line, trail, particle e LOD, luci, reflection probe, telecamere), fisica (collider, rigidbody, joint), sorgenti audio e Steam Audio, animator e animazioni, canvas UI e TextMesh Pro, `VideoPlayer`, binder di VFX Graph, AudioLink, constraint di Basis, il media player di Basis, specchio, sedili, pickup, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, veicoli, `BasisPlatformSwitch`, e la sandbox Cilbox con i suoi shim. I mondi consentono anche la navigazione (`NavMeshAgent`, `NavMeshObstacle`), i volumi di post processing e il piedistallo degli avatar.
+
+**Avatar:** rendering, fisica, audio, animator, constraint, sedili, transform sincronizzati, OSC e gli shim degli avatar. Niente telecamere, luci, UI o video.
+
+**Non consentiti per impostazione predefinita** (solo build del client): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` e qualsiasi `MonoBehaviour` nativo tuo.
+
+<Callout type="info">
+Gli asset dei selettori sono la fonte di verità e cambiano tra le versioni. Aprili nell'inspector per vedere la lista attuale.
+</Callout>
+
+## Verificare il tuo contenuto
+
+- Entra in play mode: Basis applica lo stesso controllo e i componenti rimossi vengono registrati nel log.
+- **Basis > Tools > Cilbox Permissions** elenca cosa ogni sandbox consente di chiamare agli script.
+
+## Aggiungere un componente (build del client)
+
+Se distribuisci il tuo client, aggiungi il nome completo del tipo all'asset del selettore corrispondente. I contenuti costruiti per il client pubblico non possono contare su questo; in quel caso, converti la logica in uno script `[Cilboxable]`.

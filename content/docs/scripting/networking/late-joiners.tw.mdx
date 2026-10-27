@@ -1,0 +1,44 @@
+---
+title: 晚加入者
+description: 確保在事物改變後才加入的玩家看到的是目前狀態，而不是場景預設值。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+加入的玩家載入的場景與您建置時完全相同。在那之後改變的任何事物（門被打開、分數上升、燈被關掉），在有人告訴他們之前，他們都看不到。
+
+## 同步變數：已為您處理
+
+`BasisSyncedObject` 以及所有以它為基礎的元件（`BasisSyncedParameters`、`BasisSyncedTransform`、`BasisSyncedRigidbody`、`BasisPickupSyncNetworking`）會在玩家加入時傳送完整的關鍵影格。如果擁有者已經離開且尚無人擁有該物件，則會改由擁有該狀態的玩家傳送給新來者。您不需要做任何事。
+
+## 網路事件：重新傳送狀態
+
+事件不會被記住。如果某個事件改變了持久的狀態，請將該**狀態**（而不是事件歷史）重新傳送給新玩家。只有擁有者會這麼做，因此新來者只會收到一則訊息，而不是每個人各一則。
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+設計訊息時，讓套用完整狀態與套用變更走同一條程式路徑。[同步切換開關範例](/tw/docs/scripting/examples/synced-toggle)只用一個位元組就做到了這點。
+
+<Callout type="warn">
+不要對新來者重播過去的事件清單（例如「門開了、門關了、門開了」）。請傳送目前的結果。重播會越來越長、抵達時已經過時，而且當事件依賴時序時就會出錯。
+</Callout>
+
+## 需要檢查的事項
+
+- **擁有者不是第一位玩家時是否仍能運作？** 用三個客戶端測試：A 加入，B 加入並變更某些東西，A 離開，C 加入。
+- **是否有任何應該來自網路的東西是在 `Start` 中設定的？** 晚加入者的 `Start` 會在他們收到第一則網路訊息之前執行。在第一則訊息或同步數值抵達之前，請顯示中性的狀態。
+- **持久道具。** 從載入設定生成的道具需要設定 **Persistent**，才能讓之後加入的玩家也看得到。請參閱[場景道具](/tw/docs/world/scene-props)。

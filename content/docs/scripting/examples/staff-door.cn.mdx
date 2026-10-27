@@ -1,0 +1,33 @@
+---
+title: 员工门
+description: 一扇只为管理员和版主打开的门，角色变更时会实时更新。
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- 门只在员工自己的客户端上被关闭。其他人不受影响，因此无需任何网络同步。
+- 如需在*其他*员工头上显示徽章，请使用 `BasisPermissionsShim.IsModerator(player, callback)` 询问；这需要与服务器进行一次往返。
+- 客户端检查能拦住守规矩的玩家。对于任何绝不能让被修改的客户端接触到的东西，请不要依赖它们。

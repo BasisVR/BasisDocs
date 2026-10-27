@@ -1,0 +1,98 @@
+---
+title: 事件
+description: 需主動啟用的事件 shim。在 Start 中取得元件，然後以名稱宣告回呼。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+每個事件 shim 的運作方式都相同：在 `Start` 中呼叫一次 `GetComponent<T>()`（Cilbox 會為您加入元件），然後宣告一個與該 shim 回呼同名的方法。Basis 會直接呼叫它，因此不需要訂閱或取消訂閱任何東西。
+
+<Callout type="info">
+大多數事件 shim 會在您啟用後立即以目前的值呼叫您一次，因此您不需要另外撰寫啟動程式碼。
+</Callout>
+
+## BasisPlatformEventShim
+
+```csharp
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrHud.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+## BasisLanguageEventShim
+
+```csharp
+void Start() { GetComponent<BasisLanguageEventShim>(); }
+
+void OnLanguageChanged(string code)
+{
+    sign.text = code == "de" ? "Willkommen" : "Welcome";
+}
+```
+
+## BasisGraphicsSettingsEventShim
+
+會合併為每幀最多呼叫一次。
+
+```csharp
+void Start() { GetComponent<BasisGraphicsSettingsEventShim>(); }
+
+void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+{
+    detail.SetActive(qualityTier >= BasisGraphicsSettingsShim.TierMedium);
+}
+```
+
+## BasisPermissionEventShim
+
+```csharp
+void Start() { GetComponent<BasisPermissionEventShim>(); }
+
+void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+{
+    staffPanel.SetActive(isAdmin || isModerator);
+}
+```
+
+## BasisJiggleEventShim
+
+當有人抓住或觸碰此物件的 jiggle 物理時觸發。兩個回呼都會在開始時觸發一次（`began` 為 true），結束時再觸發一次。
+
+```csharp
+BasisJiggleEventShim jiggle;
+int tail;
+
+void Start()
+{
+    jiggle = GetComponent<BasisJiggleEventShim>();
+    tail = jiggle.FindJiggleRig("Tail");
+}
+
+void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+{
+    if (rigIndex == tail && began) squeak.Play();
+}
+
+void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
+```
+
+`GetJiggleRigCount()` 與 `GetJiggleRigName(index)` 可列出所有 rig。只有在有腳本啟用時才會執行偵測。
+
+## BasisBeforeRenderShim
+
+在所有姿勢與 IK 處理完成之後、畫面繪製之前執行。用它可以將物件固定在手或頭上，而不會延遲一幀。請保持簡短；渲染會等它完成。
+
+```csharp
+void Start() { GetComponent<BasisBeforeRenderShim>(); }
+
+void OnBeforeRender()
+{
+    IBasisPlayer me = BasisPlayersShim.Local;
+    if (me == null) return;
+    transform.position = me.GetBonePosition(HumanBodyBones.RightHand);
+}
+```

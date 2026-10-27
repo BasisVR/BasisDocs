@@ -1,0 +1,41 @@
+---
+title: Composants autorisés
+description: Quels composants survivent dans les mondes, props et avatars mis en ligne, comment le vérifier, et comment les builds du client en ajoutent d'autres.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Lorsque du contenu se charge, la **content police** de Basis supprime chaque composant dont le type n'est pas dans la liste autorisée pour ce type de contenu. Les scripts marqués `[Cilboxable]` sont d'abord convertis en proxies en sandbox, ils survivent donc.
+
+## Les listes autorisées
+
+Les listes se trouvent dans `Packages/com.basis.sdk/Settings/` :
+
+| Asset | S'applique à |
+| --- | --- |
+| `SceneContentPoliceSelector` | Mondes |
+| `PropContentPoliceSelector` | Props |
+| `AvatarContentPoliceSelector` | Avatars |
+
+Chacune est une liste de noms de types complets. La correspondance est exacte : une sous-classe d'un type autorisé n'est **pas** autorisée sauf si elle est elle-même listée.
+
+## Ce qui est autorisé par défaut
+
+**Mondes et props :** le rendu (composants mesh, skinned mesh, line, trail, particules et LOD, lumières, reflection probes, caméras), la physique (colliders, rigidbodies, joints), les sources audio et Steam Audio, les animators et l'animation, les canvas UI et TextMesh Pro, `VideoPlayer`, les binders VFX Graph, AudioLink, les contraintes Basis, le lecteur multimédia Basis, le miroir, les sièges, les pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, les véhicules, `BasisPlatformSwitch`, ainsi que la sandbox Cilbox et ses shims. Les mondes autorisent aussi la navigation (`NavMeshAgent`, `NavMeshObstacle`), les volumes de post-traitement et le piédestal d'avatar.
+
+**Avatars :** le rendu, la physique, l'audio, les animators, les contraintes, les sièges, les transforms synchronisés, OSC et les shims d'avatar. Pas de caméras, de lumières, d'UI ni de vidéo.
+
+**Non autorisés par défaut** (builds du client uniquement) : `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader`, et tout `MonoBehaviour` natif de votre cru.
+
+<Callout type="info">
+Les assets de sélecteur font foi et changent d'une version à l'autre. Ouvrez-les dans l'inspecteur pour voir la liste actuelle.
+</Callout>
+
+## Vérifier votre contenu
+
+- Entrez en mode play : Basis applique le même contrôle, et les composants supprimés sont journalisés.
+- **Basis > Tools > Cilbox Permissions** liste ce que chaque sandbox permet aux scripts d'appeler.
+
+## Ajouter un composant (builds du client)
+
+Si vous livrez votre propre client, ajoutez le nom complet du type à l'asset de sélecteur correspondant. Le contenu construit pour le client public ne peut pas compter sur cela ; dans ce cas, convertissez la logique en un script `[Cilboxable]`.

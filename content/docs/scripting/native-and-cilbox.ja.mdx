@@ -1,0 +1,90 @@
+---
+title: NativeとCilbox
+description: Basisでスクリプトを書く2つの方法。Nativeスクリプトはアプリケーションにコンパイルされ、Cilboxスクリプトはコンテンツの中に含まれてランタイムにサンドボックス内で実行されます。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basisはコードを2つの方法で実行します。どちらを使うかは**スクリプトがどこに存在するか**で決まります。つまり、ビルドするアプリケーションの中か、ランタイムに読み込まれるコンテンツの中かです。
+
+## Native: アプリケーションにコンパイルされる
+
+Nativeスクリプトは、Basisクライアント（またはBasisフレームワーク上に構築した独自のアプリ）に組み込まれる通常のUnity `MonoBehaviour`です。アプリケーションと一緒にコンパイルされるため、ワールドやプロップではなく次のクライアントビルドに含まれて配布されます。
+
+- C#のすべての機能と、UnityおよびBasisのAPIをすべて利用できます。
+- ネイティブの速度で動作します。
+- `BasisNetworkBehaviour`や`BasisSyncedObject`などのBasisクラスを継承できます。
+- それを含めてビルドされたクライアントにしか存在しません。公開クライアントのプレイヤーはあなたのスクリプトを持っていません。
+
+**Basis上でアプリケーションやゲームを作る**場合はNativeスクリプトを使用してください。独自のメニュー、ゲームルール、システム、そしてコンテンツが依存するあらゆるコンポーネントが対象です。
+
+## Cilbox: コンテンツ内のランタイムスクリプティング
+
+Cilboxスクリプトは`[Cilboxable]`でマークされた`MonoBehaviour`で、ワールド、プロップ、アバターの`.bee`ファイルの**中に**含まれて配布されます。コンテンツが読み込まれると、BasisはCilboxインタープリターでそれを実行します。実行はそのコンテンツの種類（Scene、Prop、Avatar）に対応したサンドボックス内で行われます。
+
+- コンテンツを読み込むどのBasisクライアントでも動作します。クライアントのビルドは不要です。
+- サンドボックス化されています。ホワイトリストに登録された型とメソッドしか呼び出せないため、コンテンツがプレイヤーのマシンに害を与えることはできません。
+- コードがインタープリターで実行されるため、Nativeより遅くなります。
+- 基底クラスの代わりにシムを使用します。例えば`BasisNetworkBehaviour`を継承する代わりに`BasisNetworkShim`を使います。
+
+**ユーザーコンテンツを作る**場合はCilboxを使用してください。他の人が読み込むワールド、プロップ、アバターが対象です。
+
+## 早見表
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| 存在する場所 | アプリケーションのビルド | ワールド、プロップ、アバター |
+| 読み込まれるタイミング | アプリのビルド時 | ランタイムにコンテンツと一緒に |
+| マーク | なし | `[Cilboxable]` |
+| API | すべて | サンドボックスごとのホワイトリスト |
+| 速度 | ネイティブ | インタープリター、かなり遅い |
+| ネットワーク | `BasisNetworkBehaviour`を継承 | `BasisNetworkShim`を使用 |
+| 持っている人 | あなたのビルドのプレイヤー | コンテンツを読み込んだ全員 |
+
+## 同じスクリプトを両方の方法で
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## それぞれの配布方法
+
+- **Native:** スクリプトをUnityプロジェクトに追加してクライアントをビルドします。Nativeコンポーネントをワールドやプロップのバンドル内に配置する場合は、その型を対応するコンテンツポリスのセレクターにも追加してください。追加しないとコンテンツの読み込み時に削除されます（[許可されたコンポーネント](/ja/docs/scripting/allowed-components)を参照）。
+- **Cilbox:** コンテンツに**Cilbox Scene Basis**（ワールド）または**Cilbox Prop Basis**（プロップ）を追加し、スクリプトを`[Cilboxable]`でマークして、通常どおり`.bee`をビルドします。[基本](/ja/docs/scripting/examples/basics)を参照してください。
+
+<Callout type="info">
+このドキュメント全体のサンプルには**Native**または**Cilbox**のラベルが付いています。ほとんどのCilboxサンプルはNativeスクリプトとしてもコンパイルできますが、NativeサンプルをCilboxで動かすには通常変更が必要です。注意すべきルールは[サンドボックスのルール](/ja/docs/scripting/sandbox-rules)にまとめています。
+</Callout>

@@ -1,0 +1,79 @@
+---
+title: Основы
+description: Ваши первые скрипты для Basis, вращающийся объект и кнопка UI, в виде скриптов Cilbox, которые поставляются внутри сцены или пропа.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Настройка
+
+1. Создайте пустой GameObject и добавьте **Basis Scene** (для мира) или **Basis Prop** (для пропа).
+2. Добавьте **Cilbox Scene Basis** (мир) или соответствующий компонент Cilbox для вашего типа контента. Это песочница, в которой выполняются все скрипты контента.
+3. Добавьте свои скрипты на объекты внутри него.
+
+<Callout type="info">
+Если редактор не может найти пространство имён `Cilbox`, добавьте ссылку на сборку Cilbox в свой `.asmdef` или включите **Auto Referenced** у сборки Cilbox.
+</Callout>
+
+## Вращающийся объект
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+Публичные поля и поля с `[SerializeField]` сохраняются вместе с контентом, поэтому их можно задать в инспекторе.
+
+## Кнопка, которая меняет текст
+
+1. Создайте **Canvas** в мировом пространстве с **Button** и **TextMeshPro - Text (UI)**.
+2. Добавьте этот скрипт на canvas и назначьте кнопку и текст.
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+Этот счётчик локальный: у каждого игрока свой счёт. Пример [Синхронизированный переключатель](/ru/docs/scripting/examples/synced-toggle) создаёт кнопку, общую для всех.
+
+## Тестирование
+
+Войдите в режим Play в своей сцене. Basis заменяет каждый скрипт `[Cilboxable]` на `CilboxProxy`, поэтому вы тестируете ровно то, что будет выполняться после загрузки. Затем соберите контент и загрузите его в клиенте, как описано в разделе [Сборка](/ru/docs/world/building).

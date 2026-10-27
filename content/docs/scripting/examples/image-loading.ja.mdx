@@ -1,0 +1,64 @@
+---
+title: 画像の読み込み
+description: URLから取得した画像を看板に表示し、読み込み中やプレイヤーが拒否したときには代替画像を表示します。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## セットアップ
+
+1. 看板用に**Quad**を作成し、unlitまたはlitのテクスチャスロットを持つマテリアルを設定します。
+2. **RemoteImage**を追加し、レンダラーを割り当てます。URLと、任意でプレースホルダーのテクスチャを設定します。
+
+## スクリプト
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## ルール
+
+- **httpsのみ。** 平文のhttp、生のIPアドレス、ローカルネットワークのアドレスに解決されるものは、リクエストが送られる前に拒否されます。
+- **リダイレクトなし。** 画像は最終的なアドレスでホストしてください。
+- **プレイヤーがホストを承認する。** コンテンツが新しいホストを初めて要求すると、プレイヤーに確認が表示されます。承諾されるまではダウンロードが失敗し、プレースホルダーが表示されたままになります。
+- 各プレイヤーが自分で画像をダウンロードするため、同期するものはありません。全員に同じ変化する画像を表示させるには、**URLのインデックス**を同期し（パターンは[同期トグル](/ja/docs/scripting/examples/synced-toggle)を参照）、ローカルで読み込んでください。
+
+<Callout type="info">
+テキストには、同じルールで`BasisStringDownloader.DownloadString`を使用し、JSONの読み取りには`BasisJson.Parse`を使用してください。
+</Callout>

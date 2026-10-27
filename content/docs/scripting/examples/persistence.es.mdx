@@ -1,0 +1,125 @@
+---
+title: Persistencia
+description: Guardar el progreso de un jugador entre visitas con BasisSaveShim, empaquetar valores en bytes y compartir partidas guardadas entre un mundo y sus props.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` almacena bytes en la propia máquina del jugador, archivados bajo el ID de su contenido. Es por jugador: cada jugador tiene su propio guardado y nada se sincroniza.
+
+## Script
+
+Este script guarda qué puntos de control alcanzó un jugador y su mejor tiempo, y lo devuelve a su último punto de control cuando regresa.
+
+```csharp title="CourseProgress.cs (Cilbox)"
+using System.IO;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class CourseProgress : MonoBehaviour
+{
+    const string Slot = "progress";
+    const byte Version = 1;
+
+    public Transform[] checkpoints;
+    public TextMeshPro bestLabel;
+
+    int reached = -1;
+    float bestTime = float.MaxValue;
+
+    void Start()
+    {
+        Load();
+        if (reached >= 0)
+        {
+            Transform point = checkpoints[reached];
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+        }
+        ShowBest();
+    }
+
+    public void ReachCheckpoint(int index)
+    {
+        if (index <= reached) return;
+        reached = index;
+        Save();
+    }
+
+    public void FinishRun(float seconds)
+    {
+        if (seconds < bestTime) bestTime = seconds;
+        reached = -1;
+        Save();
+        ShowBest();
+    }
+
+    void Save()
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(Version);
+            writer.Write(reached);
+            writer.Write(bestTime);
+            BasisSaveShim.Save(this, Slot, stream.ToArray());
+        }
+    }
+
+    void Load()
+    {
+        byte[] data = BasisSaveShim.Load(this, Slot);
+        if (data == null || data.Length < 9) return;
+        using (var reader = new BinaryReader(new MemoryStream(data)))
+        {
+            if (reader.ReadByte() != Version) return;
+            reached = Mathf.Clamp(reader.ReadInt32(), -1, checkpoints.Length - 1);
+            bestTime = reader.ReadSingle();
+        }
+    }
+
+    void ShowBest()
+    {
+        bestLabel.text = bestTime < float.MaxValue ? $"Best: {bestTime:F1}s" : "No time yet";
+    }
+}
+```
+
+## Reglas
+
+- **El jugador decide.** Hasta que permita el guardado para su contenido, `Save` devuelve false y `Load` devuelve null. Su script sigue ejecutándose, así que gestione siempre la ausencia de un guardado.
+- **Versione sus datos.** Escriba primero un byte de versión y rechace los datos que no entienda. Los jugadores conservan los guardados antiguos cuando usted actualiza su mundo.
+- **Valide al cargar.** Limite los índices; nunca confíe en que los valores guardados sigan coincidiendo con su escena.
+- **Límites:** 256 KB por ranura, 32 ranuras y 1 MB por almacén, 8 escrituras por segundo. Guarde en eventos significativos, no en cada fotograma.
+
+## Compartir entre contenidos
+
+Asigne un nombre a un almacén para compartir guardados, por ejemplo entre un mundo y los props que genera:
+
+```csharp
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "my-game", "progress");
+```
+
+Los ámbitos controlan quién puede leer y escribir:
+
+| Ámbito | Lectura | Escritura |
+| --- | --- | --- |
+| `BasisSaveScope.Protected` | Solo este contenido | Solo este contenido |
+| `BasisSaveScope.ReadOnly` | Cualquier contenido (con su Content ID) | Solo este contenido |
+| `BasisSaveScope.Shared` | Cualquier contenido que nombre el almacén | Cualquier contenido que nombre el almacén |
+
+```csharp
+// Publish a badge other worlds can read.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+
+// Another world reads it.
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+<Callout type="warn">
+Los guardados residen en la máquina del jugador y este puede editarlos. No los use para nada que deba ser de confianza, como las tablas de clasificación.
+</Callout>

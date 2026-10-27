@@ -1,0 +1,62 @@
+---
+title: Riferimento Shim
+description: Ogni shim Basis che uno script Cilbox può usare, raggruppati per area, ciascuno con un breve esempio.
+---
+
+Gli shim sono il lato Basis della sandbox Cilbox: API piccole e sicure che danno a uno script in sandbox l'accesso a giocatori, input, rete, salvataggi, menu e altro ancora. La maggior parte si trova nel namespace `Basis.Shims`.
+
+Gli shim hanno tre forme:
+
+- **Classi statiche** da chiamare direttamente, come `BasisPlayersShim.Count`.
+- **Componenti evento** da attivare chiamando `GetComponent<T>()` in `Start`. Cilbox aggiunge il componente per te e Basis chiama sul tuo script un metodo con un nome noto, come `OnPlatformChanged`.
+- **Tipi sostituiti**: scrivi il normale nome Unity (`Debug`, `VideoPlayer`, `BasisAvatar`) e la sandbox fornisce una versione sicura.
+
+| Shim | Cosa fa | Pagina |
+| --- | --- | --- |
+| `BasisPlayersShim` | Elenco giocatori, giocatore più vicino, pose | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisVelocityShim` | Lancia o spinge il giocatore locale | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | Guida il movimento di chi indossa un avatar dall'avatar stesso | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisSeatShim` | Se il giocatore locale è seduto, e dove | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | Sapere quando un giocatore cambia avatar | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | Controlli di admin, moderatore e permessi | [Giocatori](/it/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | Pulsanti, grilletti e levette dei controller VR | [Input](/it/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | Pulsanti, movimento e rotella del mouse | [Input](/it/docs/scripting/shims/input) |
+| `BasisHapticsShim` | Vibrazione dei controller | [Input](/it/docs/scripting/shims/input) |
+| `BasisInteractableShim` | Oggetti premibili | [Input](/it/docs/scripting/shims/input) |
+| `BasisActionTrigger` | Eventi puntatore della UI | [Input](/it/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [Input](/it/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | Passaggi tra VR e desktop | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | Cambi di lingua | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | Cambi di qualità | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | Cambi dei permessi locali | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | Qualcuno afferra o tocca le jiggle bone | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | Late update dopo l'IK, prima del disegno | [Eventi](/it/docs/scripting/shims/events) |
+| `BasisNetworkShim` | Eventi di rete, ownership | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | Orologio condiviso del server | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | Gli stessi numeri casuali su ogni client | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | Impacchettamento veloce di numeri e vettori | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | Compressione LZ4 | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | Manda il giocatore su un altro server | [Networking](/it/docs/scripting/shims/networking) |
+| `BasisSaveShim` | Salva dati sulla macchina del giocatore | [Dati](/it/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | Salva dati sul server | [Dati](/it/docs/scripting/shims/data) |
+| `BasisJson` | Analisi di JSON | [Dati](/it/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | GET e POST HTTPS | [Dati](/it/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | Apre un sito web | [Dati](/it/docs/scripting/shims/data) |
+| `BasisMenuShim` | Schede delle impostazioni e pannelli del menu | [Menu](/it/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | Legge le impostazioni di qualità | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | Frame rate, collo di bottiglia, connessione | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | Budget dei compute shader | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | Riproduce la voce di un giocatore da un oggetto | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | `VideoPlayer` con la richiesta di conferma dell'URL | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | Rilevamento della piattaforma | [Rendering e audio](/it/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | Legge o scrive molti transform in una volta | [Batching](/it/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | Copia transform su altri transform ogni frame | [Batching](/it/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | Legge, scrive o copia molti blendshape | [Batching](/it/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | Divide e unisce array di vettori | [Batching](/it/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | Test di raggi e sfere su array | [Batching](/it/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | Il componente avatar sugli avatar | [Avatar](/it/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Legge e pilota le voci del menu Vixxy | [Avatar](/it/docs/scripting/shims/avatar) |
+| `BasisOsc` | Messaggi OSC | [OSC](/it/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | Log contrassegnati con il tuo contenuto | [Regole della sandbox](/it/docs/scripting/sandbox-rules) |
+
+Quale sandbox consente quale shim è mostrato in tempo reale nell'editor Unity in **Basis > Creator Guide**, nella sezione Cilbox API Reference.

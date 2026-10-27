@@ -1,0 +1,80 @@
+---
+title: Вкладка настроек
+description: Добавление параметров мира в меню настроек игрока с помощью BasisMenuShim и их запоминание с помощью BasisSaveShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` добавляет вкладку в настройки игрока, пока ваш контент загружен. Вкладка исчезает, когда мир выгружается.
+
+## Скрипт
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## Целая панель
+
+Для игрового меню, а не параметров, добавьте панель. Она получает собственную кнопку в меню и может иметь несколько вкладок.
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` работает только в течение 5 секунд после того, как игрок что-то нажал в вашем контенте, поэтому контент не может открывать меню сам по себе.
+
+## Правила
+
+- **Кто может добавить вкладку:** миры, пропы, созданные локальным игроком, и собственный аватар локального игрока. `null` означает отказ; проверяйте это.
+- **Параметры локальны.** Каждый игрок настраивает их сам. Синхронизируйте выбор, только если он должен менять мир для всех.
+- **Запоминайте выбор** с помощью [BasisSaveShim](/ru/docs/scripting/examples/persistence), если он должен сохраниться до следующего посещения.
+
+<Callout type="info">
+На аватаре добавляйте вкладку из `BasisAvatarShim.OnAvatarReady`, когда `isOwner` равно true, чтобы её получил только владелец аватара.
+</Callout>

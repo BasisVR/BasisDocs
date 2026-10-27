@@ -1,0 +1,93 @@
+---
+title: 批处理
+description: BasisTransformBatchShim、BasisTransformSyncShim、BasisBlendShapeSyncShim、BasisVectorArrayShim 和 BasisSphereCastShim，用于在一次调用中完成大量工作。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox 脚本对 Unity 的每次调用都很昂贵，开销往往远超其实际完成的工作。这些 shim 在一次调用中将整个数组传过边界，并以原生方式执行循环。
+
+<Callout type="info">
+经验法则：如果 `Update` 中的循环涉及超过少数几个变换或 blendshape，就应该批处理。
+</Callout>
+
+## BasisTransformBatchShim
+
+一次读取或写入大量变换的位置、旋转和缩放。
+
+```csharp
+using Basis.Shims;
+
+public Transform[] boids;
+Vector3[] positions;
+
+void Start() { positions = new Vector3[boids.Length]; }
+
+void Update()
+{
+    BasisTransformBatchShim.GetPositions(boids, positions);
+    for (int i = 0; i < positions.Length; i++) positions[i] = positions[i] + Vector3.up * Time.deltaTime;
+    BasisTransformBatchShim.SetPositions(boids, positions);
+}
+```
+
+此外还有：`GetLocalPositions`、`SetLocalPositions`、`SetRotations`、`SetLocalRotations`、`SetLocalScales`、浮点 `xyz` 数组版本，以及 `RotateWorld`。
+
+## BasisTransformSyncShim
+
+每帧以原生方式将一组变换复制到另一组上。这不是网络同步：它在本客户端上镜像变换，例如让一套服装跟随虚拟形象的骨骼。
+
+```csharp
+BasisTransformSyncShim mirror;
+
+void Start()
+{
+    mirror = new BasisTransformSyncShim();
+    mirror.Channels = BasisTransformSyncShim.ChannelPose;
+    mirror.Space = BasisTransformSyncShim.SpaceLocal;
+    mirror.BindTransforms(sourceBones, costumeBones, this);
+}
+
+void OnDestroy() { mirror.Dispose(); }
+```
+
+一次性的静态版本：`GetValues`、`SetValues` 和 `CopyValues`。
+
+## BasisBlendShapeSyncShim
+
+对 blendshape 也是如此：在一次调用中读取、写入或复制网格的所有权重。
+
+```csharp
+float[] weights = new float[BasisBlendShapeSyncShim.ShapeCount(face)];
+BasisBlendShapeSyncShim.GetWeights(face, weights);
+BasisBlendShapeSyncShim.SetWeights(mask, weights, 0.01f);
+
+// Or keep a mask's blendshapes following the face every frame.
+var follow = new BasisBlendShapeSyncShim();
+follow.BindMeshes(new[] { face }, new[] { mask }, this);
+```
+
+## BasisVectorArrayShim
+
+将向量拆分为浮点数组并再合并回来，这样数学运算可以在普通浮点数上进行，在解释器中要便宜得多。
+
+```csharp
+BasisVectorArrayShim.Split(positions, xs, ys, zs);
+for (int i = 0; i < xs.Length; i++) ys[i] += Mathf.Sin(xs[i] + Time.time) * 0.01f;
+BasisVectorArrayShim.Join(xs, ys, zs, positions);
+```
+
+## BasisSphereCastShim
+
+对数组进行射线和球体检测，无需物理碰撞体。适用于子弹对多个目标，或台球。
+
+```csharp
+if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.position, 0.25f, out Vector3 hit))
+{
+    Spark(hit);
+}
+
+uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
+```
+
+距离以平方表示（`radiusSq`）。`skipMask` 的各个位按索引排除球体。

@@ -1,0 +1,62 @@
+---
+title: 심 레퍼런스
+description: Cilbox 스크립트에서 사용할 수 있는 모든 Basis 심을 영역별로 묶고, 각각 짧은 예제와 함께 정리했습니다.
+---
+
+심은 Cilbox 샌드박스의 Basis 쪽 구성 요소입니다. 샌드박스 스크립트가 플레이어, 입력, 네트워킹, 저장, 메뉴 등에 접근할 수 있게 해 주는 작고 안전한 API입니다. 대부분 `Basis.Shims` 네임스페이스에 있습니다.
+
+심은 세 가지 형태로 제공됩니다.
+
+- **정적 클래스**: `BasisPlayersShim.Count`처럼 직접 호출합니다.
+- **이벤트 컴포넌트**: `Start`에서 `GetComponent<T>()`를 호출해 사용을 선택합니다. Cilbox가 컴포넌트를 대신 추가하고, Basis는 스크립트에서 `OnPlatformChanged`처럼 정해진 이름의 메서드를 호출합니다.
+- **대체 타입**: 일반적인 Unity 이름(`Debug`, `VideoPlayer`, `BasisAvatar`)을 그대로 쓰면 샌드박스가 안전한 버전을 제공합니다.
+
+| 심 | 하는 일 | 페이지 |
+| --- | --- | --- |
+| `BasisPlayersShim` | 플레이어 목록, 가장 가까운 플레이어, 포즈 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisVelocityShim` | 로컬 플레이어를 날리거나 밀기 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | 아바타에서 착용자의 이동 제어 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisSeatShim` | 로컬 플레이어가 앉아 있는지, 어디에 앉았는지 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | 플레이어가 아바타를 바꾸는 시점 알기 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | 관리자, 모더레이터, 권한 확인 | [플레이어](/ko/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | VR 컨트롤러 버튼, 트리거, 스틱 | [입력](/ko/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | 마우스 버튼, 이동, 스크롤 | [입력](/ko/docs/scripting/shims/input) |
+| `BasisHapticsShim` | 컨트롤러 진동 | [입력](/ko/docs/scripting/shims/input) |
+| `BasisInteractableShim` | 누를 수 있는 오브젝트 | [입력](/ko/docs/scripting/shims/input) |
+| `BasisActionTrigger` | UI 포인터 이벤트 | [입력](/ko/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [입력](/ko/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | VR / 데스크톱 전환 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | 언어 변경 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | 품질 변경 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | 로컬 권한 변경 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | 누군가 지글 본을 잡거나 만짐 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | IK 이후, 그리기 직전의 늦은 업데이트 | [이벤트](/ko/docs/scripting/shims/events) |
+| `BasisNetworkShim` | 네트워크 이벤트, 소유권 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | 공유 서버 시계 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | 모든 클라이언트에서 같은 난수 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | 숫자와 벡터의 빠른 패킹 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | LZ4 압축 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | 플레이어를 다른 서버로 보내기 | [네트워킹](/ko/docs/scripting/shims/networking) |
+| `BasisSaveShim` | 플레이어 기기에 데이터 저장 | [데이터](/ko/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | 서버에 데이터 저장 | [데이터](/ko/docs/scripting/shims/data) |
+| `BasisJson` | JSON 파싱 | [데이터](/ko/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | HTTPS GET과 POST | [데이터](/ko/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | 웹사이트 열기 | [데이터](/ko/docs/scripting/shims/data) |
+| `BasisMenuShim` | 설정 탭과 메뉴 패널 | [메뉴](/ko/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | 품질 설정 읽기 | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | 프레임 레이트, 병목, 연결 | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | 컴퓨트 셰이더 예산 | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | 오브젝트에서 플레이어의 목소리 재생 | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | URL 확인 창이 있는 `VideoPlayer` | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | 플랫폼 감지 | [렌더링과 오디오](/ko/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | 여러 트랜스폼을 한 번에 읽거나 쓰기 | [일괄 처리](/ko/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | 매 프레임 트랜스폼을 다른 트랜스폼에 복사 | [일괄 처리](/ko/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | 여러 블렌드셰이프 읽기, 쓰기, 복사 | [일괄 처리](/ko/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | 벡터 배열 분리와 결합 | [일괄 처리](/ko/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | 배열에 대한 레이와 구 테스트 | [일괄 처리](/ko/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | 아바타의 아바타 컴포넌트 | [아바타](/ko/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Vixxy 메뉴 항목 읽기와 제어 | [아바타](/ko/docs/scripting/shims/avatar) |
+| `BasisOsc` | OSC 메시지 | [OSC](/ko/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | 콘텐츠 태그가 붙는 로깅 | [샌드박스 규칙](/ko/docs/scripting/sandbox-rules) |
+
+어떤 샌드박스에서 어떤 심을 쓸 수 있는지는 Unity 에디터의 **Basis > Creator Guide**에 있는 Cilbox API Reference 섹션에서 실시간으로 확인할 수 있습니다.

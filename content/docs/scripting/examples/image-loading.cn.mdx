@@ -1,0 +1,64 @@
+---
+title: 图片加载
+description: 在标牌上显示来自 URL 的图片，并在加载期间或玩家拒绝时显示后备图片。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 设置
+
+1. 为标牌创建一个 **Quad**，并为其指定一个带有 unlit 或 lit 纹理槽的材质。
+2. 添加 **RemoteImage** 并分配渲染器。设置 URL 和可选的占位纹理。
+
+## 脚本
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## 规则
+
+- **仅限 https**。普通 http、原始 IP 地址以及任何解析为本地网络地址的内容都会在发出请求之前被拒绝。
+- **不支持重定向**。请将图片托管在其最终地址上。
+- **玩家需批准主机**。内容第一次请求新主机时，会提示玩家。在玩家接受之前，下载会失败，您的占位图会保持显示。
+- 每位玩家都会自行下载图片；没有需要同步的内容。要让所有人显示同一张变化的图片，请同步 **URL 索引**（模式参见[同步开关](/cn/docs/scripting/examples/synced-toggle)）并在本地加载。
+
+<Callout type="info">
+对于文本，请在相同规则下使用 `BasisStringDownloader.DownloadString`，并使用 `BasisJson.Parse` 读取 JSON。
+</Callout>

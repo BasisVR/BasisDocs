@@ -1,0 +1,33 @@
+---
+title: Дверь для персонала
+description: Дверь, которая открывается только для администраторов и модераторов и обновляется в реальном времени при смене ролей.
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- Дверь отключается для персонала на его собственном клиенте. Больше это никого не затрагивает, поэтому ничего не передаётся по сети.
+- Чтобы показать значок над *другими* сотрудниками, спросите через `BasisPermissionsShim.IsModerator(player, callback)`; это запрос к серверу и обратно.
+- Проверки на стороне клиента не пускают честных игроков. Не полагайтесь на них для того, до чего модифицированный клиент добраться не должен.

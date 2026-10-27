@@ -11,6 +11,7 @@
     "avatar-scripting",
     "networking",
     "examples",
+    "shims",
     "osc"
   ]
 }
