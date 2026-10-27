@@ -1,0 +1,18 @@
+{
+  "title": "Examples",
+  "pages": [
+    "index",
+    "basics",
+    "synced-toggle",
+    "scoreboard",
+    "pickup-gun",
+    "touch-button",
+    "seats",
+    "zones-and-teleporters",
+    "npc-follow",
+    "image-loading",
+    "minimap",
+    "persistence",
+    "settings-tab"
+  ]
+}

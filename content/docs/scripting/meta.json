@@ -1,5 +1,16 @@
 {
   "title": "Scripting",
   "icon": "FolderOpen",
-  "pages": ["index", "scripting", "osc"]
+  "pages": [
+    "index",
+    "native-and-cilbox",
+    "scripting",
+    "common-usages",
+    "sandbox-rules",
+    "allowed-components",
+    "avatar-scripting",
+    "networking",
+    "examples",
+    "osc"
+  ]
 }
