@@ -1,0 +1,94 @@
+---
+title: 플레이어
+description: BasisPlayersShim, BasisVelocityShim, BasisPlayspaceInputShim, BasisSeatShim, BasisAvatarSwitchShim, BasisPermissionsShim.
+---
+
+## BasisPlayersShim
+
+플레이어 목록입니다. 플레이어는 읽기 전용 `IBasisPlayer`로, 포즈는 복사된 벡터로 반환됩니다.
+
+```csharp
+using Basis.Shims;
+using Basis.Scripts.BasisSdk.Players;
+
+int count = BasisPlayersShim.Count;
+IBasisPlayer me = BasisPlayersShim.Local;
+IBasisPlayer nearest = BasisPlayersShim.Nearest(transform.position);
+IBasisPlayer[] close = BasisPlayersShim.Within(transform.position, 5f);
+IBasisPlayer byId = BasisPlayersShim.GetById(playerId);
+IBasisPlayer byUuid = BasisPlayersShim.GetByUUID(uuid);
+string[] names = BasisPlayersShim.DisplayNames;
+int questPlayers = BasisPlayersShim.CountOnPlatform("Android");
+
+Vector3 position = nearest.GetPosition();
+Vector3 head = nearest.GetBonePosition(HumanBodyBones.Head);
+float scale = nearest.GetAvatarScale();
+bool loaded = nearest.IsAvatarLoaded();
+ushort id = nearest.GetPlayerId();
+```
+
+## BasisVelocityShim
+
+월드 전용입니다. 로컬 플레이어를 월드 공간에서 초당 미터 단위로 밀어냅니다.
+
+```csharp
+Vector3 v = BasisVelocityShim.Velocity;
+BasisVelocityShim.SetVelocity(new Vector3(v.x, 10f, v.z)); // jump pad
+BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
+```
+
+## BasisPlayspaceInputShim
+
+아바타 전용입니다. 착용자 자신의 이동을 제어합니다. `Additive`는 착용자의 입력과 섞이고, `Override`는 입력을 대체합니다.
+
+```csharp
+BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+input.Clear();
+```
+
+## BasisSeatShim
+
+```csharp
+if (BasisSeatShim.IsSeated)
+{
+    BasisSeat seat = BasisSeatShim.CurrentSeat;
+    seatLabel.text = seat.name;
+}
+```
+
+## BasisAvatarSwitchShim
+
+플레이어가 아바타를 바꾸면 알려 줍니다. 플레이어를 따라가며 아바타를 바꿔도 계속 동작합니다. 다 쓰면 Dispose 하세요.
+
+```csharp
+BasisAvatarSwitchShim watcher;
+
+void Start()
+{
+    watcher = new BasisAvatarSwitchShim(BasisPlayersShim.Local);
+    watcher.Switched += OnSwitched;
+}
+
+void OnSwitched() { Debug.Log("new avatar"); }
+
+void OnDestroy() { watcher?.Dispose(); }
+```
+
+## BasisPermissionsShim
+
+로컬 플레이어의 역할은 즉시 답이 나옵니다. 다른 플레이어에 대해 물으면 왕복이 필요하고, 답은 콜백으로 도착합니다.
+
+```csharp
+if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);
+
+BasisPermissionsShim.IsModerator(player, isMod =>
+{
+    badge.SetActive(isMod);
+});
+
+bool canKick = BasisPermissionsShim.LocalHasPermission("basis.moderation.kick");
+```
+
+플레이어가 월드에 있는 동안의 변경에는 `BasisPermissionEventShim`([이벤트](/ko/docs/scripting/shims/events))을 사용하세요.

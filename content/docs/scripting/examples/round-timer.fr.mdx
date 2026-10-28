@@ -1,0 +1,65 @@
+---
+title: Minuteur de manche
+description: Un compte à rebours que tout le monde voit en synchronisation. Le propriétaire envoie l'heure de fin une seule fois et chaque client décompte selon l'horloge du serveur.
+---
+
+Envoyer les secondes restantes à chaque image gaspille de la bande passante et dérive. Envoyez l'**heure de fin** une seule fois et laissez chaque client décompter selon l'horloge partagée du serveur.
+
+```csharp title="RoundTimer.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class RoundTimer : MonoBehaviour
+{
+    public float roundSeconds = 120f;
+    public TextMeshPro label;
+
+    BasisNetworkShim net;
+    double endTime;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void StartRound()
+    {
+        net.TakeOwnership();
+        endTime = BasisNetworkTimeShim.ServerTimeSeconds + roundSeconds;
+        Send(null);
+    }
+
+    void Send(ushort[] to)
+    {
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(BitConverter.GetBytes(endTime), DeliveryMethod.ReliableOrdered, to);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data != null && data.Length == 8) endTime = BitConverter.ToDouble(data, 0);
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        double left = endTime - BasisNetworkTimeShim.ServerTimeSeconds;
+        label.text = left > 0 ? $"{(int)left / 60}:{(int)left % 60:00}" : "Round over";
+    }
+}
+```
+
+- Un seul message par manche, quelle que soit sa durée.
+- Les joueurs arrivés en retard reçoivent l'heure de fin et affichent immédiatement le bon compte à rebours.

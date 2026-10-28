@@ -1,0 +1,403 @@
+---
+title: よくある使い方
+description: Basisスクリプトの日常的な構成要素。プレイヤー、入力、UI、タイマー、データの読み込み、保存、メニュー、プラットフォームチェックを、それぞれ短いサンプル付きで紹介します。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+プレイヤー、入力、UI、タイマー、ダウンロード、保存、メニューについて、それぞれ書くべき呼び出しと、よくつまずくルールを示します。ネットワークについては[ネットワーク](/ja/docs/scripting/networking)で説明しています。
+
+<Callout type="info">
+**Cilbox**と記されたサンプルはサンドボックス内で実行され、`.bee`ファイルとしてアップロードされたコンテンツでも動作します。**Native**と記されたサンプルはUnityとBasisのAPIをすべて使用し、クライアントにコンパイルされたコードでのみ動作します。ほとんどのCilboxサンプルはNativeとしてもコンパイルできます。
+</Callout>
+
+## スクリプトを書く
+
+Cilboxスクリプトは、`[Cilboxable]`属性を付けた通常の`MonoBehaviour`です。ビルド時にBasisはこれを`CilboxProxy`に置き換え、所属するコンテンツ（Scene、Prop、Avatar）のサンドボックス内でコードを実行します。
+
+```csharp title="Spinner.cs (Cilbox)"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public float degreesPerSecond = 90f;
+
+    void Update()
+    {
+        transform.Rotate(0f, degreesPerSecond * Time.deltaTime, 0f);
+    }
+}
+```
+
+## イベントの実行順序
+
+プロキシは次のUnityメッセージをCilboxスクリプトに転送します。
+
+| メッセージ | 備考 |
+| --- | --- |
+| `Awake`、`Start` | 一度きりのセットアップは`Start`で行います。 |
+| `Update`、`FixedUpdate` | `LateUpdate`はありません。 |
+| `OnEnable`、`OnDisable` | **最初の**`OnEnable`は届きません。そこで購読しないでください。 |
+| `OnDestroy` | ここで購読解除と後片付けを行います。 |
+| `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | コライダーと、どちらか一方にRigidbodyが必要です。 |
+
+転送されないもの: `LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision`、コルーチン。コルーチンの代わりに遅延イベントを使用してください（[タイマーと遅延イベント](#timers-and-delayed-events)を参照）。
+
+```csharp
+// Wrong: the first OnEnable is dropped, so this never registers on the first activation.
+void OnEnable() { manager.Register(this); }
+
+// Right.
+void Start() { manager.Register(this); }
+void OnDestroy() { manager.Unregister(this); }
+```
+
+## プレイヤー
+
+### ローカルプレイヤー
+
+`BasisLocalPlayer.Instance`はこのマシン上のプレイヤーです。テレポート、移動の変更、固定ができます。
+
+```csharp title="Cilbox"
+using Basis.Scripts.BasisSdk.Players;
+
+BasisLocalPlayer local = BasisLocalPlayer.Instance;
+local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.SetDefaultMovementSpeed(3.5f);
+local.SetJumpHeight(1.2f);
+local.Immobilize(true);
+```
+
+プレイヤーが中にいる間だけ移動を変更するゾーンでは、独自のキーでオーバーライドを使用してください。キーをクリアすると下にあった値が復元され、2つのゾーンが元の値を取り合うことはありません。
+
+```csharp title="Cilbox"
+// Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
+local.SetWalkSpeedOverride("LowGravityZone", 1.2f);
+local.SetJumpHeightOverride("LowGravityZone", 2.5f);
+local.SetMovementModeOverride("LowGravityZone", 1);
+local.ClearLocomotionOverride("LowGravityZone");
+```
+
+<Callout type="info">
+クライアントビルドでは、**Basis Locomotion Zone**コンポーネント（com.basis.examples）がコードなしでこれを行います。ただしデフォルトのコンテンツ許可リストには含まれていません。アップロードされるワールドでは、代わりに上記のオーバーライドを使用してください。
+</Callout>
+
+### インスタンス内の全員
+
+`BasisPlayersShim`はプレイヤーを読み取り専用の`IBasisPlayer`として返します。ポーズは`Transform`ではなく、コピーされたベクトルとして返されます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+using Basis.Scripts.BasisSdk.Players;
+
+int count = BasisPlayersShim.Count;
+
+IBasisPlayer nearest = BasisPlayersShim.Nearest(transform.position);
+if (nearest != null)
+{
+    Debug.Log($"{nearest.DisplayName} is {nearest.DistanceTo(transform.position):F1}m away");
+}
+
+foreach (IBasisPlayer player in BasisPlayersShim.Within(transform.position, 5f))
+{
+    Vector3 head = player.GetBonePosition(HumanBodyBones.Head);
+}
+```
+
+`IBasisPlayer`の便利な読み取り項目: `IsLocal`、`DisplayName`、`SafeDisplayName`（看板などに名前を表示するときはこちらを使用）、そして訪問ごとやサーバーごとに変わらない`UUID`。
+
+### プレイヤーを打ち上げる
+
+`BasisVelocityShim`はローカルプレイヤーをワールド空間で押し出します。ワールド専用です。垂直方向の成分には重力がかかります。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+// A trampoline: keep the run, replace the fall.
+Vector3 velocity = BasisVelocityShim.Velocity;
+BasisVelocityShim.SetVelocity(new Vector3(velocity.x, 9f, velocity.z));
+
+// A boost pad.
+BasisVelocityShim.AddVelocity(transform.forward * 6f);
+```
+
+## 入力
+
+### オブジェクトの操作
+
+**Basis Pickup Interactable**は、プレイヤーがそれを掴んで使用ボタンを押したときにイベントを発生させます。押すだけで持ち上げないものには、**Basis Interactable Shim**を追加して`ButtonDown`と`ButtonUp`を処理します。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+void Start()
+{
+    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+}
+
+void OnPressed() { door.SetActive(!door.activeSelf); }
+```
+
+```csharp title="Cilbox"
+using Basis.Scripts.BasisSdk.Interactions;
+using Basis.Scripts.Device_Management.Devices;
+
+public BasisPickupInteractable pickup;
+
+void Start()
+{
+    pickup.OnInteractStartEvent.AddListener(OnGrab);
+    pickup.OnInteractEndEvent.AddListener(OnDrop);
+    pickup.OnPickupUse.AddListener(OnUse);
+}
+
+void OnGrab(BasisInput input) { }
+void OnDrop(BasisInput input) { }
+
+void OnUse(BasisPickUpUseMode mode)
+{
+    if (mode == BasisPickUpUseMode.OnPickUpUseDown) Fire();
+}
+```
+
+### コントローラーのボタン
+
+`BasisControllerInputShim`は、プレイヤーを動かしているのと同じ手の状態を読み取ります。ワールド専用です。メニューが開いている間やポインターがUIの上にある間は、すべて離されている状態として読み取られます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return; // desktop
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Trigger))
+        Fire();
+
+    float squeeze = BasisControllerInputShim.GetTrigger(BasisControllerHand.Left);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+### ハプティクス
+
+```csharp title="Cilbox"
+// Strength 0..1, at most 1 second. Returns false when nothing played.
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## UIイベント
+
+ワールド空間のキャンバスはBasisのポインターで動作します。リスナーがサンドボックス内に存在するよう、ボタンはコードから接続してください。キャンバス自体のセットアップについては[UI Canvas](/ja/docs/world/ui-canvas)を参照してください。
+
+```csharp title="Cilbox"
+using UnityEngine.UI;
+using TMPro;
+
+public Button button;
+public TextMeshProUGUI label;
+
+void Start()
+{
+    button.onClick.AddListener(OnClick);
+    label.text = "Ready";
+}
+
+void OnDestroy() { button.onClick.RemoveAllListeners(); }
+
+void OnClick() { label.text = "Clicked!"; }
+```
+
+Cilboxで許可されているもの: `UnityEngine.UI.*`型、`UnityEvent.AddListener`（`UnityEvent<T>`を含む）、`UnityAction`の作成、`RemoveAllListeners`。制限は2つあります。
+
+- `RemoveListener(OnClick)`ではリスナーが削除されません。`OnClick`をデリゲートとして使うたびに新しいラッパーになるためです。`RemoveAllListeners`を使用してください。
+- UIコンポーネント（`Button`、`Toggle`、`Canvas`）はワールドとプロップでは許可されていますが、アバターでは許可されていません。
+
+## タイマーと遅延イベント [#timers-and-delayed-events]
+
+Cilboxスクリプトにはコルーチンがありません。代わりに、ネットワーク対応のスクリプトはネットワークコンポーネントを通じてコールバックをスケジュールできます。
+
+```csharp title="Cilbox"
+using Basis;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
+    net.SendCustomEventDelayedFrames(Rebuild, 2);
+}
+```
+
+ネットワークコンポーネントが不要なタイマーは、`Update`でカウントダウンします。
+
+```csharp
+float remaining = 3f;
+
+void Update()
+{
+    if (remaining <= 0f) return;
+    remaining -= Time.deltaTime;
+    if (remaining <= 0f) CloseDoor();
+}
+```
+
+## プラットフォームチェック
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool vr = BasisPlatformShim.IsVR;
+bool mobile = BasisPlatformShim.IsMobileGpu;
+bool quest = vr && BasisPlatformShim.IsDetected("Android");
+```
+
+プレイヤーがデスクトップとVRを切り替えたときに反応するには、`BasisPlatformEventShim`を追加し、名前でコールバックを定義します。コンポーネントを追加することがオプトインになります。コールバックはすぐに一度発火し、変更のたびに再び発火します。
+
+```csharp title="Cilbox"
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrControls.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+<Callout type="info">
+コード不要: **Basis Platform Switch**（com.basis.examples）は、ルールのリストに基づいてプラットフォームごとにオブジェクトやコンポーネントを有効化、無効化します。
+</Callout>
+
+同じオプトインのパターンは他の変更にもあります。`BasisLanguageEventShim`は`OnLanguageChanged(string code)`を、`BasisGraphicsSettingsEventShim`は`OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`を、`BasisPermissionEventShim`は`OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`を呼び出します。
+
+## 画像とテキストの読み込み
+
+ダウンロードはリクエストが送信される前にアドレスをチェックし、リダイレクトを拒否します。プレイヤーは新しいホストを初回に承認します。
+
+```csharp title="Cilbox"
+using Basis;
+
+var images = new BasisImageDownloader();
+images.DownloadImage("https://example.com/sign.png", result =>
+{
+    if (result.Success) signMaterial.mainTexture = result.Result;
+    else Debug.LogWarning(result.Error);
+});
+
+var strings = new BasisStringDownloader();
+strings.DownloadString("https://example.github.io/questions.json", result =>
+{
+    if (result.Success) LoadQuestions(result.Result);
+});
+```
+
+JSONは`BasisJson`で解析します。これはホスト側で実行されるため、スクリプトには単純な値だけが渡されます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+BasisJsonNode root = BasisJson.Parse(text);
+if (root == null) return;
+string title = root.GetString("title", "Untitled");
+BasisJsonNode questions = root.Get("questions");
+for (int i = 0; i < (questions != null ? questions.Count : 0); i++)
+{
+    string prompt = questions.Get(i).GetString("q", "");
+}
+```
+
+REST APIには`BasisWebRequestShim.GetText`と`PostText`を使用してください（httpsのみ、ワールドとプロップのみ）。
+
+## 外部リンク
+
+プレイヤー自身の操作でWebサイトを開きます。プレイヤーにはアドレスが表示され、確認を求められます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+public void OnWebsiteButtonPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com/community", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) addressLabel.text = "example.com/community";
+    });
+}
+```
+
+`BasisConnectionShim.RequestConnect(this, host, port, password, callback)`も同じように動作し、プレイヤーが承諾すると別のサーバーへ移動させます。
+
+## データの保存（永続化）
+
+`BasisSaveShim`はプレイヤーのマシンにバイト列を保存し、コンテンツのIDごとに整理します。プレイヤーが同意するまでは`Save`はfalseを返し、`Load`はnullを返しますが、スクリプトの残りの部分は動作し続けます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool saved = BasisSaveShim.Save(this, "progress", bytes);
+byte[] loaded = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Name a store to share saves between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+```
+
+制限: スロットごとに256 KB、ストアごとに32スロットと1 MB、1秒あたり8回の書き込み。値をバイト列に詰める方法は[永続化のサンプル](/ja/docs/scripting/examples/persistence)を参照してください。
+
+## メニュー
+
+プレイヤーの設定にタブを追加したり、メニュー内に専用ボタンを持つパネル全体を追加したりできます。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+BasisMenuPage page;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Race Track");
+    if (page == null) return; // refused
+    page.AddHeader("Race");
+    page.AddToggle("Ghost car", true, OnGhost);
+    page.AddSlider("Laps", 1, 10, 3, true, OnLaps);
+    page.AddButton("Reset race", OnReset);
+}
+```
+
+[設定タブのサンプル](/ja/docs/scripting/examples/settings-tab)を参照してください。
+
+## オーディオ
+
+```csharp title="Cilbox"
+var source = GetComponent<AudioSource>();
+source.clip = clip;
+source.spatialBlend = 1f;
+source.Play();
+```
+
+スピーカーでプレイヤーの声を流すには、[シムリファレンス](/ja/docs/scripting/shims/rendering-and-audio)の`BasisVoiceRoutingShim`を参照してください。
+
+## パフォーマンスと品質
+
+プレイヤーの品質ティアとフレームレートを読み取り、処理が重いときにコンテンツを軽くします。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+bool cheap = BasisGraphicsSettingsShim.QualityTier <= BasisGraphicsSettingsShim.TierLow;
+backgroundDetail.SetActive(!cheap);
+
+if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(false);
+```
+
+## デバッグ
+
+`Debug.Log`は書いたとおりに動作し、Basisは各メッセージに送信元のコンテンツのタグを付けます。エディターでは、**Basis > Tools > Cilbox Permissions**で各サンドボックスが許可しているものを確認でき、その**Script Check**タブでブロックされる呼び出しをスクリプトからスキャンできます。**Basis > Creator Guide**ウィンドウには、このガイドとCilbox APIリファレンスの全体がオフラインで収録されています。
+
+<Callout type="warn">
+ブロックされる呼び出しはビルド時には例外を投げません。ホワイトリスト外の呼び出しは、実行されたときに初めて失敗します。アップロード前にスクリプトをスキャンしてください。
+</Callout>

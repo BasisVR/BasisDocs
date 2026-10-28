@@ -1,0 +1,76 @@
+---
+title: エレベーター
+description: 全員が一緒に乗れる移動プラットフォーム。同期されるのは目的の階だけで、各クライアントがプラットフォームをそこへ向けて動かします。
+---
+
+プラットフォームの位置をストリーミングすると、毎フレーム帯域を消費します。エレベーターは常にいずれかの階に向かって動くだけです。**目的の階**を同期し、各クライアントにプラットフォームを自分で動かさせましょう。
+
+## セットアップ
+
+1. コライダー付きのプラットフォームを作成します。
+2. **Elevator**と、`GoTo(floor)`を呼び出すボタンを追加します。各階の高さはインスペクターで設定します。
+
+```csharp title="Elevator.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Elevator : MonoBehaviour
+{
+    public Transform platform;
+    public float[] floorHeights;
+    public float speed = 1.5f;
+
+    BasisNetworkShim net;
+    int target;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void GoTo(int floor)
+    {
+        net.TakeOwnership();
+        target = floor;
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)floor }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length >= 1) target = data[0];
+        if (data.Length == 5)
+        {
+            Vector3 p = platform.localPosition;
+            platform.localPosition = new Vector3(p.x, BasisBinaryShim.ReadSingle(data, 1), p.z);
+        }
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] state = new byte[5];
+        state[0] = (byte)target;
+        BasisBinaryShim.WriteSingle(state, 1, platform.localPosition.y);
+        net.SendCustomNetworkEvent(state, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        Vector3 p = platform.localPosition;
+        float y = Mathf.MoveTowards(p.y, floorHeights[target], speed * Time.deltaTime);
+        platform.localPosition = new Vector3(p.x, y, p.z);
+    }
+}
+```
+
+- すべてのクライアントが同じ動きを実行します。位置のストリームがなくても、乗っている人には滑らかなプラットフォームが見えます。
+- 途中参加者は、目的の階と現在の高さを5バイトのメッセージ1通で受け取ります。
+- `new Vector3(...)`に注目してください。Cilboxでは`p.y`を直接変更すると、コピー元の値も変わってしまいます（[サンドボックスのルール](/ja/docs/scripting/sandbox-rules)を参照）。

@@ -1,0 +1,67 @@
+---
+title: ミニマップ
+description: カメラ、レンダーテクスチャ、任意のGraphics.Blitマスクを使った、ローカルプレイヤーを追従するリアルタイムの見下ろし型ミニマップ。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## セットアップ
+
+1. **Render Texture**アセットを作成します。例えば512 x 512です。
+2. 真下を向いた**Camera**を作成します。**Projection**をOrthographicに、**Target Texture**をレンダーテクスチャに設定し、プレイヤーとUIを除外する**Culling Mask**を設定します。
+3. レンダーテクスチャをキャンバス内の**Raw Image**、またはマテリアルに表示します。
+4. カメラに**Minimap**を追加します。
+
+## スクリプト
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Graphics.Blitで丸いマップにする
+
+四角いテクスチャを円形にマスクするには、毎フレームマテリアルを通してblitします。`Graphics.Blit`はCilboxスクリプトで使える唯一の描画呼び出しです。
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+ミニマップのカメラはシーンをもう一度レンダリングします。レンダーテクスチャは小さく、カリングマスクは絞り込み、`BasisGraphicsSettingsShim.QualityTier`を使って低品質ティアではオフにしてください。
+</Callout>

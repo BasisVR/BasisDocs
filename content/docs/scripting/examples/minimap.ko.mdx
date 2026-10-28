@@ -1,0 +1,67 @@
+---
+title: 미니맵
+description: 카메라, 렌더 텍스처, 그리고 선택적인 Graphics.Blit 마스크를 사용하여 로컬 플레이어를 따라가는 실시간 탑다운 미니맵.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 설정
+
+1. **Render Texture** 에셋을 만듭니다. 예를 들어 512 x 512.
+2. 정면 아래를 내려다보는 **Camera**를 만듭니다. **Projection**을 Orthographic으로, **Target Texture**를 렌더 텍스처로 설정하고, 플레이어와 UI를 제외하는 **Culling Mask**를 설정합니다.
+3. 캔버스의 **Raw Image**나 머티리얼에 렌더 텍스처를 표시합니다.
+4. 카메라에 **Minimap**을 추가합니다.
+
+## 스크립트
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Graphics.Blit으로 원형 지도 만들기
+
+사각형 텍스처를 원형으로 마스킹하려면 매 프레임 머티리얼을 통해 blit 하세요. `Graphics.Blit`은 Cilbox 스크립트에서 사용할 수 있는 유일한 그리기 호출입니다.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+미니맵 카메라는 씬을 한 번 더 렌더링합니다. 렌더 텍스처는 작게, 컬링 마스크는 좁게 유지하고, `BasisGraphicsSettingsShim.QualityTier`로 낮은 품질 등급에서는 꺼 두세요.
+</Callout>

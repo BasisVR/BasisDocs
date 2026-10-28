@@ -1,0 +1,94 @@
+---
+title: 玩家
+description: BasisPlayersShim、BasisVelocityShim、BasisPlayspaceInputShim、BasisSeatShim、BasisAvatarSwitchShim 與 BasisPermissionsShim。
+---
+
+## BasisPlayersShim
+
+玩家名單。玩家會以唯讀的 `IBasisPlayer` 傳回；姿勢則以複製的向量傳回。
+
+```csharp
+using Basis.Shims;
+using Basis.Scripts.BasisSdk.Players;
+
+int count = BasisPlayersShim.Count;
+IBasisPlayer me = BasisPlayersShim.Local;
+IBasisPlayer nearest = BasisPlayersShim.Nearest(transform.position);
+IBasisPlayer[] close = BasisPlayersShim.Within(transform.position, 5f);
+IBasisPlayer byId = BasisPlayersShim.GetById(playerId);
+IBasisPlayer byUuid = BasisPlayersShim.GetByUUID(uuid);
+string[] names = BasisPlayersShim.DisplayNames;
+int questPlayers = BasisPlayersShim.CountOnPlatform("Android");
+
+Vector3 position = nearest.GetPosition();
+Vector3 head = nearest.GetBonePosition(HumanBodyBones.Head);
+float scale = nearest.GetAvatarScale();
+bool loaded = nearest.IsAvatarLoaded();
+ushort id = nearest.GetPlayerId();
+```
+
+## BasisVelocityShim
+
+僅限世界。在世界空間中推動本機玩家，單位為公尺每秒。
+
+```csharp
+Vector3 v = BasisVelocityShim.Velocity;
+BasisVelocityShim.SetVelocity(new Vector3(v.x, 10f, v.z)); // jump pad
+BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
+```
+
+## BasisPlayspaceInputShim
+
+僅限虛擬形象。驅動穿戴者自己的移動。`Additive` 會與他們的輸入混合，`Override` 則會取代它。
+
+```csharp
+BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+input.Clear();
+```
+
+## BasisSeatShim
+
+```csharp
+if (BasisSeatShim.IsSeated)
+{
+    BasisSeat seat = BasisSeatShim.CurrentSeat;
+    seatLabel.text = seat.name;
+}
+```
+
+## BasisAvatarSwitchShim
+
+在玩家更換虛擬形象時通知您。它會跟隨該玩家，在每次更換後都能持續運作。用完後請將它 Dispose。
+
+```csharp
+BasisAvatarSwitchShim watcher;
+
+void Start()
+{
+    watcher = new BasisAvatarSwitchShim(BasisPlayersShim.Local);
+    watcher.Switched += OnSwitched;
+}
+
+void OnSwitched() { Debug.Log("new avatar"); }
+
+void OnDestroy() { watcher?.Dispose(); }
+```
+
+## BasisPermissionsShim
+
+本機玩家的角色會立即回應。詢問其他玩家則需要一次往返，答案會透過回呼傳回。
+
+```csharp
+if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);
+
+BasisPermissionsShim.IsModerator(player, isMod =>
+{
+    badge.SetActive(isMod);
+});
+
+bool canKick = BasisPermissionsShim.LocalHasPermission("basis.moderation.kick");
+```
+
+若要處理玩家在世界中時發生的變更，請使用 `BasisPermissionEventShim`（[事件](/tw/docs/scripting/shims/events)）。

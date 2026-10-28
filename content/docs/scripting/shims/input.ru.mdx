@@ -1,0 +1,98 @@
+---
+title: Ввод
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger и BasisUIExtensions.
+---
+
+## BasisControllerInputShim
+
+Только для миров. Состояние VR-контроллеров. Пока открыто меню или указатель находится над UI, всё читается как отпущенное.
+
+```csharp
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return;
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Primary)) Jump();
+    bool holding = BasisControllerInputShim.GetButton(BasisControllerHand.Left, BasisControllerButton.Grip);
+    float trigger = BasisControllerInputShim.GetTrigger(BasisControllerHand.Right);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+Кнопки: `Trigger`, `Grip`, `Primary`, `Secondary`, `StickClick`, `Menu`.
+
+## BasisDesktopInputShim
+
+Ввод мыши на десктопе. Кнопка 0 левая, 1 правая, 2 средняя.
+
+```csharp
+if (!BasisDesktopInputShim.HasMouse) return;
+if (BasisDesktopInputShim.GetMouseButtonDown(0)) Shoot();
+Vector2 delta = BasisDesktopInputShim.MouseDelta;
+float scroll = BasisDesktopInputShim.MouseScroll.y;
+Vector2 screen = BasisDesktopInputShim.MousePosition;
+```
+
+## BasisHapticsShim
+
+Вибрирует контроллерами локального игрока. Сила от 0 до 1, не дольше 1 секунды, 10 импульсов в секунду на единицу контента. Возвращает false, если ничего не сработало.
+
+```csharp
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## BasisInteractableShim
+
+Делает объект нажимаемым указателем, с цветами наведения и нажатия на его рендерере.
+
+```csharp
+BasisInteractableShim button;
+
+void Start()
+{
+    button = GetComponent<BasisInteractableShim>();
+    button.ButtonDown += OnDown;
+    button.ButtonUp += OnUp;
+}
+
+void OnDown() { lamp.SetActive(!lamp.activeSelf); }
+void OnUp() { }
+```
+
+Поля в инспекторе: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (свойство цвета материала).
+
+## BasisActionTrigger
+
+Передаёт события указателя Unity UI в ваш скрипт. Добавьте его на элемент UI.
+
+```csharp
+using UnityEngine.EventSystems;
+
+void Start()
+{
+    var trigger = GetComponent<BasisActionTrigger>();
+    trigger.PointerEnter += e => highlight.SetActive(true);
+    trigger.PointerExit += e => highlight.SetActive(false);
+    trigger.PointerClick += e => Select();
+}
+```
+
+Также доступны: `PointerDown`, `PointerUp`, `BeginDrag`, `Drag`, `EndDrag`, `Drop`, `Scroll`.
+
+## BasisUIExtensions
+
+`Toggle.onValueChanged` принимает `UnityAction<bool>`. Это расширение позволяет передать вместо него метод.
+
+```csharp
+using Basis.Shims;
+using UnityEngine.UI;
+
+public Toggle musicToggle;
+
+void Start() { musicToggle.AddListener(OnMusic); }
+
+void OnMusic(bool on) { music.SetActive(on); }
+```

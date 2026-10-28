@@ -1,0 +1,33 @@
+---
+title: Dag-nachtcyclus
+description: Een zon die door de serverklok wordt aangestuurd. Elke speler ziet hetzelfde tijdstip van de dag en er is geen netwerkcode nodig.
+---
+
+Een dagcyclus die door `Time.time` wordt aangestuurd, loopt uit elkaar tussen spelers die op verschillende momenten zijn binnengekomen. Door hem vanuit de serverklok aan te sturen, blijft iedereen synchroon zonder dat er berichten nodig zijn.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- Geen eigenaarschap en geen code voor late joiners: de klok is de gedeelde toestand.
+- Werk in een zware scène de zon een paar keer per seconde bij in plaats van elk frame.

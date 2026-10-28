@@ -1,0 +1,90 @@
+---
+title: Native y Cilbox
+description: Las dos formas de programar scripts en Basis. Los scripts nativos se compilan en la aplicación; los scripts Cilbox se distribuyen dentro del contenido y se ejecutan en tiempo de ejecución dentro de un sandbox.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis ejecuta código de dos formas. Cuál utilice depende de **dónde vive el script**: dentro de la aplicación que usted compila, o dentro del contenido que se carga en tiempo de ejecución.
+
+## Native: compilado en la aplicación
+
+Un script nativo es un `MonoBehaviour` normal de Unity que se compila dentro del cliente Basis (o de su propia aplicación construida sobre el framework Basis). Se compila junto con la aplicación y se distribuye con la siguiente compilación del cliente, no con un mundo o un prop.
+
+- C# completo y la API completa de Unity y Basis.
+- Velocidad nativa completa.
+- Puede derivar de clases de Basis como `BasisNetworkBehaviour` y `BasisSyncedObject`.
+- Solo existe en los clientes compilados con él. Los jugadores del cliente público no tienen su script.
+
+Use scripts nativos cuando esté **construyendo una aplicación o un juego sobre Basis**: sus propios menús, reglas de juego, sistemas y cualquier componente del que dependa su contenido.
+
+## Cilbox: scripts en tiempo de ejecución dentro del contenido
+
+Un script Cilbox es un `MonoBehaviour` marcado con `[Cilboxable]` que se distribuye **dentro** del archivo `.bee` de un mundo, prop o avatar. Cuando el contenido se carga, Basis lo ejecuta en el intérprete Cilbox, dentro de un sandbox propio de ese tipo de contenido (Scene, Prop o Avatar).
+
+- Funciona en cualquier cliente Basis que cargue el contenido. No es necesario compilar el cliente.
+- En sandbox. Solo se pueden llamar tipos y métodos de la lista blanca, lo que impide que el contenido dañe la máquina del jugador.
+- Más lento que el código nativo, porque el código se interpreta.
+- Usa shims en lugar de clases base, por ejemplo `BasisNetworkShim` en lugar de derivar de `BasisNetworkBehaviour`.
+
+Use Cilbox cuando esté **creando contenido de usuario**: mundos, props y avatares que otras personas cargan.
+
+## Resumen
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| Vive en | La compilación de la aplicación | El mundo, prop o avatar |
+| Se carga | Cuando se compila la aplicación | En tiempo de ejecución, con el contenido |
+| Se marca con | Nada | `[Cilboxable]` |
+| API | Todo | Lista blanca por sandbox |
+| Velocidad | Nativa | Interpretada, mucho más lenta |
+| Red | Derivar de `BasisNetworkBehaviour` | Usar `BasisNetworkShim` |
+| Quién lo tiene | Los jugadores de su compilación | Cualquiera que cargue el contenido |
+
+## El mismo script de ambas formas
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## Cómo distribuir cada uno
+
+- Native: añada el script a su proyecto Unity y compile el cliente. Si coloca un componente nativo dentro del bundle de un mundo o prop, añada también su tipo al selector de content police correspondiente, o se eliminará cuando se cargue el contenido (consulte [Componentes permitidos](/es/docs/scripting/allowed-components)).
+- Cilbox: añada un **Cilbox Scene Basis** (mundo) o un **Cilbox Prop Basis** (prop) a su contenido, marque los scripts con `[Cilboxable]` y compile el `.bee` como de costumbre. Consulte [Conceptos básicos](/es/docs/scripting/examples/basics).
+
+<Callout type="info">
+Los ejemplos de esta documentación están etiquetados como **Native** o **Cilbox**. La mayoría de los ejemplos Cilbox también compilan como scripts nativos; los ejemplos nativos normalmente necesitan cambios para ejecutarse en Cilbox. Las reglas a tener en cuenta están en [Reglas del sandbox](/es/docs/scripting/sandbox-rules).
+</Callout>

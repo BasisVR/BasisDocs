@@ -1,0 +1,91 @@
+---
+title: Redes
+description: Cómo hacer que un mundo o prop de Basis se comporte igual para todos los jugadores, variables sincronizadas, eventos de red, propiedad y jugadores que se unen tarde.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Todo lo que hace un script se ejecuta en la máquina de un solo jugador. Si un jugador abre una puerta, nadie más lo ve hasta que usted se lo comunique a la red.
+
+Para saber cómo funciona el transporte en sí (retransmisión por el servidor, métodos de entrega, frecuencias de actualización según la distancia), consulte [Sincronización de red](/es/docs/technical/network-syncing).
+
+## Las cuatro ideas
+
+| Idea | Qué es | Úsela para |
+| --- | --- | --- |
+| **Variables sincronizadas** | Valores que escribe el propietario y leen todos los demás, enviados de forma continua e interpolados. | Posiciones, el ángulo de una palanca, una puntuación, cualquier cosa que tenga un estado actual. |
+| **Eventos de red** | Mensajes puntuales con una carga útil de bytes. | "Se disparó un tiro", "empezó la ronda", "reproducir este sonido". |
+| **Propiedad** | Exactamente un jugador es propietario de cada objeto en red y es quien puede escribirlo. | Decidir quién controla un pickup, quién lleva la puntuación. |
+| **Jugadores que se unen tarde** | Jugadores que llegan después de que las cosas cambiaran. | Asegurarse de que vean el estado actual y no los valores predeterminados de la escena. |
+
+<Callout type="info">
+Si un jugador que se une cinco minutos después necesita verlo, es **estado** y debe ir en una variable sincronizada (o debe reenviársele). Si solo importa en el momento en que ocurre, es un **evento**.
+</Callout>
+
+## Los bloques de construcción
+
+- `BasisNetworkBehaviour` es la clase base para los scripts en red compilados en el cliente. Obtiene un ID de red, un propietario y las callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` y `OnPlayerLeft`.
+- `BasisNetworkShim` es lo mismo para los scripts de Cilbox. Un script de Cilbox no puede derivar de `BasisNetworkBehaviour`; en su lugar obtiene un `BasisNetworkShim` con `GetComponent` y se suscribe a sus eventos.
+- `BasisSyncedObject` se basa en `BasisNetworkBehaviour` y añade un flujo de estado compacto e interpolado. `BasisSyncedParameters`, `BasisSyncedTransform` y `BasisSyncedRigidbody` son componentes listos para usar construidos sobre él.
+- `BasisPickupSyncNetworking` y `BasisSeatSync` sincronizan pickups y asientos sin código.
+
+## Un script en red, de principio a fin
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+Los scripts Native como este funcionan en compilaciones del cliente. En contenido subido, escriba lo mismo como un script de Cilbox (ver más abajo).
+
+Lo que muestra:
+
+1. El jugador que pulsa el botón toma la propiedad y pasa a ser la única fuente de verdad.
+2. El nuevo valor se **envía como evento** a todos los demás (`Recipients = null` significa todos excepto usted).
+3. Cuando alguien se une, **solo el propietario** le envía el valor actual.
+
+El mismo script para Cilbox está en [Eventos de red](/es/docs/scripting/networking/network-events#cilbox).
+
+## Páginas de esta guía
+
+- [Eventos de red](/es/docs/scripting/networking/network-events): envío de mensajes, destinatarios, métodos de entrega, cargas útiles.
+- [Variables sincronizadas](/es/docs/scripting/networking/synced-variables): `BasisSyncedParameters` y campos personalizados de `BasisSyncedObject`.
+- [Propiedad](/es/docs/scripting/networking/ownership): quién es propietario de qué, cómo tomar y comprobar la propiedad, qué ocurre cuando el propietario se va.
+- [Jugadores que se unen tarde](/es/docs/scripting/networking/late-joiners): poner al día a los jugadores nuevos.
+- [Componentes de red](/es/docs/scripting/networking/network-components): los componentes de sincronización sin código.
+- [Rendimiento y depuración](/es/docs/scripting/networking/performance): ancho de banda, frecuencias de envío y cómo encontrar errores de sincronización.

@@ -1,0 +1,98 @@
+---
+title: イベント
+description: 有効化して使うイベントシム。StartでコンポーネントをGetし、コールバックを名前で宣言します。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+イベントシムはすべて同じ仕組みで動作します。`Start`で`GetComponent<T>()`を一度呼び出し（Cilboxがコンポーネントを追加します）、シムのコールバック名でメソッドを宣言します。Basisがそれを直接呼び出します。購読や購読解除は必要ありません。
+
+<Callout type="info">
+ほとんどのイベントシムは、有効化した直後に現在の値で一度呼び出してくれます。起動時のコードを別に書く必要はありません。
+</Callout>
+
+## BasisPlatformEventShim
+
+```csharp
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrHud.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+## BasisLanguageEventShim
+
+```csharp
+void Start() { GetComponent<BasisLanguageEventShim>(); }
+
+void OnLanguageChanged(string code)
+{
+    sign.text = code == "de" ? "Willkommen" : "Welcome";
+}
+```
+
+## BasisGraphicsSettingsEventShim
+
+1フレームに最大1回の呼び出しにまとめられます。
+
+```csharp
+void Start() { GetComponent<BasisGraphicsSettingsEventShim>(); }
+
+void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+{
+    detail.SetActive(qualityTier >= BasisGraphicsSettingsShim.TierMedium);
+}
+```
+
+## BasisPermissionEventShim
+
+```csharp
+void Start() { GetComponent<BasisPermissionEventShim>(); }
+
+void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+{
+    staffPanel.SetActive(isAdmin || isModerator);
+}
+```
+
+## BasisJiggleEventShim
+
+誰かがこのオブジェクトの揺れ物理を掴んだり触れたりしたときに発火します。どちらのコールバックも、開始時に一度（`began`がtrue）、終了時に一度発火します。
+
+```csharp
+BasisJiggleEventShim jiggle;
+int tail;
+
+void Start()
+{
+    jiggle = GetComponent<BasisJiggleEventShim>();
+    tail = jiggle.FindJiggleRig("Tail");
+}
+
+void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+{
+    if (rigIndex == tail && began) squeak.Play();
+}
+
+void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
+```
+
+`GetJiggleRigCount()`と`GetJiggleRigName(index)`でリグを列挙できます。検出は、スクリプトが有効化している間だけ実行されます。
+
+## BasisBeforeRenderShim
+
+すべてのポーズ処理とIK処理の後、フレームが描画される直前に実行されます。1フレームの遅延なしに、何かを手や頭に固定するために使用します。処理は短くしてください。描画がこれを待ちます。
+
+```csharp
+void Start() { GetComponent<BasisBeforeRenderShim>(); }
+
+void OnBeforeRender()
+{
+    IBasisPlayer me = BasisPlayersShim.Local;
+    if (me == null) return;
+    transform.position = me.GetBonePosition(HumanBodyBones.RightHand);
+}
+```

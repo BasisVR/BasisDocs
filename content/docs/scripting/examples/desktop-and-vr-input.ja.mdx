@@ -1,0 +1,40 @@
+---
+title: デスクトップとVRの入力
+description: VRのトリガーまたはマウスクリックでブラスターを発射し、VRではハプティクスも鳴らす1つのスクリプト。
+---
+
+```csharp title="Blaster.cs (Cilbox, world)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Blaster : MonoBehaviour
+{
+    public Transform muzzle;
+    public AudioSource shot;
+    public float cooldown = 0.25f;
+    float next;
+
+    void Update()
+    {
+        bool fire = false;
+        if (BasisPlatformShim.IsVR)
+        {
+            fire = BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Trigger);
+        }
+        else if (BasisDesktopInputShim.HasMouse)
+        {
+            fire = BasisDesktopInputShim.GetMouseButtonDown(0);
+        }
+        if (!fire || Time.time < next) return;
+        next = Time.time + cooldown;
+        shot.Play();
+        if (BasisPlatformShim.IsVR) BasisHapticsShim.Play(this, BasisHapticHand.Right, 0.7f, 0.06f);
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, 50f)) Debug.Log(hit.collider.name);
+    }
+}
+```
+
+- 手に持つアイテムには、**Basis Pickup Interactable**と`OnPickupUse`（[ピックアップ銃](/ja/docs/scripting/examples/pickup-gun)）を使うのがおすすめです。どのプラットフォームでも同じように動作します。
+- メニューが開いている間、コントローラー入力は離された状態として読み取られます。メニューのボタンをクリックしてもブラスターは発射されません。

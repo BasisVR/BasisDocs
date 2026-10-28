@@ -1,0 +1,41 @@
+---
+title: Toegestane componenten
+description: Welke componenten behouden blijven in geüploade werelden, props en avatars, hoe je dat controleert en hoe client-builds er meer toevoegen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Wanneer content laadt, verwijdert de **content police** van Basis elk component waarvan het type niet op de allowlist voor dat soort content staat. Scripts gemarkeerd met `[Cilboxable]` blijven behouden, omdat ze eerst worden omgezet naar gesandboxte proxies.
+
+## De allowlists
+
+De lijsten staan in `Packages/com.basis.sdk/Settings/`:
+
+| Asset | Geldt voor |
+| --- | --- |
+| `SceneContentPoliceSelector` | Werelden |
+| `PropContentPoliceSelector` | Props |
+| `AvatarContentPoliceSelector` | Avatars |
+
+Elk is een lijst met volledige typenamen. De vergelijking is exact: een subklasse van een toegestaan type is **niet** toegestaan, tenzij die zelf vermeld staat.
+
+## Wat standaard is toegestaan
+
+**Werelden en props:** rendering (mesh-, skinned mesh-, line-, trail-, particle- en LOD-componenten, lichten, reflection probes, camera's), physics (colliders, rigidbodies, joints), audio sources en Steam Audio, animators en animatie, UI-canvassen en TextMesh Pro, `VideoPlayer`, VFX Graph-binders, AudioLink, Basis-constraints, de Basis-mediaspeler, spiegel, stoelen, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, voertuigen, `BasisPlatformSwitch`, en de Cilbox-sandbox en shims. Werelden staan ook navigatie toe (`NavMeshAgent`, `NavMeshObstacle`), post processing volumes en het avatar-voetstuk.
+
+**Avatars:** rendering, physics, audio, animators, constraints, stoelen, gesynchroniseerde transforms, OSC en de avatar-shims. Geen camera's, lichten, UI of video.
+
+**Standaard niet toegestaan** (alleen client-builds): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` en elke eigen native `MonoBehaviour`.
+
+<Callout type="info">
+De selector-assets zijn de bron van waarheid en veranderen tussen versies. Open ze in de inspector om de huidige lijst te zien.
+</Callout>
+
+## Je content controleren
+
+- Ga naar play mode: Basis past dezelfde controle toe, en verwijderde componenten worden gelogd.
+- Het venster **Basis > Tools > Cilbox Permissions** toont wat elke sandbox scripts laat aanroepen.
+
+## Een component toevoegen (client-builds)
+
+Als je je eigen client uitbrengt, voeg dan de volledige naam van het type toe aan de bijbehorende selector-asset. Content die voor de publieke client is gebouwd kan hier niet op rekenen; zet daar de logica om naar een `[Cilboxable]`-script.

@@ -1,0 +1,65 @@
+---
+title: Scènecomponenten
+description: De Basis-componenten die je in een wereld plaatst, wat elk ervan doet en waar je meer kunt lezen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Deze componenten zijn de bouwstenen van een Basis-wereld. Geen ervan heeft code nodig. Items gemarkeerd met *(client-builds)* staan niet op de standaard allowlist voor geüploade content; zie [Toegestane componenten](/nl/docs/scripting/allowed-components).
+
+## Vereist
+
+| Component | Wat het doet |
+| --- | --- |
+| **Basis Scene** | Markeert de scène als Basis-wereld. Stelt het **Spawn Point** in, de **Respawn Height** vanaf waar vallende spelers worden teruggezet, de audio mixer group en de hoofdcamera. Eén per wereld. Zie [Bouwen](/nl/docs/world/building). |
+
+## Interactie
+
+| Component | Wat het doet |
+| --- | --- |
+| **Basis Interactable Shim** | Maakt een object indrukbaar vanuit een script: `ButtonDown` en `ButtonUp`, met hover- en drukkleuren. |
+| **Basis Pickup Interactable** | Laat spelers een object vastpakken, vasthouden en gebruiken. Geeft `OnPickupUse` wanneer de trigger wordt ingedrukt terwijl het wordt vastgehouden. |
+| **Basis Interactable Button** | Een kant-en-klare indrukbare knop (com.basis.examples, prefab `ExampleInteractableButton`). |
+| **Basis Seat** | Laat spelers zitten. Rotatielimieten, markeringsmodus en scripting via `TrySeatLocalPlayer`, `EjectLocalPlayer` en `IsAvailable`. |
+| **Basis Avatar Pedestal** | Toont een avatar en laat spelers ernaar wisselen. Alleen werelden. |
+| **Basis Runtime Loader** *(client-builds)* | Spawnt props vanuit een load config, bijvoorbeeld vanaf een knop. Zie [Scène-props](/nl/docs/world/scene-props). |
+
+## Netwerken
+
+| Component | Wat het doet |
+| --- | --- |
+| **Basis Pickup Sync Networking** | Synchroniseert de pose en de houder van een pickup. |
+| **Basis Synced Transform** | Synchroniseert een bewegend object. **Basis Synced Rigidbody** *(client-builds)* voegt snelheden toe. |
+| **Basis Synced Parameters** *(client-builds)* | Synchroniseert benoemde waarden (floats, ints, bools, kleuren). |
+| **Basis Seat Sync** | Synchroniseert wie er in een stoel zit. |
+| **Basis Networked Vehicle** | Gesynchroniseerde bestuurbare voertuigen, opgebouwd uit onderdelen voor voertuigcarrosserie, wielen, thrusters en pilotenstoel. |
+
+Zie [Netwerkcomponenten](/nl/docs/scripting/networking/network-components).
+
+## Media en rendering
+
+| Component | Wat het doet |
+| --- | --- |
+| **Basis Media Player** | Gesynchroniseerd afspelen van video en streams. Zie [Mediaspeler](/nl/docs/world/media-player). |
+| **Basis SDK Mirror** | Een spiegel. Stel de grootte van de render texture in, de far clip en of post processing in de reflectie wordt gerenderd. Spiegels renderen de scène opnieuw. Houd ze klein en standaard uit. |
+| **TextMesh Pro** | Tekst op borden en in UI. Ondersteund in werelden en in Cilbox-scripts. |
+| **Canvas** | UI in wereldruimte die werkt met de Basis-pointer. Zie [UI Canvas](/nl/docs/world/ui-canvas). |
+
+## Speler en platform
+
+| Component | Wat het doet |
+| --- | --- |
+| **Basis Locomotion Zone** *(client-builds)* | Verandert spronghoogte, loop- en rensnelheid, zwaartekracht of bewegingsmodus zolang de lokale speler zich in de trigger bevindt. |
+| **Basis Platform Switch** | Schakelt objecten en componenten per platform (VR, desktop, mobiel) in of uit op basis van een lijst met regels. |
+
+## Scripting
+
+| Component | Wat het doet |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | De sandbox waarin de `[Cilboxable]`-scripts van je wereld of prop draaien. Zie [Scripting](/nl/docs/scripting/scripting). |
+| **Basis OSC** | OSC-berichten publiceren en erop abonneren. Zie [OSC](/nl/docs/scripting/osc). |
+| **Basis Action Trigger** | Stuurt UI-pointerevents (enter, exit, click, drag) door naar een Cilbox-script. |
+
+<Callout type="info">
+Elk component is gedocumenteerd in de Unity-editor: selecteer het en gebruik de documentatieknop in de inspector, of open **Basis > Creator Guide** voor deze handleiding offline.
+</Callout>

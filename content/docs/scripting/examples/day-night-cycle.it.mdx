@@ -1,0 +1,33 @@
+---
+title: Ciclo giorno/notte
+description: Un sole guidato dall'orologio del server. Ogni giocatore vede la stessa ora del giorno e non serve codice di rete.
+---
+
+Un ciclo giorno/notte guidato da `Time.time` va fuori sincrono tra giocatori entrati in momenti diversi. Guidarlo con l'orologio del server mantiene tutti allineati senza alcun messaggio.
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- Nessuna ownership e nessun codice per chi arriva in ritardo: lo stato condiviso è l'orologio.
+- In una scena pesante, aggiorna il sole qualche volta al secondo invece che a ogni frame.

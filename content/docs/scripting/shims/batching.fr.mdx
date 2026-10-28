@@ -1,0 +1,93 @@
+---
+title: Traitement par lots
+description: BasisTransformBatchShim, BasisTransformSyncShim, BasisBlendShapeSyncShim, BasisVectorArrayShim et BasisSphereCastShim, pour faire beaucoup de travail en un seul appel.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Chaque appel d'un script Cilbox vers Unity est coûteux, souvent bien plus que le travail qu'il effectue. Ces shims font passer des tableaux entiers de l'autre côté de la frontière en un seul appel et exécutent la boucle en natif.
+
+<Callout type="info">
+Si une boucle dans `Update` touche plus d'une poignée de transforms ou de blendshapes, traitez-la par lots.
+</Callout>
+
+## BasisTransformBatchShim
+
+Lire ou écrire les positions, rotations et échelles de nombreux transforms à la fois.
+
+```csharp
+using Basis.Shims;
+
+public Transform[] boids;
+Vector3[] positions;
+
+void Start() { positions = new Vector3[boids.Length]; }
+
+void Update()
+{
+    BasisTransformBatchShim.GetPositions(boids, positions);
+    for (int i = 0; i < positions.Length; i++) positions[i] = positions[i] + Vector3.up * Time.deltaTime;
+    BasisTransformBatchShim.SetPositions(boids, positions);
+}
+```
+
+Également : `GetLocalPositions`, `SetLocalPositions`, `SetRotations`, `SetLocalRotations`, `SetLocalScales`, des versions avec tableaux de floats `xyz`, et `RotateWorld`.
+
+## BasisTransformSyncShim
+
+Copie un ensemble de transforms sur un autre à chaque image, en natif. Ce n'est pas du réseau : il reproduit des transforms sur ce client, par exemple pour qu'un costume suive les os d'un avatar.
+
+```csharp
+BasisTransformSyncShim mirror;
+
+void Start()
+{
+    mirror = new BasisTransformSyncShim();
+    mirror.Channels = BasisTransformSyncShim.ChannelPose;
+    mirror.Space = BasisTransformSyncShim.SpaceLocal;
+    mirror.BindTransforms(sourceBones, costumeBones, this);
+}
+
+void OnDestroy() { mirror.Dispose(); }
+```
+
+Versions statiques ponctuelles : `GetValues`, `SetValues` et `CopyValues`.
+
+## BasisBlendShapeSyncShim
+
+La même chose pour les blendshapes : lire, écrire ou copier tous les poids d'un mesh en un seul appel.
+
+```csharp
+float[] weights = new float[BasisBlendShapeSyncShim.ShapeCount(face)];
+BasisBlendShapeSyncShim.GetWeights(face, weights);
+BasisBlendShapeSyncShim.SetWeights(mask, weights, 0.01f);
+
+// Or keep a mask's blendshapes following the face every frame.
+var follow = new BasisBlendShapeSyncShim();
+follow.BindMeshes(new[] { face }, new[] { mask }, this);
+```
+
+## BasisVectorArrayShim
+
+Sépare des vecteurs en tableaux de floats puis les réassemble. Les calculs sur de simples floats coûtent beaucoup moins cher dans l'interpréteur.
+
+```csharp
+BasisVectorArrayShim.Split(positions, xs, ys, zs);
+for (int i = 0; i < xs.Length; i++) ys[i] += Mathf.Sin(xs[i] + Time.time) * 0.01f;
+BasisVectorArrayShim.Join(xs, ys, zs, positions);
+```
+
+## BasisSphereCastShim
+
+Tests de rayons et de sphères sur des tableaux, sans colliders physiques. Utile pour des balles contre de nombreuses cibles, ou pour des boules de billard.
+
+```csharp
+if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.position, 0.25f, out Vector3 hit))
+{
+    Spark(hit);
+}
+
+uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
+```
+
+Les distances sont au carré (`radiusSq`). Les bits de `skipMask` excluent des sphères par index.

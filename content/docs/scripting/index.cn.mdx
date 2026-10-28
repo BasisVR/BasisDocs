@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 脚本在 Basis 框架内提供高级功能。本文档将引导您使用 Unity 和 Basis SDK 创建、构建和测试脚本。
 
-Basis 还使用了 `Cilbox` 沙盒 CIL 模拟器 Unity 包。
+## Native 与 Cilbox
+
+Basis 有两种脚本：
+
+- **Native** 脚本编译进应用程序。它们拥有完整的 Unity 和 Basis API 以及原生速度，但只存在于包含它们的客户端构建中。在 Basis 上构建应用程序或游戏时使用它们。
+- **Cilbox** 脚本是运行时脚本。它们随世界、道具或虚拟形象一起发布，标记为 `[Cilboxable]`，并在任何加载该内容的客户端上于沙盒中运行。用于用户内容。
+
+完整的对比请参见 [Native 与 Cilbox](/cn/docs/scripting/native-and-cilbox)。
 
 ## 快速入门指南
 
 <Cards>
   <Card
+    title="Native 与 Cilbox"
+    description="编译进应用程序与内容中的运行时脚本"
+    href="/cn/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="脚本"
     description="如何使用脚本"
     href="/cn/docs/scripting/scripting"
+  />
+  <Card
+    title="常见用法"
+    description="玩家、输入、UI、计时器、加载数据、保存和菜单"
+    href="/cn/docs/scripting/common-usages"
+  />
+  <Card
+    title="沙盒规则"
+    description="Cilbox 的注意事项和性能开销"
+    href="/cn/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="虚拟形象脚本"
+    description="虚拟形象上的脚本，穿戴者与所有人"
+    href="/cn/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="网络"
+    description="同步变量、网络事件、所有权和后加入者"
+    href="/cn/docs/scripting/networking"
+  />
+  <Card
+    title="示例"
+    description="常见世界和道具功能的完整脚本"
+    href="/cn/docs/scripting/examples"
   />
   <Card
     title="OSC"

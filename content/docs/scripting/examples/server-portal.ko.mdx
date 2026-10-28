@@ -1,0 +1,37 @@
+---
+title: 서버 포털
+description: BasisConnectionShim을 사용해 플레이어에게 다른 Basis 서버로 이동을 제안하는 포털.
+---
+
+```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerPortal : MonoBehaviour
+{
+    public string host = "play.example.com";
+    public int port = 4296;
+    public TextMeshPro sign;
+
+    void Start()
+    {
+        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        sign.text = host;
+    }
+
+    void OnPressed()
+    {
+        BasisConnectionShim.RequestConnect(this, host, port, null, result =>
+        {
+            if (result == BasisConnectionResult.Declined) sign.text = "Maybe next time";
+            else if (result != BasisConnectionResult.Accepted) sign.text = $"Can't connect: {result}";
+        });
+    }
+}
+```
+
+- 요청은 플레이어 자신의 누르기에서 와야 하며, 플레이어는 항상 주소를 보고 확인합니다.
+- 비공개 서버라면 네 번째 인수로 비밀번호를 넘기세요.

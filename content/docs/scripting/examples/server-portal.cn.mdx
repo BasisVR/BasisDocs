@@ -1,0 +1,37 @@
+---
+title: 服务器传送门
+description: 使用 BasisConnectionShim，提议将玩家转移到另一台 Basis 服务器的传送门。
+---
+
+```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerPortal : MonoBehaviour
+{
+    public string host = "play.example.com";
+    public int port = 4296;
+    public TextMeshPro sign;
+
+    void Start()
+    {
+        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        sign.text = host;
+    }
+
+    void OnPressed()
+    {
+        BasisConnectionShim.RequestConnect(this, host, port, null, result =>
+        {
+            if (result == BasisConnectionResult.Declined) sign.text = "Maybe next time";
+            else if (result != BasisConnectionResult.Accepted) sign.text = $"Can't connect: {result}";
+        });
+    }
+}
+```
+
+- 请求必须来自玩家自己的按下操作，并且玩家始终会看到地址并进行确认。
+- 对于私有服务器，请将密码作为第四个参数传入。

@@ -1,0 +1,56 @@
+---
+title: 虛擬形象
+description: BasisAvatarShim 與 BasisVixxyShim，供虛擬形象上的腳本使用。
+---
+
+## BasisAvatarShim
+
+在虛擬形象沙盒中，`BasisAvatar` 會以 `BasisAvatarShim` 的形式提供。請寫 `BasisAvatar`。
+
+```csharp
+using Basis.Scripts.BasisSdk;
+
+BasisAvatar avatar;
+
+void Start()
+{
+    avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+    avatar.OnAvatarReady += OnReady;
+}
+
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    Animator animator = avatar.Animator;
+    SkinnedMeshRenderer face = avatar.FaceVisemeMesh;
+    float scale = avatar.HumanScale;
+    if (avatar.TryGetLinkedPlayer(out ushort playerId)) { }
+}
+```
+
+更多內容：[虛擬形象腳本](/tw/docs/scripting/avatar-scripting)。
+
+## BasisVixxyShim
+
+讀取與驅動 Vixxy 虛擬形象選單項目。數值只會在穿戴者的客戶端上解析。
+
+```csharp
+using Basis.Shims;
+using HVR.Vixxy;
+
+public HVRVixxyMenuItem glow;
+
+void OnReady(bool isOwner)
+{
+    if (!isOwner || !BasisVixxyShim.HasControl(glow)) return;
+
+    string title = BasisVixxyShim.Title(glow);
+    if (BasisVixxyShim.IsToggle(glow)) glow.ApplyValue(1f);
+    if (BasisVixxyShim.IsSlider(glow)) glow.ApplyValue(Mathf.Lerp(BasisVixxyShim.MinValue(glow), BasisVixxyShim.MaxValue(glow), 0.5f));
+
+    for (int i = 0; i < BasisVixxyShim.ChoiceCount(glow); i++)
+    {
+        Debug.Log($"{BasisVixxyShim.ChoiceTitle(glow, i)} = {BasisVixxyShim.ChoiceValue(glow, i)}");
+    }
+}
+```

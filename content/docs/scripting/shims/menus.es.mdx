@@ -1,0 +1,64 @@
+---
+title: Menús
+description: BasisMenuShim, pestañas de ajustes y paneles de menú con encabezados, etiquetas, botones, interruptores, deslizadores y desplegables.
+---
+
+`BasisMenuShim` añade UI al menú del propio jugador. Ambas llamadas devuelven null cuando se rechazan. Compruébelo siempre.
+
+| Llamada | Añade |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Una pestaña en los ajustes del jugador (hasta 4 por contenido). |
+| `BasisMenuShim.AddPanel(this, title)` | Un panel con su propio botón de menú (uno por contenido, hasta 8 pestañas). |
+
+## Construir una página
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Cambiar elementos más tarde
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Páginas: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (paneles), `IsOpen` y `Open()`.
+
+## Abrir un panel
+
+`Open()` solo funciona en los 5 segundos posteriores a que el jugador pulse algo en su contenido, y el contenido no puede abrir menús por sí solo.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Límites: 64 elementos por página, 32 opciones por desplegable, títulos de 48 caracteres. Más: [ejemplo de Pestaña de ajustes](/es/docs/scripting/examples/settings-tab).

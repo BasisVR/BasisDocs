@@ -1,0 +1,60 @@
+---
+title: Sièges
+description: Faire asseoir des joueurs depuis un script, une chaise pivotante et un bouton d'éjection, avec Basis Seat et Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configuration
+
+1. Ajoutez **Basis Seat** à une chaise et positionnez son point d'assise. Le prefab `SimpleSeat` de com.basis.examples en est un prêt à l'emploi.
+2. Ajoutez **Basis Seat Sync** pour que tout le monde voie qui est assis et que deux joueurs ne puissent pas prendre le même siège.
+
+Les joueurs peuvent s'asseoir en pointant le siège. Le script ci-dessous ajoute un bouton qui les fait asseoir, fait pivoter la chaise et leur permet de se lever.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Membre | Signification |
+| --- | --- |
+| `IsAvailable` | Personne n'est assis et les sièges ne sont pas désactivés dans les paramètres du joueur. |
+| `IsLocalPlayerSeated` | Le joueur local est sur ce siège. |
+| `HasOccupant` | Quelqu'un est sur ce siège. |
+| `TrySeatLocalPlayer()` | Fait asseoir le joueur local si le siège est libre. |
+| `SetOccupantYaw(degrees)` | Fait pivoter le joueur assis, dans les limites de rotation du siège. |
+| `EjectLocalPlayer()` | Fait lever le joueur local. |
+
+<Callout type="info">
+Les sièges ne déplacent que le joueur local et le script n'a besoin d'aucun code réseau propre. **Basis Seat Sync** gère qui est assis.
+</Callout>

@@ -1,0 +1,41 @@
+---
+title: 허용된 컴포넌트
+description: 업로드된 월드, 소품, 아바타에서 유지되는 컴포넌트, 확인 방법, 그리고 클라이언트 빌드에서 더 추가하는 방법.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+콘텐츠가 로드되면 Basis의 **콘텐츠 폴리스**는 해당 콘텐츠 종류의 허용 목록에 없는 타입의 컴포넌트를 모두 제거합니다. `[Cilboxable]`로 표시된 스크립트는 먼저 샌드박스 프록시로 변환되기 때문에 제거되지 않습니다.
+
+## 허용 목록
+
+목록은 `Packages/com.basis.sdk/Settings/`에 있습니다.
+
+| 에셋 | 적용 대상 |
+| --- | --- |
+| `SceneContentPoliceSelector` | 월드 |
+| `PropContentPoliceSelector` | 소품 |
+| `AvatarContentPoliceSelector` | 아바타 |
+
+각각은 전체 타입 이름의 목록입니다. 일치는 정확해야 합니다. 허용된 타입의 하위 클래스는 그 자체가 목록에 있지 않으면 허용되지 **않습니다.**
+
+## 기본적으로 허용되는 것
+
+**월드와 소품:** 렌더링(메시, 스킨드 메시, 라인, 트레일, 파티클, LOD 컴포넌트, 라이트, 리플렉션 프로브, 카메라), 물리(콜라이더, 리지드바디, 조인트), 오디오 소스와 Steam Audio, Animator와 애니메이션, UI 캔버스와 TextMesh Pro, `VideoPlayer`, VFX Graph 바인더, AudioLink, Basis 컨스트레인트, Basis 미디어 플레이어, 거울, 좌석, 픽업, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, 차량, `BasisPlatformSwitch`, 그리고 Cilbox 샌드박스와 shim. 월드는 추가로 내비게이션(`NavMeshAgent`, `NavMeshObstacle`), 포스트 프로세싱 볼륨, 아바타 받침대를 허용합니다.
+
+**아바타:** 렌더링, 물리, 오디오, Animator, 컨스트레인트, 좌석, 동기화 transform, OSC, 아바타 shim. 카메라, 라이트, UI, 비디오는 허용되지 않습니다.
+
+**기본적으로 허용되지 않음**(클라이언트 빌드 전용): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader`, 그리고 직접 만든 모든 네이티브 `MonoBehaviour`.
+
+<Callout type="info">
+셀렉터 에셋이 기준이 되며 버전마다 바뀝니다. 현재 목록을 보려면 인스펙터에서 여세요.
+</Callout>
+
+## 콘텐츠 확인
+
+- 플레이 모드에 들어갑니다. Basis가 같은 검사를 적용하며, 제거된 컴포넌트는 로그에 기록됩니다.
+- **Basis > Tools > Cilbox Permissions** 창에는 각 샌드박스가 스크립트에 허용하는 호출이 나열됩니다.
+
+## 컴포넌트 추가(클라이언트 빌드)
+
+자체 클라이언트를 배포한다면 해당 타입의 전체 이름을 일치하는 셀렉터 에셋에 추가하세요. 공개 클라이언트용으로 빌드된 콘텐츠는 이것에 의존할 수 없습니다. 그 경우에는 로직을 `[Cilboxable]` 스크립트로 변환하세요.

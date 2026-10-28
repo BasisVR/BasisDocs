@@ -1,0 +1,79 @@
+---
+title: 기본
+description: 첫 Basis 스크립트. 회전하는 오브젝트와 UI 버튼을 씬이나 소품 안에 포함되는 Cilbox 스크립트로 만듭니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 설정
+
+1. 빈 GameObject를 만들고 **Basis Scene**(월드용) 또는 **Basis Prop**(소품용)을 추가합니다.
+2. **Cilbox Scene Basis**(월드) 또는 콘텐츠 종류에 맞는 Cilbox 컴포넌트를 추가합니다. 이것이 콘텐츠의 모든 스크립트가 실행되는 샌드박스입니다.
+3. 그 아래의 오브젝트에 스크립트를 추가합니다.
+
+<Callout type="info">
+에디터에서 `Cilbox` 네임스페이스를 찾을 수 없다면, 자신의 `.asmdef`에 Cilbox 어셈블리 참조를 추가하거나 Cilbox 어셈블리의 **Auto Referenced**를 켜세요.
+</Callout>
+
+## 회전하는 오브젝트
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+public 필드와 `[SerializeField]` 필드는 콘텐츠와 함께 저장되며 인스펙터에서 설정할 수 있습니다.
+
+## 텍스트를 바꾸는 버튼
+
+1. **Button**과 **TextMeshPro - Text (UI)**가 있는 월드 공간 **Canvas**를 만듭니다.
+2. 이 스크립트를 캔버스에 추가하고 버튼과 텍스트를 할당합니다.
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+이 카운터는 로컬입니다. 모든 플레이어가 각자의 카운트를 가집니다. [동기화 토글](/ko/docs/scripting/examples/synced-toggle) 예제는 모든 사람이 공유하는 버튼을 만듭니다.
+
+## 테스트
+
+씬에서 플레이 모드에 들어갑니다. Basis는 업로드 후와 똑같이 각 `[Cilboxable]` 스크립트를 `CilboxProxy`로 교체합니다. 그런 다음 [빌드](/ko/docs/world/building)에 설명된 대로 콘텐츠를 빌드하고 클라이언트에서 로드하세요.

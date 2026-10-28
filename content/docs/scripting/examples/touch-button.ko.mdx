@@ -1,0 +1,53 @@
+---
+title: 터치 버튼
+description: 로컬 플레이어의 손 본 위치를 사용하여, 어느 손으로든 만지면 눌리는 버튼.
+---
+
+포인팅은 어디서나 작동하지만, VR에서는 손가락으로 버튼을 누르는 것이 더 자연스럽습니다. 이 스크립트는 로컬 플레이어의 손 위치를 읽고 손이 가까이 오면 발동합니다.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- 손가락 끝 본을 사용하려면 손가락 본이 있는 아바타가 필요합니다. 손바닥으로 누르려면 더 큰 반경과 함께 `LeftHand`와 `RightHand`를 사용하세요.
+- `touching` 덕분에 매 프레임이 아니라 터치당 한 번만 발동합니다.
+- 결과를 공유하려면 `Press`에서 [네트워크 이벤트](/ko/docs/scripting/examples/synced-toggle)로 보내세요.

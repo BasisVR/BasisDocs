@@ -1,0 +1,118 @@
+---
+title: Данные
+description: BasisSaveShim, BasisServerStorageShim, BasisJson, BasisWebRequestShim, BasisExternalLinkShim и загрузчики изображений и текста.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+Сохранение, серверное хранилище и веб-запросы сначала спрашивают согласие игрока. Пока он не согласится, вызовы мягко завершаются неудачей (false, null или `NotAllowed`), а остальная часть скрипта продолжает работать.
+</Callout>
+
+## BasisSaveShim
+
+Байты, сохраняемые на компьютере игрока. 256 КБ на слот, 32 слота и 1 МБ на хранилище.
+
+```csharp
+using Basis.Shims;
+
+BasisSaveShim.Save(this, "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Shared between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+
+// Readable by other content.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+Подробнее: [пример сохранения данных](/ru/docs/scripting/examples/persistence).
+
+## BasisServerStorageShim
+
+Данные, сохраняемые **на сервере** для каждого игрока. Они следуют за игроком между устройствами на этом сервере. Все вызовы асинхронные. Ключи до 64 байт, значения до 64 КБ; сервер задаёт общий лимит на игрока (по умолчанию 16 КБ).
+
+```csharp
+if (!BasisServerStorageShim.IsAvailable(this)) return;
+
+BasisServerStorageShim.SaveString(this, "best-lap", lap.ToString("F2"), result =>
+{
+    if (result != BasisServerStorageResult.Ok) Debug.LogWarning(result.ToString());
+});
+
+BasisServerStorageShim.LoadString(this, "best-lap", (result, text) =>
+{
+    if (result == BasisServerStorageResult.Ok) bestLabel.text = text;
+});
+
+BasisServerStorageShim.Keys(this, (result, keys) => { });
+BasisServerStorageShim.Usage(this, (result, used, limit) => usage.text = $"{used} / {limit} bytes");
+```
+
+Результаты включают `Ok`, `NotFound`, `Full`, `RateLimited`, `NotConnected` и `NotAllowed`. Подробнее: [пример серверной таблицы рекордов](/ru/docs/scripting/examples/server-best-time).
+
+## BasisJson
+
+Разбирает JSON на стороне хоста; ваш скрипт видит только узлы и простые значения.
+
+```csharp
+BasisJsonNode root = BasisJson.Parse(text, out string error);
+if (root == null) { Debug.LogWarning(error); return; }
+
+string title = root.GetString("title", "Untitled");
+BasisJsonNode items = root.Get("items");
+for (int i = 0; i < items.Count; i++)
+{
+    BasisJsonNode item = items.Get(i);
+    string name = item.GetString("name", "");
+    int price = item.GetInt("price", 0);
+    string[] tags = item.GetStringArray("tags");
+}
+bool hasKey = root.Has("version");
+string[] keys = root.Keys;
+```
+
+## BasisWebRequestShim
+
+HTTPS GET и POST для миров и пропов. 256 КБ на отправку, 4 МБ на загрузку, 15 секунд, 30 запросов в минуту.
+
+```csharp
+BasisWebRequestShim.GetText(this, "https://api.example.com/scores", (result, status, text) =>
+{
+    if (result == BasisWebResult.Ok) ShowScores(text);
+});
+
+BasisWebRequestShim.PostText(this, "https://api.example.com/scores", "{\"score\":42}", BasisWebRequestShim.Json, (result, status, reply) => { });
+```
+
+## BasisImageDownloader и BasisStringDownloader
+
+```csharp
+using Basis;
+
+new BasisImageDownloader().DownloadImage(url, result =>
+{
+    if (result.Success) poster.material.mainTexture = result.Result;
+});
+
+new BasisStringDownloader().DownloadString(url, result =>
+{
+    if (result.Success) Load(result.Result);
+});
+```
+
+## BasisExternalLinkShim
+
+Открывает веб-сайт в браузере игрока после его подтверждения. Вызывайте из собственного нажатия игрока.
+
+```csharp
+public void OnLinkPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) label.text = "example.com";
+    });
+}
+```

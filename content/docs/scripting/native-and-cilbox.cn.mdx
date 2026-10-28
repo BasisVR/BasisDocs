@@ -1,0 +1,90 @@
+---
+title: Native 与 Cilbox
+description: 为 Basis 编写脚本的两种方式。Native 脚本编译进应用程序；Cilbox 脚本随内容一起发布，并在运行时于沙盒中执行。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis 以两种方式运行代码。使用哪一种取决于**脚本存放的位置**：是在您构建的应用程序内部，还是在运行时加载的内容内部。
+
+## Native：编译进应用程序
+
+Native 脚本是构建进 Basis 客户端（或您基于 Basis 框架构建的应用程序）的普通 Unity `MonoBehaviour`。它随应用程序一起编译，并随下一次客户端构建发布，而不是随世界或道具发布。
+
+- 完整的 C# 以及完整的 Unity 和 Basis API。
+- 完整的原生速度。
+- 可以派生自 Basis 类，例如 `BasisNetworkBehaviour` 和 `BasisSyncedObject`。
+- 只存在于包含它的客户端构建中。使用公共客户端的玩家没有您的脚本。
+
+当您**在 Basis 上构建应用程序或游戏**时，请使用 Native 脚本：例如您自己的菜单、游戏规则、系统，以及您的内容所依赖的任何组件。
+
+## Cilbox：内容内部的运行时脚本
+
+Cilbox 脚本是标记了 `[Cilboxable]` 的 `MonoBehaviour`，它随世界、道具或虚拟形象的 `.bee` 文件**一起**发布。内容加载时，Basis 会在 Cilbox 解释器中运行它，并置于对应内容类型（Scene、Prop 或 Avatar）的沙盒内。
+
+- 适用于任何加载该内容的 Basis 客户端。无需构建客户端。
+- 沙盒化。只能调用白名单中的类型和方法，这可以防止内容损害玩家的电脑。
+- 比 Native 慢，因为代码是解释执行的。
+- 使用 shim 代替基类，例如使用 `BasisNetworkShim`，而不是派生自 `BasisNetworkBehaviour`。
+
+当您**制作用户内容**时，请使用 Cilbox：即供其他人加载的世界、道具和虚拟形象。
+
+## 一览
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| 存放于 | 应用程序构建 | 世界、道具或虚拟形象 |
+| 加载时机 | 构建应用程序时 | 运行时，随内容加载 |
+| 标记方式 | 无 | `[Cilboxable]` |
+| API | 全部 | 按沙盒白名单限制 |
+| 速度 | 原生 | 解释执行，慢得多 |
+| 网络 | 派生自 `BasisNetworkBehaviour` | 使用 `BasisNetworkShim` |
+| 谁拥有它 | 使用您构建版本的玩家 | 任何加载该内容的人 |
+
+## 同一脚本的两种写法
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## 各自的发布方式
+
+- Native：将脚本添加到您的 Unity 项目中并构建客户端。如果 Native 组件放在世界或道具资源包中，还需要将其类型添加到对应的 content police 选择器中，否则内容加载时它会被移除（参见[允许的组件](/cn/docs/scripting/allowed-components)）。
+- Cilbox：向您的内容添加 **Cilbox Scene Basis**（世界）或 **Cilbox Prop Basis**（道具），将脚本标记为 `[Cilboxable]`，然后照常构建 `.bee`。参见[基础](/cn/docs/scripting/examples/basics)。
+
+<Callout type="info">
+本文档中的示例都标有 **Native** 或 **Cilbox**。大多数 Cilbox 示例也能作为 Native 脚本编译；Native 示例通常需要修改才能在 Cilbox 中运行。需要注意的规则请参见[沙盒规则](/cn/docs/scripting/sandbox-rules)。
+</Callout>

@@ -1,0 +1,65 @@
+---
+title: 场景组件
+description: 放置在世界中的 Basis 组件、各组件的作用，以及在哪里了解更多。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+这些组件是 Basis 世界的构建模块。它们都不需要代码。标记为 *（客户端构建）* 的项目不在上传内容的默认允许列表中；参见[允许的组件](/cn/docs/scripting/allowed-components)。
+
+## 必需
+
+| 组件 | 作用 |
+| --- | --- |
+| **Basis Scene** | 将场景标记为 Basis 世界。设置 **Spawn Point**、玩家掉落后重生的 **Respawn Height**、音频混音器组和主摄像机。每个世界一个。参见[构建](/cn/docs/world/building)。 |
+
+## 交互
+
+| 组件 | 作用 |
+| --- | --- |
+| **Basis Interactable Shim** | 让物体可以通过脚本被按下：`ButtonDown` 和 `ButtonUp`，带有悬停和按下颜色。 |
+| **Basis Pickup Interactable** | 让玩家可以抓取、持有和使用物体。在持有期间按下扳机时触发 `OnPickupUse`。 |
+| **Basis Interactable Button** | 现成的可按下按钮（com.basis.examples，`ExampleInteractableButton` 预制体）。 |
+| **Basis Seat** | 让玩家可以坐下。支持旋转限制、高亮模式，以及通过 `TrySeatLocalPlayer`、`EjectLocalPlayer` 和 `IsAvailable` 编写脚本。 |
+| **Basis Avatar Pedestal** | 展示一个虚拟形象，并让玩家可以切换到该虚拟形象。仅限世界。 |
+| **Basis Runtime Loader** *（客户端构建）* | 从加载配置生成道具，例如通过按钮生成。参见[场景道具](/cn/docs/world/scene-props)。 |
+
+## 网络
+
+| 组件 | 作用 |
+| --- | --- |
+| **Basis Pickup Sync Networking** | 同步拾取物的姿态和持有者。 |
+| **Basis Synced Transform** | 同步移动的物体。**Basis Synced Rigidbody** *（客户端构建）* 额外同步速度。 |
+| **Basis Synced Parameters** *（客户端构建）* | 同步命名值（浮点数、整数、布尔值、颜色）。 |
+| **Basis Seat Sync** | 同步谁坐在座位上。 |
+| **Basis Networked Vehicle** | 同步的可驾驶载具，由车身、车轮、推进器和驾驶座部件构成。 |
+
+参见[网络组件](/cn/docs/scripting/networking/network-components)。
+
+## 媒体与渲染
+
+| 组件 | 作用 |
+| --- | --- |
+| **Basis Media Player** | 同步的视频和直播流播放。参见[媒体播放器](/cn/docs/world/media-player)。 |
+| **Basis SDK Mirror** | 镜子。可设置渲染纹理大小、远裁剪面，以及反射中是否渲染后处理。镜子会再渲染一次场景。请保持其较小并默认关闭。 |
+| **TextMesh Pro** | 标牌和 UI 上的文本。在世界和 Cilbox 脚本中均受支持。 |
+| **Canvas** | 可配合 Basis 指针使用的世界空间 UI。参见 [UI Canvas](/cn/docs/world/ui-canvas)。 |
+
+## 玩家与平台
+
+| 组件 | 作用 |
+| --- | --- |
+| **Basis Locomotion Zone** *（客户端构建）* | 在本地玩家位于其触发器内时，更改跳跃高度、行走和奔跑速度、重力或移动模式。 |
+| **Basis Platform Switch** | 根据规则列表按平台（VR、桌面、移动设备）启用或禁用物体和组件。 |
+
+## 脚本
+
+| 组件 | 作用 |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | 运行您的世界或道具中 `[Cilboxable]` 脚本的沙盒。参见[脚本](/cn/docs/scripting/scripting)。 |
+| **Basis OSC** | 发布和订阅 OSC 消息。参见 [OSC](/cn/docs/scripting/osc)。 |
+| **Basis Action Trigger** | 将 UI 指针事件（进入、离开、点击、拖动）转发给 Cilbox 脚本。 |
+
+<Callout type="info">
+每个组件都在 Unity 编辑器中提供了文档：选中它并使用其检查器中的文档按钮，或者打开 **Basis > Creator Guide** 离线查看本指南。
+</Callout>

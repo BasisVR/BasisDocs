@@ -1,0 +1,65 @@
+---
+title: Timer del round
+description: Un conto alla rovescia che tutti vedono in sincronia. Il proprietario invia una volta l'ora di fine e ogni client conta alla rovescia sull'orologio del server.
+---
+
+Inviare i secondi rimanenti a ogni frame spreca banda e va fuori sincrono. Invia una volta l'**ora di fine** e lascia che ogni client conti alla rovescia rispetto all'orologio condiviso del server.
+
+```csharp title="RoundTimer.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class RoundTimer : MonoBehaviour
+{
+    public float roundSeconds = 120f;
+    public TextMeshPro label;
+
+    BasisNetworkShim net;
+    double endTime;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void StartRound()
+    {
+        net.TakeOwnership();
+        endTime = BasisNetworkTimeShim.ServerTimeSeconds + roundSeconds;
+        Send(null);
+    }
+
+    void Send(ushort[] to)
+    {
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(BitConverter.GetBytes(endTime), DeliveryMethod.ReliableOrdered, to);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data != null && data.Length == 8) endTime = BitConverter.ToDouble(data, 0);
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        double left = endTime - BasisNetworkTimeShim.ServerTimeSeconds;
+        label.text = left > 0 ? $"{(int)left / 60}:{(int)left % 60:00}" : "Round over";
+    }
+}
+```
+
+- Un messaggio per round, per quanto duri.
+- Chi arriva in ritardo riceve l'ora di fine e mostra subito il conto alla rovescia corretto.

@@ -1,0 +1,44 @@
+---
+title: Jugadores que se unen tarde
+description: Asegurarse de que los jugadores que se unen después de un cambio vean el estado actual en lugar de los valores predeterminados de la escena.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un jugador que se une carga la escena exactamente como usted la construyó. Todo lo que haya cambiado desde entonces (una puerta abierta, una puntuación que subió, una luz apagada) es invisible para él hasta que alguien se lo comunique.
+
+## Variables sincronizadas: se gestionan por usted
+
+`BasisSyncedObject` y todo lo construido sobre él (`BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`, `BasisPickupSyncNetworking`) envían un keyframe completo cada vez que un jugador se une. Si el propietario se ha ido y nadie es propietario del objeto todavía, un jugador que tenga el estado se lo envía al recién llegado. No necesita hacer nada.
+
+## Eventos de red: vuelva a enviar el estado
+
+Los eventos no se recuerdan. Si un evento cambió un estado duradero, reenvíe ese **estado** (no el historial de eventos) al jugador nuevo. Solo lo hace el propietario. El recién llegado recibe un mensaje en lugar de uno de cada jugador.
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+Diseñe sus mensajes de forma que aplicar el estado completo siga el mismo camino de código que aplicar un cambio. El [ejemplo de interruptor sincronizado](/es/docs/scripting/examples/synced-toggle) lo hace con un solo byte.
+
+<Callout type="warn">
+No reproduzca una lista de eventos pasados para un recién llegado (por ejemplo "puerta abierta, puerta cerrada, puerta abierta"). Envíe el resultado actual. Las repeticiones se vuelven largas, llegan desactualizadas y fallan cuando un evento depende del momento en que ocurre.
+</Callout>
+
+## Cosas que comprobar
+
+- ¿Funciona si el propietario no es el primer jugador? Pruebe con tres clientes: A se une, B se une y cambia algo, A se va, C se une.
+- ¿Hay algo establecido desde `Start` que debería venir de la red? El `Start` de un jugador que se une tarde se ejecuta antes de su primer mensaje de red. Muestre un estado neutro hasta que llegue el primer mensaje o valor sincronizado.
+- Props persistentes. Los props generados desde una configuración de carga necesitan tener **Persistent** activado para que existan para los jugadores que se unan después. Consulte [Props de escena](/es/docs/world/scene-props).

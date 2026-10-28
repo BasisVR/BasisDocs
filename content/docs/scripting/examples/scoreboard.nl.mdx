@@ -1,0 +1,114 @@
+---
+title: Scorebord
+description: Een genetwerkte score waarbij één eigenaar de waarheid bijhoudt en andere spelers de eigenaar vragen punten toe te voegen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> Dit is een native voorbeeld voor client-builds: `BasisSyncedParameters` en aangepaste scripts staan niet op de standaard allowlist voor geüploade content. Gebruik voor een Cilbox-scorebord het hieronder beschreven patroon van verzoeken via de eigenaar met netwerkevents, zoals in de [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle).
+
+Een score moet exact zijn en moet het binnenkomen en vertrekken van spelers overleven. Twee spelers die op hetzelfde moment een punt toevoegen, moeten +2 opleveren, niet +1. Dit voorbeeld houdt de score bij één eigenaar en leidt elke wijziging via die eigenaar.
+
+## Setup
+
+1. Voeg **Basis Synced Parameters** toe aan het scorebordobject. Voeg twee parameters toe met de namen `Red` en `Blue`, type **Int**, **Interpolate** uit.
+2. Voeg **Scoreboard** toe aan hetzelfde object en wijs het parameters-component en twee labels toe.
+3. Koppel knoppen (of goal-triggers) aan `AddRed`, `AddBlue` en `ResetScores`.
+
+## Script
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` ontvangt al netwerkberichten voor zijn eigen stroom. Leid verzoeken naar het scorebord via een kleine subklasse:
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+Gebruik in de setup **ScoreboardParameters** in plaats van **Basis Synced Parameters**.
+
+## Hoe het werkt
+
+- Alleen de eigenaar schrijft de score. Gelijktijdige drukken worden bij de eigenaar na elkaar toegepast.
+- Alle anderen sturen een verzoek naar `CurrentOwnerId` in plaats van eigenaarschap te nemen. Eigenaarschap nemen zou twee spelers elk 1 laten optellen bij dezelfde oude waarde.
+- Late joiners hebben niets extra nodig. Gesynchroniseerde parameters sturen nieuwe spelers een keyframe.
+- Als de eigenaar vertrekt, gaat het eigenaarschap naar de speler die het langst verbonden is, die de huidige score al heeft.
+
+<Callout type="info">
+Verzoeken zijn één byte en synchronisatiepakketten zijn altijd groter. Daarom is de lengte controleren hier genoeg. Voor meer berichttypes zet je een markeringsbyte voor je eigen berichten waarmee de synchronisatiestroom nooit begint, of plaats je de verwerking van verzoeken op een aparte `BasisNetworkBehaviour`.
+</Callout>

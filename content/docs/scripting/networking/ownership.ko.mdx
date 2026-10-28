@@ -1,0 +1,115 @@
+---
+title: 소유권
+description: 네트워크 오브젝트를 누가 소유하는지, 소유권을 가져오고 확인하는 방법, 이전에 반응하는 방법, 그리고 소유자가 떠나면 어떻게 되는지.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+모든 네트워크 오브젝트에는 최대 한 명의 **소유자**가 있습니다. 소유자는 자신의 사본이 진실인 플레이어입니다. 동기화 변수를 쓰고, 물리를 시뮬레이션하며, 늦게 참여한 플레이어가 받는 것도 소유자의 버전입니다. 다른 모든 사람은 이를 따릅니다.
+
+소유권은 서버가 결정하며, 두 플레이어가 동시에 한 오브젝트를 소유하는 일은 없습니다.
+
+## 소유권 읽기
+
+| 멤버 | 의미 |
+| --- | --- |
+| `IsLocalOwner()` | 서버가 당신의 소유를 확인했을 때 true. 판단에는 이것을 사용하세요. |
+| `IsOwnedLocallyOnServer` | 위와 같은 것을 필드로 제공. Cilbox에서 사용 가능. |
+| `IsOwnedLocallyOnClient` | 소유권을 **요청**하는 순간, 서버가 응답하기 전에 설정됩니다. 왕복을 기다리지 않고 오브젝트를 조작하기 시작할 수 있습니다. |
+| `CurrentOwnerId` | 소유자의 플레이어 ID. |
+| `currentOwnedPlayer` | `BasisNetworkPlayer`로서의 소유자. |
+| `HasNetworkID` | 오브젝트가 네트워크 준비 상태가 될 때까지 false. 그 전에는 소유권이 의미가 없습니다. |
+
+## 소유권 가져오기
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+`TakeOwnership()`은 다른 사람이 소유하고 있어도 오브젝트를 가져옵니다. 결과를 알아야 한다면 비동기 버전을 await 하세요.
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+가져오지 않고 누가 소유하고 있는지만 물어볼 수도 있습니다.
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+플레이어가 오브젝트에 **행동하는** 순간 소유권을 가져오세요: 잡을 때, 버튼을 누를 때, 앉을 때. `Start`나 `OnNetworkReady`에서 가져오지 마세요. 모든 플레이어가 로드 시 가져가려 해서 마지막 사람이 이기게 됩니다.
+</Callout>
+
+## 이전에 반응하기
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## 처음에 오브젝트를 소유하는 사람
+
+서버가 네트워크 오브젝트를 처음 인식하면, 그것에 대해 처음 묻는 플레이어가 소유자가 됩니다. 실제로는 인스턴스의 첫 번째 플레이어입니다. `BasisNetworkShim`의 `RequestOwnershipIfNone()`은 서버에 물어보고 아무도 소유하지 않은 경우에만 소유권을 얻습니다.
+
+## 소유자가 떠날 때
+
+소유자의 연결이 끊기면 서버는 그의 각 오브젝트를 **인스턴스에 남아 있는 플레이어 중 가장 오래 연결된 플레이어**에게 넘깁니다. 모든 사람이 `OnOwnershipTransfer`를 받고, 새 소유자는 이미 가지고 있던 상태에서 계속 진행합니다. 스크립트는 떠남이 아니라 이전에만 반응하면 됩니다.
+
+## 패턴
+
+**소유자가 작업하고, 모든 사람이 결과를 보여줍니다.** 물리, 타이머, 게임 규칙은 소유자에게서만 실행됩니다. 다른 사람들은 동기화 변수를 읽거나 이벤트를 받습니다.
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**소유자를 통해 요청하기.** 소유자가 아닌 사람이 소유권을 넘겨받지 않고 공유 상태를 바꿔야 할 때(다른 사람의 점수판에 점수를 추가하는 경우), 소유자에게 이벤트를 보내고 소유자가 적용하게 하세요.
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**픽업은 자동으로 소유권을 가져옵니다.** `BasisPickupSyncNetworking`은 잡을 때 소유권을 가져옵니다. 다른 플레이어가 누군가의 손에서 아이템을 빼앗지 못하게 하려면 `CanNetworkSteal`을 끄세요.

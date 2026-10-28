@@ -1,0 +1,76 @@
+---
+title: Лифт
+description: Движущаяся платформа, на которой все едут вместе. Синхронизируется только целевой этаж; каждый клиент сам двигает платформу к нему.
+---
+
+Потоковая передача позиции платформы тратит трафик каждый кадр. Лифт всегда движется только к какому-то этажу. Синхронизируйте **целевой этаж**, и пусть каждый клиент двигает платформу сам.
+
+## Настройка
+
+1. Создайте платформу с коллайдером.
+2. Добавьте **Elevator** и кнопки, вызывающие `GoTo(floor)`. Задайте высоты этажей в инспекторе.
+
+```csharp title="Elevator.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Elevator : MonoBehaviour
+{
+    public Transform platform;
+    public float[] floorHeights;
+    public float speed = 1.5f;
+
+    BasisNetworkShim net;
+    int target;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void GoTo(int floor)
+    {
+        net.TakeOwnership();
+        target = floor;
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)floor }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length >= 1) target = data[0];
+        if (data.Length == 5)
+        {
+            Vector3 p = platform.localPosition;
+            platform.localPosition = new Vector3(p.x, BasisBinaryShim.ReadSingle(data, 1), p.z);
+        }
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] state = new byte[5];
+        state[0] = (byte)target;
+        BasisBinaryShim.WriteSingle(state, 1, platform.localPosition.y);
+        net.SendCustomNetworkEvent(state, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        Vector3 p = platform.localPosition;
+        float y = Mathf.MoveTowards(p.y, floorHeights[target], speed * Time.deltaTime);
+        platform.localPosition = new Vector3(p.x, y, p.z);
+    }
+}
+```
+
+- Каждый клиент выполняет одно и то же движение. Пассажиры видят плавную платформу без потока позиций.
+- Поздно подключившийся получает целевой этаж и текущую высоту одним сообщением в 5 байт.
+- Обратите внимание на `new Vector3(...)`: прямое изменение `p.y` в Cilbox изменило бы и значение, из которого оно было скопировано (см. [Правила песочницы](/ru/docs/scripting/sandbox-rules)).

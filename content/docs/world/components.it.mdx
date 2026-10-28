@@ -1,0 +1,65 @@
+---
+title: Componenti di scena
+description: I componenti Basis che inserisci in un mondo, cosa fa ciascuno e dove approfondire.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Questi componenti sono gli elementi di base di un mondo Basis. Nessuno di essi richiede codice. Gli elementi contrassegnati *(build del client)* non sono nella allowlist predefinita per i contenuti caricati; vedi [Componenti consentiti](/it/docs/scripting/allowed-components).
+
+## Obbligatori
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Basis Scene** | Contrassegna la scena come mondo Basis. Imposta lo **Spawn Point**, la **Respawn Height** sotto la quale i giocatori vengono riportati indietro, il gruppo dell'audio mixer e la telecamera principale. Uno per mondo. Vedi [Costruzione](/it/docs/world/building). |
+
+## Interazione
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Basis Interactable Shim** | Rende un oggetto premibile da uno script: `ButtonDown` e `ButtonUp`, con colori al passaggio e alla pressione. |
+| **Basis Pickup Interactable** | Permette ai giocatori di afferrare, tenere e usare un oggetto. Genera `OnPickupUse` quando il grilletto viene premuto mentre l'oggetto è tenuto in mano. |
+| **Basis Interactable Button** | Un pulsante premibile pronto all'uso (com.basis.examples, prefab `ExampleInteractableButton`). |
+| **Basis Seat** | Permette ai giocatori di sedersi. Limiti di rotazione, modalità di evidenziazione e scripting tramite `TrySeatLocalPlayer`, `EjectLocalPlayer` e `IsAvailable`. |
+| **Basis Avatar Pedestal** | Mostra un avatar e permette ai giocatori di passare a esso. Solo nei mondi. |
+| **Basis Runtime Loader** *(build del client)* | Genera prop da una load config, per esempio da un pulsante. Vedi [Prop di scena](/it/docs/world/scene-props). |
+
+## Networking
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Basis Pickup Sync Networking** | Sincronizza la posa di un pickup e chi lo tiene. |
+| **Basis Synced Transform** | Sincronizza un oggetto in movimento. **Basis Synced Rigidbody** *(build del client)* aggiunge le velocità. |
+| **Basis Synced Parameters** *(build del client)* | Sincronizza valori con nome (float, int, bool, colori). |
+| **Basis Seat Sync** | Sincronizza chi è seduto su un sedile. |
+| **Basis Networked Vehicle** | Veicoli guidabili sincronizzati, costruiti a partire da parti come carrozzeria, ruote, propulsori e sedile del pilota. |
+
+Vedi [Componenti di rete](/it/docs/scripting/networking/network-components).
+
+## Media e rendering
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Basis Media Player** | Riproduzione sincronizzata di video e stream. Vedi [Media Player](/it/docs/world/media-player). |
+| **Basis SDK Mirror** | Uno specchio. Imposta la dimensione della render texture, il far clip e se il post processing viene renderizzato nel riflesso. Gli specchi renderizzano di nuovo la scena. Mantienili piccoli e disattivati per impostazione predefinita. |
+| **TextMesh Pro** | Testo su cartelli e UI. Supportato nei mondi e negli script Cilbox. |
+| **Canvas** | UI in world space che funziona con il puntatore di Basis. Vedi [UI Canvas](/it/docs/world/ui-canvas). |
+
+## Giocatore e piattaforma
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Basis Locomotion Zone** *(build del client)* | Modifica altezza del salto, velocità di camminata e corsa, gravità o modalità di movimento mentre il giocatore locale si trova nel suo trigger. |
+| **Basis Platform Switch** | Attiva o disattiva oggetti e componenti per piattaforma (VR, desktop, mobile) a partire da una lista di regole. |
+
+## Scripting
+
+| Componente | Cosa fa |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | La sandbox in cui vengono eseguiti gli script `[Cilboxable]` del tuo mondo o prop. Vedi [Scripting](/it/docs/scripting/scripting). |
+| **Basis OSC** | Pubblica e sottoscrivi messaggi OSC. Vedi [OSC](/it/docs/scripting/osc). |
+| **Basis Action Trigger** | Inoltra gli eventi del puntatore UI (enter, exit, click, drag) a uno script Cilbox. |
+
+<Callout type="info">
+Ogni componente è documentato nell'editor Unity: selezionalo e usa il pulsante della documentazione nel suo inspector, oppure apri **Basis > Creator Guide** per consultare questa guida offline.
+</Callout>

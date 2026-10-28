@@ -1,0 +1,37 @@
+---
+title: 網路元件
+description: 不需程式碼即可同步拾取物、座位、變換、剛體與參數的現成元件。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+大多數同步都不需要腳本。加入以下其中一個元件並在檢查器中設定即可。**可上傳**表示該元件位於上傳世界和道具的預設允許清單上；其他元件可在客戶端建置中運作，或在您將它們加入 content police 選擇器後使用（請參閱[允許的元件](/tw/docs/scripting/allowed-components)）。
+
+| 元件 | 同步內容 | 可上傳 | 備註 |
+| --- | --- | --- | --- |
+| **Basis Pickup Sync Networking** | 被握持物件的姿勢以及由誰握持。 | 是 | 抓取時取得擁有權。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。 |
+| **Basis Synced Transform** | 位置、旋轉和縮放。各軸可個別切換與壓縮。 | 是 | 適用於擁有者以程式碼或動畫移動的任何東西。 |
+| **Basis Seat Sync** | 誰坐在 **Basis Seat** 上。 | 是 | 在兩位玩家同時嘗試坐下時進行仲裁。 |
+| **Basis Media Player** | 影片 URL、播放狀態和時間。 | 是 | 請參閱[媒體播放器](/tw/docs/world/media-player)。 |
+| **Basis Synced Rigidbody** | 姿勢加上線性與角速度。 | 否 | 遠端副本為 kinematic（`DriveRemoteKinematic`），並跟隨擁有者的模擬。 |
+| **Basis Synced Parameters** | 具名數值：浮點數、向量、顏色、整數、布林值。 | 否 | 請參閱[同步變數](/tw/docs/scripting/networking/synced-variables)。 |
+
+<Callout type="warn">
+**Basis Object Sync Networking** 已被棄用。它在舊內容中仍會作為拾取物載入，但新內容應使用 **Basis Pickup Sync Networking**。
+</Callout>
+
+## 同步的拾取物
+
+1. 為物件加入 collider 和 **Rigidbody**。
+2. 加入 **Basis Pickup Interactable**。
+3. 加入 **Basis Pickup Sync Networking**，並將拾取物指定到其 `BasisPickupInteractable` 欄位。
+
+在播放模式中，檢查器會顯示即時同步狀態（擁有者、緩衝深度、頻寬）。
+
+## Cilbox
+
+Cilbox 腳本無法繼承同步元件，但可以與它們並存：讓 **Basis Synced Transform** 移動物件，其他所有事情則使用 `BasisNetworkShim`。
+
+## 虛擬形象
+
+虛擬形象允許使用 `BasisSyncedTransform`、`BasisPickupSyncNetworking` 和 `BasisNetworkShim`。請參閱[虛擬形象腳本](/tw/docs/scripting/avatar-scripting)。

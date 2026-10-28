@@ -1,0 +1,79 @@
+---
+title: 基礎
+description: 您的第一批 Basis 腳本：一個旋轉的物件和一個 UI 按鈕，以隨場景或道具一起發佈的 Cilbox 腳本撰寫。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 設定
+
+1. 建立一個空的 GameObject，並加入 **Basis Scene**（世界用）或 **Basis Prop**（道具用）。
+2. 加入 **Cilbox Scene Basis**（世界）或與您內容類型相符的 Cilbox 元件。這就是內容中所有腳本執行的沙盒。
+3. 將您的腳本加入其下的物件。
+
+<Callout type="info">
+如果您的編輯器找不到 `Cilbox` 命名空間，請在您自己的 `.asmdef` 中加入對 Cilbox 組件的參考，或在 Cilbox 組件上開啟 **Auto Referenced**。
+</Callout>
+
+## 旋轉的物件
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+公開欄位和 `[SerializeField]` 欄位會隨內容一起儲存，並且可以在檢查器中設定。
+
+## 會改變文字的按鈕
+
+1. 建立一個世界空間的 **Canvas**，其中包含 **Button** 和 **TextMeshPro - Text (UI)**。
+2. 將此腳本加入 canvas，並指定按鈕和文字。
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+這個計數器是本機的：每位玩家都有自己的計數。[同步切換開關](/tw/docs/scripting/examples/synced-toggle)範例會製作一個所有人共享的按鈕。
+
+## 測試
+
+在您的場景中進入播放模式。Basis 會將每個 `[Cilboxable]` 腳本替換為 `CilboxProxy`，與上傳後的情況相同。接著依照[建置](/tw/docs/world/building)中的說明建置內容並在客戶端中載入。

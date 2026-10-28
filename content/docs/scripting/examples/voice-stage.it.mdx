@@ -1,0 +1,53 @@
+---
+title: Palco con voce
+description: Un palco che riproduce la voce di chi parla da grandi altoparlanti, usando BasisVoiceRoutingShim.
+---
+
+```csharp title="VoiceStage.cs (Cilbox, world)"
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class VoiceStage : MonoBehaviour
+{
+    public Collider stageArea;
+    public Transform speaker;
+    public float range = 60f;
+
+    int route = -1;
+    ushort routedPlayer;
+    float nextCheck;
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 0.5f;
+
+        BasisNetworkPlayer onStage = null;
+        foreach (BasisNetworkPlayer p in BasisNetworkPlayer.GetAllPlayers())
+        {
+            if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
+        }
+
+        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        Stop();
+        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
+        routedPlayer = onStage.playerId;
+    }
+
+    void Stop()
+    {
+        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = -1;
+    }
+
+    void OnDestroy() => Stop();
+}
+```
+
+- Ogni client instrada la voce localmente a partire dalle posizioni che ha già. Non c'è traffico di rete aggiuntivo.
+- Il consenso di chi parla viene controllato per primo. I giocatori che non hanno consentito l'instradamento della voce si sentono normalmente.
+- Controlla in **Basis > Tools > Cilbox Permissions** che `BasisNetworkPlayer.GetAllPlayers` sia consentito nella tua sandbox.

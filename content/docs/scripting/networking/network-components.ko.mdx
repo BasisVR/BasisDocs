@@ -1,0 +1,37 @@
+---
+title: 네트워크 컴포넌트
+description: 코드 없이 픽업, 좌석, transform, 리지드바디, 파라미터를 동기화하는 기성 컴포넌트.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+대부분의 동기화에는 스크립트가 필요 없습니다. 다음 컴포넌트 중 하나를 추가하고 인스펙터에서 설정하세요. **업로드**는 해당 컴포넌트가 업로드된 월드와 소품의 기본 허용 목록에 있다는 뜻입니다. 나머지는 클라이언트 빌드에서 작동하거나, 콘텐츠 폴리스 셀렉터에 추가한 후에 작동합니다([허용된 컴포넌트](/ko/docs/scripting/allowed-components) 참조).
+
+| 컴포넌트 | 동기화 대상 | 업로드 | 참고 |
+| --- | --- | --- | --- |
+| **Basis Pickup Sync Networking** | 들고 있는 오브젝트의 포즈와 들고 있는 사람. | 예 | 잡을 때 소유권을 가져옵니다. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Synced Transform** | 위치, 회전, 스케일. 축별 토글과 압축. | 예 | 소유자가 코드나 애니메이션으로 움직이는 모든 것에. |
+| **Basis Seat Sync** | **Basis Seat**에 누가 앉아 있는지. | 예 | 두 플레이어가 동시에 앉으려 할 때 중재합니다. |
+| **Basis Media Player** | 비디오 URL, 재생 상태, 시간. | 예 | [미디어 플레이어](/ko/docs/world/media-player)를 참조하세요. |
+| **Basis Synced Rigidbody** | 포즈와 선속도 및 각속도. | 아니요 | 원격 사본은 키네마틱(`DriveRemoteKinematic`)이며 소유자의 시뮬레이션을 따릅니다. |
+| **Basis Synced Parameters** | 이름이 지정된 값: float, 벡터, 색상, int, bool. | 아니요 | [동기화 변수](/ko/docs/scripting/networking/synced-variables)를 참조하세요. |
+
+<Callout type="warn">
+**Basis Object Sync Networking**은 더 이상 사용되지 않습니다. 오래된 콘텐츠에서는 여전히 픽업으로 로드되지만, 새 콘텐츠는 **Basis Pickup Sync Networking**을 사용해야 합니다.
+</Callout>
+
+## 동기화 픽업
+
+1. 오브젝트에 콜라이더와 **Rigidbody**를 추가합니다.
+2. **Basis Pickup Interactable**을 추가합니다.
+3. **Basis Pickup Sync Networking**을 추가하고 `BasisPickupInteractable` 필드에 픽업을 할당합니다.
+
+플레이 모드에서 인스펙터는 실시간 동기화 상태(소유자, 버퍼 깊이, 대역폭)를 보여줍니다.
+
+## Cilbox
+
+Cilbox 스크립트는 동기화 컴포넌트를 상속할 수 없지만 그 옆에 함께 있을 수는 있습니다. **Basis Synced Transform**이 오브젝트를 움직이게 하고, 나머지는 모두 `BasisNetworkShim`을 사용하세요.
+
+## 아바타
+
+아바타는 `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisNetworkShim`을 허용합니다. [아바타 스크립팅](/ko/docs/scripting/avatar-scripting)을 참조하세요.

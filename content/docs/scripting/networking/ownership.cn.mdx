@@ -1,0 +1,115 @@
+---
+title: 所有权
+description: 谁拥有联网对象、如何获取和检查所有权、如何响应所有权转移，以及所有者离开时会发生什么。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+每个联网对象最多只有一个**所有者**。所有者是其副本作为权威的那位玩家：由其写入同步变量、模拟物理，后加入者收到的也是其版本。其他所有人都跟随所有者。
+
+所有权由服务器决定，两位玩家永远不可能同时拥有同一个对象。
+
+## 读取所有权
+
+| 成员 | 含义 |
+| --- | --- |
+| `IsLocalOwner()` | 当服务器确认您拥有它时为 true。请用它来做决策。 |
+| `IsOwnedLocallyOnServer` | 与上面相同，以字段形式提供。可在 Cilbox 中使用。 |
+| `IsOwnedLocallyOnClient` | 在您**请求**所有权的那一刻、服务器回复之前就会被设置。让您无需等待一次往返就能开始驱动对象。 |
+| `CurrentOwnerId` | 所有者的玩家 ID。 |
+| `currentOwnedPlayer` | 以 `BasisNetworkPlayer` 表示的所有者。 |
+| `HasNetworkID` | 在对象网络就绪之前为 false。在此之前所有权没有意义。 |
+
+## 获取所有权
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+即使其他人拥有该对象，`TakeOwnership()` 也会将其夺取。如果您需要知道结果，请 await 异步版本：
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+在不获取所有权的情况下询问谁拥有它：
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+请在玩家对对象**采取行动**的那一刻获取所有权：抓取它、按下它的按钮、坐进去。不要在 `Start` 或 `OnNetworkReady` 中获取；否则每位玩家都会在加载时抢夺它，最后一个人获胜。
+</Callout>
+
+## 响应所有权转移
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## 对象最初由谁拥有
+
+当服务器第一次看到某个联网对象时，第一个询问它的玩家会成为其所有者。实际上，这通常就是实例中的第一位玩家。`BasisNetworkShim` 上的 `RequestOwnershipIfNone()` 会询问服务器，并且只在无人拥有时获取所有权。
+
+## 所有者离开时
+
+当所有者断开连接时，服务器会将其每个对象交给**实例中连接时间最长的剩余玩家**。所有人都会收到 `OnOwnershipTransfer`，新所有者会从其已有的状态继续。您的脚本只需要响应所有权转移，而不需要响应离开。
+
+## 模式
+
+**所有者负责工作，所有人显示结果**。物理、计时器和游戏规则只在所有者那里运行。其他人读取同步变量或接收事件。
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**通过所有者发出请求**。当非所有者需要在不接管的情况下更改共享状态时（例如给别人的计分板加一分），请向所有者发送事件，并由所有者来应用：
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**拾取物会自动获取所有权**。`BasisPickupSyncNetworking` 在被抓取时获取所有权。关闭 `CanNetworkSteal` 可以阻止其他玩家从别人手中抢走物品。

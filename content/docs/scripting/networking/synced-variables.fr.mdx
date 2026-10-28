@@ -1,0 +1,152 @@
+---
+title: Variables synchronisées
+description: Garder une valeur identique pour tout le monde avec BasisSyncedParameters ou un BasisSyncedObject personnalisé, y compris la compression et l'interpolation.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Une variable synchronisée est une valeur que le **propriétaire** écrit et que tous les autres joueurs lisent. Basis l'envoie sous forme de flux de deltas compact, interpole les valeurs continues côté réception et envoie une keyframe complète aux joueurs qui arrivent en retard. Vous n'écrivez aucun code de sérialisation.
+
+## Choisir entre continu et fiable
+
+| Vous avez besoin de | Utilisez |
+| --- | --- |
+| Une valeur qui change souvent et doit paraître fluide (un levier, un cadran, un fondu de couleur) | Une variable synchronisée avec **Interpolate** activé. |
+| Une valeur qui doit être exacte et change rarement (un score, un mode, un indicateur de porte ouverte) | Une variable synchronisée avec **Interpolate** désactivé (`Int`, `Bool`, `Byte`), ou un [événement réseau](/fr/docs/scripting/networking/network-events) fiable. |
+| Un objet en mouvement | [`BasisSyncedTransform`, `BasisSyncedRigidbody` ou `BasisPickupSyncNetworking`](/fr/docs/scripting/networking/network-components). |
+
+<Callout type="warn">
+`BasisSyncedParameters` et vos propres sous-classes de `BasisSyncedObject` ne figurent pas sur les listes d'autorisation par défaut du contenu téléversé. Ils sont retirés d'un `.bee` sauf si le type est ajouté aux sélecteurs de la content police. Dans le contenu Cilbox téléversé, synchronisez les valeurs avec des [événements réseau](/fr/docs/scripting/networking/network-events#cilbox) et les objets en mouvement avec **Basis Synced Transform**.
+</Callout>
+
+## BasisSyncedParameters : aucun code de sérialisation
+
+Ajoutez un composant **Basis Synced Parameters** et déclarez des paramètres nommés dans l'inspecteur. Chacun a un type (`Float`, `Angle`, `Vector2`, `Vector3`, `Vector4`, `Color`, `Rotation`, `Int`, `UInt`, `UShort`, `Bool`, `Byte`), un indicateur **Interpolate** et une compression par axe.
+
+Lisez-les et écrivez-les ensuite par leur nom depuis n'importe quel script :
+
+```csharp title="Lever.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Lever : MonoBehaviour
+{
+    public BasisSyncedParameters sync;
+    public Transform handle;
+    int angleId;
+
+    void Start()
+    {
+        angleId = sync.GetParameterId("Angle");
+    }
+
+    public void SetAngleFromHand(float degrees)
+    {
+        if (!sync.IsLocalOwner()) sync.TakeOwnership();
+        sync.SetAngle(angleId, degrees);
+    }
+
+    void Update()
+    {
+        handle.localRotation = Quaternion.Euler(sync.GetAngle(angleId), 0f, 0f);
+    }
+}
+```
+
+- Seules les écritures du propriétaire comptent. Prenez la propriété avant d'écrire (voir [Propriété](/fr/docs/scripting/networking/ownership)).
+- Les lectures fonctionnent partout. Chez le propriétaire, vous obtenez la valeur que vous avez écrite ; chez tous les autres, vous obtenez la valeur réseau interpolée.
+- Convertissez le nom en id une seule fois avec `GetParameterId` et utilisez les surcharges par id dans `Update` pour éviter la recherche par nom.
+
+Il n'existe pas de callbacks de changement. Lisez la valeur dans `Update` et réagissez quand elle diffère de la dernière valeur vue :
+
+```csharp
+int lastScore = -1;
+
+void Update()
+{
+    int score = sync.GetInt(scoreId);
+    if (score == lastScore) return;
+    lastScore = score;
+    scoreLabel.text = score.ToString();
+}
+```
+
+## BasisSyncedObject personnalisé
+
+Quand vos valeurs proviennent de vos propres champs, dérivez de `BasisSyncedObject`. Enregistrez les champs dans `Awake`, poussez vos valeurs actuelles dans `OnBeforeTransmit` (propriétaire) et relisez-les sur les clients distants.
+
+```csharp title="Turret.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Turret : BasisSyncedObject
+{
+    public Transform barrel;
+    public float yaw;
+    public bool firing;
+
+    BasisSyncHandle yawHandle, firingHandle;
+
+    protected void Awake()
+    {
+        yawHandle = RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 12));
+        firingHandle = RegisterBool();
+    }
+
+    protected override void OnBeforeTransmit()
+    {
+        LocalSet(yawHandle, yaw);
+        LocalSet(firingHandle, firing);
+    }
+
+    void Update()
+    {
+        if (!IsOwnedLocallyOnClient)
+        {
+            yaw = GetFloat(yawHandle);
+            firing = GetBool(firingHandle);
+        }
+        barrel.localRotation = Quaternion.Euler(0f, yaw, 0f);
+    }
+}
+```
+
+<Callout type="warn">
+Enregistrez chaque champ dans `Awake`, avant que l'objet soit prêt pour le réseau. La disposition des champs constitue le format sur le réseau. Chaque client doit enregistrer les mêmes champs dans le même ordre.
+</Callout>
+
+`OnBeforeTransmit` ne s'exécute que sur les frames où un paquet doit partir, pas à chaque frame. Gardez-le comme une simple copie de vos valeurs.
+
+Pour piloter directement un transform à partir des champs enregistrés, appelez `BindTransform(target, position, rotation, scale, worldSpace)` ; le driver applique alors les valeurs interpolées dans un job sans que votre `Update` s'exécute.
+
+## Compression
+
+Chaque float peut être envoyé brut (32 bits), en demi-précision (16 bits) ou en mode **ranged** : un minimum, un maximum et un nombre de bits. Un levier entre 0 et 90 degrés nécessite bien moins de bits qu'une position dans le monde.
+
+```csharp
+RegisterFloat(BasisQuantSpec.Ranged(0f, 1f, 8));      // 0..1 in 256 steps
+RegisterFloat(BasisQuantSpec.Half);                    // 16 bit float
+RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
+```
+
+Dans `BasisSyncedParameters`, ce même choix correspond au réglage **Compression** de chaque axe.
+
+## Réglages de fréquence d'envoi
+
+`BasisSyncedObject` expose son timing dans l'inspecteur :
+
+| Réglage | Par défaut | Signification |
+| --- | --- | --- |
+| `SendIntervalSeconds` | 0.05 | Fréquence à laquelle le propriétaire peut envoyer (20 par seconde). Rien n'est envoyé tant que les valeurs ne changent pas. |
+| `KeyframeIntervalSeconds` | 0.5 | Fréquence d'envoi d'un état complet pour corriger les deltas perdus. Ralentit pendant l'inactivité. |
+| `DistanceReduction` | activé | Envoie moins souvent aux joueurs éloignés. |
+| `RelevanceCulling` / `RelevanceRadius` | désactivé / 50 | N'envoie rien du tout aux joueurs au-delà du rayon. |
+| `Extrapolate` | désactivé | Continue brièvement à faire avancer les valeurs distantes quand les paquets sont en retard. |
+| `UseDirectP2P` | activé | Utilise une connexion pair à pair directe lorsqu'elle existe. |
+
+## Cilbox
+
+Un script Cilbox ne peut pas dériver de `BasisSyncedObject`. Dans le contenu téléversé :
+
+- Objets en mouvement : ajoutez un composant **Basis Synced Transform** ou **Basis Pickup Sync Networking**. Aucun script nécessaire.
+- Valeurs : conservez-les chez le propriétaire et envoyez-les sous forme d'[événements réseau](/fr/docs/scripting/networking/network-events#cilbox), en les renvoyant aux [joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners). L'exemple [Interrupteur synchronisé](/fr/docs/scripting/examples/synced-toggle) sert de modèle.

@@ -1,0 +1,41 @@
+---
+title: 許可されたコンポーネント
+description: アップロードされたワールド、プロップ、アバターで残るコンポーネント、その確認方法、クライアントビルドでの追加方法。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+コンテンツが読み込まれると、Basisの**コンテンツポリス**は、そのコンテンツの種類の許可リストにない型のコンポーネントをすべて削除します。`[Cilboxable]`でマークされたスクリプトは削除されません。先にサンドボックス化されたプロキシに変換されるからです。
+
+## 許可リスト
+
+リストは`Packages/com.basis.sdk/Settings/`にあります。
+
+| アセット | 適用対象 |
+| --- | --- |
+| `SceneContentPoliceSelector` | ワールド |
+| `PropContentPoliceSelector` | プロップ |
+| `AvatarContentPoliceSelector` | アバター |
+
+それぞれが完全な型名のリストです。一致判定は完全一致です。許可された型のサブクラスは、それ自体がリストに載っていない限り許可**されません**。
+
+## デフォルトで許可されているもの
+
+**ワールドとプロップ:** レンダリング（メッシュ、スキンメッシュ、ライン、トレイル、パーティクル、LODコンポーネント、ライト、リフレクションプローブ、カメラ）、物理（コライダー、リジッドボディ、ジョイント）、オーディオソースとSteam Audio、Animatorとアニメーション、UIキャンバスとTextMesh Pro、`VideoPlayer`、VFX Graphバインダー、AudioLink、Basisコンストレイント、Basisメディアプレイヤー、ミラー、座席、ピックアップ、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、乗り物、`BasisPlatformSwitch`、そしてCilboxサンドボックスとシム。ワールドではさらに、ナビゲーション（`NavMeshAgent`、`NavMeshObstacle`）、ポストプロセスボリューム、アバターペデスタルも許可されています。
+
+**アバター:** レンダリング、物理、オーディオ、Animator、コンストレイント、座席、同期トランスフォーム、OSC、アバターシム。カメラ、ライト、UI、ビデオは使えません。
+
+**デフォルトで許可されていないもの**（クライアントビルドのみ）: `BasisSyncedParameters`、`BasisSyncedRigidbody`、`BasisLocomotionZone`、`BasisRuntimeLoader`、そして独自のNative `MonoBehaviour`すべて。
+
+<Callout type="info">
+セレクターアセットが正式な情報源であり、バージョン間で変更されます。現在のリストを確認するにはインスペクターで開いてください。
+</Callout>
+
+## コンテンツの確認
+
+- プレイモードに入ります。Basisは同じ取り締まりを適用し、削除されたコンポーネントはログに記録されます。
+- 各サンドボックスでスクリプトが呼び出せるものは、**Basis > Tools > Cilbox Permissions**ウィンドウに一覧表示されます。
+
+## コンポーネントの追加（クライアントビルド）
+
+独自のクライアントを配布する場合は、対応するセレクターアセットに型の完全な名前を追加します。公開クライアント向けに作られたコンテンツはこれに頼れません。その場合はロジックを`[Cilboxable]`スクリプトに変換してください。

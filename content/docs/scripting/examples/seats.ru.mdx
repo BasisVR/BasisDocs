@@ -1,0 +1,60 @@
+---
+title: Сиденья
+description: Посадка игроков из скрипта, вращающееся кресло и кнопка высаживания с помощью Basis Seat и Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Настройка
+
+1. Добавьте **Basis Seat** на стул и расположите его точку посадки. Префаб `SimpleSeat` в com.basis.examples уже готов к использованию.
+2. Добавьте **Basis Seat Sync**, чтобы все видели, кто сидит, и два игрока не могли занять одно и то же сиденье.
+
+Игроки могут сесть, указав на сиденье. Скрипт ниже добавляет кнопку, которая усаживает их, поворачивает кресло и позволяет встать.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Член | Значение |
+| --- | --- |
+| `IsAvailable` | Никто не сидит, и сиденья не отключены в настройках игрока. |
+| `IsLocalPlayerSeated` | Локальный игрок сидит на этом сиденье. |
+| `HasOccupant` | Кто-то сидит на этом сиденье. |
+| `TrySeatLocalPlayer()` | Усаживает локального игрока, если сиденье свободно. |
+| `SetOccupantYaw(degrees)` | Поворачивает сидящего игрока в пределах ограничений вращения сиденья. |
+| `EjectLocalPlayer()` | Поднимает локального игрока с сиденья. |
+
+<Callout type="info">
+Сиденья двигают только локального игрока, и скрипту не нужна собственная сетевая логика. **Basis Seat Sync** отвечает за то, кто сидит.
+</Callout>

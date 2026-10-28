@@ -1,0 +1,40 @@
+---
+title: Schwanz-Reaktion
+description: Ein Avatar-Schwanz, der wedelt und quietscht, wenn jemand ihn greift, mit BasisJiggleEventShim.
+---
+
+```csharp title="TailReaction.cs (Cilbox, avatar)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class TailReaction : MonoBehaviour
+{
+    public AudioSource squeak;
+    public Animator animator;
+    BasisJiggleEventShim jiggle;
+    int tail = -1;
+
+    void Start()
+    {
+        jiggle = GetComponent<BasisJiggleEventShim>();
+        tail = jiggle.FindJiggleRig("Tail");
+    }
+
+    void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex != tail) return;
+        if (began) squeak.Play();
+        animator.SetBool("Wagging", began);
+    }
+
+    void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex)
+    {
+        if (rigIndex == tail && began) animator.SetTrigger("Flinch");
+    }
+}
+```
+
+- Jeder Client, der den Avatar rendert, sieht das Greifen. Die Reaktion wird ohne Networking für alle abgespielt.
+- Die Erkennung läuft nur, solange sich ein Skript angemeldet hat. Avatare ohne ein solches Skript kosten nichts.

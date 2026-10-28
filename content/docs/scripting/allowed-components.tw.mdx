@@ -1,0 +1,41 @@
+---
+title: 允許的元件
+description: 哪些元件能保留在上傳的世界、道具和虛擬形象中、如何檢查，以及客戶端建置如何加入更多元件。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+內容載入時，Basis 的 **content police** 會移除所有類型不在該類內容允許清單上的元件。標記為 `[Cilboxable]` 的腳本能夠保留，因為它們會先被轉換為沙盒化的代理物件。
+
+## 允許清單
+
+這些清單位於 `Packages/com.basis.sdk/Settings/`：
+
+| 資產 | 適用於 |
+| --- | --- |
+| `SceneContentPoliceSelector` | 世界 |
+| `PropContentPoliceSelector` | 道具 |
+| `AvatarContentPoliceSelector` | 虛擬形象 |
+
+每一份都是完整類型名稱的清單。比對是精確的：允許類型的子類別**不會**被允許，除非它本身也有列出。
+
+## 預設允許的項目
+
+**世界與道具：** 渲染（mesh、skinned mesh、line、trail、粒子與 LOD 元件、光源、反射探針、攝影機）、物理（collider、rigidbody、joint）、音訊來源與 Steam Audio、animator 與動畫、UI canvas 與 TextMesh Pro、`VideoPlayer`、VFX Graph binder、AudioLink、Basis 約束、Basis 媒體播放器、鏡子、座位、拾取物、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、載具、`BasisPlatformSwitch`，以及 Cilbox 沙盒與 shim。世界另外還允許導航（`NavMeshAgent`、`NavMeshObstacle`）、後處理 volume 以及虛擬形象展示台。
+
+**虛擬形象：** 渲染、物理、音訊、animator、約束、座位、同步變換、OSC 以及虛擬形象 shim。不允許攝影機、光源、UI 或影片。
+
+**預設不允許**（僅限客戶端建置）：`BasisSyncedParameters`、`BasisSyncedRigidbody`、`BasisLocomotionZone`、`BasisRuntimeLoader`，以及您自己的任何 Native `MonoBehaviour`。
+
+<Callout type="info">
+選擇器資產才是權威來源，且會隨版本變動。請在檢查器中開啟它們以查看目前的清單。
+</Callout>
+
+## 檢查您的內容
+
+- 進入播放模式：Basis 會套用相同的檢查，被移除的元件會記錄在日誌中。
+- 在 **Basis > Tools > Cilbox Permissions** 視窗中，可以看到每個沙盒允許腳本呼叫的項目。
+
+## 加入元件（客戶端建置）
+
+如果您發佈自己的客戶端，請將該類型的完整名稱加入對應的選擇器資產。為公開客戶端建置的內容無法依賴這種方式；在那種情況下，請將邏輯轉換為 `[Cilboxable]` 腳本。

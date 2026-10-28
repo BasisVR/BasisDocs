@@ -1,0 +1,94 @@
+---
+title: 동기화 토글
+description: 나중에 참여하는 플레이어를 포함해 모든 플레이어에게 오브젝트를 켜거나 끄는 버튼.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+이것은 가장 작은 완전한 네트워크 스크립트입니다. 1바이트의 상태를 바뀔 때 보내고, 참여하는 사람에게 다시 보냅니다.
+
+## 설정
+
+1. **Button**이 있는 월드 공간 캔버스를 만듭니다.
+2. 캔버스에 **SyncedToggle**을 추가합니다. 버튼과 토글할 오브젝트(조명, 거울, 문)를 할당합니다.
+
+## 스크립트
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## 작동 방식
+
+- 누르면 소유권을 가져오고, 누른 사람이 즉시 볼 수 있도록 로컬에서 값을 뒤집은 다음, 새 값을 다른 모든 사람에게 보냅니다.
+- `ReliableSequenced`는 최신 값의 도착을 보장하고 오래된 값은 버립니다. 토글에는 최신 값만 중요합니다.
+- 참여하는 플레이어는 소유자에게서만 현재 값을 받습니다. 메시지가 전체 상태를 담고 있어서 같은 `OnMessage`가 실시간 변경과 따라잡기를 모두 처리합니다.
+
+<Callout type="info">
+Native 버전: `BasisNetworkBehaviour`를 상속하고, shim 이벤트를 `OnNetworkMessage`와 `OnPlayerJoined` 오버라이드로 바꾸고, `TakeOwnership()`과 `SendCustomNetworkEvent`를 직접 호출하세요.
+</Callout>

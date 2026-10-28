@@ -1,0 +1,38 @@
+---
+title: Lampe torche à la main
+description: Une lampe torche fixée à la main du joueur local sans retard, grâce à BasisBeforeRenderShim et aux entrées des manettes.
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- Écrire la position dans `Update` ferait traîner la lampe d'une image derrière la main en VR, car l'IK se termine plus tard. `OnBeforeRender` s'exécute après l'IK.
+- La lumière est locale : chaque joueur a la sienne, et les autres ne la voient pas.

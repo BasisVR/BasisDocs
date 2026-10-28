@@ -1,0 +1,79 @@
+---
+title: 基础
+description: 您的第一批 Basis 脚本：一个旋转的物体和一个 UI 按钮，以随场景或道具一起发布的 Cilbox 脚本形式编写。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 设置
+
+1. 创建一个空 GameObject，并添加 **Basis Scene**（用于世界）或 **Basis Prop**（用于道具）。
+2. 添加 **Cilbox Scene Basis**（世界）或与您内容类型对应的 Cilbox 组件。这就是内容中所有脚本运行的沙盒。
+3. 将您的脚本添加到其下的物体上。
+
+<Callout type="info">
+如果您的编辑器找不到 `Cilbox` 命名空间，请在您自己的 `.asmdef` 中添加对 Cilbox 程序集的引用，或者在 Cilbox 程序集上开启 **Auto Referenced**。
+</Callout>
+
+## 旋转的物体
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+公共字段和 `[SerializeField]` 字段会随内容一起保存，可以在检查器中设置。
+
+## 修改文本的按钮
+
+1. 创建一个世界空间 **Canvas**，其中包含一个 **Button** 和一个 **TextMeshPro - Text (UI)**。
+2. 将此脚本添加到 canvas 上，并分配按钮和文本。
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+这个计数器是本地的：每位玩家都有自己的计数。[同步开关](/cn/docs/scripting/examples/synced-toggle)示例制作了一个所有人共享的按钮。
+
+## 测试
+
+在您的场景中进入播放模式。Basis 会将每个 `[Cilboxable]` 脚本替换为 `CilboxProxy`，与上传后的情况相同。然后按照[构建](/cn/docs/world/building)中的说明构建内容并在客户端中加载。

@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Lo scripting fornisce funzionalità avanzate all'interno del framework Basis. Questa documentazione ti guiderà nella creazione, costruzione e test degli script usando Unity e il Basis SDK.
 
-Basis utilizza anche il pacchetto Unity `Cilbox`, un emulatore CIL in sandbox.
+## Native e Cilbox
+
+Basis ha due tipi di script:
+
+- Gli script **Native** sono compilati nell'applicazione. Hanno le API complete di Unity e Basis e la velocità nativa, ma esistono solo nei client costruiti con essi. Usali quando costruisci un'app o un gioco su Basis.
+- Gli script **Cilbox** sono script a runtime. Vengono distribuiti all'interno di un mondo, prop o avatar, sono contrassegnati con `[Cilboxable]` e vengono eseguiti in una sandbox su qualsiasi client che carica il contenuto. Usali per i contenuti utente.
+
+Vedi [Native e Cilbox](/it/docs/scripting/native-and-cilbox) per il confronto completo.
 
 ## Guida rapida
 
 <Cards>
   <Card
+    title="Native e Cilbox"
+    description="Compilati nell'app oppure script a runtime nei contenuti"
+    href="/it/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="Scripting"
     description="Come usare gli script"
     href="/it/docs/scripting/scripting"
+  />
+  <Card
+    title="Usi comuni"
+    description="Giocatori, input, UI, timer, caricamento dati, salvataggio e menu"
+    href="/it/docs/scripting/common-usages"
+  />
+  <Card
+    title="Regole della sandbox"
+    description="Insidie di Cilbox e costi di prestazioni"
+    href="/it/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="Scripting degli avatar"
+    description="Script sugli avatar, chi lo indossa rispetto a tutti"
+    href="/it/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="Networking"
+    description="Variabili sincronizzate, eventi di rete, ownership e giocatori arrivati in ritardo"
+    href="/it/docs/scripting/networking"
+  />
+  <Card
+    title="Esempi"
+    description="Script completi per le funzionalità comuni di mondi e prop"
+    href="/it/docs/scripting/examples"
   />
   <Card
     title="OSC"

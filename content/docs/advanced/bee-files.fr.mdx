@@ -1,0 +1,92 @@
+---
+title: À l'intérieur d'un fichier BEE
+description: Ce que contient un fichier .bee, comment il est organisé sur le disque, comment il est chiffré, et comment un client ne télécharge que la partie dont il a besoin.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un fichier `.bee` (Basis Encrypted Experience) est le fichier unique sous lequel chaque monde, prop et avatar est livré. Il contient une description du contenu plus une compilation Unity par plateforme, le tout chiffré avec le mot de passe défini lors de la compilation.
+
+## Structure
+
+```
+┌──────────────────────────────┐
+│ Header: connector length     │  8 bytes, little endian Int64
+├──────────────────────────────┤
+│ Connector (encrypted JSON)   │  metadata, sections table
+├──────────────────────────────┤
+│ Section 1 (encrypted)        │  e.g. StandaloneWindows64
+├──────────────────────────────┤
+│ Section 2 (encrypted)        │  e.g. Android
+├──────────────────────────────┤
+│ ...                          │
+└──────────────────────────────┘
+```
+
+Les sections suivent le connecteur bout à bout, dans l'ordre où le connecteur les liste. Le connecteur stocke la longueur de chaque section, ce qui suffit pour savoir où commence chaque section sans parcourir le fichier.
+
+## Le connecteur
+
+Le connecteur est un document JSON (`BasisBundleConnector`) qui décrit le contenu sans le charger :
+
+| Champ | Contenu |
+| --- | --- |
+| `UniqueVersion` | Un identifiant de compilation. Change à chaque compilation. |
+| `BasisBundleDescription` | Nom, description, tags, groupe de contenu et paternité (auteur, contact, licence, crédits). |
+| `BasisBundleGenerated[]` | Une entrée par section : plateforme, mode d'asset, nom d'asset, CRC, hash, longueur et API graphiques. |
+| `ImageBase64` | La miniature affichée dans les menus et sur les orbes de contenu. |
+| `FarLodBase64` | Avatars uniquement : un minuscule substitut dessiné à longue distance. |
+| `DateOfCreation` | Heure de compilation (UTC). |
+| `Bounds` | La taille du contenu, utilisée pour le placer avant son chargement. |
+| `MetaData` | Nombre de triangles, de matériaux et d'os, mémoire des textures, pipeline de rendu, type de contenu (Avatar, Prop ou Scene), placement d'apparition des props et nombre de chaque type de composant. |
+
+Comme le connecteur est petit et vient en premier, les menus peuvent afficher les noms, les miniatures et les statistiques de performance après avoir téléchargé seulement les premiers kilo-octets.
+
+## Sections
+
+Chaque entrée `BasisBundleGenerated` décrit une section :
+
+| Champ | Signification |
+| --- | --- |
+| `Platform` | La cible de compilation, comme `StandaloneWindows64` ou `Android`. `Generic` marque le repli glTF. |
+| `AssetMode` | `Scene` pour les mondes, `GameObject` pour les avatars et les props, `GLTF` pour le repli générique. |
+| `AssetToLoadName` | La scène ou le prefab à ouvrir depuis le bundle. |
+| `AssetBundleCRC`, `AssetBundleHash` | Contrôles d'intégrité du bundle Unity déchiffré. |
+| `EndByte` | La longueur de la section dans le fichier. |
+| `AssetBundleEndByte` | L'endroit où le bundle Unity se termine dans la section déchiffrée, lorsque des données supplémentaires le suivent. |
+| `GraphicsStatePayloads` | Décalages des données intégrées de préchauffage des shaders par API graphique et niveau de qualité. |
+
+Une section déchiffrée est un **AssetBundle** Unity, éventuellement suivi de données d'**état graphique** utilisées pour préchauffer les shaders afin que le contenu ne saccade pas la première fois qu'il est vu.
+
+La section **Generic** est réservée aux avatars : un `.glb` chiffré (glTF 2.0 binaire) plus des données de configuration d'avatar. Un client ne s'en sert qu'en repli, lorsque le fichier n'a pas de section pour sa plateforme. Ainsi, un avatar s'affiche quand même sur des plateformes pour lesquelles il n'a jamais été compilé.
+
+## Chiffrement
+
+Le connecteur et chaque section sont chiffrés séparément avec le mot de passe du contenu :
+
+- Algorithme : AES avec une clé de 256 bits.
+- Clé : dérivée du mot de passe avec PBKDF2 (SHA-1, 10 000 itérations) et un sel aléatoire de 16 octets.
+- Structure de chaque bloc chiffré : `salt (16 bytes) | IV (16 bytes) | ciphertext`.
+
+Les sections de plus de quelques mégaoctets sont déchiffrées par morceaux en parallèle. Une section déchiffrée peut faire au maximum environ 2 Go ; le fichier dans son ensemble n'a pas une telle limite, car une seule section est jamais déchiffrée.
+
+<Callout type="warn">
+Le mot de passe protège le contenu contre la copie occasionnelle et vous permet de contrôler qui peut le charger. Toute personne disposant de l'URL et du mot de passe peut le déchiffrer. Ne mettez pas de secrets dans le contenu.
+</Callout>
+
+## Comment un client charge un BEE
+
+1. Lire les 8 premiers octets (l'en-tête) avec une requête HTTP range.
+2. Télécharger et déchiffrer le connecteur. Les menus peuvent alors afficher le nom, la miniature et les statistiques.
+3. Parcourir la table des sections pour trouver la section de cette plateforme et calculer sa plage d'octets à partir des longueurs.
+4. Télécharger uniquement cette section avec une requête range. Les sections des autres plateformes ne quittent jamais le serveur.
+5. La déchiffrer, vérifier le CRC et charger l'AssetBundle (ou construire l'avatar à partir du glTF).
+6. Mettre le fichier en cache localement. La fois suivante, le client vérifie seulement si le contenu a changé.
+
+C'est pourquoi un seul `.bee` peut contenir des compilations Windows, Linux et Android sans imposer aux joueurs Quest la taille de téléchargement de la compilation PC.
+
+## Hébergement
+
+- Tout hébergeur statique qui prend en charge les **requêtes HTTP range** fonctionne.
+- Mettez en ligne le `.bee` et partagez son URL et son mot de passe. Le mot de passe est ce que les joueurs ou votre configuration de chargement utilisent pour le déverrouiller.
+- Recompiler produit un nouveau `UniqueVersion`, ce qui permet aux clients de distinguer les compilations. Les clients revalident les copies en cache auprès de l'hébergeur, et remplacer le fichier à la même URL le met à jour pour tout le monde.

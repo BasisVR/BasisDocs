@@ -1,0 +1,62 @@
+---
+title: Shim-referentie
+description: Elke Basis-shim die een Cilbox-script kan gebruiken, gegroepeerd per onderwerp, elk met een kort voorbeeld.
+---
+
+Shims zijn de Basis-kant van de Cilbox-sandbox: kleine, veilige API's die een gesandboxt script toegang geven tot spelers, invoer, netwerk, opslaan, menu's en meer. De meeste staan in de namespace `Basis.Shims`.
+
+Shims zijn er in drie vormen:
+
+- Statische klassen die je direct aanroept, zoals `BasisPlayersShim.Count`.
+- Event-componenten waarvoor je je aanmeldt door `GetComponent<T>()` aan te roepen in `Start`. Cilbox voegt de component voor je toe, en Basis roept een methode met een vaste naam op je script aan, zoals `OnPlatformChanged`.
+- Vervangen types. Je schrijft de normale Unity-naam (`Debug`, `VideoPlayer`, `BasisAvatar`) en de sandbox levert een veilige versie.
+
+| Shim | Wat het doet | Pagina |
+| --- | --- | --- |
+| `BasisPlayersShim` | Spelerslijst, dichtstbijzijnde speler, poses | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisVelocityShim` | De lokale speler lanceren of duwen | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | De beweging van de drager aansturen vanuit een avatar | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisSeatShim` | Zit de lokale speler, en waar | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | Weten wanneer een speler van avatar wisselt | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | Controles op admin, moderator en rechten | [Spelers](/nl/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | Knoppen, triggers en sticks van VR-controllers | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | Muisknoppen, beweging en scrollen | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisHapticsShim` | Trillen van controllers | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisInteractableShim` | Indrukbare objecten | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisActionTrigger` | UI-pointer-events | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [Invoer](/nl/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | Wisselen tussen VR en desktop | [Events](/nl/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | Taalwijzigingen | [Events](/nl/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | Kwaliteitswijzigingen | [Events](/nl/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | Lokale wijzigingen in rechten | [Events](/nl/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | Iemand pakt of raakt jiggle bones aan | [Events](/nl/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | Late update na IK, vlak voor het tekenen | [Events](/nl/docs/scripting/shims/events) |
+| `BasisNetworkShim` | Netwerkevents, eigenaarschap | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | Gedeelde serverklok | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | Dezelfde willekeurige getallen op elke client | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | Snel inpakken van getallen en vectoren | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | LZ4-compressie | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | De speler naar een andere server sturen | [Netwerk](/nl/docs/scripting/shims/networking) |
+| `BasisSaveShim` | Gegevens opslaan op de computer van de speler | [Gegevens](/nl/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | Gegevens opslaan op de server | [Gegevens](/nl/docs/scripting/shims/data) |
+| `BasisJson` | JSON parsen | [Gegevens](/nl/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | HTTPS GET en POST | [Gegevens](/nl/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | Een website openen | [Gegevens](/nl/docs/scripting/shims/data) |
+| `BasisMenuShim` | Instellingentabbladen en menupanelen | [Menu's](/nl/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | Kwaliteitsinstellingen lezen | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | Framerate, bottleneck, verbinding | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | Budget voor compute shaders | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | De stem van een speler vanuit een object afspelen | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | `VideoPlayer` met de URL-prompt | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | Platformdetectie | [Rendering en audio](/nl/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | Veel transforms tegelijk lezen of schrijven | [Batching](/nl/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | Elk frame transforms naar transforms kopiëren | [Batching](/nl/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | Veel blendshapes lezen, schrijven of kopiëren | [Batching](/nl/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | Vectorarrays splitsen en samenvoegen | [Batching](/nl/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | Straal- en boltests op arrays | [Batching](/nl/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | De avatarcomponent op avatars | [Avatar](/nl/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Vixxy-menu-items lezen en aansturen | [Avatar](/nl/docs/scripting/shims/avatar) |
+| `BasisOsc` | OSC-berichten | [OSC](/nl/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | Logboekregels gemarkeerd met je content | [Sandboxregels](/nl/docs/scripting/sandbox-rules) |
+
+Welke sandbox welke shim toestaat, zie je live in de Unity-editor onder **Basis > Creator Guide**, in de sectie Cilbox API Reference.

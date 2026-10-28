@@ -1,0 +1,64 @@
+---
+title: Carga de imágenes
+description: Mostrar una imagen desde una URL en un cartel, con una alternativa mientras carga o cuando el jugador lo rechaza.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configuración
+
+1. Cree un **Quad** para el cartel y asígnele un material con una ranura de textura unlit o lit.
+2. Añada **RemoteImage** y asigne el renderer. Establezca la URL y, opcionalmente, una textura provisional.
+
+## Script
+
+```csharp title="RemoteImage.cs (Cilbox)"
+using Basis;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class RemoteImage : MonoBehaviour
+{
+    public string url = "https://example.com/poster.png";
+    public Renderer target;
+    public Texture placeholder;
+    public float refreshMinutes = 0f;
+
+    float nextRefresh;
+
+    void Start()
+    {
+        if (placeholder != null) target.material.mainTexture = placeholder;
+        Load();
+    }
+
+    void Update()
+    {
+        if (refreshMinutes <= 0f || Time.time < nextRefresh) return;
+        Load();
+    }
+
+    void Load()
+    {
+        nextRefresh = Time.time + refreshMinutes * 60f;
+        var downloader = new BasisImageDownloader();
+        downloader.DownloadImage(url, result =>
+        {
+            if (result.Success) target.material.mainTexture = result.Result;
+            else Debug.LogWarning($"poster failed: {result.Error}");
+        });
+    }
+}
+```
+
+## Reglas
+
+- Solo https. El http simple, las direcciones IP directas y cualquier cosa que se resuelva a una dirección de red local se rechazan antes de realizar la solicitud.
+- Sin redirecciones. Aloje la imagen en su dirección final.
+- Los jugadores aprueban los hosts. La primera vez que un contenido solicita un host nuevo, se pregunta al jugador. Hasta que acepte, la descarga falla y se mantiene su textura provisional.
+- Cada jugador descarga la imagen por su cuenta; no hay nada que sincronizar. Para que todos muestren la misma imagen cambiante, sincronice el **índice de URL** (consulte [Interruptor sincronizado](/es/docs/scripting/examples/synced-toggle) para ver el patrón) y cárguela localmente.
+
+<Callout type="info">
+Para texto, use `BasisStringDownloader.DownloadString` con las mismas reglas, y `BasisJson.Parse` para leer JSON.
+</Callout>

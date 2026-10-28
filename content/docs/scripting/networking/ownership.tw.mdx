@@ -1,0 +1,115 @@
+---
+title: 擁有權
+description: 誰擁有網路物件、如何取得與檢查擁有權、如何回應轉移，以及擁有者離開時會發生什麼事。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+每個網路物件最多只有一位**擁有者**。擁有者是其副本即為真實狀態的那位玩家：他們寫入同步變數、模擬物理，而晚加入者收到的也是他們的版本。其他所有人都跟隨擁有者。
+
+擁有權由伺服器決定，兩位玩家永遠不可能同時擁有同一個物件。
+
+## 讀取擁有權
+
+| 成員 | 意義 |
+| --- | --- |
+| `IsLocalOwner()` | 當伺服器確認您擁有它時為 true。做決策時請使用這個。 |
+| `IsOwnedLocallyOnServer` | 同上，以欄位形式提供。Cilbox 可使用。 |
+| `IsOwnedLocallyOnClient` | 在您**請求**擁有權的那一刻、伺服器回應之前就會設定。讓您無需等待一次往返就能開始操控物件。 |
+| `CurrentOwnerId` | 擁有者的玩家 ID。 |
+| `currentOwnedPlayer` | 以 `BasisNetworkPlayer` 表示的擁有者。 |
+| `HasNetworkID` | 在物件網路就緒之前為 false。在那之前擁有權沒有意義。 |
+
+## 取得擁有權
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+即使其他人擁有該物件，`TakeOwnership()` 也會取得它。如果您需要知道結果，請 await 非同步版本：
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+詢問誰擁有它而不取得它：
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+請在玩家對物件**採取行動**的那一刻取得擁有權：抓取它、按下它的按鈕、坐進去。不要在 `Start` 或 `OnNetworkReady` 中取得；否則每位玩家都會在載入時搶奪它，最後一位勝出。
+</Callout>
+
+## 回應轉移
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## 物件一開始由誰擁有
+
+當伺服器第一次看到某個網路物件時，第一位詢問它的玩家會成為其擁有者。實務上就是實例中的第一位玩家。`BasisNetworkShim` 上的 `RequestOwnershipIfNone()` 會詢問伺服器，並且只在沒有人擁有時才取得擁有權。
+
+## 擁有者離開時
+
+擁有者斷線時，伺服器會將他們的每個物件交給**仍在實例中且連線時間最長的玩家**。每個人都會收到 `OnOwnershipTransfer`，新的擁有者會從自己已有的狀態繼續。您的腳本只需要回應轉移，而不需要回應離開。
+
+## 模式
+
+**擁有者負責處理，所有人顯示結果。** 物理、計時器和遊戲規則只在擁有者端執行。其他人讀取同步變數或接收事件。
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**透過擁有者提出請求。** 當非擁有者需要變更共享狀態但不接管時（例如在別人的記分板上加一分），請傳送事件給擁有者，讓擁有者套用：
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**拾取物會自動取得擁有權。** `BasisPickupSyncNetworking` 在被抓取時會取得擁有權。將 `CanNetworkSteal` 關閉，即可阻止其他玩家從別人手中搶走物品。

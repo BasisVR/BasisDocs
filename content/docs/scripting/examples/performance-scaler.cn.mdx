@@ -1,0 +1,52 @@
+---
+title: 性能调节器
+description: 使用 BasisStatsShim 和 BasisGraphicsSettingsEventShim，在玩家帧率下降时调低昂贵的特效。
+---
+
+```csharp title="PerformanceScaler.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PerformanceScaler : MonoBehaviour
+{
+    public GameObject[] gpuHeavy;
+    public GameObject[] cpuHeavy;
+    float nextCheck;
+    bool reduced, lowQuality;
+
+    void Start()
+    {
+        GetComponent<BasisGraphicsSettingsEventShim>();
+    }
+
+    void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+    {
+        lowQuality = qualityTier <= BasisGraphicsSettingsShim.TierLow;
+        Apply();
+    }
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 2f;
+        float target = BasisStatsShim.TargetFramesPerSecond;
+        if (target <= 0f) return;
+        float fps = BasisStatsShim.FramesPerSecond;
+        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
+        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+    }
+
+    void Apply()
+    {
+        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
+        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
+        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
+    }
+}
+```
+
+- 两个阈值（80% 时削减，95% 时恢复）可以防止效果反复闪烁开关。
+- 瓶颈信息告诉您该削减哪一侧：GPU 瓶颈时削减镜子和粒子，CPU 瓶颈时削减人群和脚本。

@@ -1,0 +1,33 @@
+---
+title: 日夜循環
+description: 由伺服器時鐘驅動的太陽。每位玩家都看到相同的時間，而且完全不需要網路程式碼。
+---
+
+以 `Time.time` 驅動的日夜循環，在不同時間加入的玩家之間會逐漸不同步。改以伺服器時鐘驅動，不需要傳送任何訊息就能讓所有人保持一致。
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- 不需要擁有權，也不需要晚加入者的程式碼：時鐘本身就是共享狀態。
+- 在負擔較重的場景中，請每秒更新太陽幾次，而不是每幀更新。

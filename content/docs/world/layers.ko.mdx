@@ -1,0 +1,34 @@
+---
+title: 레이어
+description: Basis가 사용하는 Unity 레이어, 각 레이어가 충돌, 상호작용, 카메라에 미치는 의미, 그리고 오브젝트에 사용할 레이어.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis는 여러 Unity 레이어를 예약해 둡니다. 플레이어, 포인터, 카메라가 오브젝트를 올바르게 처리하도록 설명된 대로 사용하세요.
+
+| # | 레이어 | 용도 |
+| --- | --- | --- |
+| 0 | Default | 일반 월드 지오메트리. 플레이어가 충돌하고 포인터가 맞습니다. |
+| 1 | TransparentFX | Unity 기본값. |
+| 2 | Ignore Raycast | 포인터나 레이캐스트에 맞지 않으며, 3인칭 카메라에서도 무시됩니다. |
+| 3 | Player | 로컬 플레이어의 캐릭터 컨트롤러. |
+| 4 | Water | Unity 기본값. |
+| 5 | UI | 월드 공간 UI. |
+| 6 | LocalPlayerAvatar | 자신의 아바타. 필요한 경우 1인칭 시점에서 숨겨집니다. |
+| 7 | RemotePlayerAvatar | 다른 플레이어의 아바타. |
+| 8 | Interactable | 포인터가 하이라이트하고 상호작용해야 하는 오브젝트. |
+| 9 | OverlayUI | 메뉴처럼 모든 것 위에 그려지는 UI. |
+| 10 | IgnoredByInteractable | 보이고 단단하지만 포인터는 통과합니다. 버튼 앞의 유리나 트리거 볼륨에 사용하세요. |
+| 11 | HandHeldCameraUI | 핸드헬드 카메라 자체의 UI. |
+
+## 레이어 선택
+
+- 벽, 바닥, 소품: Default.
+- 버튼 앞의 트리거 볼륨과 보이지 않는 차단물: IgnoredByInteractable. 포인터가 이를 통과해 뒤에 있는 것에 닿습니다.
+- 포인터가 절대 맞으면 안 되는 장식용 콜라이더: Ignore Raycast.
+- Player, LocalPlayerAvatar, RemotePlayerAvatar, OverlayUI 레이어에는 절대 오브젝트를 두지 마세요.
+
+<Callout type="info">
+레이어 이름과 번호는 Basis 프로젝트의 Tag Manager에서 가져옵니다. 콘텐츠는 이 레이어로 빌드됩니다. 프로젝트에서 Basis 레이어의 이름을 바꾸거나 순서를 변경하지 마세요.
+</Callout>

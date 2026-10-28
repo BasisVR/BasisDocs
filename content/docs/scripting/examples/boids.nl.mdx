@@ -1,0 +1,49 @@
+---
+title: Boids
+description: Een zwerm van 200 vogels, goedkoop geanimeerd in Cilbox door transform-writes te bundelen met BasisTransformBatchShim.
+---
+
+200 transforms één voor één verplaatsen vanuit een Cilbox-script kost honderden geïnterpreteerde aanroepen per frame. Met batching wordt dat er één.
+
+```csharp title="Flock.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Flock : MonoBehaviour
+{
+    public Transform[] birds;
+    public float radius = 10f;
+    public float speed = 0.4f;
+
+    float[] xyz;
+    float[] phase;
+
+    void Start()
+    {
+        xyz = new float[birds.Length * 3];
+        phase = new float[birds.Length];
+        for (int i = 0; i < phase.Length; i++) phase[i] = i * 0.37f;
+    }
+
+    void Update()
+    {
+        float t = Time.time * speed;
+        Vector3 c = transform.position;
+        float cx = c.x, cy = c.y, cz = c.z;
+        for (int i = 0; i < birds.Length; i++)
+        {
+            float a = t + phase[i];
+            xyz[i * 3] = cx + Mathf.Cos(a) * radius;
+            xyz[i * 3 + 1] = cy + Mathf.Sin(a * 2f) * 2f;
+            xyz[i * 3 + 2] = cz + Mathf.Sin(a) * radius;
+        }
+        BasisTransformBatchShim.SetPositions(birds, xyz);
+    }
+}
+```
+
+- Het rekenwerk draait op gewone floats, wat in de interpreter veel goedkoper is dan `Vector3`-operatoren.
+- `SetPositions(Transform[], float[])` schrijft elke vogel in één native aanroep.
+- Gebruik `BasisNetworkTimeShim.ServerTimeSeconds` in plaats van `Time.time` als de zwerm precies gelijk moet lopen tussen spelers.

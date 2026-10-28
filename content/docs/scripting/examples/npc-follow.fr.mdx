@@ -1,0 +1,102 @@
+---
+title: PNJ suiveur
+description: Un agent de navigation mesh qui suit le joueur le plus proche, simulé par un seul propriétaire et envoyé à tous les autres.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+La navigation est disponible dans les mondes (pas dans les props ni les avatars).
+
+## Configuration
+
+1. Bakez un NavMesh pour vos sols praticables (**Window > AI > Navigation**).
+2. Créez le PNJ avec un **NavMeshAgent** et ajoutez **NpcFollow**.
+
+## Script
+
+```csharp title="NpcFollow.cs (Cilbox, world)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.AI;
+
+[Cilboxable]
+public class NpcFollow : MonoBehaviour
+{
+    public NavMeshAgent agent;
+    public float stopDistance = 1.5f;
+
+    BasisNetworkShim net;
+    float nextPath, nextSend;
+    Vector3 remotePosition;
+    float remoteYaw;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.RequestOwnershipIfNone();
+        remotePosition = transform.position;
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void Update()
+    {
+        bool owner = net.HasNetworkID && net.IsOwnedLocallyOnServer;
+        agent.enabled = owner;
+        if (!owner)
+        {
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, remotePosition, Time.deltaTime * 10f), Quaternion.Euler(0f, remoteYaw, 0f));
+            return;
+        }
+        if (Time.time >= nextPath)
+        {
+            nextPath = Time.time + 0.5f;
+            IBasisPlayer target = BasisPlayersShim.Nearest(transform.position);
+            if (target != null)
+            {
+                Vector3 goal = target.GetPosition();
+                if ((goal - transform.position).sqrMagnitude < stopDistance * stopDistance) agent.ResetPath();
+                else agent.SetDestination(goal);
+            }
+        }
+        if (Time.time >= nextSend)
+        {
+            nextSend = Time.time + 0.1f;
+            Vector3 p = transform.position;
+            byte[] data = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(p.x), 0, data, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.y), 0, data, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.z), 0, data, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(transform.eulerAngles.y), 0, data, 12, 4);
+            net.SendCustomNetworkEvent(data, DeliveryMethod.Sequenced);
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 16) return;
+        remotePosition = new Vector3(BitConverter.ToSingle(buffer, 0), BitConverter.ToSingle(buffer, 4), BitConverter.ToSingle(buffer, 8));
+        remoteYaw = BitConverter.ToSingle(buffer, 12);
+    }
+}
+```
+
+## Fonctionnement
+
+- Une seule simulation. Seul le propriétaire exécute l'agent ; tous les autres le désactivent et glissent en douceur vers la position reçue. Deux clients calculant le chemin du même PNJ entreraient en conflit.
+- La livraison `Sequenced` abandonne les paquets en retard. Une ancienne position n'écrase jamais une plus récente. Dix mises à jour par seconde suffisent largement avec le lissage.
+- Aucun code pour les arrivants tardifs. La prochaine mise à jour arrive en moins de 0,1 seconde.
+- Les changements de propriétaire sont gratuits. Si le propriétaire part, le nouveau propriétaire active son agent à la dernière position reçue.
+
+<Callout type="info">
+Vérifiez si `Buffer` et `BitConverter` sont autorisés dans votre sandbox via **Basis > Tools > Cilbox Permissions** ; `BinaryWriter` (voir [Événements réseau](/fr/docs/scripting/networking/network-events#packing-a-payload)) fonctionne aussi.
+</Callout>

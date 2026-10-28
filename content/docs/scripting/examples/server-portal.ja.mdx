@@ -1,0 +1,37 @@
+---
+title: サーバーポータル
+description: BasisConnectionShimを使い、プレイヤーに別のBasisサーバーへの移動を提案するポータル。
+---
+
+```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerPortal : MonoBehaviour
+{
+    public string host = "play.example.com";
+    public int port = 4296;
+    public TextMeshPro sign;
+
+    void Start()
+    {
+        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        sign.text = host;
+    }
+
+    void OnPressed()
+    {
+        BasisConnectionShim.RequestConnect(this, host, port, null, result =>
+        {
+            if (result == BasisConnectionResult.Declined) sign.text = "Maybe next time";
+            else if (result != BasisConnectionResult.Accepted) sign.text = $"Can't connect: {result}";
+        });
+    }
+}
+```
+
+- リクエストはプレイヤー自身の押下から行う必要があり、プレイヤーには必ずアドレスが表示され、確認を求められます。
+- プライベートサーバーの場合は、4番目の引数にパスワードを渡してください。

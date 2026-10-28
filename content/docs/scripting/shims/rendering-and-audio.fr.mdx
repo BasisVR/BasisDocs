@@ -1,0 +1,99 @@
+---
+title: Rendu et audio
+description: BasisGraphicsSettingsShim, BasisStatsShim, BasisComputeShim, BasisPlatformShim, BasisVoiceRoutingShim et VideoPlayerShim.
+---
+
+## BasisGraphicsSettingsShim
+
+Lit les paramètres graphiques du joueur. Les niveaux sont des nombres, du moins coûteux au plus coûteux : de `TierVeryLow` 0 à `TierUltra` 4.
+
+```csharp
+using Basis.Shims;
+
+int quality = BasisGraphicsSettingsShim.QualityTier;
+int shadows = BasisGraphicsSettingsShim.ShadowTier;
+float resolution = BasisGraphicsSettingsShim.RenderResolution;
+
+mirror.SetActive(quality >= BasisGraphicsSettingsShim.TierHigh);
+bool hdr = BasisGraphicsSettingsShim.GetFlag(BasisGraphicsSettingsShim.KeyHdrSupport, false);
+string[] readable = BasisGraphicsSettingsShim.ReadableKeys;
+```
+
+## BasisStatsShim
+
+Ce qu'affiche l'overlay de performance du joueur. Basis ne mesure que tant qu'un script continue de le lire. Interrogez-le régulièrement.
+
+```csharp
+float fps = BasisStatsShim.FramesPerSecond;
+float target = BasisStatsShim.TargetFramesPerSecond;
+if (target > 0f && fps < target * 0.8f)
+{
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) particles.SetActive(false);
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu) crowd.SetActive(false);
+}
+
+bool online = BasisStatsShim.IsConnected;
+int ping = BasisStatsShim.RoundTripTimeMs;
+bool stalled = BasisStatsShim.SecondsSinceLastPacket > 2f;
+int maxPlayers = BasisStatsShim.PlayerLimit;
+```
+
+## BasisComputeShim
+
+Les compute shaders fonctionnent avec les appels habituels à `ComputeShader` et `ComputeBuffer`. Ce shim indique la prise en charge et votre budget.
+
+```csharp
+if (!BasisComputeShim.IsSupported) { fallback.SetActive(true); return; }
+long bytesLeft = BasisComputeShim.RemainingBytes(this);
+long threadsLeft = BasisComputeShim.RemainingThreads(this);
+```
+
+Un buffer qui dépasse le budget mémoire lève une exception ; un dispatch qui dépasse le budget de threads de l'image est ignoré. Basis libère tous les buffers quand le contenu est déchargé.
+
+## BasisPlatformShim
+
+```csharp
+bool vr = BasisPlatformShim.IsVR;
+bool desktop = BasisPlatformShim.IsDesktop;
+bool mobile = BasisPlatformShim.IsMobileGpu;
+bool worn = BasisPlatformShim.IsHeadsetWorn;
+string platform = BasisPlatformShim.Platform;
+bool android = BasisPlatformShim.IsDetected("Android");
+string[] conditions = BasisPlatformShim.Conditions;
+```
+
+## BasisVoiceRoutingShim
+
+Diffuse la voix d'un joueur depuis un objet, comme un micro de scène qui alimente des haut-parleurs. Le consentement est vérifié en premier et n'est pas facultatif.
+
+```csharp
+using Basis.Scripts.Networking.NetworkedAvatar;
+
+int route = -1;
+
+public void StartBroadcast(BasisNetworkPlayer speaker)
+{
+    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
+    route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
+}
+
+public void StopBroadcast()
+{
+    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = -1;
+}
+```
+
+## VideoPlayerShim
+
+Écrivez `VideoPlayer` comme d'habitude ; la sandbox lui substitue une version qui demande l'accord du joueur avant de charger une URL.
+
+```csharp
+using UnityEngine.Video;
+
+var video = GetComponent<VideoPlayer>();
+video.url = "https://example.com/trailer.mp4";
+video.Play();
+```
+
+Pour une vidéo synchronisée, utilisez le composant **Basis Media Player** ([Lecteur multimédia](/fr/docs/world/media-player)). Les scripts peuvent lire sa `OutputTexture` ; les commandes de lecture sont bloquées pour que la demande d'URL ne puisse pas être contournée.

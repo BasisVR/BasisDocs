@@ -1,0 +1,64 @@
+---
+title: 菜单
+description: BasisMenuShim、设置标签页和菜单面板，包含标题、标签、按钮、开关、滑块和下拉菜单。
+---
+
+`BasisMenuShim` 会向玩家自己的菜单添加 UI。两个调用在被拒绝时都会返回 null。请始终进行检查。
+
+| 调用 | 添加内容 |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家设置中的一个标签页（每个内容最多 4 个）。 |
+| `BasisMenuShim.AddPanel(this, title)` | 带有独立菜单按钮的面板（每个内容一个，最多 8 个标签页）。 |
+
+## 构建页面
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## 之后修改项目
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+页面：`SetTitle`、`SetVisible`、`Clear`、`Remove`、`AddTab`（面板）、`IsOpen` 和 `Open()`。
+
+## 打开面板
+
+`Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效，内容无法自行弹出菜单。
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+限制：每页 64 个项目、32 个下拉选项、标题 48 个字符。更多内容：[设置标签页示例](/cn/docs/scripting/examples/settings-tab)。

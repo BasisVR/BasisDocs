@@ -1,0 +1,79 @@
+---
+title: 虚拟形象脚本
+description: 虚拟形象上的 Cilbox 脚本、穿戴者与其他所有人的区别、虚拟形象就绪事件，以及同步虚拟形象状态。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+虚拟形象的 Cilbox 脚本会在**每个加载该虚拟形象的客户端**上运行，而不仅仅是穿戴者的客户端。大多数虚拟形象逻辑都应该检查是谁在运行它。
+
+## 虚拟形象组件
+
+在虚拟形象沙盒中，`BasisAvatar` 会解析为 `BasisAvatarShim`。照常编写 `BasisAvatar` 即可。
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| 成员 | 用途 |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | 虚拟形象设置完成后触发一次。在穿戴者的客户端上 `isOwner` 为 true。 |
+| `IsOwnedLocally` | 在穿戴者的客户端上为 true。 |
+| `Animator`、`FaceVisemeMesh`、`HumanScale` | 读取虚拟形象的骨骼绑定。 |
+| `TryGetLinkedPlayer(out ushort playerId)` | 穿戴者的玩家 ID。 |
+| `PlayspaceInput` | 驱动穿戴者自身的移动（仅限穿戴者）。 |
+
+## 仅限穿戴者与所有人
+
+| 运行于 | 用于 |
+| --- | --- |
+| **仅限穿戴者**（`IsOwnedLocally`） | 菜单、触觉反馈、存档、输入、发送网络事件。 |
+| **所有人** | 跟随同步状态的视觉效果：粒子、材质、声音。 |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## 同步虚拟形象状态
+
+- 自定义值：获取一个 `BasisNetworkShim`，从穿戴者发送[网络事件](/cn/docs/scripting/networking/network-events#cilbox)，然后在每个客户端上应用它们。
+- 移动部件：虚拟形象上允许使用 `BasisSyncedTransform`。
+
+## 虚拟形象上的设置标签页
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+虚拟形象沙盒允许的任何事情，陌生人的虚拟形象都可以在您的电脑上做。这就是为什么虚拟形象沙盒是三者中最严格的：没有摄像机、没有灯光、没有网络请求，并且触觉反馈只会作用于穿戴者。
+</Callout>

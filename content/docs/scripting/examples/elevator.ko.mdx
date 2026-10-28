@@ -1,0 +1,76 @@
+---
+title: 엘리베이터
+description: 모두가 함께 타는 움직이는 플랫폼. 목표 층만 동기화하고, 모든 클라이언트가 플랫폼을 그쪽으로 움직입니다.
+---
+
+플랫폼의 위치를 스트리밍하면 매 프레임 대역폭이 듭니다. 엘리베이터는 언제나 어떤 층을 향해서만 움직입니다. **목표 층**을 동기화하고 각 클라이언트가 플랫폼을 직접 움직이게 하세요.
+
+## 설정
+
+1. 콜라이더가 있는 플랫폼을 만듭니다.
+2. **Elevator**와 `GoTo(floor)`를 호출하는 버튼을 추가합니다. 인스펙터에서 층 높이를 설정합니다.
+
+```csharp title="Elevator.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Elevator : MonoBehaviour
+{
+    public Transform platform;
+    public float[] floorHeights;
+    public float speed = 1.5f;
+
+    BasisNetworkShim net;
+    int target;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void GoTo(int floor)
+    {
+        net.TakeOwnership();
+        target = floor;
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)floor }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length >= 1) target = data[0];
+        if (data.Length == 5)
+        {
+            Vector3 p = platform.localPosition;
+            platform.localPosition = new Vector3(p.x, BasisBinaryShim.ReadSingle(data, 1), p.z);
+        }
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] state = new byte[5];
+        state[0] = (byte)target;
+        BasisBinaryShim.WriteSingle(state, 1, platform.localPosition.y);
+        net.SendCustomNetworkEvent(state, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        Vector3 p = platform.localPosition;
+        float y = Mathf.MoveTowards(p.y, floorHeights[target], speed * Time.deltaTime);
+        platform.localPosition = new Vector3(p.x, y, p.z);
+    }
+}
+```
+
+- 모든 클라이언트가 같은 움직임을 실행합니다. 탑승자는 위치 스트림 없이도 부드럽게 움직이는 플랫폼을 봅니다.
+- 늦게 참여한 플레이어는 목표 층과 현재 높이를 5바이트 메시지 하나로 받습니다.
+- `new Vector3(...)`에 주목하세요. `p.y`를 직접 바꾸면 Cilbox에서는 복사 원본의 값까지 바뀝니다([샌드박스 규칙](/ko/docs/scripting/sandbox-rules) 참고).

@@ -1,0 +1,37 @@
+---
+title: Netwerkcomponenten
+description: De kant-en-klare componenten die pickups, stoelen, transforms, rigidbodies en parameters zonder code synchroniseren.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Voor de meeste synchronisatie is geen script nodig. Voeg een van deze componenten toe en configureer het in de inspector. **Geüpload** betekent dat het component op de standaard allowlist voor geüploade werelden en props staat; de andere werken in client-builds, of nadat je ze aan de content police selectors toevoegt (zie [Toegestane componenten](/nl/docs/scripting/allowed-components)).
+
+| Component | Synchroniseert | Geüpload | Opmerkingen |
+| --- | --- | --- | --- |
+| **Basis Pickup Sync Networking** | De pose van een vastgehouden object en wie het vasthoudt. | Ja | Neemt eigenaarschap bij vastpakken. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Synced Transform** | Positie, rotatie en schaal. Schakelaars en compressie per as. | Ja | Voor alles wat de eigenaar vanuit code of animatie beweegt. |
+| **Basis Seat Sync** | Wie er in een **Basis Seat** zit. | Ja | Beslecht wanneer twee spelers tegelijk proberen te gaan zitten. |
+| **Basis Media Player** | Video-URL, afspeelstatus en tijd. | Ja | Zie [Mediaspeler](/nl/docs/world/media-player). |
+| **Basis Synced Rigidbody** | Pose plus lineaire en hoeksnelheid. | Nee | Externe kopieën zijn kinematic (`DriveRemoteKinematic`) en volgen de simulatie van de eigenaar. |
+| **Basis Synced Parameters** | Benoemde waarden: floats, vectoren, kleuren, ints, bools. | Nee | Zie [Gesynchroniseerde variabelen](/nl/docs/scripting/networking/synced-variables). |
+
+<Callout type="warn">
+**Basis Object Sync Networking** is verouderd. Het laadt nog steeds in oude content als pickup, maar nieuwe content moet **Basis Pickup Sync Networking** gebruiken.
+</Callout>
+
+## Een gesynchroniseerde pickup
+
+1. Voeg een collider en een **Rigidbody** toe aan het object.
+2. Voeg **Basis Pickup Interactable** toe.
+3. Voeg **Basis Pickup Sync Networking** toe en wijs de pickup toe aan het veld `BasisPickupInteractable`.
+
+De inspector toont in play mode de live synchronisatiestatus (eigenaar, bufferdiepte, bandbreedte).
+
+## Cilbox
+
+Cilbox-scripts kunnen niet afleiden van de synchronisatiecomponenten, maar ze kunnen ernaast staan: laat **Basis Synced Transform** het object bewegen en gebruik een `BasisNetworkShim` voor al het andere.
+
+## Avatars
+
+Avatars staan `BasisSyncedTransform`, `BasisPickupSyncNetworking` en `BasisNetworkShim` toe. Zie [Avatar-scripting](/nl/docs/scripting/avatar-scripting).

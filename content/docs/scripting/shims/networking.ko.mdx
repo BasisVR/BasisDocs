@@ -1,0 +1,110 @@
+---
+title: 네트워킹
+description: BasisNetworkShim, BasisNetworkTimeShim, BasisSharedRandomShim, BasisBinaryShim, BasisCompressionShim, BasisConnectionShim.
+---
+
+## BasisNetworkShim
+
+Cilbox에서 네트워크 이벤트를 보내고 소유권을 추적하는 방법입니다. 전체 가이드: [네트워킹](/ko/docs/scripting/networking).
+
+```csharp
+using Basis;
+using Basis.Network.Core;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.NetworkReady += () => Debug.Log("ready");
+    net.NetworkMessageReceived += OnMessage;
+    net.OwnershipTransfer += owner => Debug.Log($"owner {owner.playerId}");
+    net.PlayerJoined += player => { };
+    net.PlayerLeft += player => { };
+}
+
+void Send() => net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered);
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method) { }
+void Grab() => net.TakeOwnership();
+bool Mine => net.HasNetworkID && net.IsOwnedLocallyOnServer;
+```
+
+지연 콜백이 코루틴을 대신합니다: `net.SendCustomEventDelayedSeconds(Close, 3f)`와 `net.SendCustomEventDelayedFrames(Rebuild, 2)`.
+
+## BasisNetworkTimeShim
+
+서버의 시계로, 모든 클라이언트에서 같습니다(네트워크 지연 범위 내에서). 모두가 맞춰서 보는 카운트다운이나 낮과 밤 주기에 사용하세요.
+
+```csharp
+using Basis.Shims;
+
+double now = BasisNetworkTimeShim.ServerTimeSeconds;
+System.DateTime utc = BasisNetworkTimeShim.ServerUtcNow;
+
+// A 24 minute day cycle that matches for everyone.
+float dayFraction = (float)(now % 1440.0 / 1440.0);
+sun.transform.rotation = Quaternion.Euler(dayFraction * 360f - 90f, 30f, 0f);
+```
+
+## BasisSharedRandomShim
+
+같은 시드와 인덱스는 메시지 없이도 모든 클라이언트에서 같은 숫자를 줍니다.
+
+```csharp
+float roll = BasisSharedRandomShim.Value(42, round);
+float speed = BasisSharedRandomShim.Range(42, round, 2f, 5f);
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Index taken from the server clock: a new value every 5 minutes, the same for everyone.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+long window = BasisSharedRandomShim.WindowIndex(300d);
+```
+
+## BasisBinaryShim
+
+숫자와 벡터를 한 번의 호출로 바이트 배열에 패킹합니다. 샌드박스에서 `BinaryWriter`보다 훨씬 빠릅니다. 각 `Write`는 다음 오프셋을 반환합니다.
+
+```csharp
+byte[] buffer = new byte[4 + 12 + 16];
+int at = BasisBinaryShim.WriteInt32(buffer, 0, score);
+at = BasisBinaryShim.WriteVector3(buffer, at, transform.position);
+at = BasisBinaryShim.WriteQuaternion(buffer, at, transform.rotation);
+net.SendCustomNetworkEvent(buffer, DeliveryMethod.Sequenced);
+
+// Receiving
+int s = BasisBinaryShim.ReadInt32(data, 0);
+Vector3 p = BasisBinaryShim.ReadVector3(data, 4);
+Quaternion r = BasisBinaryShim.ReadQuaternion(data, 16);
+```
+
+배열 버전(`WriteSingles`, `WriteVector3s`, `ReadQuaternions` 등)은 많은 값을 한 번에 패킹합니다.
+
+## BasisCompressionShim
+
+LZ4 압축입니다. 줄어들지 않는 데이터는 1바이트가 추가됩니다. `Decompress`는 잘못된 데이터나 압축 해제 후 1 MB를 넘는 데이터에 대해 null을 반환합니다.
+
+```csharp
+net.SendCustomNetworkEvent(BasisCompressionShim.Compress(drawing), DeliveryMethod.ReliableOrdered);
+
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+{
+    byte[] drawing = BasisCompressionShim.Decompress(data);
+    if (drawing == null) return;
+}
+```
+
+## BasisConnectionShim
+
+플레이어에게 다른 서버로 이동하라고 요청합니다. 플레이어 자신의 누르기나 클릭에서 호출해야 하며, 플레이어는 주소를 보고 수락해야 합니다.
+
+```csharp
+public void OnPortalPressed()
+{
+    BasisConnectionShim.RequestConnect(this, "play.example.com", 4296, null, result =>
+    {
+        if (result != BasisConnectionResult.Accepted) sign.text = "Maybe next time";
+    });
+}
+
+public void OnLeavePressed() => BasisConnectionShim.RequestDisconnect(this);
+```

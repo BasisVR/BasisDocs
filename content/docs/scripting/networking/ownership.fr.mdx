@@ -1,0 +1,115 @@
+---
+title: Propriété
+description: Qui possède un objet en réseau, comment prendre et vérifier la propriété, comment réagir aux transferts et ce qui se passe quand le propriétaire part.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Chaque objet en réseau a au plus un **propriétaire**. Le propriétaire est le joueur dont la copie fait foi : il écrit les variables synchronisées, il simule la physique, et sa version est celle que reçoivent les joueurs arrivés en retard. Tous les autres suivent.
+
+C'est le serveur qui décide de la propriété, et deux joueurs ne peuvent jamais posséder le même objet en même temps.
+
+## Lire la propriété
+
+| Membre | Signification |
+| --- | --- |
+| `IsLocalOwner()` | Vrai quand le serveur a confirmé que vous en êtes propriétaire. Utilisez-le pour vos décisions. |
+| `IsOwnedLocallyOnServer` | Identique au précédent, sous forme de champ. Disponible pour Cilbox. |
+| `IsOwnedLocallyOnClient` | Défini dès que vous **demandez** la propriété, avant la réponse du serveur. Permet de commencer à piloter l'objet sans attendre un aller-retour. |
+| `CurrentOwnerId` | ID de joueur du propriétaire. |
+| `currentOwnedPlayer` | Le propriétaire sous forme de `BasisNetworkPlayer`. |
+| `HasNetworkID` | Faux tant que l'objet n'est pas prêt pour le réseau. La propriété n'a aucun sens avant cela. |
+
+## Prendre la propriété
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+`TakeOwnership()` prend l'objet même si quelqu'un d'autre le possède. Si vous avez besoin de connaître le résultat, attendez la version asynchrone :
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+Demander qui le possède sans le prendre :
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+Prenez la propriété au moment où un joueur **agit** sur l'objet : en l'attrapant, en appuyant sur son bouton, en s'y asseyant. Ne la prenez pas dans `Start` ou `OnNetworkReady` ; chaque joueur la prendrait au chargement et le dernier l'emporterait.
+</Callout>
+
+## Réagir aux transferts
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## Qui possède un objet au départ
+
+Quand le serveur voit un objet en réseau pour la première fois, le premier joueur qui le demande en devient propriétaire. En pratique, c'est le premier joueur de l'instance. `RequestOwnershipIfNone()` sur un `BasisNetworkShim` interroge le serveur et n'obtient la propriété que si personne ne l'a.
+
+## Quand le propriétaire part
+
+Quand le propriétaire se déconnecte, le serveur confie chacun de ses objets au **joueur connecté depuis le plus longtemps encore présent dans l'instance**. Tout le monde reçoit `OnOwnershipTransfer`, et le nouveau propriétaire reprend à partir de l'état qu'il avait déjà. Votre script n'a qu'à réagir au transfert, pas au départ.
+
+## Modèles
+
+**Le propriétaire fait le travail, tout le monde affiche le résultat.** La physique, les minuteurs et les règles du jeu ne s'exécutent que chez le propriétaire. Les autres lisent les variables synchronisées ou reçoivent des événements.
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**Passer par le propriétaire.** Quand un non-propriétaire doit modifier un état partagé sans en prendre le contrôle (ajouter un point au tableau des scores de quelqu'un d'autre), envoyez un événement au propriétaire et laissez-le l'appliquer :
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**Les pickups prennent la propriété automatiquement.** `BasisPickupSyncNetworking` prend la propriété quand l'objet est attrapé. Désactivez `CanNetworkSteal` pour empêcher les autres joueurs d'arracher un objet de la main de quelqu'un.

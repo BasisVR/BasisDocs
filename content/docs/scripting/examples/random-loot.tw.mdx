@@ -1,0 +1,32 @@
+---
+title: 隨機戰利品
+description: 使用 BasisSharedRandomShim，不傳送任何訊息就讓每位玩家看到相同隨機物品的寶箱。
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- 每經過 10 分鐘的伺服器時間，寶箱就會重新抽選，而每個客戶端都會抽到相同的物品。
+- 為每個寶箱設定各自的 `seed`，以免它們全都顯示相同的東西。
+- 若是由玩家觸發的抽選，只需將回合編號作為網路事件傳送，讓每個客戶端各自計算 `RangeInt(seed, round, ...)`。

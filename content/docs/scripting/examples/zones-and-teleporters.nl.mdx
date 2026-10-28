@@ -1,0 +1,139 @@
+---
+title: Zones en teleporters
+description: Detecteren wanneer de lokale speler zich in een gebied bevindt, de speler teleporteren, lanceren en spelers in een lobby tellen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Zone voor de lokale speler
+
+De positie van de lokale speler pollen tegen de bounds van een trigger werkt hetzelfde in native en Cilbox-scripts, en hangt niet af van physics-lagen.
+
+```csharp title="LocalPlayerZone.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LocalPlayerZone : MonoBehaviour
+{
+    public Collider area;
+    public GameObject showWhileInside;
+    bool inside;
+
+    void Start()
+    {
+        showWhileInside.SetActive(false);
+    }
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        bool now = area.bounds.Contains(position);
+        if (now == inside) return;
+        inside = now;
+        showWhileInside.SetActive(inside);
+    }
+}
+```
+
+<Callout type="info">
+Gebruik voor bewegingswijzigingen binnen een gebied (lage zwaartekracht, vliegen, sneller lopen) de locomotion overrides op `BasisLocalPlayer` uit [Veelvoorkomend gebruik](/nl/docs/scripting/common-usages). In client-builds doet het **Basis Locomotion Zone**-component hetzelfde zonder code.
+</Callout>
+
+## Teleporter
+
+Voeg toe aan een platform of een knop. Teleporteren heeft alleen invloed op de lokale speler. Elke speler teleporteert zichzelf en er gaat niets over het netwerk.
+
+```csharp title="Teleporter.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Teleporter : MonoBehaviour
+{
+    public Collider pad;
+    public Transform destination;
+    bool wasOnPad;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        bool onPad = pad.bounds.Contains(position);
+        if (onPad && !wasOnPad) TeleportNow();
+        wasOnPad = onPad;
+    }
+
+    public void TeleportNow()
+    {
+        BasisLocalPlayer.Instance.Teleport(destination.position, destination.rotation, BasisTeleportMode.Instant);
+    }
+}
+```
+
+## Trampoline
+
+`BasisVelocityShim` is beschikbaar in werelden. Behoud de horizontale snelheid en vervang de val door een stuiter.
+
+```csharp title="Trampoline.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Trampoline : MonoBehaviour
+{
+    public Collider surface;
+    public float bounce = 9f;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+        if (!surface.bounds.Contains(position)) return;
+        Vector3 velocity = BasisVelocityShim.Velocity;
+        if (velocity.y > 0.5f) return;
+        BasisVelocityShim.SetVelocity(new Vector3(velocity.x, bounce, velocity.z));
+    }
+}
+```
+
+## Lobbytelling
+
+Toon hoeveel spelers er in een lobbygebied staan. Elke client telt zelf op basis van spelerposities en er worden geen berichten verstuurd.
+
+```csharp title="LobbyCounter.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class LobbyCounter : MonoBehaviour
+{
+    public Transform center;
+    public float radius = 4f;
+    public int needed = 4;
+    public TextMeshPro label;
+    float nextCheck;
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 0.5f;
+        int count = 0;
+        foreach (IBasisPlayer player in BasisPlayersShim.Within(center.position, radius)) count++;
+        label.text = count >= needed ? "Ready!" : $"{count} / {needed} players";
+    }
+}
+```
+
+Twee keer per seconde controleren in plaats van elk frame is ruim voldoende voor een bord.

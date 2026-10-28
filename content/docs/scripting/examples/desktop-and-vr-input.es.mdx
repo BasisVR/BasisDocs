@@ -1,0 +1,40 @@
+---
+title: Entrada de escritorio y VR
+description: Un solo script que dispara un bláster con el gatillo de VR o con un clic de ratón, con vibración en VR.
+---
+
+```csharp title="Blaster.cs (Cilbox, world)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Blaster : MonoBehaviour
+{
+    public Transform muzzle;
+    public AudioSource shot;
+    public float cooldown = 0.25f;
+    float next;
+
+    void Update()
+    {
+        bool fire = false;
+        if (BasisPlatformShim.IsVR)
+        {
+            fire = BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Trigger);
+        }
+        else if (BasisDesktopInputShim.HasMouse)
+        {
+            fire = BasisDesktopInputShim.GetMouseButtonDown(0);
+        }
+        if (!fire || Time.time < next) return;
+        next = Time.time + cooldown;
+        shot.Play();
+        if (BasisPlatformShim.IsVR) BasisHapticsShim.Play(this, BasisHapticHand.Right, 0.7f, 0.06f);
+        if (Physics.Raycast(muzzle.position, muzzle.forward, out RaycastHit hit, 50f)) Debug.Log(hit.collider.name);
+    }
+}
+```
+
+- Para un objeto que se sostiene en la mano, es preferible **Basis Pickup Interactable** con `OnPickupUse` ([Pistola recogible](/es/docs/scripting/examples/pickup-gun)), que funciona igual en todas las plataformas.
+- La entrada de los mandos se lee como soltada mientras el menú está abierto. Pulsar botones del menú no dispara el bláster.

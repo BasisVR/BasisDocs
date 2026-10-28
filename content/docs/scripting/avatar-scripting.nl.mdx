@@ -1,0 +1,79 @@
+---
+title: Avatar-scripting
+description: Cilbox-scripts op avatars, de drager versus alle anderen, avatar-ready-events en het synchroniseren van avatarstatus.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+De Cilbox-scripts van een avatar draaien op **elke client** die de avatar laadt, niet alleen bij de drager. De meeste avatarlogica moet controleren wie het uitvoert.
+
+## Het avatar-component
+
+Binnen de avatar-sandbox verwijst `BasisAvatar` naar `BasisAvatarShim`. Schrijf `BasisAvatar` zoals gewoonlijk.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| Lid | Gebruik |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | Wordt geactiveerd zodra de avatar is opgezet. `isOwner` is true op de client van de drager. |
+| `IsOwnedLocally` | True op de client van de drager. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | Lees de rig van de avatar. |
+| `TryGetLinkedPlayer(out ushort playerId)` | De speler-ID van de drager. |
+| `PlayspaceInput` | Stuur de eigen beweging van de drager aan (alleen drager). |
+
+## Alleen drager vs iedereen
+
+| Draait op | Voor |
+| --- | --- |
+| **Alleen drager** (`IsOwnedLocally`) | Menu's, haptics, opslaan, invoer, netwerkevents versturen. |
+| **Iedereen** | Visuele effecten die gesynchroniseerde status volgen: particles, materialen, geluiden. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## Avatarstatus synchroniseren
+
+- Aangepaste waarden: haal een `BasisNetworkShim` op en verstuur [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox) vanaf de drager, en pas ze daarna toe op elke client.
+- Bewegende delen: `BasisSyncedTransform` is toegestaan op avatars.
+
+## Instellingentabblad op een avatar
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+Alles wat de avatar-sandbox toestaat, kan de avatar van een vreemde op jouw computer doen. Daarom is de avatar-sandbox de strengste van de drie: geen camera's, geen lichten, geen webverzoeken, en haptics bereiken alleen de drager.
+</Callout>

@@ -1,0 +1,49 @@
+---
+title: 鸟群
+description: 通过 BasisTransformBatchShim 批量写入变换，在 Cilbox 中以很低的开销为 200 只鸟组成的鸟群制作动画。
+---
+
+在 Cilbox 脚本中逐个移动 200 个变换，每帧要付出数百次解释执行调用的代价。批处理则只需一次。
+
+```csharp title="Flock.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Flock : MonoBehaviour
+{
+    public Transform[] birds;
+    public float radius = 10f;
+    public float speed = 0.4f;
+
+    float[] xyz;
+    float[] phase;
+
+    void Start()
+    {
+        xyz = new float[birds.Length * 3];
+        phase = new float[birds.Length];
+        for (int i = 0; i < phase.Length; i++) phase[i] = i * 0.37f;
+    }
+
+    void Update()
+    {
+        float t = Time.time * speed;
+        Vector3 c = transform.position;
+        float cx = c.x, cy = c.y, cz = c.z;
+        for (int i = 0; i < birds.Length; i++)
+        {
+            float a = t + phase[i];
+            xyz[i * 3] = cx + Mathf.Cos(a) * radius;
+            xyz[i * 3 + 1] = cy + Mathf.Sin(a * 2f) * 2f;
+            xyz[i * 3 + 2] = cz + Mathf.Sin(a) * radius;
+        }
+        BasisTransformBatchShim.SetPositions(birds, xyz);
+    }
+}
+```
+
+- 数学运算在普通浮点数上进行，在解释器中比 `Vector3` 运算符便宜得多。
+- `SetPositions(Transform[], float[])` 在一次原生调用中写入所有鸟的位置。
+- 如果鸟群必须在玩家之间精确对齐，请使用 `BasisNetworkTimeShim.ServerTimeSeconds` 代替 `Time.time`。

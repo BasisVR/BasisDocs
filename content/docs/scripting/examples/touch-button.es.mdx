@@ -1,0 +1,53 @@
+---
+title: Botón táctil
+description: Un botón que se pulsa tocándolo con cualquiera de las dos manos, usando las posiciones de los huesos de la mano del jugador local.
+---
+
+Apuntar funciona en todas partes, pero en VR resulta más natural pulsar un botón con el dedo. Este script lee las posiciones de las manos del jugador local y se activa cuando una se acerca.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- Los huesos de la punta de los dedos requieren un avatar con huesos de dedos. Use `LeftHand` y `RightHand` con un radio mayor para pulsar con la palma.
+- `touching` hace que se active una vez por toque en lugar de en cada frame.
+- Para compartir el resultado, envíelo como un [evento de red](/es/docs/scripting/examples/synced-toggle) desde `Press`.

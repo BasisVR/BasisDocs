@@ -1,0 +1,75 @@
+---
+title: Règles de la sandbox
+description: Les règles de Cilbox qui ne sont pas évidentes à partir de l'API, et les coûts de performance à prévoir.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox interprète le code compilé de votre script à l'intérieur d'une sandbox. La plupart du C# fonctionne, mais ces règles piègent presque tout le monde au moins une fois.
+
+## Cycle de vie
+
+- Pas de `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni de coroutines. Utilisez `Update` et les [événements différés](/fr/docs/scripting/common-usages#timers-and-delayed-events).
+- Le premier `OnEnable` est ignoré. Initialisez dans `Start`, nettoyez dans `OnDestroy`.
+- N'héritez pas de `BasisNetworkBehaviour`. Le proxy qui remplace votre script n'en est pas un. Utilisez `BasisNetworkShim` (voir [Événements réseau](/fr/docs/scripting/networking/network-events#cilbox)).
+
+## Les structs partagent leur valeur
+
+Copier une struct Unity (`Vector3`, `Quaternion`, `Color`) dans une variable partage la même valeur. Modifier un champ de la copie modifie l'original.
+
+```csharp
+// Wrong: also moves `target`.
+Vector3 p = target;
+p.y = 0f;
+
+// Right: build a new value.
+Vector3 p = new Vector3(target.x, 0f, target.z);
+```
+
+- `points[i].x = 5f` sur un tableau est perdu silencieusement. Écrivez `points[i] = new Vector3(5f, points[i].y, points[i].z)`.
+- `points[i] += offset` lève une exception. Écrivez `points[i] = points[i] + offset`.
+- Les valeurs issues d'appels Unity et d'opérateurs (`a + b`, `transform.position`, `new Vector3(...)`) sont neuves et peuvent être modifiées sans risque.
+
+## Appels et permissions
+
+- Un type en liste blanche autorise toutes ses méthodes publiques, sauf si ce type a aussi une restriction de méthodes. Les champs sont refusés sauf s'ils sont listés.
+- Les types des paramètres, génériques et de retour sont aussi vérifiés. Un appel peut passer la vérification du nom et être quand même refusé à cause d'un de ses types.
+- `this.GetComponent` fonctionne toujours. `gameObject.GetComponent` est restreint, et la sandbox des props ne permet pas de parcourir la hiérarchie avec.
+- `AddComponent`, `SendMessage` et `BroadcastMessage` sont toujours bloqués. Cilbox ajoute pour vous un `BasisNetworkShim` et les shims d'événements lors de `GetComponent`.
+- `Debug.DrawLine` et `Debug.DrawRay` n'existent pas dans le `Debug` de la sandbox, et y faire référence empêche le chargement de tous les scripts du contenu.
+- Les constantes sont gratuites. Une `const` n'a besoin d'aucune entrée dans la liste blanche.
+
+## Événements et délégués
+
+Chaque fois que vous utilisez une méthode comme délégué, elle devient un nouveau wrapper, et `-=` peut ne pas retirer celui que vous avez ajouté. Pour les émetteurs qui survivent à votre script, interrogez une valeur dans `Update` au lieu de vous abonner.
+
+## Content police
+
+Tout composant de votre contenu qui n'est ni `[Cilboxable]` ni dans la liste autorisée est **détruit au chargement**. Convertir un script et autoriser un composant sont deux choses distinctes. Voir [Composants autorisés](/fr/docs/scripting/allowed-components).
+
+## Les scripts d'avatar s'exécutent sur la machine de tout le monde
+
+Chaque script Cilbox d'un avatar s'exécute sur chaque client qui charge l'avatar, dans la limite de comportements par avatar. Conditionnez la logique réservée au porteur à `avatar.IsOwnedLocally` (voir [Scripts d'avatar](/fr/docs/scripting/avatar-scripting)).
+
+## Performance
+
+Le code interprété est beaucoup plus lent que le code natif. Coûts approximatifs sur un PC de bureau :
+
+| Opération | Coût |
+| --- | --- |
+| Arithmétique simple sur des floats | ~15 ns |
+| Appel d'une de vos propres méthodes | ~270 ns |
+| Un opérateur `Vector3` (`a + b`) | ~1,7 µs, plus des déchets mémoire |
+| Un appel Unity comme `Mathf.Sqrt` | ~0,9 µs |
+
+Pour garder des scripts peu coûteux :
+
+- Travaillez sur des événements, pas à chaque frame. Vérifiez les timers, les distances et l'UI quelques fois par seconde.
+- Préférez les floats aux calculs `Vector3` dans les boucles. Les calculs vectoriels dans une boucle intensive sont environ 100x plus lents que les mêmes calculs sur des floats séparés.
+- Laissez les composants faire le gros du travail. Les Animators, systèmes de particules, la physique et les contraintes s'exécutent nativement.
+- Utilisez un pool d'objets au lieu d'appeler `Instantiate` à chaque tir.
+- Regroupez le travail sur les transforms. `BasisTransformSyncShim` lit, écrit ou copie des tableaux entiers de transforms en un seul appel, et `BasisBlendShapeSyncShim` fait de même pour les blendshapes.
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions** affiche la liste blanche de chaque sandbox, et son onglet **Script Check** analyse vos scripts à la recherche d'appels bloqués avant que vous ne les mettiez en ligne.
+</Callout>

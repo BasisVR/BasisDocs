@@ -1,0 +1,115 @@
+---
+title: Владение
+description: Кто владеет сетевым объектом, как взять и проверить владение, как реагировать на передачу и что происходит, когда владелец уходит.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+У каждого сетевого объекта не более одного **владельца**. Владелец это игрок, чья копия считается истинной: он записывает синхронизированные переменные, симулирует физику, и именно его версию получают поздно подключившиеся. Все остальные следуют за ним.
+
+Владение определяет сервер, и два игрока никогда не могут владеть объектом одновременно.
+
+## Чтение владения
+
+| Член | Значение |
+| --- | --- |
+| `IsLocalOwner()` | True, когда сервер подтвердил, что вы владелец. Используйте это для принятия решений. |
+| `IsOwnedLocallyOnServer` | То же, что выше, в виде поля. Доступно в Cilbox. |
+| `IsOwnedLocallyOnClient` | Устанавливается в момент, когда вы **запрашиваете** владение, до ответа сервера. Позволяет начать управлять объектом, не дожидаясь ответа сервера. |
+| `CurrentOwnerId` | ID игрока-владельца. |
+| `currentOwnedPlayer` | Владелец в виде `BasisNetworkPlayer`. |
+| `HasNetworkID` | False, пока объект не готов к работе в сети. До этого владение не имеет смысла. |
+
+## Получение владения
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+`TakeOwnership()` забирает объект, даже если им владеет кто-то другой. Если нужно узнать результат, дождитесь асинхронной версии:
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+Узнать, кто владеет объектом, не забирая его:
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+Берите владение в момент, когда игрок **действует** с объектом: хватает его, нажимает его кнопку, садится в него. Не берите его в `Start` или `OnNetworkReady`: каждый игрок схватит его при загрузке, и победит последний.
+</Callout>
+
+## Реакция на передачу
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## Кто владеет объектом изначально
+
+Когда сервер впервые видит сетевой объект, его владельцем становится первый игрок, который о нём спросит. На практике это первый игрок в инстансе. `RequestOwnershipIfNone()` у `BasisNetworkShim` спрашивает сервер и получает владение, только если у объекта нет владельца.
+
+## Когда владелец уходит
+
+Когда владелец отключается, сервер передаёт каждый из его объектов **игроку, дольше всех подключённому к инстансу**. Все получают `OnOwnershipTransfer`, и новый владелец продолжает с того состояния, которое у него уже было. Вашему скрипту нужно реагировать только на передачу, а не на уход.
+
+## Шаблоны
+
+**Владелец делает работу, все показывают результат.** Физика, таймеры и правила игры выполняются только у владельца. Остальные читают синхронизированные переменные или получают события.
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**Запрос через владельца.** Когда не владельцу нужно изменить общее состояние, не забирая владение (добавить очко на чужое табло), отправьте событие владельцу и дайте ему применить изменение:
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**Подбираемые предметы берут владение автоматически.** `BasisPickupSyncNetworking` берёт владение при захвате. Выключите `CanNetworkSteal`, чтобы другие игроки не могли выхватить предмет из чужой руки.

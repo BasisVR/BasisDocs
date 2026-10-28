@@ -1,0 +1,102 @@
+---
+title: NPC 跟随
+description: 跟随最近玩家的导航网格代理，由一位所有者模拟并发送给其他所有人。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+导航可在世界中使用（道具和虚拟形象中不可用）。
+
+## 设置
+
+1. 为可行走的地面烘焙 NavMesh（**Window > AI > Navigation**）。
+2. 创建带有 **NavMeshAgent** 的 NPC，并添加 **NpcFollow**。
+
+## 脚本
+
+```csharp title="NpcFollow.cs (Cilbox, world)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.AI;
+
+[Cilboxable]
+public class NpcFollow : MonoBehaviour
+{
+    public NavMeshAgent agent;
+    public float stopDistance = 1.5f;
+
+    BasisNetworkShim net;
+    float nextPath, nextSend;
+    Vector3 remotePosition;
+    float remoteYaw;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.RequestOwnershipIfNone();
+        remotePosition = transform.position;
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void Update()
+    {
+        bool owner = net.HasNetworkID && net.IsOwnedLocallyOnServer;
+        agent.enabled = owner;
+        if (!owner)
+        {
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, remotePosition, Time.deltaTime * 10f), Quaternion.Euler(0f, remoteYaw, 0f));
+            return;
+        }
+        if (Time.time >= nextPath)
+        {
+            nextPath = Time.time + 0.5f;
+            IBasisPlayer target = BasisPlayersShim.Nearest(transform.position);
+            if (target != null)
+            {
+                Vector3 goal = target.GetPosition();
+                if ((goal - transform.position).sqrMagnitude < stopDistance * stopDistance) agent.ResetPath();
+                else agent.SetDestination(goal);
+            }
+        }
+        if (Time.time >= nextSend)
+        {
+            nextSend = Time.time + 0.1f;
+            Vector3 p = transform.position;
+            byte[] data = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(p.x), 0, data, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.y), 0, data, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.z), 0, data, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(transform.eulerAngles.y), 0, data, 12, 4);
+            net.SendCustomNetworkEvent(data, DeliveryMethod.Sequenced);
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 16) return;
+        remotePosition = new Vector3(BitConverter.ToSingle(buffer, 0), BitConverter.ToSingle(buffer, 4), BitConverter.ToSingle(buffer, 8));
+        remoteYaw = BitConverter.ToSingle(buffer, 12);
+    }
+}
+```
+
+## 工作原理
+
+- 只有一个模拟。只有所有者运行代理；其他所有人都禁用它，并平滑地移向收到的位置。两个客户端同时为同一个 NPC 寻路会相互冲突。
+- `Sequenced` 传输会丢弃迟到的数据包。旧位置永远不会覆盖新位置。配合平滑处理，每秒十次更新就足够了。
+- 无需后加入者代码。下一次更新会在 0.1 秒内到达。
+- 所有者变更无需额外处理。如果所有者离开，新所有者会在其收到的最后位置启用自己的代理。
+
+<Callout type="info">
+请在 **Basis > Tools > Cilbox Permissions** 中检查您的沙盒是否允许 `Buffer` 和 `BitConverter`；`BinaryWriter`（参见[网络事件](/cn/docs/scripting/networking/network-events#packing-a-payload)）也可以使用。
+</Callout>

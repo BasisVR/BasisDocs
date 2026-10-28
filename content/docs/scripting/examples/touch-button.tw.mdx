@@ -1,0 +1,53 @@
+---
+title: 觸控按鈕
+description: 用任一隻手觸碰即可按下的按鈕，使用本機玩家的手部骨骼位置。
+---
+
+指標在任何地方都能使用，但在 VR 中用手指按下按鈕感覺更好。這會讀取本機玩家的手部位置，並在手靠近時觸發。
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- 指尖骨骼需要具有手指骨骼的虛擬形象。若要以手掌按壓，請使用 `LeftHand` 和 `RightHand` 並搭配較大的半徑。
+- `touching` 讓它每次觸碰只觸發一次，而不是每一幀都觸發。
+- 若要共享結果，請從 `Press` 以[網路事件](/tw/docs/scripting/examples/synced-toggle)傳送。

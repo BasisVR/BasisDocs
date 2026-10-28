@@ -1,0 +1,37 @@
+---
+title: Netzwerk-Komponenten
+description: Die fertigen Komponenten, die Pickups, Sitze, Transforms, Rigidbodies und Parameter ohne Code synchronisieren.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Die meiste Synchronisierung braucht kein Skript. Fügen Sie eine dieser Komponenten hinzu und konfigurieren Sie sie im Inspector. **Hochgeladen** bedeutet, dass die Komponente auf der Standard-Allowlist für hochgeladene Welten und Props steht; die anderen funktionieren in Client-Builds oder nachdem Sie sie zu den Content-Police-Selektoren hinzugefügt haben (siehe [Erlaubte Komponenten](/de/docs/scripting/allowed-components)).
+
+| Komponente | Synchronisiert | Hochgeladen | Hinweise |
+| --- | --- | --- | --- |
+| **Basis Pickup Sync Networking** | Die Pose eines gehaltenen Objekts und wer es hält. | Ja | Übernimmt die Ownership beim Greifen. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Synced Transform** | Position, Rotation und Skalierung. Schalter und Kompression pro Achse. | Ja | Für alles, was der Owner per Code oder Animation bewegt. |
+| **Basis Seat Sync** | Wer in einem **Basis Seat** sitzt. | Ja | Entscheidet, wenn zwei Spieler gleichzeitig Platz nehmen wollen. |
+| **Basis Media Player** | Video-URL, Wiedergabestatus und Zeit. | Ja | Siehe [Media Player](/de/docs/world/media-player). |
+| **Basis Synced Rigidbody** | Pose sowie lineare und Winkelgeschwindigkeit. | Nein | Entfernte Kopien sind kinematisch (`DriveRemoteKinematic`) und folgen der Simulation des Owners. |
+| **Basis Synced Parameters** | Benannte Werte: Floats, Vektoren, Farben, Ints, Bools. | Nein | Siehe [Synchronisierte Variablen](/de/docs/scripting/networking/synced-variables). |
+
+<Callout type="warn">
+**Basis Object Sync Networking** ist veraltet. Es lädt in altem Inhalt weiterhin als Pickup, neuer Inhalt sollte aber **Basis Pickup Sync Networking** verwenden.
+</Callout>
+
+## Ein synchronisiertes Pickup
+
+1. Fügen Sie dem Objekt einen Collider und einen **Rigidbody** hinzu.
+2. Fügen Sie **Basis Pickup Interactable** hinzu.
+3. Fügen Sie **Basis Pickup Sync Networking** hinzu und weisen Sie das Pickup dessen Feld `BasisPickupInteractable` zu.
+
+Im Play Mode zeigt der Inspector den aktuellen Sync-Zustand (Owner, Buffer-Tiefe, Bandbreite).
+
+## Cilbox
+
+Cilbox-Skripte können nicht von den Sync-Komponenten erben, aber neben ihnen existieren: Lassen Sie **Basis Synced Transform** das Objekt bewegen und verwenden Sie für alles andere einen `BasisNetworkShim`.
+
+## Avatare
+
+Avatare erlauben `BasisSyncedTransform`, `BasisPickupSyncNetworking` und `BasisNetworkShim`. Siehe [Avatar-Scripting](/de/docs/scripting/avatar-scripting).

@@ -1,0 +1,99 @@
+---
+title: 렌더링과 오디오
+description: BasisGraphicsSettingsShim, BasisStatsShim, BasisComputeShim, BasisPlatformShim, BasisVoiceRoutingShim, VideoPlayerShim.
+---
+
+## BasisGraphicsSettingsShim
+
+플레이어의 그래픽 설정을 읽습니다. 등급은 숫자이며 가장 가벼운 것부터 `TierVeryLow` 0에서 `TierUltra` 4까지입니다.
+
+```csharp
+using Basis.Shims;
+
+int quality = BasisGraphicsSettingsShim.QualityTier;
+int shadows = BasisGraphicsSettingsShim.ShadowTier;
+float resolution = BasisGraphicsSettingsShim.RenderResolution;
+
+mirror.SetActive(quality >= BasisGraphicsSettingsShim.TierHigh);
+bool hdr = BasisGraphicsSettingsShim.GetFlag(BasisGraphicsSettingsShim.KeyHdrSupport, false);
+string[] readable = BasisGraphicsSettingsShim.ReadableKeys;
+```
+
+## BasisStatsShim
+
+플레이어 자신의 성능 오버레이에 표시되는 값입니다. Basis는 스크립트가 계속 읽는 동안에만 측정합니다. 주기적으로 읽으세요.
+
+```csharp
+float fps = BasisStatsShim.FramesPerSecond;
+float target = BasisStatsShim.TargetFramesPerSecond;
+if (target > 0f && fps < target * 0.8f)
+{
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) particles.SetActive(false);
+    if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu) crowd.SetActive(false);
+}
+
+bool online = BasisStatsShim.IsConnected;
+int ping = BasisStatsShim.RoundTripTimeMs;
+bool stalled = BasisStatsShim.SecondsSinceLastPacket > 2f;
+int maxPlayers = BasisStatsShim.PlayerLimit;
+```
+
+## BasisComputeShim
+
+컴퓨트 셰이더는 일반적인 `ComputeShader`와 `ComputeBuffer` 호출로 동작합니다. 이 심은 지원 여부와 예산을 알려 줍니다.
+
+```csharp
+if (!BasisComputeShim.IsSupported) { fallback.SetActive(true); return; }
+long bytesLeft = BasisComputeShim.RemainingBytes(this);
+long threadsLeft = BasisComputeShim.RemainingThreads(this);
+```
+
+메모리 예산을 넘는 버퍼는 예외를 던지고, 프레임의 스레드 예산을 넘는 디스패치는 건너뜁니다. 콘텐츠가 언로드되면 Basis가 모든 버퍼를 해제합니다.
+
+## BasisPlatformShim
+
+```csharp
+bool vr = BasisPlatformShim.IsVR;
+bool desktop = BasisPlatformShim.IsDesktop;
+bool mobile = BasisPlatformShim.IsMobileGpu;
+bool worn = BasisPlatformShim.IsHeadsetWorn;
+string platform = BasisPlatformShim.Platform;
+bool android = BasisPlatformShim.IsDetected("Android");
+string[] conditions = BasisPlatformShim.Conditions;
+```
+
+## BasisVoiceRoutingShim
+
+무대 마이크가 스피커로 소리를 보내는 것처럼, 오브젝트에서 플레이어의 목소리를 재생합니다. 동의를 먼저 확인하며, 이는 선택 사항이 아닙니다.
+
+```csharp
+using Basis.Scripts.Networking.NetworkedAvatar;
+
+int route = -1;
+
+public void StartBroadcast(BasisNetworkPlayer speaker)
+{
+    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
+    route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
+}
+
+public void StopBroadcast()
+{
+    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = -1;
+}
+```
+
+## VideoPlayerShim
+
+평소처럼 `VideoPlayer`를 쓰면, 샌드박스가 URL을 로드하기 전에 플레이어에게 묻는 버전으로 바꿔 줍니다.
+
+```csharp
+using UnityEngine.Video;
+
+var video = GetComponent<VideoPlayer>();
+video.url = "https://example.com/trailer.mp4";
+video.Play();
+```
+
+동기화된 비디오에는 **Basis Media Player** 컴포넌트([미디어 플레이어](/ko/docs/world/media-player))를 사용하세요. 스크립트는 그 `OutputTexture`를 읽을 수 있으며, URL 확인 창을 건너뛸 수 없도록 재생 제어는 차단되어 있습니다.
