@@ -7,9 +7,9 @@ Shims zijn de Basis-kant van de Cilbox-sandbox: kleine, veilige API's die een ge
 
 Shims zijn er in drie vormen:
 
-- **Statische klassen** die je direct aanroept, zoals `BasisPlayersShim.Count`.
-- **Event-componenten** waarvoor je je aanmeldt door `GetComponent<T>()` aan te roepen in `Start`. Cilbox voegt de component voor je toe, en Basis roept een methode met een vaste naam op je script aan, zoals `OnPlatformChanged`.
-- **Vervangen types**: je schrijft de normale Unity-naam (`Debug`, `VideoPlayer`, `BasisAvatar`) en de sandbox levert een veilige versie.
+- Statische klassen die je direct aanroept, zoals `BasisPlayersShim.Count`.
+- Event-componenten waarvoor je je aanmeldt door `GetComponent<T>()` aan te roepen in `Start`. Cilbox voegt de component voor je toe, en Basis roept een methode met een vaste naam op je script aan, zoals `OnPlatformChanged`.
+- Vervangen types. Je schrijft de normale Unity-naam (`Debug`, `VideoPlayer`, `BasisAvatar`) en de sandbox levert een veilige versie.
 
 | Shim | Wat het doet | Pagina |
 | --- | --- | --- |

@@ -5,7 +5,7 @@ description: Quali componenti sopravvivono in mondi, prop e avatar caricati, com
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Quando un contenuto viene caricato, la **content police** di Basis rimuove ogni componente il cui tipo non è nella allowlist per quel tipo di contenuto. Gli script contrassegnati con `[Cilboxable]` vengono prima convertiti in proxy in sandbox, quindi sopravvivono.
+Quando un contenuto viene caricato, la **content police** di Basis rimuove ogni componente il cui tipo non è nella allowlist per quel tipo di contenuto. Gli script contrassegnati con `[Cilboxable]` sopravvivono perché vengono prima convertiti in proxy in sandbox.
 
 ## Le allowlist
 
@@ -34,7 +34,7 @@ Gli asset dei selettori sono la fonte di verità e cambiano tra le versioni. Apr
 ## Verificare il tuo contenuto
 
 - Entra in play mode: Basis applica lo stesso controllo e i componenti rimossi vengono registrati nel log.
-- **Basis > Tools > Cilbox Permissions** elenca cosa ogni sandbox consente di chiamare agli script.
+- La finestra **Basis > Tools > Cilbox Permissions** elenca cosa ogni sandbox consente di chiamare agli script.
 
 ## Aggiungere un componente (build del client)
 

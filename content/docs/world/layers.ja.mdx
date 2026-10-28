@@ -24,11 +24,11 @@ BasisはいくつかのUnityレイヤーを予約しています。プレイヤ�
 
 ## レイヤーの選び方
 
-- **壁、床、プロップ:** Default。
-- **ボタンの手前にあるトリガーボリュームや見えない障害物:** IgnoredByInteractable。ポインターがその奥にあるものに届くようになります。
-- **ポインターが決して当たるべきでない装飾用のコライダー:** Ignore Raycast。
-- Player、LocalPlayerAvatar、RemotePlayerAvatar、OverlayUIには**自分のオブジェクトを決して置かないでください**。
+- 壁、床、プロップ: Default。
+- ボタンの手前にあるトリガーボリュームや見えない障害物: IgnoredByInteractable。ポインターはそれを通り抜けて奥にあるものに届きます。
+- ポインターが当たってはいけない装飾用のコライダー: Ignore Raycast。
+- Player、LocalPlayerAvatar、RemotePlayerAvatar、OverlayUIには、自分のオブジェクトを決して置かないでください。
 
 <Callout type="info">
-レイヤーの名前と番号はBasisプロジェクトのTag Managerに由来します。コンテンツはそれらを使ってビルドされるため、プロジェクト内でBasisのレイヤーの名前を変えたり並べ替えたりしないでください。
+レイヤーの名前と番号はBasisプロジェクトのTag Managerに由来します。コンテンツはそれらを使ってビルドされます。プロジェクト内でBasisのレイヤーの名前を変えたり並べ替えたりしないでください。
 </Callout>

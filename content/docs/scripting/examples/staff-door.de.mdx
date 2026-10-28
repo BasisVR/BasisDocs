@@ -28,6 +28,6 @@ public class StaffDoor : MonoBehaviour
 }
 ```
 
-- Die Tür wird für Teammitglieder auf ihrem eigenen Client ausgeschaltet. Niemand sonst ist betroffen, daher wird nichts über das Netzwerk gesendet.
+- Die Tür wird für Teammitglieder auf ihrem eigenen Client ausgeschaltet. Niemand sonst ist betroffen, und nichts wird über das Netzwerk gesendet.
 - Um ein Abzeichen über *anderen* Teammitgliedern anzuzeigen, fragen Sie mit `BasisPermissionsShim.IsModerator(player, callback)` nach; das ist ein Roundtrip zum Server.
 - Clientseitige Prüfungen halten ehrliche Spieler fern. Verlassen Sie sich nicht darauf für etwas, das ein modifizierter Client nicht erreichen darf.

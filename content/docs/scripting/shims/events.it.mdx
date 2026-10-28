@@ -5,10 +5,10 @@ description: Gli shim evento da attivare. Ottieni il componente in Start, poi di
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Ogni shim evento funziona allo stesso modo: chiama `GetComponent<T>()` una volta in `Start` (Cilbox lo aggiunge per te), poi dichiara un metodo con il nome della callback dello shim. Basis lo chiama direttamente, quindi non c'è nulla a cui iscriversi o da cui disiscriversi.
+Ogni shim evento funziona allo stesso modo: chiama `GetComponent<T>()` una volta in `Start` (Cilbox lo aggiunge per te), poi dichiara un metodo con il nome della callback dello shim. Basis lo chiama direttamente. Non c'è nulla a cui iscriversi o da cui disiscriversi.
 
 <Callout type="info">
-La maggior parte degli shim evento ti chiama una volta subito dopo l'attivazione, con il valore corrente, quindi non ti serve codice di avvio separato.
+La maggior parte degli shim evento ti chiama una volta subito dopo l'attivazione, con il valore corrente. Non ti serve codice di avvio separato.
 </Callout>
 
 ## BasisPlatformEventShim

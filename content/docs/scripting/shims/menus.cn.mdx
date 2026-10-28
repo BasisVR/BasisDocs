@@ -3,7 +3,7 @@ title: 菜单
 description: BasisMenuShim、设置标签页和菜单面板，包含标题、标签、按钮、开关、滑块和下拉菜单。
 ---
 
-`BasisMenuShim` 会向玩家自己的菜单添加 UI。两个调用在被拒绝时都会返回 null，因此请始终进行检查。
+`BasisMenuShim` 会向玩家自己的菜单添加 UI。两个调用在被拒绝时都会返回 null。请始终进行检查。
 
 | 调用 | 添加内容 |
 | --- | --- |
@@ -51,7 +51,7 @@ status.SetVisible(false);
 
 ## 打开面板
 
-`Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效，因此内容无法自行弹出菜单。
+`Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效，内容无法自行弹出菜单。
 
 ```csharp
 BasisMenuPage arcade;

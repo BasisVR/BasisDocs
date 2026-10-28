@@ -90,10 +90,10 @@ public class CourseProgress : MonoBehaviour
 
 ## Règles
 
-- **Le joueur décide.** Tant qu'il n'a pas autorisé la sauvegarde pour votre contenu, `Save` renvoie false et `Load` renvoie null. Votre script continue de s'exécuter, gérez donc toujours l'absence de sauvegarde.
-- **Versionnez vos données.** Écrivez d'abord un octet de version et refusez les données que vous ne comprenez pas. Les joueurs conservent leurs anciennes sauvegardes quand vous mettez à jour votre monde.
-- **Validez au chargement.** Bornez les indices ; ne supposez jamais que les valeurs sauvegardées correspondent toujours à votre scène.
-- **Limites :** 256 Ko par emplacement, 32 emplacements et 1 Mo par store, 8 écritures par seconde. Sauvegardez lors d'événements significatifs, pas à chaque frame.
+- Le joueur décide. Tant qu'il n'a pas autorisé la sauvegarde pour votre contenu, `Save` renvoie false et `Load` renvoie null. Votre script continue de s'exécuter dans tous les cas. Gérez toujours l'absence de sauvegarde.
+- Versionnez vos données. Écrivez d'abord un octet de version et refusez les données que vous ne comprenez pas. Les joueurs conservent leurs anciennes sauvegardes quand vous mettez à jour votre monde.
+- Validez au chargement. Bornez les indices ; ne supposez jamais que les valeurs sauvegardées correspondent toujours à votre scène.
+- Limites : 256 Ko par emplacement, 32 emplacements et 1 Mo par store, 8 écritures par seconde. Sauvegardez lors d'événements significatifs, pas à chaque frame.
 
 ## Partage entre contenus
 

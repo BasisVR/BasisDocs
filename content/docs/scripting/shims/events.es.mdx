@@ -5,10 +5,10 @@ description: Los shims de eventos opcionales. Obtenga el componente en Start y d
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Todos los shims de eventos funcionan igual: llame a `GetComponent<T>()` una vez en `Start` (Cilbox lo añade por usted) y declare un método con el nombre del callback del shim. Basis lo llama directamente, así que no hay nada a lo que suscribirse ni de lo que darse de baja.
+Todos los shims de eventos funcionan igual: llame a `GetComponent<T>()` una vez en `Start` (Cilbox lo añade por usted) y declare un método con el nombre del callback del shim. Basis lo llama directamente. No hay nada a lo que suscribirse ni de lo que darse de baja.
 
 <Callout type="info">
-La mayoría de los shims de eventos le llaman una vez justo después de activarlos, con el valor actual, así que no necesita código de inicio aparte.
+La mayoría de los shims de eventos le llaman una vez justo después de activarlos, con el valor actual. No necesita código de inicio aparte.
 </Callout>
 
 ## BasisPlatformEventShim

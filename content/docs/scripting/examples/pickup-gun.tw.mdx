@@ -85,9 +85,9 @@ public class PickupGun : MonoBehaviour
 
 ## 運作方式
 
-- **Basis Pickup Sync Networking** 在被抓取時取得擁有權，並串流槍的姿勢，讓每個人都看到它在握持者手中。這部分不需要程式碼。
-- **射擊是事件**，而不是狀態。之後加入的人不需要知道曾經開過槍，因此不需要處理晚加入者。
-- **只有射擊者進行射線檢測。** 對遊戲玩法有影響的命中結果（傷害、分數）應由射擊者決定並以獨立的事件傳送，或像[記分板](/tw/docs/scripting/examples/scoreboard)一樣轉送給擁有者。
+- **Basis Pickup Sync Networking** 會在槍被抓取時取得擁有權，並串流它的姿勢。每個人都會看到它在握持者手中，不需要任何程式碼。
+- 射擊是事件，而不是狀態。之後加入的人不需要知道曾經開過槍，也就沒有晚加入者程式碼。
+- 只有射擊者進行射線檢測。對遊戲玩法有影響的命中結果（傷害、分數）應由射擊者決定並以獨立的事件傳送，或像[記分板](/tw/docs/scripting/examples/scoreboard)一樣轉送給擁有者。
 
 <Callout type="info">
 如果不希望其他玩家能從別人手中搶走槍，請在同步元件上將 **CanNetworkSteal** 關閉。

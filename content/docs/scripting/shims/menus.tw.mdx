@@ -3,7 +3,7 @@ title: 選單
 description: BasisMenuShim、設定分頁與選單面板，包含標題、標籤、按鈕、切換開關、滑桿與下拉選單。
 ---
 
-`BasisMenuShim` 會將 UI 加入玩家自己的選單。兩種呼叫在遭拒時都會傳回 null，因此請務必檢查。
+`BasisMenuShim` 會將 UI 加入玩家自己的選單。兩種呼叫在遭拒時都會傳回 null。請務必檢查。
 
 | 呼叫 | 加入的內容 |
 | --- | --- |
@@ -51,7 +51,7 @@ status.SetVisible(false);
 
 ## 開啟面板
 
-`Open()` 只有在玩家按下您內容中的某樣東西後 5 秒內才有效，因此內容無法自行彈出選單。
+`Open()` 只有在玩家按下您內容中的某樣東西後 5 秒內才有效，內容無法自行彈出選單。
 
 ```csharp
 BasisMenuPage arcade;

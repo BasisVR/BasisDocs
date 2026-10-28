@@ -32,7 +32,7 @@ byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge")
 
 ## BasisServerStorageShim
 
-プレイヤーごとに**サーバー上に**保存されるデータです。そのため、そのサーバーではデバイスを変えてもプレイヤーについていきます。すべての呼び出しは非同期です。キーは最大64バイト、値は最大64 KBです。プレイヤーごとの合計はサーバーが設定します（デフォルトは16 KB）。
+プレイヤーごとに**サーバー上に**保存されるデータです。そのサーバーでは、デバイスを変えてもプレイヤーについていきます。すべての呼び出しは非同期です。キーは最大64バイト、値は最大64 KBです。プレイヤーごとの合計はサーバーが設定します（デフォルトは16 KB）。
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

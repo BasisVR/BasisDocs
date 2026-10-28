@@ -40,12 +40,12 @@ public class LocalPlayerZone : MonoBehaviour
 ```
 
 <Callout type="info">
-Gebruik voor bewegingswijzigingen binnen een gebied (lage zwaartekracht, vliegen, sneller lopen) het **Basis Locomotion Zone**-component uit com.basis.examples. Het heeft geen code nodig.
+Gebruik voor bewegingswijzigingen binnen een gebied (lage zwaartekracht, vliegen, sneller lopen) de locomotion overrides op `BasisLocalPlayer` uit [Veelvoorkomend gebruik](/nl/docs/scripting/common-usages). In client-builds doet het **Basis Locomotion Zone**-component hetzelfde zonder code.
 </Callout>
 
 ## Teleporter
 
-Voeg toe aan een platform of een knop. Teleporteren heeft alleen invloed op de lokale speler, dus dit heeft geen netwerkcode nodig: elke speler teleporteert zichzelf.
+Voeg toe aan een platform of een knop. Teleporteren heeft alleen invloed op de lokale speler. Elke speler teleporteert zichzelf en er gaat niets over het netwerk.
 
 ```csharp title="Teleporter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;
@@ -107,7 +107,7 @@ public class Trampoline : MonoBehaviour
 
 ## Lobbytelling
 
-Toon hoeveel spelers er in een lobbygebied staan. Elke client telt zelf op basis van spelerposities, dus er zijn geen berichten nodig.
+Toon hoeveel spelers er in een lobbygebied staan. Elke client telt zelf op basis van spelerposities en er worden geen berichten verstuurd.
 
 ```csharp title="LobbyCounter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;

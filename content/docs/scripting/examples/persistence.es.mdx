@@ -90,10 +90,10 @@ public class CourseProgress : MonoBehaviour
 
 ## Reglas
 
-- **El jugador decide.** Hasta que permita el guardado para su contenido, `Save` devuelve false y `Load` devuelve null. Su script sigue ejecutándose, así que gestione siempre la ausencia de un guardado.
-- **Versione sus datos.** Escriba primero un byte de versión y rechace los datos que no entienda. Los jugadores conservan los guardados antiguos cuando usted actualiza su mundo.
-- **Valide al cargar.** Limite los índices; nunca confíe en que los valores guardados sigan coincidiendo con su escena.
-- **Límites:** 256 KB por ranura, 32 ranuras y 1 MB por almacén, 8 escrituras por segundo. Guarde en eventos significativos, no en cada fotograma.
+- El jugador decide. Hasta que permita el guardado para su contenido, `Save` devuelve false y `Load` devuelve null. Su script sigue ejecutándose en cualquier caso. Gestione siempre la ausencia de un guardado.
+- Versione sus datos. Escriba primero un byte de versión y rechace los datos que no entienda. Los jugadores conservan los guardados antiguos cuando usted actualiza su mundo.
+- Valide al cargar. Limite los índices; nunca confíe en que los valores guardados sigan coincidiendo con su escena.
+- Límites: 256 KB por ranura, 32 ranuras y 1 MB por almacén, 8 escrituras por segundo. Guarde en eventos significativos, no en cada fotograma.
 
 ## Compartir entre contenidos
 

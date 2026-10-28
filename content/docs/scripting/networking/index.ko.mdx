@@ -5,7 +5,7 @@ description: Basis 월드나 소품이 모든 플레이어에게 똑같이 동�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-스크립트가 하는 모든 일은 한 플레이어의 기기에서 실행됩니다. 플레이어가 문을 열어도 네트워크에 알리기 전까지는 아무도 그것을 보지 못합니다. 이 가이드는 이를 위해 Basis가 제공하는 도구와 각각을 언제 사용해야 하는지 다룹니다.
+스크립트가 하는 모든 일은 한 플레이어의 기기에서 실행됩니다. 플레이어가 문을 열어도 네트워크에 알리기 전까지는 아무도 그것을 보지 못합니다.
 
 전송 계층 자체의 작동 방식(서버 릴레이, 전송 방식, 거리 기반 업데이트 빈도)은 [네트워크 동기화](/ko/docs/technical/network-syncing)를 참조하세요.
 
@@ -19,15 +19,15 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | **늦게 참여한 플레이어** | 상황이 바뀐 뒤에 도착한 플레이어. | 씬 기본값이 아니라 현재 상태를 보도록 보장. |
 
 <Callout type="info">
-경험 법칙: 5분 뒤에 참여한 플레이어도 봐야 하는 것이라면 그것은 **상태**이며 동기화 변수에 속합니다(또는 그 플레이어에게 다시 보내야 합니다). 일어나는 순간에만 중요하다면 그것은 **이벤트**입니다.
+5분 뒤에 참여한 플레이어도 봐야 하는 것이라면 그것은 **상태**이며 동기화 변수에 속합니다(또는 그 플레이어에게 다시 보내야 합니다). 일어나는 순간에만 중요하다면 그것은 **이벤트**입니다.
 </Callout>
 
 ## 구성 요소
 
-- **`BasisNetworkBehaviour`**는 클라이언트에 컴파일되는 네트워크 스크립트의 기본 클래스입니다. 네트워크 ID, 소유자, 그리고 `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined`, `OnPlayerLeft` 콜백을 갖습니다.
-- **`BasisNetworkShim`**은 Cilbox 스크립트를 위한 같은 기능입니다. Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없으므로 `GetComponent`로 `BasisNetworkShim`을 가져와 이벤트를 구독합니다.
-- **`BasisSyncedObject`**는 `BasisNetworkBehaviour`를 기반으로 압축되고 보간되는 상태 스트림을 제공합니다. **`BasisSyncedParameters`**, **`BasisSyncedTransform`**, **`BasisSyncedRigidbody`**는 그 위에 만들어진 기성 컴포넌트입니다.
-- **`BasisPickupSyncNetworking`**과 **`BasisSeatSync`**는 코드 없이 픽업과 좌석을 동기화합니다.
+- `BasisNetworkBehaviour`는 클라이언트에 컴파일되는 네트워크 스크립트의 기본 클래스입니다. 네트워크 ID, 소유자, 그리고 `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined`, `OnPlayerLeft` 콜백을 갖습니다.
+- `BasisNetworkShim`은 Cilbox 스크립트를 위한 같은 기능입니다. Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없습니다. 대신 `GetComponent`로 `BasisNetworkShim`을 가져와 이벤트를 구독합니다.
+- `BasisSyncedObject`는 `BasisNetworkBehaviour`를 기반으로 압축되고 보간되는 상태 스트림을 제공합니다. `BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`는 그 위에 만들어진 기성 컴포넌트입니다.
+- `BasisPickupSyncNetworking`과 `BasisSeatSync`는 코드 없이 픽업과 좌석을 동기화합니다.
 
 ## 네트워크 스크립트, 처음부터 끝까지
 
@@ -75,7 +75,7 @@ public class NetworkedCounter : BasisNetworkBehaviour
 
 이 예제가 보여주는 것:
 
-1. 버튼을 누른 플레이어가 **소유권을 가져오므로** 신뢰할 수 있는 원본이 하나가 됩니다.
+1. 버튼을 누른 플레이어가 소유권을 가져오고, 그 플레이어가 유일한 기준이 됩니다.
 2. 새 값은 다른 모든 사람에게 **이벤트로 전송됩니다**(`Recipients = null`은 자신을 제외한 모든 사람을 의미합니다).
 3. 누군가 참여하면 **소유자만** 현재 값을 그 사람에게 보냅니다.
 

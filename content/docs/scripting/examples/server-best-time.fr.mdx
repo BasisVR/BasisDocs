@@ -1,11 +1,11 @@
 ---
 title: Meilleur temps serveur
-description: Sauvegarder le meilleur tour de chaque joueur sur le serveur avec BasisServerStorageShim, pour qu'il le suive d'un appareil à l'autre.
+description: Sauvegarder le meilleur tour de chaque joueur sur le serveur avec BasisServerStorageShim, où il le suit d'un appareil à l'autre.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim` sauvegarde sur la machine du joueur. `BasisServerStorageShim` sauvegarde sur le **serveur**, par joueur, donc un meilleur temps réalisé sur PC est toujours là quand il revient depuis un Quest.
+`BasisSaveShim` sauvegarde sur la machine du joueur. `BasisServerStorageShim` sauvegarde sur le **serveur**, par joueur. Un meilleur temps réalisé sur PC est toujours là quand il revient depuis un Quest.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

@@ -85,9 +85,9 @@ public class PickupGun : MonoBehaviour
 
 ## Hoe het werkt
 
-- **Basis Pickup Sync Networking** neemt het eigenaarschap bij vastpakken en streamt de pose van het geweer, zodat iedereen het in de hand van de houder ziet. Voor dat deel is geen code nodig.
-- **Het schot is een event**, geen status. Niemand die later binnenkomt hoeft te weten dat er een schot is gelost, dus er is geen afhandeling voor late joiners.
-- **Alleen de schutter doet de raycast.** Trefferresultaten die voor de gameplay ertoe doen (schade, score) moeten door de schutter worden bepaald en als eigen event worden verstuurd, of naar een eigenaar worden geleid zoals in het [Scorebord](/nl/docs/scripting/examples/scoreboard).
+- **Basis Pickup Sync Networking** neemt het eigenaarschap wanneer het geweer wordt vastgepakt en streamt de pose ervan. Iedereen ziet het in de hand van de houder, zonder code.
+- Het schot is een event, geen status. Niemand die later binnenkomt hoeft te weten dat er een schot is gelost, en er is geen code voor late joiners.
+- Alleen de schutter doet de raycast. Trefferresultaten die voor de gameplay ertoe doen (schade, score) moeten door de schutter worden bepaald en als eigen event worden verstuurd, of naar een eigenaar worden geleid zoals in het [Scorebord](/nl/docs/scripting/examples/scoreboard).
 
 <Callout type="info">
 Zet **CanNetworkSteal** uit op het synchronisatiecomponent als andere spelers het geweer niet uit iemands hand mogen trekken.

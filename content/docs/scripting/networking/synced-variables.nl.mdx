@@ -16,7 +16,7 @@ Een gesynchroniseerde variabele is een waarde die de **eigenaar** schrijft en el
 | Een bewegend object | [`BasisSyncedTransform`, `BasisSyncedRigidbody` of `BasisPickupSyncNetworking`](/nl/docs/scripting/networking/network-components). |
 
 <Callout type="warn">
-`BasisSyncedParameters` en je eigen `BasisSyncedObject`-subklassen staan niet op de standaard allowlists voor geüploade content, dus ze worden uit een `.bee` verwijderd, tenzij het type aan de content police selectors wordt toegevoegd. Synchroniseer in geüploade Cilbox-content waarden met [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox) en bewegende objecten met **Basis Synced Transform**.
+`BasisSyncedParameters` en je eigen `BasisSyncedObject`-subklassen staan niet op de standaard allowlists voor geüploade content. Ze worden uit een `.bee` verwijderd, tenzij het type aan de content police selectors wordt toegevoegd. Synchroniseer in geüploade Cilbox-content waarden met [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox) en bewegende objecten met **Basis Synced Transform**.
 </Callout>
 
 ## BasisSyncedParameters: geen serialisatiecode
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **Schrijfacties tellen alleen bij de eigenaar.** Neem het eigenaarschap voordat je schrijft (zie [Eigenaarschap](/nl/docs/scripting/networking/ownership)).
-- **Lezen werkt overal.** Bij de eigenaar krijg je de waarde die je hebt geschreven; bij alle anderen krijg je de geïnterpoleerde netwerkwaarde.
+- Schrijfacties tellen alleen bij de eigenaar. Neem het eigenaarschap voordat je schrijft (zie [Eigenaarschap](/nl/docs/scripting/networking/ownership)).
+- Lezen werkt overal. Bij de eigenaar krijg je de waarde die je hebt geschreven; bij alle anderen krijg je de geïnterpoleerde netwerkwaarde.
 - Zet de naam een keer om naar een id met `GetParameterId` en gebruik de id-overloads in `Update` om het opzoeken op naam over te slaan.
 
 Er zijn geen wijzigingscallbacks. Lees de waarde in `Update` en reageer wanneer die verschilt van wat je de vorige keer zag:
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-Registreer elk veld in `Awake`, voordat het object netwerkklaar wordt. De veldindeling is het wire-formaat, dus elke client moet dezelfde velden in dezelfde volgorde registreren.
+Registreer elk veld in `Awake`, voordat het object netwerkklaar wordt. De veldindeling is het wire-formaat. Elke client moet dezelfde velden in dezelfde volgorde registreren.
 </Callout>
 
-`OnBeforeTransmit` draait alleen in de frames waarin daadwerkelijk een pakket verstuurd moet worden, niet elk frame, dus houd het een pure kopie van je waarden.
+`OnBeforeTransmit` draait alleen in de frames waarin een pakket verstuurd moet worden, niet elk frame. Houd het een gewone kopie van je waarden.
 
 Om een transform direct vanuit geregistreerde velden aan te sturen, roep je `BindTransform(target, position, rotation, scale, worldSpace)` aan; de driver past de geïnterpoleerde waarden dan toe in een job, zonder dat je `Update` draait.
 
@@ -148,5 +148,5 @@ In `BasisSyncedParameters` is dezelfde keuze de instelling **Compression** op el
 
 Een Cilbox-script kan niet afleiden van `BasisSyncedObject`. In geüploade content:
 
-- **Bewegende objecten:** voeg een **Basis Synced Transform**- of **Basis Pickup Sync Networking**-component toe. Geen script nodig.
-- **Waarden:** houd ze bij de eigenaar en verstuur ze als [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox), en stuur ze opnieuw naar [late joiners](/nl/docs/scripting/networking/late-joiners). Het voorbeeld [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) is het sjabloon.
+- Bewegende objecten: voeg een **Basis Synced Transform**- of **Basis Pickup Sync Networking**-component toe. Geen script nodig.
+- Waarden: houd ze bij de eigenaar en verstuur ze als [netwerkevents](/nl/docs/scripting/networking/network-events#cilbox), en stuur ze opnieuw naar [late joiners](/nl/docs/scripting/networking/late-joiners). Het voorbeeld [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) is het sjabloon.

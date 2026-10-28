@@ -5,10 +5,10 @@ description: 有効化して使うイベントシム。Startでコンポーネ�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-イベントシムはすべて同じ仕組みで動作します。`Start`で`GetComponent<T>()`を一度呼び出し（Cilboxがコンポーネントを追加します）、シムのコールバック名でメソッドを宣言します。Basisがそれを直接呼び出すため、購読や購読解除は必要ありません。
+イベントシムはすべて同じ仕組みで動作します。`Start`で`GetComponent<T>()`を一度呼び出し（Cilboxがコンポーネントを追加します）、シムのコールバック名でメソッドを宣言します。Basisがそれを直接呼び出します。購読や購読解除は必要ありません。
 
 <Callout type="info">
-ほとんどのイベントシムは、有効化した直後に現在の値で一度呼び出してくれるため、別途起動時のコードを書く必要はありません。
+ほとんどのイベントシムは、有効化した直後に現在の値で一度呼び出してくれます。起動時のコードを別に書く必要はありません。
 </Callout>
 
 ## BasisPlatformEventShim
@@ -84,7 +84,7 @@ void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
 
 ## BasisBeforeRenderShim
 
-すべてのポーズ処理とIK処理の後、フレームが描画される直前に実行されます。1フレームの遅延なしに、何かを手や頭に固定するために使用します。描画がこれを待つため、処理は短くしてください。
+すべてのポーズ処理とIK処理の後、フレームが描画される直前に実行されます。1フレームの遅延なしに、何かを手や頭に固定するために使用します。処理は短くしてください。描画がこれを待ちます。
 
 ```csharp
 void Start() { GetComponent<BasisBeforeRenderShim>(); }

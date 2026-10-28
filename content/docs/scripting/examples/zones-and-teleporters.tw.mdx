@@ -40,12 +40,12 @@ public class LocalPlayerZone : MonoBehaviour
 ```
 
 <Callout type="info">
-若要在區域內改變移動方式（低重力、飛行、更快的步行速度），請使用 com.basis.examples 中的 **Basis Locomotion Zone** 元件。它不需要程式碼。
+若要在區域內改變移動方式（低重力、飛行、更快的步行速度），請使用[常見用法](/tw/docs/scripting/common-usages)中 `BasisLocalPlayer` 的移動覆寫。在客戶端建置中，**Basis Locomotion Zone** 元件不需要程式碼就能做到同樣的事。
 </Callout>
 
 ## 傳送點
 
-加入到踏板或按鈕上。傳送只會影響本機玩家，因此不需要網路同步：每位玩家都是自己傳送自己。
+加入到踏板或按鈕上。傳送只會影響本機玩家。每位玩家都是自己傳送自己，沒有任何東西經過網路同步。
 
 ```csharp title="Teleporter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;
@@ -107,7 +107,7 @@ public class Trampoline : MonoBehaviour
 
 ## 大廳人數
 
-顯示有多少玩家站在大廳區域內。每個客戶端都根據玩家位置自行計算，因此不需要任何訊息。
+顯示有多少玩家站在大廳區域內。每個客戶端都根據玩家位置自行計算，不會傳送任何訊息。
 
 ```csharp title="LobbyCounter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;

@@ -13,7 +13,7 @@ Un joueur qui rejoint charge la scène exactement telle que vous l'avez construi
 
 ## Événements réseau : renvoyer l'état
 
-Les événements ne sont pas mémorisés. Si un événement a modifié un état durable, renvoyez cet **état** (et non l'historique des événements) au nouveau joueur. Seul le propriétaire s'en charge, afin que le nouveau venu reçoive un seul message au lieu d'un message de chaque joueur.
+Les événements ne sont pas mémorisés. Si un événement a modifié un état durable, renvoyez cet **état** (et non l'historique des événements) au nouveau joueur. Seul le propriétaire s'en charge. Le nouveau venu reçoit un seul message au lieu d'un message de chaque joueur.
 
 ```csharp title="Native"
 public override void OnPlayerJoined(BasisNetworkPlayer player)
@@ -39,6 +39,6 @@ Ne rejouez pas une liste d'événements passés à un nouveau venu (par exemple 
 
 ## Points à vérifier
 
-- **Cela fonctionne-t-il si le propriétaire n'est pas le premier joueur ?** Testez avec trois clients : A rejoint, B rejoint et modifie quelque chose, A part, C rejoint.
-- **Quelque chose est-il défini dans `Start` alors que cela devrait venir du réseau ?** Le `Start` d'un joueur arrivé en retard s'exécute avant son premier message réseau. Affichez un état neutre jusqu'à l'arrivée du premier message ou de la première valeur synchronisée.
-- **Props persistants.** Les props générés depuis une configuration de chargement doivent avoir **Persistent** activé pour exister chez les joueurs qui rejoignent plus tard. Voir [Props de scène](/fr/docs/world/scene-props).
+- Cela fonctionne-t-il si le propriétaire n'est pas le premier joueur ? Testez avec trois clients : A rejoint, B rejoint et modifie quelque chose, A part, C rejoint.
+- Quelque chose est-il défini dans `Start` alors que cela devrait venir du réseau ? Le `Start` d'un joueur arrivé en retard s'exécute avant son premier message réseau. Affichez un état neutre jusqu'à l'arrivée du premier message ou de la première valeur synchronisée.
+- Props persistants. Les props générés depuis une configuration de chargement doivent avoir **Persistent** activé pour exister chez les joueurs qui rejoignent plus tard. Voir [Props de scène](/fr/docs/world/scene-props).

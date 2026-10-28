@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` ya recibe los mensajes de red de su propio flujo, así que dirija las solicitudes al marcador con una pequeña subclase:
+`BasisSyncedParameters` ya recibe los mensajes de red de su propio flujo. Dirija las solicitudes al marcador con una pequeña subclase:
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ Use **ScoreboardParameters** en lugar de **Basis Synced Parameters** en la confi
 
 ## Cómo funciona
 
-- **Solo el propietario escribe** la puntuación, de modo que las pulsaciones simultáneas se aplican una tras otra en el propietario.
-- **Todos los demás envían una solicitud** a `CurrentOwnerId` en lugar de tomar la propiedad. Tomar la propiedad permitiría que dos jugadores sumaran 1 cada uno al mismo valor antiguo.
-- **Los jugadores que se unen tarde** no necesitan nada adicional: los parámetros sincronizados envían un keyframe a los jugadores nuevos.
-- **Si el propietario se va**, la propiedad pasa al jugador que lleva más tiempo conectado, que ya tiene la puntuación actual.
+- Solo el propietario escribe la puntuación. Las pulsaciones simultáneas se aplican una tras otra en el propietario.
+- Todos los demás envían una solicitud a `CurrentOwnerId` en lugar de tomar la propiedad. Tomar la propiedad permitiría que dos jugadores sumaran 1 cada uno al mismo valor antiguo.
+- Los jugadores que se unen tarde no necesitan nada adicional. Los parámetros sincronizados envían un keyframe a los jugadores nuevos.
+- Si el propietario se va, la propiedad pasa al jugador que lleva más tiempo conectado, que ya tiene la puntuación actual.
 
 <Callout type="info">
-Las solicitudes ocupan un byte; los paquetes de sincronización son más grandes, así que comprobar la longitud basta para distinguirlos aquí. Para más tipos de mensaje, anteponga a sus propios mensajes un byte marcador con el que el flujo de sincronización nunca empiece, o coloque la gestión de solicitudes en un `BasisNetworkBehaviour` aparte.
+Las solicitudes ocupan un byte y los paquetes de sincronización siempre son más grandes. Por eso aquí basta con comprobar la longitud. Para más tipos de mensaje, anteponga a sus propios mensajes un byte marcador con el que el flujo de sincronización nunca empiece, o coloque la gestión de solicitudes en un `BasisNetworkBehaviour` aparte.
 </Callout>

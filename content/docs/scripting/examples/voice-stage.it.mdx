@@ -48,6 +48,6 @@ public class VoiceStage : MonoBehaviour
 }
 ```
 
-- Ogni client instrada la voce localmente a partire dalle posizioni che ha già, quindi non c'è traffico di rete aggiuntivo.
+- Ogni client instrada la voce localmente a partire dalle posizioni che ha già. Non c'è traffico di rete aggiuntivo.
 - Il consenso di chi parla viene controllato per primo. I giocatori che non hanno consentito l'instradamento della voce si sentono normalmente.
 - Controlla in **Basis > Tools > Cilbox Permissions** che `BasisNetworkPlayer.GetAllPlayers` sia consentito nella tua sandbox.

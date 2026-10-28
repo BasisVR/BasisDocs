@@ -16,7 +16,7 @@ Eine synchronisierte Variable ist ein Wert, den der **Owner** schreibt und jeder
 | Ein bewegtes Objekt | [`BasisSyncedTransform`, `BasisSyncedRigidbody` oder `BasisPickupSyncNetworking`](/de/docs/scripting/networking/network-components). |
 
 <Callout type="warn">
-`BasisSyncedParameters` und Ihre eigenen `BasisSyncedObject`-Unterklassen stehen nicht auf den Standard-Allowlists für hochgeladene Inhalte. Sie werden daher aus einer `.bee` entfernt, sofern der Typ nicht zu den Content-Police-Selektoren hinzugefügt wird. Synchronisieren Sie in hochgeladenen Cilbox-Inhalten Werte mit [Netzwerk-Events](/de/docs/scripting/networking/network-events#cilbox) und bewegte Objekte mit **Basis Synced Transform**.
+`BasisSyncedParameters` und Ihre eigenen `BasisSyncedObject`-Unterklassen stehen nicht auf den Standard-Allowlists für hochgeladene Inhalte. Sie werden aus einer `.bee` entfernt, sofern der Typ nicht zu den Content-Police-Selektoren hinzugefügt wird. Synchronisieren Sie in hochgeladenen Cilbox-Inhalten Werte mit [Netzwerk-Events](/de/docs/scripting/networking/network-events#cilbox) und bewegte Objekte mit **Basis Synced Transform**.
 </Callout>
 
 ## BasisSyncedParameters: kein Serialisierungscode
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **Schreibvorgänge zählen nur beim Owner.** Übernehmen Sie die Ownership vor dem Schreiben (siehe [Ownership](/de/docs/scripting/networking/ownership)).
-- **Lesen funktioniert überall.** Beim Owner erhalten Sie den Wert, den Sie geschrieben haben; bei allen anderen den interpolierten Netzwerkwert.
+- Schreibvorgänge zählen nur beim Owner. Übernehmen Sie die Ownership vor dem Schreiben (siehe [Ownership](/de/docs/scripting/networking/ownership)).
+- Lesen funktioniert überall. Beim Owner erhalten Sie den Wert, den Sie geschrieben haben; bei allen anderen den interpolierten Netzwerkwert.
 - Lösen Sie den Namen einmal mit `GetParameterId` in eine ID auf und verwenden Sie in `Update` die Überladungen mit ID, um die Namenssuche zu sparen.
 
 Es gibt keine Änderungs-Callbacks. Lesen Sie den Wert in `Update` und reagieren Sie, wenn er sich von dem zuletzt gesehenen unterscheidet:
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-Registrieren Sie jedes Feld in `Awake`, bevor das Objekt netzwerkbereit wird. Das Feldlayout ist das Übertragungsformat, daher muss jeder Client dieselben Felder in derselben Reihenfolge registrieren.
+Registrieren Sie jedes Feld in `Awake`, bevor das Objekt netzwerkbereit wird. Das Feldlayout ist das Übertragungsformat. Jeder Client muss dieselben Felder in derselben Reihenfolge registrieren.
 </Callout>
 
-`OnBeforeTransmit` läuft nur in den Frames, in denen tatsächlich ein Paket fällig ist, nicht in jedem Frame. Halten Sie es daher als reine Kopie Ihrer Werte.
+`OnBeforeTransmit` läuft nur in den Frames, in denen ein Paket fällig ist, nicht in jedem Frame. Kopieren Sie darin nur Ihre Werte.
 
 Um einen Transform direkt aus registrierten Feldern anzusteuern, rufen Sie `BindTransform(target, position, rotation, scale, worldSpace)` auf; der Treiber wendet die interpolierten Werte dann in einem Job an, ohne dass Ihr `Update` läuft.
 
@@ -148,5 +148,5 @@ In `BasisSyncedParameters` ist dieselbe Wahl die Einstellung **Compression** auf
 
 Ein Cilbox-Skript kann nicht von `BasisSyncedObject` erben. In hochgeladenen Inhalten gilt:
 
-- **Bewegte Objekte:** Fügen Sie eine **Basis Synced Transform**- oder **Basis Pickup Sync Networking**-Komponente hinzu. Kein Skript nötig.
-- **Werte:** Halten Sie sie beim Owner und senden Sie sie als [Netzwerk-Events](/de/docs/scripting/networking/network-events#cilbox), wobei Sie sie an [Late Joiner](/de/docs/scripting/networking/late-joiners) erneut senden. Das Beispiel [Synced Toggle](/de/docs/scripting/examples/synced-toggle) ist die Vorlage.
+- Bewegte Objekte: Fügen Sie eine **Basis Synced Transform**- oder **Basis Pickup Sync Networking**-Komponente hinzu. Kein Skript nötig.
+- Werte: Halten Sie sie beim Owner und senden Sie sie als [Netzwerk-Events](/de/docs/scripting/networking/network-events#cilbox), wobei Sie sie an [Late Joiner](/de/docs/scripting/networking/late-joiners) erneut senden. Das Beispiel [Synced Toggle](/de/docs/scripting/examples/synced-toggle) ist die Vorlage.

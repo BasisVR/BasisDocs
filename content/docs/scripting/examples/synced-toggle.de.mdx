@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## Funktionsweise
 
-- **Drücken** übernimmt den Besitz, kehrt den Wert lokal um, sodass der Drückende ihn sofort sieht, und sendet den neuen Wert an alle anderen.
-- **`ReliableSequenced`** garantiert, dass der neueste Wert ankommt, und verwirft ältere, was für einen Schalter genau richtig ist.
-- **Ein beitretender Spieler** erhält den aktuellen Wert nur vom Besitzer. Da die Nachricht den gesamten Zustand enthält, verarbeitet derselbe `OnMessage`-Handler sowohl Live-Änderungen als auch das Aufholen.
+- Drücken übernimmt den Besitz, kehrt den Wert lokal um, damit der Drückende ihn sofort sieht, und sendet den neuen Wert an alle anderen.
+- `ReliableSequenced` garantiert, dass der neueste Wert ankommt, und verwirft ältere. Für einen Schalter zählt nur der neueste Wert.
+- Ein beitretender Spieler erhält den aktuellen Wert nur vom Besitzer. Da die Nachricht den gesamten Zustand enthält, verarbeitet derselbe `OnMessage`-Handler sowohl Live-Änderungen als auch das Aufholen.
 
 <Callout type="info">
 Native Version: Leiten Sie von `BasisNetworkBehaviour` ab, ersetzen Sie die Shim-Ereignisse durch Überschreibungen von `OnNetworkMessage` und `OnPlayerJoined` und rufen Sie `TakeOwnership()` und `SendCustomNetworkEvent` direkt auf.

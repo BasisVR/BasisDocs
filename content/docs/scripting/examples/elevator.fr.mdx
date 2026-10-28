@@ -3,7 +3,7 @@ title: Ascenseur
 description: Une plateforme mobile sur laquelle tout le monde monte ensemble. Seul l'étage cible est synchronisé ; chaque client déplace la plateforme vers lui.
 ---
 
-Diffuser en continu la position de la plateforme coûte de la bande passante à chaque image. Un ascenseur ne fait jamais que se déplacer vers un étage, donc synchronisez l'**étage cible** et laissez chaque client déplacer la plateforme lui-même.
+Diffuser en continu la position de la plateforme coûte de la bande passante à chaque image. Un ascenseur ne fait jamais que se déplacer vers un étage. Synchronisez l'**étage cible** et laissez chaque client déplacer la plateforme lui-même.
 
 ## Configuration
 
@@ -71,6 +71,6 @@ public class Elevator : MonoBehaviour
 }
 ```
 
-- Chaque client exécute le même mouvement, donc les passagers voient une plateforme fluide sans flux de positions.
+- Chaque client exécute le même mouvement. Les passagers voient une plateforme fluide sans flux de positions.
 - Un joueur arrivé en retard reçoit l'étage cible et la hauteur actuelle en un seul message de 5 octets.
 - Remarquez le `new Vector3(...)` : modifier `p.y` directement changerait aussi, dans Cilbox, la valeur dont il a été copié (voir [Règles de la sandbox](/fr/docs/scripting/sandbox-rules)).

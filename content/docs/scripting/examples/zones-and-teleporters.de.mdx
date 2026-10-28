@@ -40,12 +40,12 @@ public class LocalPlayerZone : MonoBehaviour
 ```
 
 <Callout type="info">
-Für Bewegungsänderungen innerhalb eines Bereichs (geringe Schwerkraft, Fliegen, schnelleres Gehen) verwenden Sie die Komponente **Basis Locomotion Zone** aus com.basis.examples. Sie benötigt keinen Code.
+Für Bewegungsänderungen innerhalb eines Bereichs (geringe Schwerkraft, Fliegen, schnelleres Gehen) verwenden Sie die Locomotion-Overrides auf `BasisLocalPlayer` aus [Häufige Anwendungsfälle](/de/docs/scripting/common-usages). In Client-Builds erledigt die Komponente **Basis Locomotion Zone** dasselbe ohne Code.
 </Callout>
 
 ## Teleporter
 
-Fügen Sie das Skript einer Plattform oder einem Button hinzu. Teleportieren betrifft nur den lokalen Spieler, daher ist kein Networking nötig: Jeder Spieler teleportiert sich selbst.
+Fügen Sie das Skript einer Plattform oder einem Button hinzu. Teleportieren betrifft nur den lokalen Spieler. Jeder Spieler teleportiert sich selbst, und nichts wird über das Netzwerk gesendet.
 
 ```csharp title="Teleporter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;
@@ -107,7 +107,7 @@ public class Trampoline : MonoBehaviour
 
 ## Lobby-Zähler
 
-Zeigen Sie an, wie viele Spieler in einem Lobby-Bereich stehen. Jeder Client zählt selbst anhand der Spielerpositionen, daher sind keine Nachrichten nötig.
+Zeigen Sie an, wie viele Spieler in einem Lobby-Bereich stehen. Jeder Client zählt selbst anhand der Spielerpositionen, und es werden keine Nachrichten gesendet.
 
 ```csharp title="LobbyCounter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;

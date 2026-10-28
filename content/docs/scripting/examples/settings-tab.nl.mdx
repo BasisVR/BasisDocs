@@ -67,14 +67,14 @@ BasisMenuPage rules = game.AddTab("Rules");
 rules.AddLabel("Hit every target before the timer runs out.");
 ```
 
-`game.Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt, zodat content niet uit zichzelf menu's kan openen.
+`game.Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt. Content kan niet uit zichzelf menu's openen.
 
 ## Regels
 
-- **Wie een tabblad mag toevoegen:** werelden, props die de lokale speler heeft gespawnd, en de eigen avatar van de lokale speler. `null` betekent geweigerd; controleer dat.
-- **Opties zijn lokaal.** Elke speler stelt die zelf in. Synchroniseer een keuze alleen als die de wereld voor iedereen moet veranderen.
-- **Onthoud keuzes** met [BasisSaveShim](/nl/docs/scripting/examples/persistence) als ze het volgende bezoek moeten overleven.
+- Wie een tabblad mag toevoegen: werelden, props die de lokale speler heeft gespawnd, en de eigen avatar van de lokale speler. `null` betekent geweigerd; controleer dat.
+- Opties zijn lokaal. Elke speler stelt die zelf in. Synchroniseer een keuze alleen als die de wereld voor iedereen moet veranderen.
+- Onthoud keuzes met [BasisSaveShim](/nl/docs/scripting/examples/persistence) als ze het volgende bezoek moeten overleven.
 
 <Callout type="info">
-Voeg op een avatar het tabblad toe vanuit `BasisAvatarShim.OnAvatarReady` wanneer `isOwner` true is, zodat alleen de drager het krijgt.
+Voeg op een avatar het tabblad toe vanuit `BasisAvatarShim.OnAvatarReady` wanneer `isOwner` true is. Alleen de drager krijgt het dan.
 </Callout>

@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-プレイヤーがアバターを変更したときに通知します。プレイヤーを追跡するため、切り替え後も動作し続けます。使い終わったらDisposeしてください。
+プレイヤーがアバターを変更したときに通知します。プレイヤーを追跡し、切り替え後も動作し続けます。使い終わったらDisposeしてください。
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-ローカルプレイヤーのロールはすぐに答えが返ります。他のプレイヤーについての問い合わせは往復の通信になるため、答えはコールバックで届きます。
+ローカルプレイヤーのロールはすぐに答えが返ります。他のプレイヤーについての問い合わせは往復の通信になり、答えはコールバックで届きます。
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

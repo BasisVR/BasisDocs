@@ -21,7 +21,7 @@ string[] readable = BasisGraphicsSettingsShim.ReadableKeys;
 
 ## BasisStatsShim
 
-プレイヤー自身のパフォーマンスオーバーレイに表示される内容です。スクリプトが読み取り続けている間だけ計測されるため、ポーリングしてください。
+プレイヤー自身のパフォーマンスオーバーレイに表示される内容です。Basisはスクリプトが読み取り続けている間だけ計測します。ポーリングしてください。
 
 ```csharp
 float fps = BasisStatsShim.FramesPerSecond;

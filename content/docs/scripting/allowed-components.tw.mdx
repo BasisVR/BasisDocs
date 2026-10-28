@@ -5,7 +5,7 @@ description: 哪些元件能保留在上傳的世界、道具和虛擬形象中�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-內容載入時，Basis 的 **content police** 會移除所有類型不在該類內容允許清單上的元件。標記為 `[Cilboxable]` 的腳本會先被轉換為沙盒化的代理物件，因此能夠保留。
+內容載入時，Basis 的 **content police** 會移除所有類型不在該類內容允許清單上的元件。標記為 `[Cilboxable]` 的腳本能夠保留，因為它們會先被轉換為沙盒化的代理物件。
 
 ## 允許清單
 
@@ -34,7 +34,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 ## 檢查您的內容
 
 - 進入播放模式：Basis 會套用相同的檢查，被移除的元件會記錄在日誌中。
-- **Basis > Tools > Cilbox Permissions** 會列出每個沙盒允許腳本呼叫的項目。
+- 在 **Basis > Tools > Cilbox Permissions** 視窗中，可以看到每個沙盒允許腳本呼叫的項目。
 
 ## 加入元件（客戶端建置）
 

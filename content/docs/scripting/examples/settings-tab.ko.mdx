@@ -67,14 +67,14 @@ BasisMenuPage rules = game.AddTab("Rules");
 rules.AddLabel("Hit every target before the timer runs out.");
 ```
 
-`game.Open()`은 플레이어가 콘텐츠에서 무언가를 누른 뒤 5초 이내에만 작동하므로, 콘텐츠가 스스로 메뉴를 띄울 수 없습니다.
+`game.Open()`은 플레이어가 콘텐츠에서 무언가를 누른 뒤 5초 이내에만 작동합니다. 콘텐츠가 스스로 메뉴를 띄울 수는 없습니다.
 
 ## 규칙
 
-- **탭을 추가할 수 있는 것:** 월드, 로컬 플레이어가 스폰한 소품, 로컬 플레이어 자신의 아바타. `null`은 거부를 의미하므로 확인하세요.
-- **옵션은 로컬입니다.** 각 플레이어가 직접 설정합니다. 선택이 모든 사람의 월드를 바꿔야 하는 경우에만 동기화하세요.
-- 다음 방문 때도 유지되어야 한다면 [BasisSaveShim](/ko/docs/scripting/examples/persistence)으로 **선택을 기억하세요.**
+- 탭을 추가할 수 있는 것: 월드, 로컬 플레이어가 스폰한 소품, 로컬 플레이어 자신의 아바타. `null`은 거부를 뜻합니다. 반드시 확인하세요.
+- 옵션은 로컬입니다. 각 플레이어가 직접 설정합니다. 선택이 모든 사람의 월드를 바꿔야 하는 경우에만 동기화하세요.
+- 다음 방문 때도 유지되어야 한다면 [BasisSaveShim](/ko/docs/scripting/examples/persistence)으로 선택을 기억하세요.
 
 <Callout type="info">
-아바타에서는 `isOwner`가 true일 때 `BasisAvatarShim.OnAvatarReady`에서 탭을 추가하여 착용자만 받도록 하세요.
+아바타에서는 `isOwner`가 true일 때 `BasisAvatarShim.OnAvatarReady`에서 탭을 추가하세요. 그러면 착용자만 탭을 받습니다.
 </Callout>

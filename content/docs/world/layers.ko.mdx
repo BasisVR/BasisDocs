@@ -24,11 +24,11 @@ Basis는 여러 Unity 레이어를 예약해 둡니다. 플레이어, 포인터,
 
 ## 레이어 선택
 
-- **벽, 바닥, 소품:** Default.
-- **버튼 앞의 트리거 볼륨과 보이지 않는 차단물:** IgnoredByInteractable. 포인터가 그 뒤에 있는 것에 닿을 수 있습니다.
-- **포인터가 절대 맞으면 안 되는 장식용 콜라이더:** Ignore Raycast.
-- **다음 레이어에는 절대 오브젝트를 두지 마세요:** Player, LocalPlayerAvatar, RemotePlayerAvatar, OverlayUI.
+- 벽, 바닥, 소품: Default.
+- 버튼 앞의 트리거 볼륨과 보이지 않는 차단물: IgnoredByInteractable. 포인터가 이를 통과해 뒤에 있는 것에 닿습니다.
+- 포인터가 절대 맞으면 안 되는 장식용 콜라이더: Ignore Raycast.
+- Player, LocalPlayerAvatar, RemotePlayerAvatar, OverlayUI 레이어에는 절대 오브젝트를 두지 마세요.
 
 <Callout type="info">
-레이어 이름과 번호는 Basis 프로젝트의 Tag Manager에서 가져옵니다. 콘텐츠는 이 레이어로 빌드되므로 프로젝트에서 Basis 레이어의 이름을 바꾸거나 순서를 변경하지 마세요.
+레이어 이름과 번호는 Basis 프로젝트의 Tag Manager에서 가져옵니다. 콘텐츠는 이 레이어로 빌드됩니다. 프로젝트에서 Basis 레이어의 이름을 바꾸거나 순서를 변경하지 마세요.
 </Callout>

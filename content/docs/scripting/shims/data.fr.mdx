@@ -32,7 +32,7 @@ Plus : [exemple Persistance](/fr/docs/scripting/examples/persistence).
 
 ## BasisServerStorageShim
 
-Des données sauvegardées **sur le serveur**, par joueur, qui suivent donc le joueur d'un appareil à l'autre sur ce serveur. Chaque appel est asynchrone. Les clés font jusqu'à 64 octets, les valeurs jusqu'à 64 Ko ; le serveur fixe un total par joueur (16 Ko par défaut).
+Des données sauvegardées **sur le serveur**, par joueur. Elles suivent le joueur d'un appareil à l'autre sur ce serveur. Chaque appel est asynchrone. Les clés font jusqu'à 64 octets, les valeurs jusqu'à 64 Ko ; le serveur fixe un total par joueur (16 Ko par défaut).
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

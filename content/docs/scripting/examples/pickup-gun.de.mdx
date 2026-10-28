@@ -85,9 +85,9 @@ public class PickupGun : MonoBehaviour
 
 ## Funktionsweise
 
-- **Basis Pickup Sync Networking** übernimmt beim Greifen den Besitz und streamt die Pose der Waffe, sodass alle sie in der Hand des Halters sehen. Für diesen Teil ist kein Code nötig.
-- **Der Schuss ist ein Ereignis**, kein Zustand. Niemand, der später beitritt, muss wissen, dass ein Schuss gefallen ist, daher gibt es keine Behandlung für später beitretende Spieler.
-- **Nur der Schütze führt den Raycast aus.** Trefferergebnisse, die für das Gameplay relevant sind (Schaden, Punkte), sollten vom Schützen entschieden und als eigenes Ereignis gesendet oder wie bei der [Anzeigetafel](/de/docs/scripting/examples/scoreboard) an einen Besitzer weitergeleitet werden.
+- **Basis Pickup Sync Networking** übernimmt den Besitz, wenn die Waffe gegriffen wird, und streamt ihre Pose. Alle sehen sie ohne eigenen Code in der Hand des Halters.
+- Der Schuss ist ein Ereignis, kein Zustand. Niemand, der später beitritt, muss wissen, dass ein Schuss gefallen ist, und es gibt keinen Code für später beitretende Spieler.
+- Nur der Schütze führt den Raycast aus. Trefferergebnisse, die für das Gameplay relevant sind (Schaden, Punkte), sollten vom Schützen entschieden und als eigenes Ereignis gesendet oder wie bei der [Anzeigetafel](/de/docs/scripting/examples/scoreboard) an einen Besitzer weitergeleitet werden.
 
 <Callout type="info">
 Deaktivieren Sie **CanNetworkSteal** an der Sync-Komponente, wenn andere Spieler die Waffe niemandem aus der Hand ziehen können sollen.

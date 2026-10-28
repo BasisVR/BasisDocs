@@ -28,6 +28,6 @@ public class StaffDoor : MonoBehaviour
 }
 ```
 
-- De deur wordt voor personeel op hun eigen client uitgezet. Niemand anders merkt er iets van, dus er wordt niets over het netwerk gestuurd.
+- De deur wordt voor personeel op hun eigen client uitgezet. Niemand anders merkt er iets van en er wordt niets over het netwerk gestuurd.
 - Om een badge boven *ander* personeel te tonen, vraag je het op met `BasisPermissionsShim.IsModerator(player, callback)`; dat is een round trip naar de server.
 - Controles aan de clientkant houden eerlijke spelers buiten. Vertrouw er niet op voor iets wat een aangepaste client niet mag bereiken.

@@ -1,9 +1,9 @@
 ---
 title: Dag-nachtcyclus
-description: Een zon die op de serverklok beweegt, zodat elke speler hetzelfde tijdstip van de dag ziet, zonder netwerkcode.
+description: Een zon die door de serverklok wordt aangestuurd. Elke speler ziet hetzelfde tijdstip van de dag en er is geen netwerkcode nodig.
 ---
 
-Een dagcyclus die door `Time.time` wordt aangestuurd, loopt uit elkaar tussen spelers die op verschillende momenten zijn binnengekomen. Door hem vanuit de serverklok aan te sturen, blijft iedereen gratis synchroon.
+Een dagcyclus die door `Time.time` wordt aangestuurd, loopt uit elkaar tussen spelers die op verschillende momenten zijn binnengekomen. Door hem vanuit de serverklok aan te sturen, blijft iedereen synchroon zonder dat er berichten nodig zijn.
 
 ```csharp title="DayNightCycle.cs (Cilbox)"
 using Basis.Shims;

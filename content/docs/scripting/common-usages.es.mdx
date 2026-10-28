@@ -5,10 +5,10 @@ description: Los bloques básicos del día a día de un script de Basis, jugador
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Esta página reúne lo que necesita casi cualquier script de mundo o prop. Cada sección muestra la llamada que debe escribir y la regla que suele causar problemas. La red tiene su propia guía: consulte [Red](/es/docs/scripting/networking).
+Jugadores, entrada, interfaz, temporizadores, descargas, guardado y menús, con la llamada que debe escribir en cada caso y la regla que suele causar problemas. La red se trata en [Red](/es/docs/scripting/networking).
 
 <Callout type="info">
-Los ejemplos marcados como **Cilbox** se ejecutan dentro del sandbox, por lo que también funcionan en contenido subido como archivo `.bee`. Los ejemplos marcados como **Native** usan la API completa de Unity y Basis y solo funcionan en código compilado dentro del cliente. La mayoría de los ejemplos Cilbox también compilan de forma nativa.
+Los ejemplos marcados como **Cilbox** se ejecutan dentro del sandbox y funcionan en contenido subido como archivo `.bee`. Los ejemplos marcados como **Native** usan la API completa de Unity y Basis y solo funcionan en código compilado dentro del cliente. La mayoría de los ejemplos Cilbox también compilan de forma nativa.
 </Callout>
 
 ## Escribir un script
@@ -39,7 +39,7 @@ El proxy reenvía estos mensajes de Unity a un script Cilbox:
 | --- | --- |
 | `Awake`, `Start` | Haga la inicialización única en `Start`. |
 | `Update`, `FixedUpdate` | No existe `LateUpdate`. |
-| `OnEnable`, `OnDisable` | El **primer** `OnEnable` nunca llega, así que nunca se suscriba ahí. |
+| `OnEnable`, `OnDisable` | El **primer** `OnEnable` nunca llega. No se suscriba ahí. |
 | `OnDestroy` | Cancele suscripciones y limpie aquí. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Necesitan un collider, y un Rigidbody en uno de los lados. |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-Para una zona que cambia el movimiento solo mientras el jugador está dentro, use overrides bajo su propia clave. Al borrar la clave se restaura lo que hubiera debajo, de modo que dos zonas nunca compiten por el valor original.
+Para una zona que cambia el movimiento solo mientras el jugador está dentro, use overrides bajo su propia clave. Al borrar la clave se restaura lo que hubiera debajo, y dos zonas nunca compiten por el valor original.
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-En las compilaciones del cliente, el componente **Basis Locomotion Zone** (com.basis.examples) hace esto sin código. No está en las listas de permitidos de contenido predeterminadas, por lo que los mundos subidos usan los overrides anteriores.
+En las compilaciones del cliente, el componente **Basis Locomotion Zone** (com.basis.examples) hace esto sin código. No está en las listas de permitidos de contenido predeterminadas. Los mundos subidos usan en su lugar los overrides anteriores.
 </Callout>
 
 ### Todos los de la instancia
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` funciona tal cual; Basis etiqueta cada mensaje con el contenido del que procede. En el editor, **Basis > Tools > Cilbox Permissions** muestra lo que permite cada sandbox, y su pestaña **Script Check** analiza sus scripts en busca de llamadas que serán bloqueadas. La ventana **Basis > Creator Guide** contiene esta guía y la referencia completa de la API de Cilbox sin conexión.
 
 <Callout type="warn">
-Las llamadas bloqueadas no lanzan errores durante la compilación. Una llamada fuera de la lista blanca falla cuando se ejecuta, así que analice los scripts antes de subirlos.
+Las llamadas bloqueadas no lanzan errores durante la compilación. Una llamada fuera de la lista blanca solo falla cuando se ejecuta. Analice los scripts antes de subirlos.
 </Callout>

@@ -5,10 +5,10 @@ description: 需主動啟用的事件 shim。在 Start 中取得元件，然後�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-每個事件 shim 的運作方式都相同：在 `Start` 中呼叫一次 `GetComponent<T>()`（Cilbox 會為您加入元件），然後宣告一個與該 shim 回呼同名的方法。Basis 會直接呼叫它，因此不需要訂閱或取消訂閱任何東西。
+每個事件 shim 的運作方式都相同：在 `Start` 中呼叫一次 `GetComponent<T>()`（Cilbox 會為您加入元件），然後宣告一個與該 shim 回呼同名的方法。Basis 會直接呼叫它。不需要訂閱或取消訂閱任何東西。
 
 <Callout type="info">
-大多數事件 shim 會在您啟用後立即以目前的值呼叫您一次，因此您不需要另外撰寫啟動程式碼。
+大多數事件 shim 會在您啟用後立即以目前的值呼叫您一次。您不需要另外撰寫啟動程式碼。
 </Callout>
 
 ## BasisPlatformEventShim

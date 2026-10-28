@@ -13,7 +13,7 @@ Un jugador que se une carga la escena exactamente como usted la construyó. Todo
 
 ## Eventos de red: vuelva a enviar el estado
 
-Los eventos no se recuerdan. Si un evento cambió un estado duradero, reenvíe ese **estado** (no el historial de eventos) al jugador nuevo. Solo lo hace el propietario, así que el recién llegado recibe un mensaje en lugar de uno de cada jugador.
+Los eventos no se recuerdan. Si un evento cambió un estado duradero, reenvíe ese **estado** (no el historial de eventos) al jugador nuevo. Solo lo hace el propietario. El recién llegado recibe un mensaje en lugar de uno de cada jugador.
 
 ```csharp title="Native"
 public override void OnPlayerJoined(BasisNetworkPlayer player)
@@ -39,6 +39,6 @@ No reproduzca una lista de eventos pasados para un recién llegado (por ejemplo 
 
 ## Cosas que comprobar
 
-- **¿Funciona si el propietario no es el primer jugador?** Pruebe con tres clientes: A se une, B se une y cambia algo, A se va, C se une.
-- **¿Hay algo establecido desde `Start` que debería venir de la red?** El `Start` de un jugador que se une tarde se ejecuta antes de su primer mensaje de red. Muestre un estado neutro hasta que llegue el primer mensaje o valor sincronizado.
-- **Props persistentes.** Los props generados desde una configuración de carga necesitan tener **Persistent** activado para que existan para los jugadores que se unan después. Consulte [Props de escena](/es/docs/world/scene-props).
+- ¿Funciona si el propietario no es el primer jugador? Pruebe con tres clientes: A se une, B se une y cambia algo, A se va, C se une.
+- ¿Hay algo establecido desde `Start` que debería venir de la red? El `Start` de un jugador que se une tarde se ejecuta antes de su primer mensaje de red. Muestre un estado neutro hasta que llegue el primer mensaje o valor sincronizado.
+- Props persistentes. Los props generados desde una configuración de carga necesitan tener **Persistent** activado para que existan para los jugadores que se unan después. Consulte [Props de escena](/es/docs/world/scene-props).

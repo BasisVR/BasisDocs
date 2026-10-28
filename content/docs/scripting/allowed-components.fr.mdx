@@ -5,7 +5,7 @@ description: Quels composants survivent dans les mondes, props et avatars mis en
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Lorsque du contenu se charge, la **content police** de Basis supprime chaque composant dont le type n'est pas dans la liste autorisée pour ce type de contenu. Les scripts marqués `[Cilboxable]` sont d'abord convertis en proxies en sandbox, ils survivent donc.
+Lorsque du contenu se charge, la **content police** de Basis supprime chaque composant dont le type n'est pas dans la liste autorisée pour ce type de contenu. Les scripts marqués `[Cilboxable]` survivent, car ils sont d'abord convertis en proxies en sandbox.
 
 ## Les listes autorisées
 
@@ -34,7 +34,7 @@ Les assets de sélecteur font foi et changent d'une version à l'autre. Ouvrez-l
 ## Vérifier votre contenu
 
 - Entrez en mode play : Basis applique le même contrôle, et les composants supprimés sont journalisés.
-- **Basis > Tools > Cilbox Permissions** liste ce que chaque sandbox permet aux scripts d'appeler.
+- La fenêtre **Basis > Tools > Cilbox Permissions** liste ce que chaque sandbox permet aux scripts d'appeler.
 
 ## Ajouter un composant (builds du client)
 

@@ -32,7 +32,7 @@ byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge")
 
 ## BasisServerStorageShim
 
-按玩家保存**在服务器上**的数据，因此在该服务器上，数据会随玩家在不同设备之间同步。每个调用都是异步的。键最长 64 字节，值最大 64 KB；服务器会设定每位玩家的总上限（默认 16 KB）。
+按玩家保存**在服务器上**的数据。在该服务器上，数据会随玩家在不同设备之间同步。每个调用都是异步的。键最长 64 字节，值最大 64 KB；服务器会设定每位玩家的总上限（默认 16 KB）。
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

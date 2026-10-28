@@ -7,12 +7,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Manténgalo barato
 
-- **Envíe estado, no fotogramas.** Las variables sincronizadas solo se envían cuando cambian los valores. No llame a `SendCustomNetworkEvent` desde `Update`.
-- **Use el tipo más pequeño.** Un `Byte` o `Bool` en lugar de un `Int`, un float con rango en lugar de uno sin procesar.
-- **Use entrega no fiable para datos de alta frecuencia.** Los mensajes fiables se reenvían hasta que llegan, lo que cuesta más y añade retraso cuando se pierden paquetes.
-- **Deje `DistanceReduction` activado.** Los jugadores lejanos reciben menos actualizaciones. Active `RelevanceCulling` para objetos que nadie fuera de una sala necesita ver.
-- **Un objeto, muchos valores.** Un `BasisSyncedParameters` con diez valores es más barato que diez objetos con un valor cada uno, porque cada objeto lleva su propia cabecera y sus propios keyframes.
-- **Agrupe eventos.** Empaquete varios cambios en un solo mensaje en lugar de enviar un mensaje por cambio.
+- Envíe estado, no fotogramas. Las variables sincronizadas solo se envían cuando cambian los valores. No llame a `SendCustomNetworkEvent` desde `Update`.
+- Use el tipo más pequeño. Un `Byte` o `Bool` en lugar de un `Int`, un float con rango en lugar de uno sin procesar.
+- Use entrega no fiable para datos de alta frecuencia. Los mensajes fiables se reenvían hasta que llegan, lo que cuesta más y añade retraso cuando se pierden paquetes.
+- Deje `DistanceReduction` activado. Los jugadores lejanos reciben menos actualizaciones. Active `RelevanceCulling` para objetos que nadie fuera de una sala necesita ver.
+- Un objeto, muchos valores. Un `BasisSyncedParameters` con diez valores es más barato que diez objetos con un valor cada uno, porque cada objeto lleva su propia cabecera y sus propios keyframes.
+- Agrupe eventos. Empaquete varios cambios en un solo mensaje en lugar de enviar un mensaje por cambio.
 
 <Callout type="info">
 Los objetos sincronizados inactivos no cuestan casi nada: no se envía nada mientras los valores no cambian, y los keyframes se espacian. El coste que hay que evitar son los valores que cambian en cada fotograma cuando no es necesario.
@@ -31,7 +31,7 @@ Los objetos sincronizados inactivos no cuestan casi nada: no se envía nada mien
 
 ## Herramientas
 
-- **Inspectores en modo de juego.** Los inspectores de objetos sincronizados, pickups y asientos muestran el propietario, el ID de red, la profundidad del búfer y los bytes por segundo.
-- **Gizmos de sincronización.** Los objetos sincronizados remotos dibujan dónde estaban y hacia dónde se dirigen, lo que muestra la interpolación y la extrapolación de un vistazo.
-- **Varios clientes.** Compile un cliente y ejecútelo junto al editor, ambos conectados a un servidor local. Consulte [Pruebas](/es/docs/world/testing).
-- **`BasisStatsShim`** (Cilbox) informa del tiempo de ida y vuelta y de los segundos desde el último paquete, útil para mostrar un aviso de "reconectando".
+- Inspectores en modo de juego. Los inspectores de objetos sincronizados, pickups y asientos muestran el propietario, el ID de red, la profundidad del búfer y los bytes por segundo.
+- Gizmos de sincronización. Los objetos sincronizados remotos dibujan dónde estaban y hacia dónde se dirigen, y muestran la interpolación y la extrapolación en el momento en que ocurren.
+- Varios clientes. Compile un cliente y ejecútelo junto al editor, ambos conectados a un servidor local. Consulte [Pruebas](/es/docs/world/testing).
+- `BasisStatsShim` (Cilbox) informa del tiempo de ida y vuelta y de los segundos desde el último paquete, útil para mostrar un aviso de "reconectando".

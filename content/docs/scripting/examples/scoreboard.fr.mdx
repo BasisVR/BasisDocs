@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` reçoit déjà les messages réseau de son propre flux, faites donc passer les requêtes vers le tableau des scores avec une petite sous-classe :
+`BasisSyncedParameters` reçoit déjà les messages réseau de son propre flux. Faites passer les requêtes vers le tableau des scores avec une petite sous-classe :
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ Utilisez **ScoreboardParameters** à la place de **Basis Synced Parameters** dan
 
 ## Fonctionnement
 
-- **Seul le propriétaire écrit** le score, donc les appuis simultanés sont appliqués l'un après l'autre chez le propriétaire.
-- **Tous les autres envoient une requête** à `CurrentOwnerId` au lieu de prendre la propriété. Prendre la propriété permettrait à deux joueurs d'ajouter chacun 1 à la même ancienne valeur.
-- **Les joueurs arrivés en retard** n'ont besoin de rien de plus : les paramètres synchronisés envoient une image clé aux nouveaux joueurs.
-- **Si le propriétaire part**, la propriété passe au joueur connecté depuis le plus longtemps, qui possède déjà le score actuel.
+- Seul le propriétaire écrit le score. Les appuis simultanés sont appliqués l'un après l'autre chez le propriétaire.
+- Tous les autres envoient une requête à `CurrentOwnerId` au lieu de prendre la propriété. Prendre la propriété permettrait à deux joueurs d'ajouter chacun 1 à la même ancienne valeur.
+- Les joueurs arrivés en retard n'ont besoin de rien de plus. Les paramètres synchronisés envoient une image clé aux nouveaux joueurs.
+- Si le propriétaire part, la propriété passe au joueur connecté depuis le plus longtemps, qui possède déjà le score actuel.
 
 <Callout type="info">
-Les requêtes font un octet ; les paquets de synchronisation sont plus grands, donc vérifier la longueur suffit ici à les distinguer. Pour davantage de types de messages, préfixez vos propres messages par un octet marqueur par lequel le flux de synchronisation ne commence jamais, ou placez le traitement des requêtes sur un `BasisNetworkBehaviour` séparé.
+Les requêtes font un octet et les paquets de synchronisation sont toujours plus grands. C'est pourquoi vérifier la longueur suffit ici. Pour davantage de types de messages, préfixez vos propres messages par un octet marqueur par lequel le flux de synchronisation ne commence jamais, ou placez le traitement des requêtes sur un `BasisNetworkBehaviour` séparé.
 </Callout>

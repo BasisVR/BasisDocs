@@ -9,11 +9,11 @@ Cilbox는 스크립트의 컴파일된 코드를 샌드박스 안에서 인터�
 
 ## 라이프사이클
 
-- **`LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision`, 코루틴은 없습니다.** `Update`와 [지연 이벤트](/ko/docs/scripting/common-usages#timers-and-delayed-events)를 사용하세요.
-- **첫 번째 `OnEnable`은 누락됩니다.** `Start`에서 설정하고 `OnDestroy`에서 정리하세요.
-- **`BasisNetworkBehaviour`를 상속하지 마세요.** 스크립트를 대체하는 프록시는 이 클래스가 아닙니다. `BasisNetworkShim`을 사용하세요([네트워크 이벤트](/ko/docs/scripting/networking/network-events#cilbox) 참조).
+- `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision`, 코루틴은 없습니다. `Update`와 [지연 이벤트](/ko/docs/scripting/common-usages#timers-and-delayed-events)를 사용하세요.
+- 첫 번째 `OnEnable`은 누락됩니다. `Start`에서 설정하고 `OnDestroy`에서 정리하세요.
+- `BasisNetworkBehaviour`를 상속하지 마세요. 스크립트를 대체하는 프록시는 이 클래스가 아닙니다. `BasisNetworkShim`을 사용하세요([네트워크 이벤트](/ko/docs/scripting/networking/network-events#cilbox) 참조).
 
-## 구조체는 복사되지 않고 공유됩니다
+## 구조체는 값을 공유합니다
 
 Unity 구조체(`Vector3`, `Quaternion`, `Color`)를 변수에 복사하면 같은 값을 공유합니다. 복사본의 필드를 바꾸면 원본도 바뀝니다.
 
@@ -28,20 +28,20 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - 배열에서 `points[i].x = 5f`는 아무 알림 없이 사라집니다. `points[i] = new Vector3(5f, points[i].y, points[i].z)`로 작성하세요.
 - `points[i] += offset`은 예외를 발생시킵니다. `points[i] = points[i] + offset`으로 작성하세요.
-- Unity 호출과 연산자(`a + b`, `transform.position`, `new Vector3(...)`)에서 나온 값은 새 값이므로 변경해도 안전합니다.
+- Unity 호출과 연산자(`a + b`, `transform.position`, `new Vector3(...)`)에서 나온 값은 새 값이며 변경해도 안전합니다.
 
 ## 호출과 권한
 
-- **화이트리스트에 있는 타입은 모든 public 메서드를 허용합니다.** 단, 해당 타입에 메서드 제한이 있는 경우는 예외입니다. **필드는 목록에 없으면 거부됩니다.**
-- **매개변수, 제네릭, 반환 타입도 검사됩니다.** 이름 검사를 통과해도 타입 중 하나 때문에 호출이 거부될 수 있습니다.
-- **`this.GetComponent`는 항상 작동합니다.** `gameObject.GetComponent`는 제한되며, 소품 샌드박스에서는 이것으로 계층 구조를 탐색할 수 없습니다.
-- **`AddComponent`, `SendMessage`, `BroadcastMessage`는 항상 차단됩니다.** Cilbox는 `GetComponent` 시 `BasisNetworkShim`과 이벤트 shim을 자동으로 추가합니다.
-- **`Debug.DrawLine`과 `Debug.DrawRay`는 샌드박스의 `Debug`에 존재하지 않으며,** 이를 참조하면 콘텐츠의 모든 스크립트가 로드되지 않습니다.
-- **상수는 무료입니다.** `const`는 화이트리스트 항목이 필요 없습니다.
+- 화이트리스트에 있는 타입은 모든 public 메서드를 허용합니다. 단, 해당 타입에 메서드 제한이 있으면 예외입니다. 필드는 목록에 없으면 거부됩니다.
+- 매개변수, 제네릭, 반환 타입도 검사됩니다. 이름 검사를 통과해도 타입 중 하나 때문에 호출이 거부될 수 있습니다.
+- `this.GetComponent`는 항상 작동합니다. `gameObject.GetComponent`는 제한되며, 소품 샌드박스에서는 이것으로 계층 구조를 탐색할 수 없습니다.
+- `AddComponent`, `SendMessage`, `BroadcastMessage`는 항상 차단됩니다. Cilbox는 `GetComponent` 시 `BasisNetworkShim`과 이벤트 shim을 자동으로 추가합니다.
+- `Debug.DrawLine`과 `Debug.DrawRay`는 샌드박스의 `Debug`에 존재하지 않습니다. 이를 참조하면 콘텐츠의 모든 스크립트가 로드되지 않습니다.
+- 상수는 자유롭게 쓸 수 있습니다. `const`는 화이트리스트 항목이 필요 없습니다.
 
 ## 이벤트와 델리게이트
 
-메서드를 델리게이트로 사용할 때마다 새 래퍼가 만들어지므로 `-=`로 추가한 것을 제거하지 못할 수 있습니다. 스크립트보다 오래 살아 있는 퍼블리셔의 경우, 구독하는 대신 `Update`에서 값을 폴링하세요.
+메서드를 델리게이트로 사용할 때마다 새 래퍼가 만들어지고, `-=`로 추가한 것을 제거하지 못할 수 있습니다. 스크립트보다 오래 살아 있는 퍼블리셔라면 구독하는 대신 `Update`에서 값을 폴링하세요.
 
 ## 콘텐츠 폴리스
 
@@ -62,13 +62,13 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 | `Vector3` 연산자(`a + b`) | ~1.7 µs, 가비지 추가 발생 |
 | `Mathf.Sqrt` 같은 Unity 호출 | ~0.9 µs |
 
-따라서:
+스크립트를 가볍게 유지하려면:
 
-- **매 프레임이 아니라 이벤트에서 작업하세요.** 타이머, 거리, UI는 초당 몇 번만 확인하세요.
-- **루프에서는 `Vector3` 연산보다 float를 선호하세요.** 핫 루프의 벡터 연산은 개별 float로 같은 연산을 하는 것보다 약 100배 느립니다.
-- **무거운 작업은 컴포넌트에 맡기세요.** Animator, 파티클 시스템, 물리, 컨스트레인트는 네이티브로 실행됩니다.
-- 매번 발사할 때마다 `Instantiate`를 호출하는 대신 **오브젝트를 풀링하세요.**
-- **transform 작업을 일괄 처리하세요.** `BasisTransformSyncShim`은 transform 배열 전체를 한 번의 호출로 읽고, 쓰고, 복사하며, `BasisBlendShapeSyncShim`은 블렌드셰이프에 대해 같은 일을 합니다.
+- 매 프레임이 아니라 이벤트에서 작업하세요. 타이머, 거리, UI는 초당 몇 번만 확인하세요.
+- 루프에서는 `Vector3` 연산보다 float를 쓰세요. 핫 루프의 벡터 연산은 개별 float로 같은 연산을 하는 것보다 약 100배 느립니다.
+- 무거운 작업은 컴포넌트에 맡기세요. Animator, 파티클 시스템, 물리, 컨스트레인트는 네이티브로 실행됩니다.
+- 발사할 때마다 `Instantiate`를 호출하지 말고 오브젝트를 풀링하세요.
+- transform 작업을 일괄 처리하세요. `BasisTransformSyncShim`은 transform 배열 전체를 한 번의 호출로 읽고, 쓰고, 복사합니다. `BasisBlendShapeSyncShim`은 블렌드셰이프에 대해 같은 일을 합니다.
 
 <Callout type="info">
 **Basis > Tools > Cilbox Permissions**는 각 샌드박스의 화이트리스트를 보여주며, **Script Check** 탭은 업로드하기 전에 차단된 호출이 있는지 스크립트를 검사합니다.

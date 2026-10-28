@@ -29,7 +29,7 @@ ushort id = nearest.GetPlayerId();
 
 ## BasisVelocityShim
 
-Nur in Welten. Schiebt den lokalen Spieler im Weltraum an, in Metern pro Sekunde.
+Nur in Welten. Schiebt den lokalen Spieler im World Space an, in Metern pro Sekunde.
 
 ```csharp
 Vector3 v = BasisVelocityShim.Velocity;
@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-Meldet Ihnen, wenn ein Spieler den Avatar wechselt. Der Shim folgt dem Spieler und funktioniert daher auch über Wechsel hinweg. Rufen Sie `Dispose` auf, wenn Sie ihn nicht mehr brauchen.
+Meldet Ihnen, wenn ein Spieler den Avatar wechselt. Der Shim folgt dem Spieler und funktioniert auch über Wechsel hinweg. Rufen Sie `Dispose` auf, wenn Sie ihn nicht mehr brauchen.
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-Die Rollen des lokalen Spielers werden sofort beantwortet. Eine Abfrage zu einem anderen Spieler erfordert einen Roundtrip, daher kommt die Antwort über einen Callback.
+Die Rollen des lokalen Spielers werden sofort beantwortet. Eine Abfrage zu einem anderen Spieler erfordert einen Roundtrip, und die Antwort kommt über einen Callback.
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

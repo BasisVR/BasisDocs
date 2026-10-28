@@ -7,9 +7,9 @@ Shim 是 Cilbox 沙盒中由 Basis 提供的一侧：小巧、安全的 API，�
 
 Shim 有三种形式：
 
-- **静态类**，直接调用，例如 `BasisPlayersShim.Count`。
-- **事件组件**，在 `Start` 中调用 `GetComponent<T>()` 即可启用。Cilbox 会为您添加该组件，Basis 会调用您脚本上具有约定名称的方法，例如 `OnPlatformChanged`。
-- **替换类型**：您照常编写 Unity 的名称（`Debug`、`VideoPlayer`、`BasisAvatar`），沙盒会提供一个安全的版本。
+- 静态类，直接调用，例如 `BasisPlayersShim.Count`。
+- 事件组件，在 `Start` 中调用 `GetComponent<T>()` 即可启用。Cilbox 会为您添加该组件，Basis 会调用您脚本上具有约定名称的方法，例如 `OnPlatformChanged`。
+- 替换类型。您照常编写 Unity 的名称（`Debug`、`VideoPlayer`、`BasisAvatar`），沙盒会提供一个安全的版本。
 
 | Shim | 作用 | 页面 |
 | --- | --- | --- |

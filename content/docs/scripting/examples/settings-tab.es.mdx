@@ -67,14 +67,14 @@ BasisMenuPage rules = game.AddTab("Rules");
 rules.AddLabel("Hit every target before the timer runs out.");
 ```
 
-`game.Open()` solo funciona dentro de los 5 segundos posteriores a que el jugador pulse algo en su contenido, de modo que el contenido no puede abrir menús por sí solo.
+`game.Open()` solo funciona dentro de los 5 segundos posteriores a que el jugador pulse algo en su contenido. El contenido no puede abrir menús por sí solo.
 
 ## Reglas
 
-- **Quién puede añadir una pestaña:** los mundos, los props que generó el jugador local y el propio avatar del jugador local. `null` significa rechazado; compruébelo.
-- **Las opciones son locales.** Cada jugador establece las suyas. Sincronice una elección solo si debe cambiar el mundo para todos.
-- **Recuerde las elecciones** con [BasisSaveShim](/es/docs/scripting/examples/persistence) si deben conservarse para la próxima visita.
+- Quién puede añadir una pestaña: los mundos, los props que generó el jugador local y el propio avatar del jugador local. `null` significa rechazado; compruébelo.
+- Las opciones son locales. Cada jugador establece las suyas. Sincronice una elección solo si debe cambiar el mundo para todos.
+- Recuerde las elecciones con [BasisSaveShim](/es/docs/scripting/examples/persistence) si deben conservarse para la próxima visita.
 
 <Callout type="info">
-En un avatar, añada la pestaña desde `BasisAvatarShim.OnAvatarReady` cuando `isOwner` sea true, para que solo quien lo lleva puesto la obtenga.
+En un avatar, añada la pestaña desde `BasisAvatarShim.OnAvatarReady` cuando `isOwner` sea true. Solo quien lleva el avatar la obtiene.
 </Callout>

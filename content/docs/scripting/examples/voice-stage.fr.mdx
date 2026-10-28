@@ -48,6 +48,6 @@ public class VoiceStage : MonoBehaviour
 }
 ```
 
-- Chaque client route la voix localement à partir des positions qu'il connaît déjà, il n'y a donc aucun trafic réseau supplémentaire.
+- Chaque client route la voix localement à partir des positions qu'il connaît déjà. Il n'y a aucun trafic réseau supplémentaire.
 - Le consentement de l'orateur est vérifié en premier. Les joueurs qui n'ont pas autorisé le routage de leur voix sont entendus normalement.
 - Vérifiez dans **Basis > Tools > Cilbox Permissions** que `BasisNetworkPlayer.GetAllPlayers` est autorisé dans votre sandbox.

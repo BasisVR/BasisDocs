@@ -92,10 +92,10 @@ public class NpcFollow : MonoBehaviour
 
 ## Come funziona
 
-- **Una sola simulazione.** Solo il proprietario esegue l'agente; tutti gli altri lo disattivano e si avvicinano gradualmente alla posizione ricevuta. Due client che calcolano il percorso dello stesso NPC entrerebbero in conflitto.
-- **La consegna `Sequenced`** scarta i pacchetti in ritardo, così una posizione vecchia non sovrascrive mai una più recente. Dieci aggiornamenti al secondo sono più che sufficienti con lo smoothing.
-- **Nessun codice per i giocatori arrivati in ritardo.** L'aggiornamento successivo arriva entro 0,1 secondi.
-- **I cambi di proprietario non costano nulla.** Se il proprietario se ne va, il nuovo proprietario attiva il proprio agente nell'ultima posizione ricevuta.
+- Una sola simulazione. Solo il proprietario esegue l'agente; tutti gli altri lo disattivano e si avvicinano gradualmente alla posizione ricevuta. Due client che calcolano il percorso dello stesso NPC entrerebbero in conflitto.
+- La consegna `Sequenced` scarta i pacchetti in ritardo. Una posizione vecchia non sovrascrive mai una più recente. Dieci aggiornamenti al secondo sono più che sufficienti con lo smoothing.
+- Nessun codice per i giocatori arrivati in ritardo. L'aggiornamento successivo arriva entro 0,1 secondi.
+- I cambi di proprietario non costano nulla. Se il proprietario se ne va, il nuovo proprietario attiva il proprio agente nell'ultima posizione ricevuta.
 
 <Callout type="info">
 Verifica se `Buffer` e `BitConverter` sono consentiti nella tua sandbox in **Basis > Tools > Cilbox Permissions**; anche `BinaryWriter` (vedi [Eventi di rete](/it/docs/scripting/networking/network-events#packing-a-payload)) funziona.

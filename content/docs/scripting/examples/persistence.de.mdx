@@ -90,10 +90,10 @@ public class CourseProgress : MonoBehaviour
 
 ## Regeln
 
-- **Der Spieler entscheidet.** Bis er das Speichern für Ihren Inhalt erlaubt, gibt `Save` false und `Load` null zurück. Ihr Skript läuft weiter, behandeln Sie also immer einen fehlenden Speicherstand.
-- **Versionieren Sie Ihre Daten.** Schreiben Sie zuerst ein Versions-Byte und lehnen Sie Daten ab, die Sie nicht verstehen. Spieler behalten alte Speicherstände, wenn Sie Ihre Welt aktualisieren.
-- **Beim Laden validieren.** Begrenzen Sie Indizes; verlassen Sie sich nie darauf, dass gespeicherte Werte noch zu Ihrer Szene passen.
-- **Grenzen:** 256 KB pro Slot, 32 Slots und 1 MB pro Store, 8 Schreibvorgänge pro Sekunde. Speichern Sie bei bedeutsamen Ereignissen, nicht in jedem Frame.
+- Der Spieler entscheidet. Bis er das Speichern für Ihren Inhalt erlaubt, gibt `Save` false und `Load` null zurück. Ihr Skript läuft in beiden Fällen weiter. Behandeln Sie immer einen fehlenden Speicherstand.
+- Versionieren Sie Ihre Daten. Schreiben Sie zuerst ein Versions-Byte und lehnen Sie Daten ab, die Sie nicht verstehen. Spieler behalten alte Speicherstände, wenn Sie Ihre Welt aktualisieren.
+- Beim Laden validieren. Begrenzen Sie Indizes; verlassen Sie sich nie darauf, dass gespeicherte Werte noch zu Ihrer Szene passen.
+- Grenzen: 256 KB pro Slot, 32 Slots und 1 MB pro Store, 8 Schreibvorgänge pro Sekunde. Speichern Sie bei wichtigen Ereignissen, nicht in jedem Frame.
 
 ## Teilen zwischen Inhalten
 

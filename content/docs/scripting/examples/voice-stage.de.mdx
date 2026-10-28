@@ -48,6 +48,6 @@ public class VoiceStage : MonoBehaviour
 }
 ```
 
-- Jeder Client leitet die Stimme lokal anhand der Positionen um, die er bereits hat, daher entsteht kein zusätzlicher Netzwerkverkehr.
+- Jeder Client leitet die Stimme lokal anhand der Positionen um, die er bereits hat. Es entsteht kein zusätzlicher Netzwerkverkehr.
 - Die Zustimmung des Sprechers wird zuerst geprüft. Spieler, die das Voice-Routing nicht erlaubt haben, werden normal gehört.
 - Prüfen Sie unter **Basis > Tools > Cilbox Permissions**, dass `BasisNetworkPlayer.GetAllPlayers` in Ihrer Sandbox erlaubt ist.

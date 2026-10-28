@@ -13,7 +13,7 @@ Een speler die binnenkomt, laadt de scène precies zoals je die hebt gebouwd. Al
 
 ## Netwerkevents: stuur de status opnieuw
 
-Events worden niet onthouden. Als een event blijvende status heeft veranderd, stuur dan die **status** (niet de geschiedenis van events) opnieuw naar de nieuwe speler. Alleen de eigenaar doet dit, zodat de nieuwkomer één bericht krijgt in plaats van één van iedereen.
+Events worden niet onthouden. Als een event blijvende status heeft veranderd, stuur dan die **status** (niet de geschiedenis van events) opnieuw naar de nieuwe speler. Alleen de eigenaar doet dit. De nieuwkomer krijgt één bericht in plaats van één van elke speler.
 
 ```csharp title="Native"
 public override void OnPlayerJoined(BasisNetworkPlayer player)
@@ -39,6 +39,6 @@ Speel geen lijst met eerdere events opnieuw af voor een nieuwkomer (bijvoorbeeld
 
 ## Dingen om te controleren
 
-- **Werkt het als de eigenaar niet de eerste speler is?** Test met drie clients: A komt binnen, B komt binnen en verandert iets, A vertrekt, C komt binnen.
-- **Wordt er iets vanuit `Start` ingesteld dat van het netwerk zou moeten komen?** De `Start` van een late joiner draait vóór het eerste netwerkbericht. Toon een neutrale status totdat het eerste bericht of de eerste gesynchroniseerde waarde binnenkomt.
-- **Persistente props.** Props die vanuit een load config worden gespawnd, moeten **Persistent** ingesteld hebben zodat ze bestaan voor spelers die later binnenkomen. Zie [Scène-props](/nl/docs/world/scene-props).
+- Werkt het als de eigenaar niet de eerste speler is? Test met drie clients: A komt binnen, B komt binnen en verandert iets, A vertrekt, C komt binnen.
+- Wordt er iets vanuit `Start` ingesteld dat van het netwerk zou moeten komen? De `Start` van een late joiner draait vóór het eerste netwerkbericht. Toon een neutrale status totdat het eerste bericht of de eerste gesynchroniseerde waarde binnenkomt.
+- Persistente props. Props die vanuit een load config worden gespawnd, moeten **Persistent** ingesteld hebben zodat ze bestaan voor spelers die later binnenkomen. Zie [Scène-props](/nl/docs/world/scene-props).

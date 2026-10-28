@@ -32,7 +32,7 @@ Mehr: [Beispiel Persistenz](/de/docs/scripting/examples/persistence).
 
 ## BasisServerStorageShim
 
-Daten, die **auf dem Server** pro Spieler gespeichert werden, sodass sie dem Spieler auf diesem Server zwischen Geräten folgen. Jeder Aufruf ist asynchron. Schlüssel haben bis zu 64 Bytes, Werte bis zu 64 KB; der Server legt eine Gesamtgrenze pro Spieler fest (standardmäßig 16 KB).
+Daten, die **auf dem Server** pro Spieler gespeichert werden. Sie folgen dem Spieler auf diesem Server von Gerät zu Gerät. Jeder Aufruf ist asynchron. Schlüssel haben bis zu 64 Bytes, Werte bis zu 64 KB; der Server legt eine Gesamtgrenze pro Spieler fest (standardmäßig 16 KB).
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

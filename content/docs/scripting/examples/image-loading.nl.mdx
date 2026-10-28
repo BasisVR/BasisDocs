@@ -54,9 +54,9 @@ public class RemoteImage : MonoBehaviour
 
 ## Regels
 
-- **Alleen https.** Gewone http, kale IP-adressen en alles wat naar een lokaal netwerkadres verwijst, worden geweigerd voordat er een verzoek wordt gedaan.
-- **Geen redirects.** Host de afbeelding op het uiteindelijke adres.
-- **Spelers keuren hosts goed.** De eerste keer dat content om een nieuwe host vraagt, krijgt de speler een melding. Totdat die accepteert, mislukt de download en blijft je placeholder staan.
+- Alleen https. Gewone http, kale IP-adressen en alles wat naar een lokaal netwerkadres verwijst, worden geweigerd voordat er een verzoek wordt gedaan.
+- Geen redirects. Host de afbeelding op het uiteindelijke adres.
+- Spelers keuren hosts goed. De eerste keer dat content om een nieuwe host vraagt, krijgt de speler een melding. Totdat die accepteert, mislukt de download en blijft je placeholder staan.
 - Elke speler downloadt de afbeelding zelf; er valt niets te synchroniseren. Om iedereen dezelfde wisselende afbeelding te laten tonen, synchroniseer je de **URL-index** (zie [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) voor het patroon) en laad je lokaal.
 
 <Callout type="info">

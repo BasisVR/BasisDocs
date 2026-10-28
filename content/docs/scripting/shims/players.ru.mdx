@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-Сообщает, когда игрок меняет аватар. Он следует за игроком, поэтому продолжает работать после смены. Освободите его (Dispose), когда он больше не нужен.
+Сообщает, когда игрок меняет аватар. Он следует за игроком и продолжает работать после смены. Освободите его (Dispose), когда он больше не нужен.
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-Роли локального игрока известны сразу. Запрос о другом игроке требует обращения к серверу, поэтому ответ приходит в колбэк.
+Роли локального игрока известны сразу. Запрос о другом игроке требует обращения к серверу, и ответ приходит в колбэк.
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

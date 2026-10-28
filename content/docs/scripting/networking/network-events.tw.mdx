@@ -13,9 +13,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** 會傳送給除了您以外的所有人。
+- `recipients = null` 會傳送給除了您以外的所有人。
 - 傳入玩家 ID 陣列即可傳送給特定玩家。加入您自己的 ID，訊息就會透過網路繞回給您。
-- 物件必須已經網路就緒（`HasNetworkID` 為 true）。過早傳送會記錄錯誤且不做任何事，因此請從 `OnNetworkReady` 或之後開始傳送。
+- 物件必須已經網路就緒（`HasNetworkID` 為 true）。過早傳送會記錄錯誤且不做任何事。請從 `OnNetworkReady` 或之後開始傳送。
 
 <Callout type="warn">
 事件**不會被記住**。在事件傳送之後才加入的玩家永遠收不到它。如果事件會改變持久的狀態，也請處理[晚加入者](/tw/docs/scripting/networking/late-joiners)。

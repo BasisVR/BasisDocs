@@ -48,6 +48,6 @@ public class VoiceStage : MonoBehaviour
 }
 ```
 
-- 各クライアントがすでに持っている位置情報から声をローカルでルーティングするため、追加のネットワーク通信はありません。
+- 各クライアントは、すでに持っている位置情報から声をローカルでルーティングします。追加のネットワーク通信はありません。
 - 最初に話者の同意が確認されます。ボイスルーティングを許可していないプレイヤーの声は通常どおり聞こえます。
-- **Basis > Tools > Cilbox Permissions**で、`BasisNetworkPlayer.GetAllPlayers`がサンドボックスで許可されていることを確認してください。
+- `BasisNetworkPlayer.GetAllPlayers`がサンドボックスで許可されていることを、**Basis > Tools > Cilbox Permissions**で確認してください。

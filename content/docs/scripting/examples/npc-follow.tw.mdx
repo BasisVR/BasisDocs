@@ -92,10 +92,10 @@ public class NpcFollow : MonoBehaviour
 
 ## 運作方式
 
-- **單一模擬。** 只有擁有者會執行 agent；其他所有人會停用它，並平滑地移向收到的位置。兩個客戶端同時為同一個 NPC 尋路會互相衝突。
-- **`Sequenced` 傳遞**會丟棄遲到的封包，因此舊的位置永遠不會覆寫較新的位置。搭配平滑處理，每秒十次更新就綽綽有餘。
-- **不需要晚加入者程式碼。** 下一次更新會在 0.1 秒內抵達。
-- **擁有者變更不需額外處理。** 如果擁有者離開，新的擁有者會在它最後收到的位置啟用自己的 agent。
+- 單一模擬。只有擁有者會執行 agent；其他所有人會停用它，並平滑地移向收到的位置。兩個客戶端同時為同一個 NPC 尋路會互相衝突。
+- `Sequenced` 傳遞會丟棄遲到的封包。舊的位置永遠不會覆寫較新的位置。搭配平滑處理，每秒十次更新就綽綽有餘。
+- 不需要晚加入者程式碼。下一次更新會在 0.1 秒內抵達。
+- 擁有者變更不需額外處理。如果擁有者離開，新的擁有者會在它最後收到的位置啟用自己的 agent。
 
 <Callout type="info">
 請在 **Basis > Tools > Cilbox Permissions** 中檢查您的沙盒是否允許 `Buffer` 和 `BitConverter`；`BinaryWriter`（請參閱[網路事件](/tw/docs/scripting/networking/network-events#packing-a-payload)）也可以使用。

@@ -28,6 +28,6 @@ public class StaffDoor : MonoBehaviour
 }
 ```
 
-- La porte est désactivée pour les membres du staff sur leur propre client. Personne d'autre n'est affecté, donc rien ne passe par le réseau.
+- La porte est désactivée pour les membres du staff sur leur propre client. Personne d'autre n'est affecté et rien ne passe par le réseau.
 - Pour afficher un badge au-dessus des *autres* membres du staff, demandez avec `BasisPermissionsShim.IsModerator(player, callback)` ; cela fait un aller-retour vers le serveur.
 - Les vérifications côté client tiennent les joueurs honnêtes à l'écart. Ne comptez pas sur elles pour quoi que ce soit qu'un client modifié ne doit pas atteindre.

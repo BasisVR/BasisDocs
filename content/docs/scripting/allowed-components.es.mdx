@@ -5,7 +5,7 @@ description: Qué componentes se conservan en los mundos, props y avatares subid
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Cuando se carga contenido, la **content police** de Basis elimina todos los componentes cuyo tipo no esté en la lista de permitidos para ese tipo de contenido. Los scripts marcados con `[Cilboxable]` se convierten primero en proxies en sandbox, por lo que se conservan.
+Cuando se carga contenido, la **content police** de Basis elimina todos los componentes cuyo tipo no esté en la lista de permitidos para ese tipo de contenido. Los scripts marcados con `[Cilboxable]` se conservan porque antes se convierten en proxies en sandbox.
 
 ## Las listas de permitidos
 
@@ -34,7 +34,7 @@ Los assets selectores son la fuente de verdad y cambian entre versiones. Ábralo
 ## Comprobar su contenido
 
 - Entre en modo de juego: Basis aplica la misma vigilancia y los componentes eliminados se registran en el log.
-- **Basis > Tools > Cilbox Permissions** enumera lo que cada sandbox permite llamar a los scripts.
+- La ventana **Basis > Tools > Cilbox Permissions** muestra lo que cada sandbox permite llamar a los scripts.
 
 ## Añadir un componente (compilaciones del cliente)
 

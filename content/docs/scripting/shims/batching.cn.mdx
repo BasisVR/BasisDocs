@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 Cilbox 脚本对 Unity 的每次调用都很昂贵，开销往往远超其实际完成的工作。这些 shim 在一次调用中将整个数组传过边界，并以原生方式执行循环。
 
 <Callout type="info">
-经验法则：如果 `Update` 中的循环涉及超过少数几个变换或 blendshape，就应该批处理。
+如果 `Update` 中的循环涉及超过少数几个变换或 blendshape，就应该批处理。
 </Callout>
 
 ## BasisTransformBatchShim
@@ -69,7 +69,7 @@ follow.BindMeshes(new[] { face }, new[] { mask }, this);
 
 ## BasisVectorArrayShim
 
-将向量拆分为浮点数组并再合并回来，这样数学运算可以在普通浮点数上进行，在解释器中要便宜得多。
+将向量拆分为浮点数组并再合并回来。在解释器中，对普通浮点数做数学运算要便宜得多。
 
 ```csharp
 BasisVectorArrayShim.Split(positions, xs, ys, zs);

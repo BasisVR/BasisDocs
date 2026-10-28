@@ -54,9 +54,9 @@ public class RemoteImage : MonoBehaviour
 
 ## Reglas
 
-- **Solo https.** El http simple, las direcciones IP directas y cualquier cosa que se resuelva a una dirección de red local se rechazan antes de realizar la solicitud.
-- **Sin redirecciones.** Aloje la imagen en su dirección final.
-- **Los jugadores aprueban los hosts.** La primera vez que un contenido solicita un host nuevo, se pregunta al jugador. Hasta que acepte, la descarga falla y se mantiene su textura provisional.
+- Solo https. El http simple, las direcciones IP directas y cualquier cosa que se resuelva a una dirección de red local se rechazan antes de realizar la solicitud.
+- Sin redirecciones. Aloje la imagen en su dirección final.
+- Los jugadores aprueban los hosts. La primera vez que un contenido solicita un host nuevo, se pregunta al jugador. Hasta que acepte, la descarga falla y se mantiene su textura provisional.
 - Cada jugador descarga la imagen por su cuenta; no hay nada que sincronizar. Para que todos muestren la misma imagen cambiante, sincronice el **índice de URL** (consulte [Interruptor sincronizado](/es/docs/scripting/examples/synced-toggle) para ver el patrón) y cárguela localmente.
 
 <Callout type="info">

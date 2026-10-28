@@ -28,6 +28,6 @@ public class StaffDoor : MonoBehaviour
 }
 ```
 
-- La puerta se desactiva para el personal en su propio cliente. No afecta a nadie más, así que no se sincroniza nada por red.
+- La puerta se desactiva para el personal en su propio cliente. No afecta a nadie más y no se sincroniza nada por red.
 - Para mostrar una insignia sobre *otros* miembros del personal, pregunte con `BasisPermissionsShim.IsModerator(player, callback)`; requiere un viaje de ida y vuelta al servidor.
 - Las comprobaciones del lado del cliente mantienen fuera a los jugadores honestos. No confíe en ellas para nada a lo que un cliente modificado no deba llegar.

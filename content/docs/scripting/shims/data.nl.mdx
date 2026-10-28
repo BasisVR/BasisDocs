@@ -32,7 +32,7 @@ Meer: [Voorbeeld Persistentie](/nl/docs/scripting/examples/persistence).
 
 ## BasisServerStorageShim
 
-Gegevens opgeslagen **op de server**, per speler, zodat ze de speler op die server tussen apparaten volgen. Elke aanroep is asynchroon. Sleutels zijn maximaal 64 bytes, waarden maximaal 64 KB; de server stelt een totaal per speler in (standaard 16 KB).
+Gegevens opgeslagen **op de server**, per speler. Ze volgen de speler op die server tussen apparaten. Elke aanroep is asynchroon. Sleutels zijn maximaal 64 bytes, waarden maximaal 64 KB; de server stelt een totaal per speler in (standaard 16 KB).
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

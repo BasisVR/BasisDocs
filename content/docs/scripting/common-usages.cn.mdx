@@ -5,10 +5,10 @@ description: Basis 脚本的日常构建模块：玩家、输入、UI、计时�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-本页汇集了几乎每个世界或道具脚本都需要的内容。每个小节都展示了您要编写的调用，以及通常让人犯错的规则。网络有单独的指南：参见[网络](/cn/docs/scripting/networking)。
+玩家、输入、UI、计时器、下载、保存和菜单，每一项都给出您要编写的调用，以及通常让人犯错的规则。网络相关内容请参见[网络](/cn/docs/scripting/networking)。
 
 <Callout type="info">
-标记为 **Cilbox** 的示例在沙盒中运行，因此也适用于以 `.bee` 文件上传的内容。标记为 **Native** 的示例使用完整的 Unity 和 Basis API，只能在编译进客户端的代码中运行。大多数 Cilbox 示例也能以 Native 方式编译。
+标记为 **Cilbox** 的示例在沙盒中运行，适用于以 `.bee` 文件上传的内容。标记为 **Native** 的示例使用完整的 Unity 和 Basis API，只能在编译进客户端的代码中运行。大多数 Cilbox 示例也能以 Native 方式编译。
 </Callout>
 
 ## 编写脚本
@@ -39,7 +39,7 @@ public class Spinner : MonoBehaviour
 | --- | --- |
 | `Awake`、`Start` | 在 `Start` 中进行一次性初始化。 |
 | `Update`、`FixedUpdate` | 没有 `LateUpdate`。 |
-| `OnEnable`、`OnDisable` | **第一次** `OnEnable` 永远不会到达，因此绝不要在那里订阅。 |
+| `OnEnable`、`OnDisable` | **第一次** `OnEnable` 永远不会到达。不要在那里订阅。 |
 | `OnDestroy` | 在这里取消订阅并清理。 |
 | `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | 需要碰撞体，并且其中一方需要 Rigidbody。 |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-对于只在玩家位于其中时才改变移动方式的区域，请在您自己的键下使用覆盖。清除该键会恢复其下层的值，因此两个区域永远不会争夺原始值。
+对于只在玩家位于其中时才改变移动方式的区域，请在您自己的键下使用覆盖。清除该键会恢复其下层的值，两个区域永远不会争夺原始值。
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-在客户端构建中，**Basis Locomotion Zone** 组件（com.basis.examples）无需代码即可实现这一点。它不在默认的内容允许列表中，因此上传的世界请改用上面的覆盖方式。
+在客户端构建中，**Basis Locomotion Zone** 组件（com.basis.examples）无需代码即可实现这一点。它不在默认的内容允许列表中。上传的世界请改用上面的覆盖方式。
 </Callout>
 
 ### 实例中的所有人
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` 照常工作；Basis 会为每条消息标记其来源内容。在编辑器中，**Basis > Tools > Cilbox Permissions** 会显示每个沙盒允许的内容，其 **Script Check** 标签页会扫描您的脚本中将被阻止的调用。**Basis > Creator Guide** 窗口离线提供本指南和完整的 Cilbox API 参考。
 
 <Callout type="warn">
-被阻止的调用不会在构建时抛出异常。白名单之外的调用会在运行时失败，因此请在上传前扫描脚本。
+被阻止的调用不会在构建时抛出异常。白名单之外的调用只会在运行时失败。请在上传前扫描脚本。
 </Callout>

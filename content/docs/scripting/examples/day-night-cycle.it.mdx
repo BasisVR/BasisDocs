@@ -1,9 +1,9 @@
 ---
 title: Ciclo giorno/notte
-description: Un sole che si muove seguendo l'orologio del server, così ogni giocatore vede la stessa ora del giorno senza codice di rete.
+description: Un sole guidato dall'orologio del server. Ogni giocatore vede la stessa ora del giorno e non serve codice di rete.
 ---
 
-Un ciclo giorno/notte guidato da `Time.time` va fuori sincrono tra giocatori entrati in momenti diversi. Guidarlo con l'orologio del server mantiene tutti allineati senza costi.
+Un ciclo giorno/notte guidato da `Time.time` va fuori sincrono tra giocatori entrati in momenti diversi. Guidarlo con l'orologio del server mantiene tutti allineati senza alcun messaggio.
 
 ```csharp title="DayNightCycle.cs (Cilbox)"
 using Basis.Shims;

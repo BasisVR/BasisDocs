@@ -13,9 +13,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** は自分以外の全員に送信します。
+- `recipients = null`は自分以外の全員に送信します。
 - 特定のプレイヤーに送信するには、プレイヤーIDの配列を渡します。自分のIDを含めると、メッセージがネットワーク経由で自分にも戻ってきます。
-- オブジェクトはネットワーク準備完了（`HasNetworkID`がtrue）である必要があります。それより前に送信するとエラーがログに出力され何も起きないため、`OnNetworkReady`以降に送信してください。
+- オブジェクトはネットワーク準備完了（`HasNetworkID`がtrue）である必要があります。それより前に送信するとエラーがログに出力され、何も起きません。`OnNetworkReady`以降に送信してください。
 
 <Callout type="warn">
 イベントは**記憶されません**。イベントが送信された後に参加したプレイヤーはそれを受け取りません。イベントが永続的な状態を変更する場合は、[途中参加者](/ja/docs/scripting/networking/late-joiners)にも対応してください。

@@ -13,9 +13,9 @@ Un evento de red es un array de bytes enviado desde la copia de un objeto de un 
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** envía a todos excepto a usted.
+- `recipients = null` envía a todos excepto a usted.
 - Pase un array de IDs de jugador para enviar a jugadores concretos. Incluya su propio ID para que el mensaje vuelva a usted a través de la red.
-- El objeto debe estar listo para la red (`HasNetworkID` es true). Enviar antes registra un error y no hace nada, así que envíe desde `OnNetworkReady` o después.
+- El objeto debe estar listo para la red (`HasNetworkID` es true). Enviar antes registra un error y no hace nada. Envíe desde `OnNetworkReady` o después.
 
 <Callout type="warn">
 Los eventos **no se recuerdan**. Un jugador que se une después de que se enviara un evento nunca lo recibe. Si el evento cambia un estado duradero, gestione también a los [jugadores que se unen tarde](/es/docs/scripting/networking/late-joiners).

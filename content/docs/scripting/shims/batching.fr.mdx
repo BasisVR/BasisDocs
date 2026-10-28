@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 Chaque appel d'un script Cilbox vers Unity est coûteux, souvent bien plus que le travail qu'il effectue. Ces shims font passer des tableaux entiers de l'autre côté de la frontière en un seul appel et exécutent la boucle en natif.
 
 <Callout type="info">
-Règle empirique : si une boucle dans `Update` touche plus d'une poignée de transforms ou de blendshapes, traitez-la par lots.
+Si une boucle dans `Update` touche plus d'une poignée de transforms ou de blendshapes, traitez-la par lots.
 </Callout>
 
 ## BasisTransformBatchShim
@@ -69,7 +69,7 @@ follow.BindMeshes(new[] { face }, new[] { mask }, this);
 
 ## BasisVectorArrayShim
 
-Sépare des vecteurs en tableaux de floats puis les réassemble, pour que les calculs portent sur de simples floats, ce qui coûte beaucoup moins cher dans l'interpréteur.
+Sépare des vecteurs en tableaux de floats puis les réassemble. Les calculs sur de simples floats coûtent beaucoup moins cher dans l'interpréteur.
 
 ```csharp
 BasisVectorArrayShim.Split(positions, xs, ys, zs);

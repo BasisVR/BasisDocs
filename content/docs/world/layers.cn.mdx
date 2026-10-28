@@ -24,11 +24,11 @@ Basis 保留了若干 Unity 层。请按照说明使用它们，以便玩家、�
 
 ## 选择层
 
-- **墙壁、地面、道具**：Default。
-- **按钮前方的触发体积和不可见阻挡物**：IgnoredByInteractable，这样指针可以到达它们后面的东西。
-- **指针永远不应命中的装饰性碰撞体**：Ignore Raycast。
-- **绝不要将您的物体放在** Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 层上。
+- 墙壁、地面、道具：Default。
+- 按钮前方的触发体积和不可见阻挡物：IgnoredByInteractable。指针会穿过它们，到达后面的东西。
+- 指针永远不应命中的装饰性碰撞体：Ignore Raycast。
+- 绝不要将您的物体放在 Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 层上。
 
 <Callout type="info">
-层的名称和编号来自 Basis 项目的 Tag Manager。内容是基于它们构建的，因此不要在您的项目中重命名或重新排序 Basis 层。
+层的名称和编号来自 Basis 项目的 Tag Manager。内容是基于它们构建的。不要在您的项目中重命名或重新排序 Basis 层。
 </Callout>

@@ -32,7 +32,7 @@ byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge")
 
 ## BasisServerStorageShim
 
-플레이어별로 **서버에** 저장되는 데이터이므로, 그 서버에서는 기기를 바꿔도 플레이어를 따라갑니다. 모든 호출은 비동기입니다. 키는 최대 64바이트, 값은 최대 64 KB이며, 플레이어당 총량은 서버가 정합니다(기본 16 KB).
+플레이어별로 **서버에** 저장되는 데이터입니다. 그 서버에서는 기기를 바꿔도 플레이어를 따라갑니다. 모든 호출은 비동기입니다. 키는 최대 64바이트, 값은 최대 64 KB이며, 플레이어당 총량은 서버가 정합니다(기본 16 KB).
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

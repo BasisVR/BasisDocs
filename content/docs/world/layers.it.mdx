@@ -5,7 +5,7 @@ description: I layer di Unity usati da Basis, cosa significa ciascuno per collis
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Basis riserva diversi layer di Unity. Usali come descritto, così giocatori, puntatori e telecamere trattano correttamente i tuoi oggetti.
+Basis riserva diversi layer di Unity. Usali come descritto, in modo che giocatori, puntatori e telecamere trattino correttamente i tuoi oggetti.
 
 | # | Layer | Usato per |
 | --- | --- | --- |
@@ -24,11 +24,11 @@ Basis riserva diversi layer di Unity. Usali come descritto, così giocatori, pun
 
 ## Scegliere un layer
 
-- **Pareti, pavimenti, prop:** Default.
-- **Volumi trigger e barriere invisibili davanti ai pulsanti:** IgnoredByInteractable, così i puntatori possono raggiungere ciò che c'è dietro.
-- **Collider decorativi che il puntatore non deve mai colpire:** Ignore Raycast.
-- **Non mettere mai i tuoi oggetti su** Player, LocalPlayerAvatar, RemotePlayerAvatar o OverlayUI.
+- Pareti, pavimenti, prop: Default.
+- Volumi trigger e barriere invisibili davanti ai pulsanti: IgnoredByInteractable. I puntatori li attraversano e raggiungono ciò che c'è dietro.
+- Collider decorativi che il puntatore non deve mai colpire: Ignore Raycast.
+- Non mettere mai i tuoi oggetti su Player, LocalPlayerAvatar, RemotePlayerAvatar o OverlayUI.
 
 <Callout type="info">
-I nomi e i numeri dei layer provengono dal Tag Manager del progetto Basis. I contenuti vengono costruiti con essi, quindi non rinominare né riordinare i layer di Basis nel tuo progetto.
+I nomi e i numeri dei layer provengono dal Tag Manager del progetto Basis. I contenuti vengono costruiti con essi. Non rinominare né riordinare i layer di Basis nel tuo progetto.
 </Callout>

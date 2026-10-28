@@ -48,6 +48,6 @@ public class VoiceStage : MonoBehaviour
 }
 ```
 
-- 每个客户端都根据自己已有的位置在本地路由语音，因此不会产生额外的网络流量。
+- 每个客户端都根据自己已有的位置在本地路由语音。不会产生额外的网络流量。
 - 会先检查演讲者的同意。未允许语音路由的玩家会被正常听到。
 - 请在 **Basis > Tools > Cilbox Permissions** 中确认您的沙盒允许使用 `BasisNetworkPlayer.GetAllPlayers`。

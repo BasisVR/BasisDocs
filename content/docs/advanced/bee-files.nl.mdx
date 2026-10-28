@@ -23,7 +23,7 @@ Een `.bee`-bestand (Basis Encrypted Experience) is het enkele bestand waarin elk
 └──────────────────────────────┘
 ```
 
-Secties volgen direct na de connector, aaneengesloten, in de volgorde waarin de connector ze vermeldt. De lengte van elke sectie staat in de connector, zodat een lezer kan berekenen waar elke sectie begint zonder het bestand te scannen.
+Secties volgen direct na de connector, aaneengesloten, in de volgorde waarin de connector ze vermeldt. De connector slaat de lengte van elke sectie op, en dat is genoeg om uit te rekenen waar elke sectie begint zonder het bestand te scannen.
 
 ## De connector
 
@@ -37,7 +37,7 @@ De connector is een JSON-document (`BasisBundleConnector`) dat de content beschr
 | `ImageBase64` | De miniatuur die in menu's en op content-orbs wordt getoond. |
 | `FarLodBase64` | Alleen avatars: een kleine vervanger die op grote afstand wordt getekend. |
 | `DateOfCreation` | Buildtijd (UTC). |
-| `Bounds` | De grootte van de content, zodat die kan worden geplaatst voordat die laadt. |
+| `Bounds` | De grootte van de content, gebruikt om die te plaatsen voordat die laadt. |
 | `MetaData` | Aantallen driehoeken, materialen en botten, texturegeheugen, render pipeline, soort content (Avatar, Prop of Scene), plaatsing bij het spawnen van props en een telling van elk componenttype. |
 
 Omdat de connector klein is en vooraan staat, kunnen menu's namen, miniaturen en prestatiestatistieken tonen nadat alleen de eerste paar kilobytes zijn gedownload.
@@ -58,15 +58,15 @@ Elke `BasisBundleGenerated`-vermelding beschrijft één sectie:
 
 Een ontsleutelde sectie is een Unity-**AssetBundle**, optioneel gevolgd door **graphics state**-gegevens die worden gebruikt om shaders voor te verwarmen, zodat de content niet hapert de eerste keer dat die wordt gezien.
 
-De **Generic**-sectie is alleen voor avatars: een versleuteld `.glb`-bestand (glTF 2.0 binair) plus avatar-setupgegevens. Een client gebruikt die alleen wanneer het bestand geen sectie voor zijn platform heeft, zodat een avatar toch verschijnt op platforms waarvoor die niet is gebouwd.
+De **Generic**-sectie is alleen voor avatars: een versleuteld `.glb`-bestand (glTF 2.0 binair) plus avatar-setupgegevens. Een client valt er alleen op terug wanneer het bestand geen sectie voor zijn platform heeft. Zo verschijnt een avatar toch op platforms waarvoor die nooit is gebouwd.
 
 ## Versleuteling
 
 De connector en elke sectie worden afzonderlijk versleuteld met het contentwachtwoord:
 
-- **Cipher:** AES met een sleutel van 256 bits.
-- **Sleutel:** afgeleid van het wachtwoord met PBKDF2 (SHA-1, 10.000 iteraties) en een willekeurige salt van 16 bytes.
-- **Indeling van elk versleuteld blok:** `salt (16 bytes) | IV (16 bytes) | ciphertext`.
+- Cipher: AES met een sleutel van 256 bits.
+- Sleutel: afgeleid van het wachtwoord met PBKDF2 (SHA-1, 10.000 iteraties) en een willekeurige salt van 16 bytes.
+- Indeling van elk versleuteld blok: `salt (16 bytes) | IV (16 bytes) | ciphertext`.
 
 Secties van meer dan een paar megabytes worden in parallelle stukken ontsleuteld. Eén ontsleutelde sectie kan maximaal ongeveer 2 GB zijn; het bestand als geheel heeft zo'n limiet niet, omdat er altijd maar één sectie wordt ontsleuteld.
 
@@ -76,12 +76,12 @@ Het wachtwoord beschermt content tegen eenvoudig kopiëren en laat je bepalen wi
 
 ## Hoe een client een BEE laadt
 
-1. **Lees de header** met een HTTP range request: de eerste 8 bytes.
-2. **Download en ontsleutel de connector.** Menu's kunnen nu de naam, miniatuur en statistieken tonen.
-3. **Loop de sectietabel door** om die voor dit platform te vinden, en bereken het bytebereik op basis van de lengtes.
-4. **Download alleen die sectie** met een range request. Secties van andere platforms worden nooit gedownload.
-5. **Ontsleutel** die, controleer de CRC en laad de AssetBundle (of bouw de avatar vanuit glTF).
-6. **Cache** het bestand lokaal, zodat bij het volgende bezoek alleen wordt gecontroleerd of de content is veranderd.
+1. Lees de eerste 8 bytes (de header) met een HTTP range request.
+2. Download en ontsleutel de connector. Menu's kunnen nu de naam, miniatuur en statistieken tonen.
+3. Loop de sectietabel door om de sectie voor dit platform te vinden en bereken het bytebereik uit de lengtes.
+4. Download alleen die sectie met een range request. Secties van andere platforms verlaten de server nooit.
+5. Ontsleutel die, controleer de CRC en laad de AssetBundle (of bouw de avatar vanuit glTF).
+6. Cache het bestand lokaal. De volgende keer controleert de client alleen of de content is veranderd.
 
 Daarom kan één `.bee` builds voor Windows, Linux en Android bevatten zonder dat Quest-spelers de downloadgrootte van de pc-build kwijt zijn.
 
@@ -89,4 +89,4 @@ Daarom kan één `.bee` builds voor Windows, Linux en Android bevatten zonder da
 
 - Elke statische host die **HTTP range requests** ondersteunt, werkt.
 - Upload de `.bee` en deel de URL en het wachtwoord. Met het wachtwoord ontgrendelen spelers of je load config de content.
-- Opnieuw bouwen levert een nieuwe `UniqueVersion` op, waarmee clients builds uit elkaar kunnen houden. Clients valideren gecachte kopieën opnieuw tegen de host, dus het bestand op dezelfde URL vervangen werkt het bij.
+- Opnieuw bouwen levert een nieuwe `UniqueVersion` op, waarmee clients builds uit elkaar kunnen houden. Clients valideren gecachte kopieën opnieuw tegen de host, en het bestand op dezelfde URL vervangen werkt het voor iedereen bij.

@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 Cilbox 스크립트에서 Unity로의 모든 호출은 비용이 크며, 실제로 하는 작업보다 훨씬 비싼 경우가 많습니다. 이 심들은 배열 전체를 한 번의 호출로 경계 너머로 넘기고 루프를 네이티브로 실행합니다.
 
 <Callout type="info">
-경험 법칙: `Update`의 루프가 몇 개 이상의 트랜스폼이나 블렌드셰이프를 건드린다면 일괄 처리하세요.
+`Update`의 루프가 몇 개 이상의 트랜스폼이나 블렌드셰이프를 건드린다면 일괄 처리하세요.
 </Callout>
 
 ## BasisTransformBatchShim
@@ -69,7 +69,7 @@ follow.BindMeshes(new[] { face }, new[] { mask }, this);
 
 ## BasisVectorArrayShim
 
-벡터를 float 배열로 분리하고 다시 결합하므로, 인터프리터에서 훨씬 저렴한 일반 float로 계산할 수 있습니다.
+벡터를 float 배열로 분리하고 다시 결합합니다. 일반 float로 하는 계산은 인터프리터에서 훨씬 저렴합니다.
 
 ```csharp
 BasisVectorArrayShim.Split(positions, xs, ys, zs);

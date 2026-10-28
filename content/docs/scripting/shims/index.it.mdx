@@ -7,9 +7,9 @@ Gli shim sono il lato Basis della sandbox Cilbox: API piccole e sicure che danno
 
 Gli shim hanno tre forme:
 
-- **Classi statiche** da chiamare direttamente, come `BasisPlayersShim.Count`.
-- **Componenti evento** da attivare chiamando `GetComponent<T>()` in `Start`. Cilbox aggiunge il componente per te e Basis chiama sul tuo script un metodo con un nome noto, come `OnPlatformChanged`.
-- **Tipi sostituiti**: scrivi il normale nome Unity (`Debug`, `VideoPlayer`, `BasisAvatar`) e la sandbox fornisce una versione sicura.
+- Classi statiche da chiamare direttamente, come `BasisPlayersShim.Count`.
+- Componenti evento da attivare chiamando `GetComponent<T>()` in `Start`. Cilbox aggiunge il componente per te e Basis chiama sul tuo script un metodo con un nome noto, come `OnPlatformChanged`.
+- Tipi sostituiti. Scrivi il normale nome Unity (`Debug`, `VideoPlayer`, `BasisAvatar`) e la sandbox fornisce una versione sicura.
 
 | Shim | Cosa fa | Pagina |
 | --- | --- | --- |

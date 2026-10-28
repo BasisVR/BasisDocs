@@ -1,11 +1,11 @@
 ---
 title: 服务器最佳时间
-description: 使用 BasisServerStorageShim 在服务器上保存每位玩家的最佳圈速，让它在不同设备间跟随玩家。
+description: 使用 BasisServerStorageShim 在服务器上保存每位玩家的最佳圈速，它会在不同设备间跟随玩家。
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim` 保存在玩家的电脑上。`BasisServerStorageShim` 则按玩家保存在**服务器**上，因此在 PC 上创下的最佳时间，玩家用 Quest 访问时依然存在。
+`BasisSaveShim` 保存在玩家的电脑上。`BasisServerStorageShim` 则按玩家保存在**服务器**上。在 PC 上创下的最佳时间，玩家用 Quest 访问时依然存在。
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

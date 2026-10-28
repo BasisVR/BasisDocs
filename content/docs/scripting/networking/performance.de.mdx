@@ -7,12 +7,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Günstig bleiben
 
-- **Senden Sie Zustand, nicht Frames.** Synchronisierte Variablen senden nur, wenn sich Werte ändern. Rufen Sie `SendCustomNetworkEvent` nicht aus `Update` auf.
-- **Verwenden Sie den kleinsten Typ.** Ein `Byte` oder `Bool` statt eines `Int`, einen ranged Float statt eines rohen.
-- **Verwenden Sie unzuverlässige Zustellung für Daten mit hoher Rate.** Zuverlässige Nachrichten werden erneut gesendet, bis sie ankommen. Das kostet mehr und erhöht die Verzögerung, wenn Pakete verloren gehen.
-- **Lassen Sie `DistanceReduction` aktiviert.** Weit entfernte Spieler erhalten weniger Updates. Aktivieren Sie `RelevanceCulling` für Objekte, die niemand außerhalb eines Raums sehen muss.
-- **Ein Objekt, viele Werte.** Ein `BasisSyncedParameters` mit zehn Werten ist günstiger als zehn Objekte mit je einem Wert, weil jedes Objekt seinen eigenen Header und eigene Keyframes mitbringt.
-- **Fassen Sie Events zusammen.** Packen Sie mehrere Änderungen in eine Nachricht, statt pro Änderung eine Nachricht zu senden.
+- Senden Sie Zustand, nicht Frames. Synchronisierte Variablen senden nur, wenn sich Werte ändern. Rufen Sie `SendCustomNetworkEvent` nicht aus `Update` auf.
+- Verwenden Sie den kleinsten Typ. Ein `Byte` oder `Bool` statt eines `Int`, einen Float mit Wertebereich statt eines rohen.
+- Verwenden Sie unzuverlässige Zustellung für Daten mit hoher Rate. Zuverlässige Nachrichten werden erneut gesendet, bis sie ankommen. Das kostet mehr und erhöht die Verzögerung, wenn Pakete verloren gehen.
+- Lassen Sie `DistanceReduction` aktiviert. Weit entfernte Spieler erhalten weniger Updates. Aktivieren Sie `RelevanceCulling` für Objekte, die niemand außerhalb eines Raums sehen muss.
+- Ein Objekt, viele Werte. Ein `BasisSyncedParameters` mit zehn Werten ist günstiger als zehn Objekte mit je einem Wert, weil jedes Objekt seinen eigenen Header und eigene Keyframes mitbringt.
+- Fassen Sie Events zusammen. Packen Sie mehrere Änderungen in eine Nachricht, statt pro Änderung eine Nachricht zu senden.
 
 <Callout type="info">
 Synchronisierte Objekte im Leerlauf kosten fast nichts: Solange sich Werte nicht ändern, wird nichts gesendet, und Keyframes werden seltener. Vermeiden sollten Sie Werte, die sich jeden Frame ändern, obwohl sie das nicht müssen.
@@ -25,13 +25,13 @@ Synchronisierte Objekte im Leerlauf kosten fast nichts: Solange sich Werte nicht
 | Funktioniert bei Ihnen, niemand sonst sieht es | Die Änderung wurde lokal angewendet und nie gesendet, oder das Objekt war noch nicht netzwerkbereit (`HasNetworkID` false). |
 | Late Joiner sehen den Standardzustand der Szene | Der Zustand wurde als Event gesendet und in `OnPlayerJoined` nicht erneut gesendet. Siehe [Late Joiner](/de/docs/scripting/networking/late-joiners). |
 | Zwei Spieler streiten um einen Wert | Beide schreiben ihn. Nur der Owner sollte schreiben; übernehmen Sie die Ownership, wenn ein Spieler handelt. |
-| Der Wert springt zurück, nachdem Sie ihn geändert haben | Sie haben eine synchronisierte Variable geschrieben, ohne das Objekt zu besitzen, daher hat der Strom des Owners sie überschrieben. |
-| Alles wird zurückgesetzt, wenn jemand beitritt | Die Ownership wird in `Start` oder `OnNetworkReady` übernommen, sodass der Neuankömmling mit Standardwerten zum Owner wird. |
+| Der Wert springt zurück, nachdem Sie ihn geändert haben | Sie haben eine synchronisierte Variable geschrieben, ohne das Objekt zu besitzen. Der Strom des Owners hat sie überschrieben. |
+| Alles wird zurückgesetzt, wenn jemand beitritt | Die Ownership wird in `Start` oder `OnNetworkReady` übernommen. Der Neuankömmling wird mit Standardwerten zum Owner. |
 | Event-Handler werden doppelt ausgelöst | In `Start` und erneut in `OnEnable` abonniert oder in `OnDestroy` nie abgemeldet. |
 
 ## Werkzeuge
 
-- **Inspectors im Play Mode.** Die Inspectors für synchronisierte Objekte, Pickups und Sitze zeigen Owner, Netzwerk-ID, Buffer-Tiefe und Bytes pro Sekunde.
-- **Sync-Gizmos.** Entfernte synchronisierte Objekte zeichnen, wo sie waren und wohin sie sich bewegen. So sehen Sie Interpolation und Extrapolation auf einen Blick.
-- **Mehrere Clients.** Bauen Sie einen Client und führen Sie ihn neben dem Editor aus, beide mit einem lokalen Server verbunden. Siehe [Testen](/de/docs/world/testing).
-- **`BasisStatsShim`** (Cilbox) meldet die Roundtrip-Zeit und die Sekunden seit dem letzten Paket, nützlich, um ein "Verbindung wird wiederhergestellt"-Schild anzuzeigen.
+- Inspectors im Play Mode. Die Inspectors für synchronisierte Objekte, Pickups und Sitze zeigen Owner, Netzwerk-ID, Buffer-Tiefe und Bytes pro Sekunde.
+- Sync-Gizmos. Entfernte synchronisierte Objekte zeichnen, wo sie waren und wohin sie sich bewegen, und zeigen Interpolation und Extrapolation, während sie passieren.
+- Mehrere Clients. Bauen Sie einen Client und führen Sie ihn neben dem Editor aus, beide mit einem lokalen Server verbunden. Siehe [Testen](/de/docs/world/testing).
+- `BasisStatsShim` (Cilbox) meldet die Roundtrip-Zeit und die Sekunden seit dem letzten Paket, nützlich, um ein "Verbindung wird wiederhergestellt"-Schild anzuzeigen.

@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-플레이어가 아바타를 바꾸면 알려 줍니다. 플레이어를 따라가므로 아바타를 바꿔도 계속 동작합니다. 다 쓰면 Dispose 하세요.
+플레이어가 아바타를 바꾸면 알려 줍니다. 플레이어를 따라가며 아바타를 바꿔도 계속 동작합니다. 다 쓰면 Dispose 하세요.
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-로컬 플레이어의 역할은 즉시 답이 나옵니다. 다른 플레이어에 대해 묻는 것은 왕복이 필요하므로 답이 콜백으로 도착합니다.
+로컬 플레이어의 역할은 즉시 답이 나옵니다. 다른 플레이어에 대해 물으면 왕복이 필요하고, 답은 콜백으로 도착합니다.
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

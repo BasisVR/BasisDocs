@@ -1,9 +1,9 @@
 ---
 title: Ciclo de día y noche
-description: Un sol que se mueve según el reloj del servidor, de modo que todos los jugadores ven la misma hora del día sin código de red.
+description: Un sol controlado por el reloj del servidor. Todos los jugadores ven la misma hora del día y no hace falta código de red.
 ---
 
-Un ciclo de día controlado por `Time.time` se desincroniza entre jugadores que se unieron en momentos distintos. Controlarlo desde el reloj del servidor mantiene a todos sincronizados sin coste.
+Un ciclo de día controlado por `Time.time` se desincroniza entre jugadores que se unieron en momentos distintos. Controlarlo desde el reloj del servidor mantiene a todos sincronizados sin enviar ningún mensaje.
 
 ```csharp title="DayNightCycle.cs (Cilbox)"
 using Basis.Shims;

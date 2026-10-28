@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-Ti avvisa quando un giocatore cambia avatar. Segue il giocatore, quindi continua a funzionare tra un cambio e l'altro. Chiama Dispose quando hai finito.
+Ti avvisa quando un giocatore cambia avatar. Segue il giocatore e continua a funzionare tra un cambio e l'altro. Chiama Dispose quando hai finito.
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-I ruoli del giocatore locale rispondono subito. Chiedere di un altro giocatore richiede un viaggio di andata e ritorno, quindi la risposta arriva in una callback.
+I ruoli del giocatore locale rispondono subito. Chiedere di un altro giocatore richiede un viaggio di andata e ritorno e la risposta arriva in una callback.
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

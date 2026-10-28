@@ -5,10 +5,10 @@ description: 선택해서 쓰는 이벤트 심. Start에서 컴포넌트를 가�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-모든 이벤트 심은 같은 방식으로 동작합니다. `Start`에서 `GetComponent<T>()`를 한 번 호출하고(Cilbox가 대신 추가합니다), 심의 콜백 이름으로 메서드를 선언하세요. Basis가 직접 호출하므로 구독하거나 구독을 해제할 것이 없습니다.
+모든 이벤트 심은 같은 방식으로 동작합니다. `Start`에서 `GetComponent<T>()`를 한 번 호출하고(Cilbox가 대신 추가합니다), 심의 콜백 이름으로 메서드를 선언하세요. Basis가 그 메서드를 직접 호출합니다. 구독하거나 구독을 해제할 것은 없습니다.
 
 <Callout type="info">
-대부분의 이벤트 심은 사용을 선택한 직후 현재 값으로 한 번 호출해 주므로, 별도의 초기화 코드가 필요 없습니다.
+대부분의 이벤트 심은 사용을 선택한 직후 현재 값으로 한 번 호출해 줍니다. 별도의 초기화 코드는 필요 없습니다.
 </Callout>
 
 ## BasisPlatformEventShim
@@ -84,7 +84,7 @@ void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
 
 ## BasisBeforeRenderShim
 
-모든 포즈와 IK 작업이 끝난 뒤, 프레임을 그리기 직전에 실행됩니다. 한 프레임의 지연 없이 무언가를 손이나 머리에 고정할 때 사용하세요. 렌더링이 이 호출을 기다리므로 짧게 유지하세요.
+모든 포즈와 IK 작업이 끝난 뒤, 프레임을 그리기 직전에 실행됩니다. 한 프레임의 지연 없이 무언가를 손이나 머리에 고정할 때 사용하세요. 짧게 유지하세요. 렌더링이 이 호출을 기다립니다.
 
 ```csharp
 void Start() { GetComponent<BasisBeforeRenderShim>(); }

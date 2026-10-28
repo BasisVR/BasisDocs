@@ -3,7 +3,7 @@ title: Aufzug
 description: Eine bewegliche Plattform, auf der alle gemeinsam fahren. Nur das Zielstockwerk wird synchronisiert; jeder Client bewegt die Plattform darauf zu.
 ---
 
-Die Position der Plattform zu streamen kostet in jedem Frame Bandbreite. Ein Aufzug bewegt sich immer nur auf ein Stockwerk zu, synchronisieren Sie also das **Zielstockwerk** und lassen Sie jeden Client die Plattform selbst bewegen.
+Die Position der Plattform zu streamen kostet in jedem Frame Bandbreite. Ein Aufzug bewegt sich immer nur auf ein Stockwerk zu. Synchronisieren Sie das **Zielstockwerk** und lassen Sie jeden Client die Plattform selbst bewegen.
 
 ## Setup
 
@@ -71,6 +71,6 @@ public class Elevator : MonoBehaviour
 }
 ```
 
-- Jeder Client führt dieselbe Bewegung aus, sodass Mitfahrende eine flüssige Plattform ohne Positionsstream sehen.
+- Jeder Client führt dieselbe Bewegung aus. Mitfahrende sehen eine flüssige Plattform, ohne dass Positionen gestreamt werden.
 - Ein Late Joiner erhält das Zielstockwerk und die aktuelle Höhe in einer einzigen 5-Byte-Nachricht.
 - Beachten Sie das `new Vector3(...)`: Würden Sie `p.y` direkt ändern, würde sich in Cilbox auch der Wert ändern, von dem kopiert wurde (siehe [Sandbox-Regeln](/de/docs/scripting/sandbox-rules)).

@@ -5,10 +5,10 @@ description: I mattoni quotidiani di uno script Basis, giocatori, input, UI, tim
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Questa pagina raccoglie le cose di cui ha bisogno quasi ogni script di un mondo o di un prop. Ogni sezione mostra la chiamata da scrivere e la regola che di solito mette in difficoltà. Il networking ha una guida dedicata: vedi [Networking](/it/docs/scripting/networking).
+Giocatori, input, UI, timer, download, salvataggi e menu, con la chiamata da scrivere per ciascuno e la regola che di solito mette in difficoltà. Il networking è trattato in [Networking](/it/docs/scripting/networking).
 
 <Callout type="info">
-Gli esempi contrassegnati **Cilbox** vengono eseguiti all'interno della sandbox, quindi funzionano anche nei contenuti caricati come file `.bee`. Gli esempi contrassegnati **Native** usano le API complete di Unity e Basis e funzionano solo nel codice compilato nel client. La maggior parte degli esempi Cilbox si compila anche in modo nativo.
+Gli esempi contrassegnati **Cilbox** vengono eseguiti all'interno della sandbox e funzionano anche nei contenuti caricati come file `.bee`. Gli esempi contrassegnati **Native** usano le API complete di Unity e Basis e funzionano solo nel codice compilato nel client. La maggior parte degli esempi Cilbox si compila anche in modo nativo.
 </Callout>
 
 ## Scrivere uno script
@@ -39,7 +39,7 @@ Il proxy inoltra questi messaggi Unity a uno script Cilbox:
 | --- | --- |
 | `Awake`, `Start` | Esegui l'inizializzazione una tantum in `Start`. |
 | `Update`, `FixedUpdate` | Non esiste `LateUpdate`. |
-| `OnEnable`, `OnDisable` | Il **primo** `OnEnable` non arriva mai, quindi non sottoscriverti mai lì. |
+| `OnEnable`, `OnDisable` | Il **primo** `OnEnable` non arriva mai. Non sottoscriverti lì. |
 | `OnDestroy` | Annulla le sottoscrizioni e fai pulizia qui. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Richiedono un collider e un Rigidbody su uno dei due lati. |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-Per una zona che cambia il movimento solo mentre il giocatore si trova al suo interno, usa gli override con una tua chiave. Cancellare la chiave ripristina ciò che c'era sotto, così due zone non si contendono mai il valore originale.
+Per una zona che cambia il movimento solo mentre il giocatore si trova al suo interno, usa gli override con una tua chiave. Cancellare la chiave ripristina ciò che c'era sotto, e due zone non si contendono mai il valore originale.
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-Nelle build del client, il componente **Basis Locomotion Zone** (com.basis.examples) fa questo senza codice. Non è nelle allowlist predefinite dei contenuti, quindi i mondi caricati usano invece gli override qui sopra.
+Nelle build del client, il componente **Basis Locomotion Zone** (com.basis.examples) fa questo senza codice. Non è nelle allowlist predefinite dei contenuti. I mondi caricati usano invece gli override qui sopra.
 </Callout>
 
 ### Tutti i presenti nell'istanza
@@ -192,7 +192,7 @@ BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 
 ## Eventi UI
 
-I canvas in world space funzionano con il puntatore di Basis. Collega i pulsanti dal codice, così il listener vive nella sandbox. Vedi [UI Canvas](/it/docs/world/ui-canvas) per configurare il canvas stesso.
+I canvas in world space funzionano con il puntatore di Basis. Collega i pulsanti dal codice, in modo che il listener viva nella sandbox. Vedi [UI Canvas](/it/docs/world/ui-canvas) per configurare il canvas stesso.
 
 ```csharp title="Cilbox"
 using UnityEngine.UI;
@@ -296,7 +296,7 @@ strings.DownloadString("https://example.github.io/questions.json", result =>
 });
 ```
 
-Analizza il JSON con `BasisJson`, che viene eseguito sull'host, così lo script vede solo valori semplici:
+Analizza il JSON con `BasisJson`, che viene eseguito sull'host e passa allo script solo valori semplici:
 
 ```csharp title="Cilbox"
 using Basis.Shims;
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` funziona così com'è; Basis contrassegna ogni messaggio con il contenuto da cui proviene. Nell'editor, **Basis > Tools > Cilbox Permissions** mostra cosa consente ogni sandbox, e la sua scheda **Script Check** analizza i tuoi script alla ricerca di chiamate che verranno bloccate. La finestra **Basis > Creator Guide** contiene questa guida e il riferimento completo delle API Cilbox, disponibili offline.
 
 <Callout type="warn">
-Le chiamate bloccate non generano errori al momento della build. Una chiamata al di fuori della whitelist fallisce quando viene eseguita, quindi analizza gli script prima del caricamento.
+Le chiamate bloccate non generano errori al momento della build. Una chiamata al di fuori della whitelist fallisce solo quando viene eseguita. Analizza gli script prima del caricamento.
 </Callout>

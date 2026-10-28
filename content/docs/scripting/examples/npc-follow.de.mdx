@@ -92,10 +92,10 @@ public class NpcFollow : MonoBehaviour
 
 ## Funktionsweise
 
-- **Eine Simulation.** Nur der Besitzer führt den Agent aus; alle anderen deaktivieren ihn und bewegen sich sanft zur empfangenen Position. Würden zwei Clients denselben NPC navigieren, kämen sie sich in die Quere.
-- **`Sequenced`-Zustellung** verwirft verspätete Pakete, sodass eine alte Position nie eine neuere überschreibt. Zehn Updates pro Sekunde reichen mit Glättung völlig aus.
-- **Kein Code für Late Joiner.** Das nächste Update kommt innerhalb von 0,1 Sekunden an.
-- **Besitzerwechsel kosten nichts.** Verlässt der Besitzer die Sitzung, aktiviert der neue Besitzer seinen Agent an der zuletzt empfangenen Position.
+- Eine Simulation. Nur der Besitzer führt den Agent aus; alle anderen deaktivieren ihn und bewegen sich sanft zur empfangenen Position. Würden zwei Clients denselben NPC navigieren, kämen sie sich in die Quere.
+- `Sequenced`-Zustellung verwirft verspätete Pakete. Eine alte Position überschreibt nie eine neuere. Zehn Updates pro Sekunde reichen mit Glättung völlig aus.
+- Kein Code für Late Joiner. Das nächste Update kommt innerhalb von 0,1 Sekunden an.
+- Besitzerwechsel kosten nichts. Verlässt der Besitzer die Sitzung, aktiviert der neue Besitzer seinen Agent an der zuletzt empfangenen Position.
 
 <Callout type="info">
 Prüfen Sie unter **Basis > Tools > Cilbox Permissions**, ob `Buffer` und `BitConverter` in Ihrer Sandbox erlaubt sind; `BinaryWriter` (siehe [Network Events](/de/docs/scripting/networking/network-events#packing-a-payload)) funktioniert ebenfalls.

@@ -5,7 +5,7 @@ description: Welke componenten behouden blijven in geüploade werelden, props en
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Wanneer content laadt, verwijdert de **content police** van Basis elk component waarvan het type niet op de allowlist voor dat soort content staat. Scripts gemarkeerd met `[Cilboxable]` worden eerst omgezet naar gesandboxte proxies, zodat ze behouden blijven.
+Wanneer content laadt, verwijdert de **content police** van Basis elk component waarvan het type niet op de allowlist voor dat soort content staat. Scripts gemarkeerd met `[Cilboxable]` blijven behouden, omdat ze eerst worden omgezet naar gesandboxte proxies.
 
 ## De allowlists
 
@@ -34,7 +34,7 @@ De selector-assets zijn de bron van waarheid en veranderen tussen versies. Open 
 ## Je content controleren
 
 - Ga naar play mode: Basis past dezelfde controle toe, en verwijderde componenten worden gelogd.
-- **Basis > Tools > Cilbox Permissions** toont wat elke sandbox scripts laat aanroepen.
+- Het venster **Basis > Tools > Cilbox Permissions** toont wat elke sandbox scripts laat aanroepen.
 
 ## Een component toevoegen (client-builds)
 

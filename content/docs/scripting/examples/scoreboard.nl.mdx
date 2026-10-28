@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` ontvangt al netwerkberichten voor zijn eigen stroom, dus leid verzoeken naar het scorebord via een kleine subklasse:
+`BasisSyncedParameters` ontvangt al netwerkberichten voor zijn eigen stroom. Leid verzoeken naar het scorebord via een kleine subklasse:
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ Gebruik in de setup **ScoreboardParameters** in plaats van **Basis Synced Parame
 
 ## Hoe het werkt
 
-- **Alleen de eigenaar schrijft** de score, dus gelijktijdige drukken worden bij de eigenaar na elkaar toegepast.
-- **Alle anderen sturen een verzoek** naar `CurrentOwnerId` in plaats van eigenaarschap te nemen. Eigenaarschap nemen zou twee spelers elk 1 laten optellen bij dezelfde oude waarde.
-- **Late joiners** hebben niets extra nodig: gesynchroniseerde parameters sturen een keyframe naar nieuwe spelers.
-- **Als de eigenaar vertrekt**, gaat het eigenaarschap naar de speler die het langst verbonden is, die de huidige score al heeft.
+- Alleen de eigenaar schrijft de score. Gelijktijdige drukken worden bij de eigenaar na elkaar toegepast.
+- Alle anderen sturen een verzoek naar `CurrentOwnerId` in plaats van eigenaarschap te nemen. Eigenaarschap nemen zou twee spelers elk 1 laten optellen bij dezelfde oude waarde.
+- Late joiners hebben niets extra nodig. Gesynchroniseerde parameters sturen nieuwe spelers een keyframe.
+- Als de eigenaar vertrekt, gaat het eigenaarschap naar de speler die het langst verbonden is, die de huidige score al heeft.
 
 <Callout type="info">
-Verzoeken zijn één byte; synchronisatiepakketten zijn groter, dus de lengte controleren is hier genoeg om ze uit elkaar te houden. Voor meer berichttypes zet je een markeringsbyte voor je eigen berichten waarmee de synchronisatiestroom nooit begint, of plaats je de verwerking van verzoeken op een aparte `BasisNetworkBehaviour`.
+Verzoeken zijn één byte en synchronisatiepakketten zijn altijd groter. Daarom is de lengte controleren hier genoeg. Voor meer berichttypes zet je een markeringsbyte voor je eigen berichten waarmee de synchronisatiestroom nooit begint, of plaats je de verwerking van verzoeken op een aparte `BasisNetworkBehaviour`.
 </Callout>

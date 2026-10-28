@@ -3,7 +3,7 @@ title: Ascensore
 description: Una piattaforma mobile su cui tutti viaggiano insieme. Viene sincronizzato solo il piano di destinazione; ogni client muove la piattaforma verso di esso.
 ---
 
-Trasmettere in streaming la posizione della piattaforma costa banda a ogni frame. Un ascensore si muove sempre e solo verso un piano, quindi sincronizza il **piano di destinazione** e lascia che ogni client muova la piattaforma da solo.
+Trasmettere in streaming la posizione della piattaforma costa banda a ogni frame. Un ascensore si muove sempre e solo verso un piano. Sincronizza il **piano di destinazione** e lascia che ogni client muova la piattaforma da solo.
 
 ## Preparazione
 
@@ -71,6 +71,6 @@ public class Elevator : MonoBehaviour
 }
 ```
 
-- Ogni client esegue lo stesso movimento, quindi chi viaggia vede una piattaforma fluida senza alcuno streaming di posizione.
+- Ogni client esegue lo stesso movimento. Chi viaggia vede una piattaforma fluida senza uno streaming di posizione.
 - Chi arriva in ritardo riceve il piano di destinazione e l'altezza attuale in un unico messaggio da 5 byte.
 - Nota il `new Vector3(...)`: modificare direttamente `p.y` in Cilbox cambierebbe anche il valore da cui è stato copiato (vedi [Regole della sandbox](/it/docs/scripting/sandbox-rules)).

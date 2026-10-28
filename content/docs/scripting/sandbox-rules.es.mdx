@@ -9,11 +9,11 @@ Cilbox interpreta el código compilado de su script dentro de un sandbox. La may
 
 ## Ciclo de vida
 
-- **No hay `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni corrutinas.** Use `Update` y [eventos diferidos](/es/docs/scripting/common-usages#timers-and-delayed-events).
-- **El primer `OnEnable` se descarta.** Inicialice en `Start` y libere en `OnDestroy`.
-- **No derive de `BasisNetworkBehaviour`.** El proxy que sustituye a su script no lo es. Use `BasisNetworkShim` (consulte [Eventos de red](/es/docs/scripting/networking/network-events#cilbox)).
+- No hay `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni corrutinas. Use `Update` y [eventos diferidos](/es/docs/scripting/common-usages#timers-and-delayed-events).
+- El primer `OnEnable` se descarta. Inicialice en `Start` y libere en `OnDestroy`.
+- No derive de `BasisNetworkBehaviour`. El proxy que sustituye a su script no lo es. Use `BasisNetworkShim` (consulte [Eventos de red](/es/docs/scripting/networking/network-events#cilbox)).
 
-## Las structs se comparten, no se copian
+## Las structs comparten su valor
 
 Copiar una struct de Unity (`Vector3`, `Quaternion`, `Color`) en una variable comparte el mismo valor. Cambiar un campo de la copia cambia el original.
 
@@ -32,16 +32,16 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 ## Llamadas y permisos
 
-- **Un tipo de la lista blanca permite todos sus métodos públicos**, a menos que ese tipo también tenga una restricción de métodos. **Los campos están denegados** a menos que estén en la lista.
-- **También se comprueban los tipos de parámetros, genéricos y de retorno.** Una llamada puede superar la comprobación del nombre y aun así ser rechazada por uno de sus tipos.
-- **`this.GetComponent` siempre funciona.** `gameObject.GetComponent` está restringido, y el sandbox de props no permite recorrer la jerarquía con él.
-- **`AddComponent`, `SendMessage` y `BroadcastMessage` están siempre bloqueados.** Cilbox añade por usted un `BasisNetworkShim` y los shims de eventos al llamar a `GetComponent`.
-- **`Debug.DrawLine` y `Debug.DrawRay` no existen** en el `Debug` del sandbox, y hacer referencia a ellos impide que se cargue cualquier script del contenido.
-- **Las constantes son gratuitas.** Una `const` no necesita entrada en la lista blanca.
+- Un tipo de la lista blanca permite todos sus métodos públicos, a menos que ese tipo también tenga una restricción de métodos. Los campos están denegados a menos que estén en la lista.
+- También se comprueban los tipos de parámetros, genéricos y de retorno. Una llamada puede superar la comprobación del nombre y aun así ser rechazada por uno de sus tipos.
+- `this.GetComponent` siempre funciona. `gameObject.GetComponent` está restringido, y el sandbox de props no permite recorrer la jerarquía con él.
+- `AddComponent`, `SendMessage` y `BroadcastMessage` están siempre bloqueados. Cilbox añade por usted un `BasisNetworkShim` y los shims de eventos al llamar a `GetComponent`.
+- `Debug.DrawLine` y `Debug.DrawRay` no existen en el `Debug` del sandbox, y hacer referencia a ellos impide que se cargue cualquier script del contenido.
+- Las constantes son gratuitas. Una `const` no necesita entrada en la lista blanca.
 
 ## Eventos y delegados
 
-Cada vez que usa un método como delegado se convierte en un nuevo envoltorio, por lo que `-=` puede no eliminar el que añadió. Para publicadores que viven más que su script, consulte un valor en `Update` en lugar de suscribirse.
+Cada vez que usa un método como delegado se convierte en un nuevo envoltorio, y `-=` puede no eliminar el que añadió. Para publicadores que viven más que su script, consulte un valor en `Update` en lugar de suscribirse.
 
 ## Content police
 
@@ -62,13 +62,13 @@ El código interpretado es mucho más lento que el código nativo. Costes aproxi
 | Un operador de `Vector3` (`a + b`) | ~1.7 µs, más basura |
 | Una llamada de Unity como `Mathf.Sqrt` | ~0.9 µs |
 
-Por lo tanto:
+Para mantener bajo el coste de los scripts:
 
-- **Trabaje en eventos, no en cada frame.** Compruebe temporizadores, distancias e interfaz unas pocas veces por segundo.
-- **Prefiera floats a operaciones con `Vector3` en bucles.** Las operaciones vectoriales en un bucle crítico son unas 100 veces más lentas que las mismas operaciones con floats separados.
-- **Deje que los componentes hagan el trabajo pesado.** Animators, sistemas de partículas, física y constraints se ejecutan de forma nativa.
-- **Reutilice objetos con un pool** en lugar de llamar a `Instantiate` en cada disparo.
-- **Agrupe el trabajo con transforms.** `BasisTransformSyncShim` lee, escribe o copia arrays completos de transforms en una sola llamada, y `BasisBlendShapeSyncShim` hace lo mismo con los blendshapes.
+- Trabaje en eventos, no en cada frame. Compruebe temporizadores, distancias e interfaz unas pocas veces por segundo.
+- Prefiera floats a operaciones con `Vector3` en bucles. Las operaciones vectoriales en un bucle crítico son unas 100 veces más lentas que las mismas operaciones con floats separados.
+- Deje que los componentes hagan el trabajo pesado. Animators, sistemas de partículas, física y constraints se ejecutan de forma nativa.
+- Reutilice objetos con un pool en lugar de llamar a `Instantiate` en cada disparo.
+- Agrupe el trabajo con transforms. `BasisTransformSyncShim` lee, escribe o copia arrays completos de transforms en una sola llamada, y `BasisBlendShapeSyncShim` hace lo mismo con los blendshapes.
 
 <Callout type="info">
 **Basis > Tools > Cilbox Permissions** muestra la lista blanca de cada sandbox, y su pestaña **Script Check** analiza sus scripts en busca de llamadas bloqueadas antes de subirlos.

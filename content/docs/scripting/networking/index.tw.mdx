@@ -5,7 +5,7 @@ description: 如何讓 Basis 世界或道具對每位玩家都表現一致：同
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-腳本所做的一切都在某一位玩家的電腦上執行。如果一位玩家開了門，在您通知網路之前，其他人都看不到。本指南介紹 Basis 為此提供的工具，以及各自的使用時機。
+腳本所做的一切都在某一位玩家的電腦上執行。如果一位玩家開了門，在您通知網路之前，其他人都看不到。
 
 傳輸層本身的運作方式（伺服器中繼、傳遞方式、依距離調整的更新頻率），請參閱[網路同步](/tw/docs/technical/network-syncing)。
 
@@ -19,15 +19,15 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | **晚加入者** | 在事物改變之後才抵達的玩家。 | 確保他們看到的是目前狀態，而不是場景預設值。 |
 
 <Callout type="info">
-經驗法則：如果五分鐘後才加入的玩家也需要看到它，它就是**狀態**，應該放在同步變數中（或必須重新傳送給他們）。如果它只在發生的當下才重要，它就是**事件**。
+如果五分鐘後才加入的玩家也需要看到它，它就是**狀態**，應該放在同步變數中（或必須重新傳送給他們）。如果它只在發生的當下才重要，它就是**事件**。
 </Callout>
 
 ## 構成要素
 
-- **`BasisNetworkBehaviour`** 是編譯進客戶端的網路腳本的基底類別。它擁有網路 ID、擁有者，以及 `OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined` 和 `OnPlayerLeft` 回呼。
-- **`BasisNetworkShim`** 是 Cilbox 腳本的對應版本。Cilbox 腳本無法繼承 `BasisNetworkBehaviour`，因此它會透過 `GetComponent` 取得 `BasisNetworkShim` 並訂閱其事件。
-- **`BasisSyncedObject`** 建立在 `BasisNetworkBehaviour` 之上，提供精簡且經插值的狀態串流。**`BasisSyncedParameters`**、**`BasisSyncedTransform`** 和 **`BasisSyncedRigidbody`** 是以它為基礎的現成元件。
-- **`BasisPickupSyncNetworking`** 和 **`BasisSeatSync`** 不需程式碼即可同步拾取物和座位。
+- `BasisNetworkBehaviour` 是編譯進客戶端的網路腳本的基底類別。它擁有網路 ID、擁有者，以及 `OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined` 和 `OnPlayerLeft` 回呼。
+- `BasisNetworkShim` 是 Cilbox 腳本的對應版本。Cilbox 腳本無法繼承 `BasisNetworkBehaviour`，而是透過 `GetComponent` 取得 `BasisNetworkShim` 並訂閱其事件。
+- `BasisSyncedObject` 建立在 `BasisNetworkBehaviour` 之上，提供精簡且經插值的狀態串流。`BasisSyncedParameters`、`BasisSyncedTransform` 和 `BasisSyncedRigidbody` 是以它為基礎的現成元件。
+- `BasisPickupSyncNetworking` 和 `BasisSeatSync` 不需程式碼即可同步拾取物和座位。
 
 ## 一個網路腳本，從頭到尾
 
@@ -75,7 +75,7 @@ public class NetworkedCounter : BasisNetworkBehaviour
 
 它展示了：
 
-1. 按下按鈕的玩家會**取得擁有權**，因此只有一個權威來源。
+1. 按下按鈕的玩家會取得擁有權，成為唯一的權威來源。
 2. 新數值會**以事件形式傳送**給其他所有人（`Recipients = null` 表示除了您以外的所有人）。
 3. 有人加入時，**只有擁有者**會將目前的數值傳送給他們。
 

@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## Come funziona
 
-- **Premere** prende l'ownership, inverte il valore localmente così chi preme lo vede subito, e invia il nuovo valore a tutti gli altri.
-- **`ReliableSequenced`** garantisce che arrivi l'ultimo valore e scarta quelli più vecchi, il che è esattamente ciò che serve per un interruttore.
-- **Un giocatore che entra** riceve il valore attuale solo dal proprietario. Poiché il messaggio contiene l'intero stato, lo stesso `OnMessage` gestisce sia le modifiche in tempo reale sia l'aggiornamento iniziale.
+- Premere prende l'ownership, inverte il valore localmente così chi preme lo vede subito, e invia il nuovo valore a tutti gli altri.
+- `ReliableSequenced` garantisce che arrivi l'ultimo valore e scarta quelli più vecchi. A un interruttore interessa solo l'ultimo valore.
+- Un giocatore che entra riceve il valore attuale solo dal proprietario. Poiché il messaggio contiene l'intero stato, lo stesso `OnMessage` gestisce sia le modifiche in tempo reale sia l'aggiornamento iniziale.
 
 <Callout type="info">
 Versione nativa: deriva da `BasisNetworkBehaviour`, sostituisci gli eventi dello shim con gli override `OnNetworkMessage` e `OnPlayerJoined`, e chiama direttamente `TakeOwnership()` e `SendCustomNetworkEvent`.

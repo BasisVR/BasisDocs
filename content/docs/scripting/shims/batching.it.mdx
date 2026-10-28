@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 Ogni chiamata da uno script Cilbox verso Unity è costosa, spesso molto più del lavoro che svolge. Questi shim portano interi array oltre il confine in una sola chiamata ed eseguono il ciclo in modo nativo.
 
 <Callout type="info">
-Regola pratica: se un ciclo in `Update` tocca più di una manciata di transform o blendshape, raggruppalo in batch.
+Se un ciclo in `Update` tocca più di una manciata di transform o blendshape, raggruppalo in batch.
 </Callout>
 
 ## BasisTransformBatchShim
@@ -69,7 +69,7 @@ follow.BindMeshes(new[] { face }, new[] { mask }, this);
 
 ## BasisVectorArrayShim
 
-Divide i vettori in array di float e li riunisce, così i calcoli possono girare su float semplici, il che è molto più economico nell'interprete.
+Divide i vettori in array di float e li riunisce. I calcoli su float semplici costano molto meno nell'interprete.
 
 ```csharp
 BasisVectorArrayShim.Split(positions, xs, ys, zs);

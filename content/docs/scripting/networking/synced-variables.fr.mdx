@@ -16,7 +16,7 @@ Une variable synchronisée est une valeur que le **propriétaire** écrit et que
 | Un objet en mouvement | [`BasisSyncedTransform`, `BasisSyncedRigidbody` ou `BasisPickupSyncNetworking`](/fr/docs/scripting/networking/network-components). |
 
 <Callout type="warn">
-`BasisSyncedParameters` et vos propres sous-classes de `BasisSyncedObject` ne figurent pas sur les listes d'autorisation par défaut du contenu téléversé ; ils sont donc retirés d'un `.bee` sauf si le type est ajouté aux sélecteurs de la content police. Dans le contenu Cilbox téléversé, synchronisez les valeurs avec des [événements réseau](/fr/docs/scripting/networking/network-events#cilbox) et les objets en mouvement avec **Basis Synced Transform**.
+`BasisSyncedParameters` et vos propres sous-classes de `BasisSyncedObject` ne figurent pas sur les listes d'autorisation par défaut du contenu téléversé. Ils sont retirés d'un `.bee` sauf si le type est ajouté aux sélecteurs de la content police. Dans le contenu Cilbox téléversé, synchronisez les valeurs avec des [événements réseau](/fr/docs/scripting/networking/network-events#cilbox) et les objets en mouvement avec **Basis Synced Transform**.
 </Callout>
 
 ## BasisSyncedParameters : aucun code de sérialisation
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **Seules les écritures du propriétaire comptent.** Prenez la propriété avant d'écrire (voir [Propriété](/fr/docs/scripting/networking/ownership)).
-- **Les lectures fonctionnent partout.** Chez le propriétaire, vous obtenez la valeur que vous avez écrite ; chez tous les autres, vous obtenez la valeur réseau interpolée.
+- Seules les écritures du propriétaire comptent. Prenez la propriété avant d'écrire (voir [Propriété](/fr/docs/scripting/networking/ownership)).
+- Les lectures fonctionnent partout. Chez le propriétaire, vous obtenez la valeur que vous avez écrite ; chez tous les autres, vous obtenez la valeur réseau interpolée.
 - Convertissez le nom en id une seule fois avec `GetParameterId` et utilisez les surcharges par id dans `Update` pour éviter la recherche par nom.
 
 Il n'existe pas de callbacks de changement. Lisez la valeur dans `Update` et réagissez quand elle diffère de la dernière valeur vue :
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-Enregistrez chaque champ dans `Awake`, avant que l'objet soit prêt pour le réseau. La disposition des champs constitue le format sur le réseau, donc chaque client doit enregistrer les mêmes champs dans le même ordre.
+Enregistrez chaque champ dans `Awake`, avant que l'objet soit prêt pour le réseau. La disposition des champs constitue le format sur le réseau. Chaque client doit enregistrer les mêmes champs dans le même ordre.
 </Callout>
 
-`OnBeforeTransmit` ne s'exécute que sur les frames où un paquet doit effectivement partir, pas à chaque frame ; gardez-le donc comme une simple copie de vos valeurs.
+`OnBeforeTransmit` ne s'exécute que sur les frames où un paquet doit partir, pas à chaque frame. Gardez-le comme une simple copie de vos valeurs.
 
 Pour piloter directement un transform à partir des champs enregistrés, appelez `BindTransform(target, position, rotation, scale, worldSpace)` ; le driver applique alors les valeurs interpolées dans un job sans que votre `Update` s'exécute.
 
@@ -148,5 +148,5 @@ Dans `BasisSyncedParameters`, ce même choix correspond au réglage **Compressio
 
 Un script Cilbox ne peut pas dériver de `BasisSyncedObject`. Dans le contenu téléversé :
 
-- **Objets en mouvement :** ajoutez un composant **Basis Synced Transform** ou **Basis Pickup Sync Networking**. Aucun script nécessaire.
-- **Valeurs :** conservez-les chez le propriétaire et envoyez-les sous forme d'[événements réseau](/fr/docs/scripting/networking/network-events#cilbox), en les renvoyant aux [joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners). L'exemple [Interrupteur synchronisé](/fr/docs/scripting/examples/synced-toggle) sert de modèle.
+- Objets en mouvement : ajoutez un composant **Basis Synced Transform** ou **Basis Pickup Sync Networking**. Aucun script nécessaire.
+- Valeurs : conservez-les chez le propriétaire et envoyez-les sous forme d'[événements réseau](/fr/docs/scripting/networking/network-events#cilbox), en les renvoyant aux [joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners). L'exemple [Interrupteur synchronisé](/fr/docs/scripting/examples/synced-toggle) sert de modèle.

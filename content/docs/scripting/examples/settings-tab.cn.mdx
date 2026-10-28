@@ -67,14 +67,14 @@ BasisMenuPage rules = game.AddTab("Rules");
 rules.AddLabel("Hit every target before the timer runs out.");
 ```
 
-`game.Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效，因此内容无法自行弹出菜单。
+`game.Open()` 只在玩家按下您内容中的某样东西后 5 秒内有效。内容无法自行弹出菜单。
 
 ## 规则
 
-- **谁可以添加标签页**：世界、本地玩家生成的道具，以及本地玩家自己的虚拟形象。`null` 表示被拒绝；请检查它。
-- **选项是本地的**。每位玩家各自设置。只有当某个选择应当为所有人改变世界时，才需要同步它。
-- 如果选择应当在下次访问时保留，请使用 [BasisSaveShim](/cn/docs/scripting/examples/persistence) **记住选择**。
+- 谁可以添加标签页：世界、本地玩家生成的道具，以及本地玩家自己的虚拟形象。`null` 表示被拒绝；请检查它。
+- 选项是本地的。每位玩家各自设置。只有当某个选择应当为所有人改变世界时，才需要同步它。
+- 如果选择应当在下次访问时保留，请使用 [BasisSaveShim](/cn/docs/scripting/examples/persistence) 记住选择。
 
 <Callout type="info">
-在虚拟形象上，请在 `isOwner` 为 true 时从 `BasisAvatarShim.OnAvatarReady` 中添加标签页，这样只有穿戴者才会获得它。
+在虚拟形象上，请在 `isOwner` 为 true 时从 `BasisAvatarShim.OnAvatarReady` 中添加标签页。只有穿戴者会获得它。
 </Callout>

@@ -60,7 +60,7 @@ if (BasisSeatShim.IsSeated)
 
 ## BasisAvatarSwitchShim
 
-在玩家更换虚拟形象时通知您。它跟随玩家，因此在多次切换之间都能持续工作。用完后请将其 Dispose。
+在玩家更换虚拟形象时通知您。它跟随玩家，在多次切换之间都能持续工作。用完后请将其 Dispose。
 
 ```csharp
 BasisAvatarSwitchShim watcher;
@@ -78,7 +78,7 @@ void OnDestroy() { watcher?.Dispose(); }
 
 ## BasisPermissionsShim
 
-本地玩家的角色会立即给出答案。询问其他玩家则需要一次往返，因此答案会通过回调返回。
+本地玩家的角色会立即给出答案。询问其他玩家则需要一次往返，答案会通过回调返回。
 
 ```csharp
 if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);

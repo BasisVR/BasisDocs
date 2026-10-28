@@ -92,10 +92,10 @@ public class NpcFollow : MonoBehaviour
 
 ## Hoe het werkt
 
-- **Eén simulatie.** Alleen de eigenaar draait de agent; alle anderen schakelen die uit en bewegen geleidelijk naar de ontvangen positie. Twee clients die paden berekenen voor dezelfde NPC zouden met elkaar vechten.
-- **`Sequenced`-levering** gooit late pakketten weg, zodat een oude positie nooit een nieuwere overschrijft. Tien updates per seconde is ruim voldoende met smoothing.
-- **Geen code voor late joiners.** De volgende update komt binnen 0.1 seconde aan.
-- **Wisselen van eigenaar kost niets.** Als de eigenaar vertrekt, schakelt de nieuwe eigenaar zijn agent in op de laatste positie die die heeft ontvangen.
+- Eén simulatie. Alleen de eigenaar draait de agent; alle anderen schakelen die uit en bewegen geleidelijk naar de ontvangen positie. Twee clients die paden berekenen voor dezelfde NPC zouden met elkaar vechten.
+- `Sequenced`-levering gooit late pakketten weg. Een oude positie overschrijft nooit een nieuwere. Tien updates per seconde is ruim voldoende met smoothing.
+- Geen code voor late joiners. De volgende update komt binnen 0.1 seconde aan.
+- Wisselen van eigenaar kost niets. Als de eigenaar vertrekt, schakelt de nieuwe eigenaar zijn agent in op de laatste positie die die heeft ontvangen.
 
 <Callout type="info">
 Controleer in **Basis > Tools > Cilbox Permissions** of `Buffer` en `BitConverter` zijn toegestaan in je sandbox; `BinaryWriter` (zie [Netwerkevents](/nl/docs/scripting/networking/network-events#packing-a-payload)) werkt ook.

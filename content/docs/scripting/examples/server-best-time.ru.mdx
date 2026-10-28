@@ -1,11 +1,11 @@
 ---
 title: Лучшее время на сервере
-description: Сохранение лучшего круга каждого игрока на сервере с помощью BasisServerStorageShim, чтобы оно следовало за ним между устройствами.
+description: Сохранение лучшего круга каждого игрока на сервере с помощью BasisServerStorageShim, где оно следует за игроком между устройствами.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim` сохраняет на компьютере игрока. `BasisServerStorageShim` сохраняет **на сервере** для каждого игрока, поэтому лучшее время, установленное на ПК, остаётся на месте, когда игрок заходит с Quest.
+`BasisSaveShim` сохраняет на компьютере игрока. `BasisServerStorageShim` сохраняет **на сервере** для каждого игрока. Лучшее время, установленное на ПК, остаётся на месте, когда игрок заходит с Quest.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

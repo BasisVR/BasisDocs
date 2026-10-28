@@ -85,9 +85,9 @@ public class PickupGun : MonoBehaviour
 
 ## Fonctionnement
 
-- **Basis Pickup Sync Networking** prend la propriété lors de la saisie et diffuse la pose du pistolet, pour que tout le monde le voie dans la main de celui qui le tient. Aucun code n'est nécessaire pour cette partie.
-- **Le tir est un événement**, pas un état. Personne qui rejoint plus tard n'a besoin de savoir qu'un tir a eu lieu, il n'y a donc aucune gestion des joueurs arrivés en retard.
-- **Seul le tireur lance le raycast.** Les résultats d'impact qui comptent pour le gameplay (dégâts, score) doivent être décidés par le tireur et envoyés sous forme d'événement propre, ou transmis à un propriétaire comme dans le [Tableau des scores](/fr/docs/scripting/examples/scoreboard).
+- **Basis Pickup Sync Networking** prend la propriété quand le pistolet est saisi et diffuse sa pose. Tout le monde le voit dans la main de celui qui le tient, sans aucun code.
+- Le tir est un événement, pas un état. Personne qui rejoint plus tard n'a besoin de savoir qu'un tir a eu lieu, et il n'y a aucun code pour les joueurs arrivés en retard.
+- Seul le tireur lance le raycast. Les résultats d'impact qui comptent pour le gameplay (dégâts, score) doivent être décidés par le tireur et envoyés sous forme d'événement propre, ou transmis à un propriétaire comme dans le [Tableau des scores](/fr/docs/scripting/examples/scoreboard).
 
 <Callout type="info">
 Désactivez **CanNetworkSteal** sur le composant de synchronisation si les autres joueurs ne doivent pas pouvoir arracher le pistolet de la main de quelqu'un.

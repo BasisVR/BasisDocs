@@ -5,7 +5,7 @@ description: Basisのワールドやプロップをすべてのプレイヤー�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-スクリプトが行うことはすべて、1人のプレイヤーのマシン上で実行されます。プレイヤーがドアを開けても、ネットワークに伝えるまで他の誰にも見えません。このガイドでは、そのためにBasisが提供するツールと、それぞれをいつ使うべきかを説明します。
+スクリプトが行うことはすべて、1人のプレイヤーのマシン上で実行されます。プレイヤーがドアを開けても、ネットワークに伝えるまで他の誰にも見えません。
 
 トランスポート自体の仕組み（サーバーリレー、配信方式、距離に応じた更新レート）については[Network Syncing](/ja/docs/technical/network-syncing)を参照してください。
 
@@ -19,15 +19,15 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | **途中参加者** | 状況が変わった後に到着したプレイヤー。 | シーンのデフォルトではなく、現在の状態が見えるようにする。 |
 
 <Callout type="info">
-目安: 5分後に参加したプレイヤーにも見える必要があるなら、それは**状態**であり、同期変数に入れる（またはそのプレイヤーに再送する）べきです。それが起きた瞬間にだけ意味があるなら、それは**イベント**です。
+5分後に参加したプレイヤーにも見える必要があるなら、それは**状態**であり、同期変数に入れる（またはそのプレイヤーに再送する）べきです。それが起きた瞬間にだけ意味があるなら、それは**イベント**です。
 </Callout>
 
 ## 構成要素
 
-- **`BasisNetworkBehaviour`** は、クライアントにコンパイルされるネットワーク対応スクリプトの基底クラスです。ネットワークID、オーナー、そしてコールバック`OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined`、`OnPlayerLeft`を持ちます。
-- **`BasisNetworkShim`** はCilboxスクリプト向けの同等のものです。Cilboxスクリプトは`BasisNetworkBehaviour`を継承できないため、`GetComponent`で`BasisNetworkShim`を取得し、そのイベントを購読します。
-- **`BasisSyncedObject`** は`BasisNetworkBehaviour`を基に、コンパクトで補間される状態ストリームを提供します。**`BasisSyncedParameters`**、**`BasisSyncedTransform`**、**`BasisSyncedRigidbody`** はその上に作られた既製のコンポーネントです。
-- **`BasisPickupSyncNetworking`** と **`BasisSeatSync`** は、コードなしでピックアップと座席を同期します。
+- `BasisNetworkBehaviour`は、クライアントにコンパイルされるネットワーク対応スクリプトの基底クラスです。ネットワークID、オーナー、そしてコールバック`OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined`、`OnPlayerLeft`を持ちます。
+- `BasisNetworkShim`はCilboxスクリプト向けの同等のものです。Cilboxスクリプトは`BasisNetworkBehaviour`を継承できません。代わりに`GetComponent`で`BasisNetworkShim`を取得し、そのイベントを購読します。
+- `BasisSyncedObject`は`BasisNetworkBehaviour`を基に、コンパクトで補間される状態ストリームを提供します。`BasisSyncedParameters`、`BasisSyncedTransform`、`BasisSyncedRigidbody`はその上に作られた既製のコンポーネントです。
+- `BasisPickupSyncNetworking`と`BasisSeatSync`は、コードなしでピックアップと座席を同期します。
 
 ## ネットワーク対応スクリプトを最初から最後まで
 
@@ -75,7 +75,7 @@ public class NetworkedCounter : BasisNetworkBehaviour
 
 このスクリプトが示していること:
 
-1. ボタンを押したプレイヤーが**オーナーシップを取得**するため、信頼できる情報源が1つになります。
+1. ボタンを押したプレイヤーがオーナーシップを取得し、唯一の信頼できる情報源になります。
 2. 新しい値は**イベントとして**他の全員に送信されます（`Recipients = null`は自分以外の全員を意味します）。
 3. 誰かが参加すると、**オーナーだけが**現在の値をその人に送信します。
 

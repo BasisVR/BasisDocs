@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## 작동 방식
 
-- **누르면** 소유권을 가져오고, 누른 사람이 즉시 볼 수 있도록 로컬에서 값을 뒤집은 다음, 새 값을 다른 모든 사람에게 보냅니다.
-- **`ReliableSequenced`**는 최신 값의 도착을 보장하고 오래된 값은 버리므로, 토글에 딱 맞습니다.
-- **참여하는 플레이어**는 소유자에게서만 현재 값을 받습니다. 메시지가 전체 상태이므로, 같은 `OnMessage`가 실시간 변경과 따라잡기를 모두 처리합니다.
+- 누르면 소유권을 가져오고, 누른 사람이 즉시 볼 수 있도록 로컬에서 값을 뒤집은 다음, 새 값을 다른 모든 사람에게 보냅니다.
+- `ReliableSequenced`는 최신 값의 도착을 보장하고 오래된 값은 버립니다. 토글에는 최신 값만 중요합니다.
+- 참여하는 플레이어는 소유자에게서만 현재 값을 받습니다. 메시지가 전체 상태를 담고 있어서 같은 `OnMessage`가 실시간 변경과 따라잡기를 모두 처리합니다.
 
 <Callout type="info">
 Native 버전: `BasisNetworkBehaviour`를 상속하고, shim 이벤트를 `OnNetworkMessage`와 `OnPlayerJoined` 오버라이드로 바꾸고, `TakeOwnership()`과 `SendCustomNetworkEvent`를 직접 호출하세요.

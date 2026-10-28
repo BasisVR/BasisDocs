@@ -1,11 +1,11 @@
 ---
 title: サーバーのベストタイム
-description: BasisServerStorageShimで各プレイヤーのベストラップをサーバーに保存し、デバイスを変えても引き継がれるようにします。
+description: BasisServerStorageShimで各プレイヤーのベストラップをサーバーに保存します。記録はデバイスを変えても引き継がれます。
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim`はプレイヤーのマシンに保存します。`BasisServerStorageShim`はプレイヤーごとに**サーバー**に保存するため、PCで記録したベストタイムは、Questから訪れたときにも残っています。
+`BasisSaveShim`はプレイヤーのマシンに保存します。`BasisServerStorageShim`はプレイヤーごとに**サーバー**に保存します。PCで記録したベストタイムは、Questから訪れたときにも残っています。
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

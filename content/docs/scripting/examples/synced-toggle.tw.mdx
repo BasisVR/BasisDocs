@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## 運作方式
 
-- **按下按鈕**會取得擁有權，在本機翻轉數值讓按下的人立即看到，並將新數值傳送給其他所有人。
-- **`ReliableSequenced`** 保證最新的數值會抵達並丟棄較舊的數值，這對切換開關來說恰到好處。
-- **加入的玩家**只會從擁有者那裡收到目前的數值。由於訊息就是完整的狀態，同一個 `OnMessage` 能同時處理即時變更與追上進度。
+- 按下按鈕會取得擁有權，在本機翻轉數值讓按下的人立即看到，並將新數值傳送給其他所有人。
+- `ReliableSequenced` 保證最新的數值會抵達，並丟棄較舊的數值。切換開關只在乎最新的數值。
+- 加入的玩家只會從擁有者那裡收到目前的數值。由於訊息就是完整的狀態，同一個 `OnMessage` 能同時處理即時變更與追上進度。
 
 <Callout type="info">
 Native 版本：繼承 `BasisNetworkBehaviour`，將 shim 事件替換為 `OnNetworkMessage` 和 `OnPlayerJoined` 覆寫，並直接呼叫 `TakeOwnership()` 和 `SendCustomNetworkEvent`。

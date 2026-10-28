@@ -5,10 +5,10 @@ description: Les briques de base quotidiennes d'un script Basis, joueurs, entré
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Cette page rassemble ce dont presque tous les scripts de monde ou de prop ont besoin. Chaque section montre l'appel à écrire et la règle qui piège généralement les gens. Le réseau a son propre guide : voir [Réseau](/fr/docs/scripting/networking).
+Joueurs, entrées, UI, timers, téléchargements, sauvegarde et menus, avec pour chacun l'appel à écrire et la règle qui piège généralement les gens. Le réseau est traité dans [Réseau](/fr/docs/scripting/networking).
 
 <Callout type="info">
-Les exemples marqués **Cilbox** s'exécutent dans la sandbox, ils fonctionnent donc aussi dans du contenu mis en ligne sous forme de fichier `.bee`. Les exemples marqués **Native** utilisent toute l'API Unity et Basis et ne fonctionnent que dans du code compilé dans le client. La plupart des exemples Cilbox se compilent aussi nativement.
+Les exemples marqués **Cilbox** s'exécutent dans la sandbox et fonctionnent aussi dans du contenu mis en ligne sous forme de fichier `.bee`. Les exemples marqués **Native** utilisent toute l'API Unity et Basis et ne fonctionnent que dans du code compilé dans le client. La plupart des exemples Cilbox se compilent aussi nativement.
 </Callout>
 
 ## Écrire un script
@@ -39,7 +39,7 @@ Le proxy transmet ces messages Unity à un script Cilbox :
 | --- | --- |
 | `Awake`, `Start` | Faites l'initialisation unique dans `Start`. |
 | `Update`, `FixedUpdate` | Il n'y a pas de `LateUpdate`. |
-| `OnEnable`, `OnDisable` | Le **premier** `OnEnable` n'arrive jamais, ne vous y abonnez donc jamais. |
+| `OnEnable`, `OnDisable` | Le **premier** `OnEnable` n'arrive jamais. Ne vous y abonnez pas. |
 | `OnDestroy` | Désabonnez-vous et nettoyez ici. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Nécessitent un collider, et un Rigidbody d'un côté. |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-Pour une zone qui modifie le déplacement uniquement tant que le joueur s'y trouve, utilisez des overrides sous votre propre clé. Effacer la clé restaure ce qui se trouvait en dessous, ainsi deux zones ne se disputent jamais la valeur d'origine.
+Pour une zone qui modifie le déplacement uniquement tant que le joueur s'y trouve, utilisez des overrides sous votre propre clé. Effacer la clé restaure ce qui se trouvait en dessous, et deux zones ne se disputent jamais la valeur d'origine.
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-Dans les builds du client, le composant **Basis Locomotion Zone** (com.basis.examples) fait cela sans code. Il ne figure pas dans les listes autorisées par défaut pour le contenu, les mondes mis en ligne utilisent donc plutôt les overrides ci-dessus.
+Dans les builds du client, le composant **Basis Locomotion Zone** (com.basis.examples) fait cela sans code. Il ne figure pas dans les listes autorisées par défaut pour le contenu. Les mondes mis en ligne utilisent plutôt les overrides ci-dessus.
 </Callout>
 
 ### Tout le monde dans l'instance
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` fonctionne tel quel ; Basis étiquette chaque message avec le contenu dont il provient. Dans l'éditeur, **Basis > Tools > Cilbox Permissions** montre ce que chaque sandbox autorise, et son onglet **Script Check** analyse vos scripts à la recherche d'appels qui seront bloqués. La fenêtre **Basis > Creator Guide** contient ce guide et la référence complète de l'API Cilbox hors ligne.
 
 <Callout type="warn">
-Les appels bloqués ne lèvent pas d'erreur à la compilation. Un appel hors de la liste blanche échoue au moment où il s'exécute, analysez donc vos scripts avant de les mettre en ligne.
+Les appels bloqués ne lèvent pas d'erreur à la compilation. Un appel hors de la liste blanche n'échoue qu'au moment où il s'exécute. Analysez vos scripts avant de les mettre en ligne.
 </Callout>

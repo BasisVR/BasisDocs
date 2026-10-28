@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## Cómo funciona
 
-- **Al pulsar**, el script toma la propiedad, invierte el valor localmente para que quien pulsa lo vea al instante y envía el nuevo valor a todos los demás.
-- **`ReliableSequenced`** garantiza que llegue el valor más reciente y descarta los anteriores, que es exactamente lo adecuado para un interruptor.
-- **Un jugador que se une** recibe el valor actual solo del propietario. Como el mensaje contiene todo el estado, el mismo `OnMessage` gestiona tanto los cambios en vivo como la puesta al día.
+- Al pulsar, el script toma la propiedad, invierte el valor localmente para que quien pulsa lo vea al instante y envía el nuevo valor a todos los demás.
+- `ReliableSequenced` garantiza que llegue el valor más reciente y descarta los anteriores. A un interruptor solo le importa el valor más reciente.
+- Un jugador que se une recibe el valor actual solo del propietario. Como el mensaje contiene todo el estado, el mismo `OnMessage` gestiona tanto los cambios en vivo como la puesta al día.
 
 <Callout type="info">
 Versión nativa: derive de `BasisNetworkBehaviour`, sustituya los eventos del shim por sobrescrituras de `OnNetworkMessage` y `OnPlayerJoined`, y llame directamente a `TakeOwnership()` y `SendCustomNetworkEvent`.

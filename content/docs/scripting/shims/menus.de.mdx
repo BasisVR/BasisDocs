@@ -3,7 +3,7 @@ title: Menüs
 description: BasisMenuShim, Einstellungs-Tabs und Menü-Panels mit Überschriften, Beschriftungen, Buttons, Schaltern, Slidern und Dropdowns.
 ---
 
-`BasisMenuShim` fügt dem eigenen Menü des Spielers UI hinzu. Beide Aufrufe geben null zurück, wenn sie abgelehnt werden, prüfen Sie das also immer.
+`BasisMenuShim` fügt dem eigenen Menü des Spielers UI hinzu. Beide Aufrufe geben null zurück, wenn sie abgelehnt werden. Prüfen Sie das immer.
 
 | Aufruf | Fügt hinzu |
 | --- | --- |
@@ -51,7 +51,7 @@ Seiten: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (Panels), `IsOpen`
 
 ## Ein Panel öffnen
 
-`Open()` funktioniert nur innerhalb von 5 Sekunden, nachdem der Spieler etwas in Ihrem Inhalt gedrückt hat, damit Inhalte Menüs nicht von sich aus aufklappen können.
+`Open()` funktioniert nur innerhalb von 5 Sekunden, nachdem der Spieler etwas in Ihrem Inhalt gedrückt hat. Inhalte können Menüs also nicht von sich aus aufklappen.
 
 ```csharp
 BasisMenuPage arcade;

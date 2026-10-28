@@ -16,7 +16,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | 移动的物体 | [`BasisSyncedTransform`、`BasisSyncedRigidbody` 或 `BasisPickupSyncNetworking`](/cn/docs/scripting/networking/network-components)。 |
 
 <Callout type="warn">
-`BasisSyncedParameters` 和您自己的 `BasisSyncedObject` 子类不在上传内容的默认允许列表中，因此除非将该类型添加到 content police 选择器中，否则它们会从 `.bee` 中被剔除。在上传的 Cilbox 内容中，请用[网络事件](/cn/docs/scripting/networking/network-events#cilbox)同步值，用 **Basis Synced Transform** 同步移动物体。
+`BasisSyncedParameters` 和您自己的 `BasisSyncedObject` 子类不在上传内容的默认允许列表中。除非将该类型添加到 content police 选择器中，否则它们会从 `.bee` 中被剔除。在上传的 Cilbox 内容中，请用[网络事件](/cn/docs/scripting/networking/network-events#cilbox)同步值，用 **Basis Synced Transform** 同步移动物体。
 </Callout>
 
 ## BasisSyncedParameters：无需序列化代码
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **只有所有者的写入才有效**。写入前请先获取所有权（参见[所有权](/cn/docs/scripting/networking/ownership)）。
-- **读取在任何地方都有效**。在所有者那里，您得到的是自己写入的值；在其他所有人那里，您得到的是插值后的网络值。
+- 只有所有者的写入才有效。写入前请先获取所有权（参见[所有权](/cn/docs/scripting/networking/ownership)）。
+- 读取在任何地方都有效。在所有者那里，您得到的是自己写入的值；在其他所有人那里，您得到的是插值后的网络值。
 - 使用 `GetParameterId` 将名称解析为 id 一次，并在 `Update` 中使用 id 重载，以跳过名称查找。
 
 没有变更回调。请在 `Update` 中读取值，并在它与上次看到的值不同时做出响应：
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-请在 `Awake` 中、对象网络就绪之前注册每个字段。字段布局就是传输格式，因此每个客户端都必须以相同的顺序注册相同的字段。
+请在 `Awake` 中、对象网络就绪之前注册每个字段。字段布局就是传输格式。每个客户端都必须以相同的顺序注册相同的字段。
 </Callout>
 
-`OnBeforeTransmit` 只在真正需要发送数据包的帧上运行，而不是每帧都运行，因此请让它只做纯粹的值复制。
+`OnBeforeTransmit` 只在需要发送数据包的帧上运行，而不是每帧都运行。请让它只做简单的值复制。
 
 要直接用已注册的字段驱动变换，请调用 `BindTransform(target, position, rotation, scale, worldSpace)`；之后驱动器会在 job 中应用插值后的值，无需运行您的 `Update`。
 
@@ -148,5 +148,5 @@ RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
 
 Cilbox 脚本无法派生自 `BasisSyncedObject`。在上传的内容中：
 
-- **移动物体**：添加 **Basis Synced Transform** 或 **Basis Pickup Sync Networking** 组件。无需脚本。
-- **值**：将它们保存在所有者那里，并作为[网络事件](/cn/docs/scripting/networking/network-events#cilbox)发送，同时重新发送给[后加入者](/cn/docs/scripting/networking/late-joiners)。[同步开关](/cn/docs/scripting/examples/synced-toggle)示例就是模板。
+- 移动物体：添加 **Basis Synced Transform** 或 **Basis Pickup Sync Networking** 组件。无需脚本。
+- 值：将它们保存在所有者那里，并作为[网络事件](/cn/docs/scripting/networking/network-events#cilbox)发送，同时重新发送给[后加入者](/cn/docs/scripting/networking/late-joiners)。[同步开关](/cn/docs/scripting/examples/synced-toggle)示例就是模板。

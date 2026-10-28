@@ -5,10 +5,10 @@ description: Basisスクリプトの日常的な構成要素。プレイヤー�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-このページには、ほぼすべてのワールドやプロップのスクリプトで必要になるものをまとめています。各セクションでは、書くべき呼び出しと、よくつまずくルールを示します。ネットワークには専用のガイドがあります。[ネットワーク](/ja/docs/scripting/networking)を参照してください。
+プレイヤー、入力、UI、タイマー、ダウンロード、保存、メニューについて、それぞれ書くべき呼び出しと、よくつまずくルールを示します。ネットワークについては[ネットワーク](/ja/docs/scripting/networking)で説明しています。
 
 <Callout type="info">
-**Cilbox**と記されたサンプルはサンドボックス内で実行されるため、`.bee`ファイルとしてアップロードされたコンテンツでも動作します。**Native**と記されたサンプルはUnityとBasisのAPIをすべて使用し、クライアントにコンパイルされたコードでのみ動作します。ほとんどのCilboxサンプルはNativeとしてもコンパイルできます。
+**Cilbox**と記されたサンプルはサンドボックス内で実行され、`.bee`ファイルとしてアップロードされたコンテンツでも動作します。**Native**と記されたサンプルはUnityとBasisのAPIをすべて使用し、クライアントにコンパイルされたコードでのみ動作します。ほとんどのCilboxサンプルはNativeとしてもコンパイルできます。
 </Callout>
 
 ## スクリプトを書く
@@ -39,7 +39,7 @@ public class Spinner : MonoBehaviour
 | --- | --- |
 | `Awake`、`Start` | 一度きりのセットアップは`Start`で行います。 |
 | `Update`、`FixedUpdate` | `LateUpdate`はありません。 |
-| `OnEnable`、`OnDisable` | **最初の**`OnEnable`は届かないため、そこで購読しないでください。 |
+| `OnEnable`、`OnDisable` | **最初の**`OnEnable`は届きません。そこで購読しないでください。 |
 | `OnDestroy` | ここで購読解除と後片付けを行います。 |
 | `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | コライダーと、どちらか一方にRigidbodyが必要です。 |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-プレイヤーが中にいる間だけ移動を変更するゾーンでは、独自のキーでオーバーライドを使用してください。キーをクリアすると下にあった値が復元されるため、2つのゾーンが元の値を取り合うことはありません。
+プレイヤーが中にいる間だけ移動を変更するゾーンでは、独自のキーでオーバーライドを使用してください。キーをクリアすると下にあった値が復元され、2つのゾーンが元の値を取り合うことはありません。
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-クライアントビルドでは、**Basis Locomotion Zone**コンポーネント（com.basis.examples）がコードなしでこれを行います。ただしデフォルトのコンテンツ許可リストには含まれていないため、アップロードされるワールドでは上記のオーバーライドを使用してください。
+クライアントビルドでは、**Basis Locomotion Zone**コンポーネント（com.basis.examples）がコードなしでこれを行います。ただしデフォルトのコンテンツ許可リストには含まれていません。アップロードされるワールドでは、代わりに上記のオーバーライドを使用してください。
 </Callout>
 
 ### インスタンス内の全員
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log`は書いたとおりに動作し、Basisは各メッセージに送信元のコンテンツのタグを付けます。エディターでは、**Basis > Tools > Cilbox Permissions**で各サンドボックスが許可しているものを確認でき、その**Script Check**タブでブロックされる呼び出しをスクリプトからスキャンできます。**Basis > Creator Guide**ウィンドウには、このガイドとCilbox APIリファレンスの全体がオフラインで収録されています。
 
 <Callout type="warn">
-ブロックされる呼び出しはビルド時には例外を投げません。ホワイトリスト外の呼び出しは実行時に失敗するため、アップロード前にスクリプトをスキャンしてください。
+ブロックされる呼び出しはビルド時には例外を投げません。ホワイトリスト外の呼び出しは、実行されたときに初めて失敗します。アップロード前にスクリプトをスキャンしてください。
 </Callout>

@@ -3,7 +3,7 @@ title: Ascensor
 description: Una plataforma móvil en la que todos viajan juntos. Solo se sincroniza la planta de destino; cada cliente mueve la plataforma hacia ella.
 ---
 
-Transmitir la posición de la plataforma cuesta ancho de banda en cada fotograma. Un ascensor solo se mueve hacia una planta, así que sincronice la **planta de destino** y deje que cada cliente mueva la plataforma por sí mismo.
+Transmitir la posición de la plataforma cuesta ancho de banda en cada fotograma. Un ascensor solo se mueve hacia una planta. Sincronice la **planta de destino** y deje que cada cliente mueva la plataforma por sí mismo.
 
 ## Configuración
 
@@ -71,6 +71,6 @@ public class Elevator : MonoBehaviour
 }
 ```
 
-- Cada cliente ejecuta el mismo movimiento, así que los pasajeros ven una plataforma fluida sin flujo de posiciones.
+- Cada cliente ejecuta el mismo movimiento. Los pasajeros ven una plataforma fluida sin un flujo de posiciones.
 - Quien se une tarde recibe la planta de destino y la altura actual en un único mensaje de 5 bytes.
 - Fíjese en el `new Vector3(...)`: cambiar `p.y` directamente también cambiaría en Cilbox el valor del que se copió (consulte [Reglas del sandbox](/es/docs/scripting/sandbox-rules)).

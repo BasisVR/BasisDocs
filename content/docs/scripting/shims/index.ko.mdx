@@ -7,9 +7,9 @@ description: Cilbox 스크립트에서 사용할 수 있는 모든 Basis 심을 
 
 심은 세 가지 형태로 제공됩니다.
 
-- **정적 클래스**: `BasisPlayersShim.Count`처럼 직접 호출합니다.
-- **이벤트 컴포넌트**: `Start`에서 `GetComponent<T>()`를 호출해 사용을 선택합니다. Cilbox가 컴포넌트를 대신 추가하고, Basis는 스크립트에서 `OnPlatformChanged`처럼 정해진 이름의 메서드를 호출합니다.
-- **대체 타입**: 일반적인 Unity 이름(`Debug`, `VideoPlayer`, `BasisAvatar`)을 그대로 쓰면 샌드박스가 안전한 버전을 제공합니다.
+- 정적 클래스는 `BasisPlayersShim.Count`처럼 직접 호출합니다.
+- 이벤트 컴포넌트는 `Start`에서 `GetComponent<T>()`를 호출해 사용을 선택합니다. Cilbox가 컴포넌트를 대신 추가하고, Basis는 스크립트에서 `OnPlatformChanged`처럼 정해진 이름의 메서드를 호출합니다.
+- 대체 타입. 일반적인 Unity 이름(`Debug`, `VideoPlayer`, `BasisAvatar`)을 그대로 쓰면 샌드박스가 안전한 버전을 제공합니다.
 
 | 심 | 하는 일 | 페이지 |
 | --- | --- | --- |

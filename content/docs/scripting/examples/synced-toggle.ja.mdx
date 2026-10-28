@@ -85,9 +85,9 @@ public class SyncedToggle : MonoBehaviour
 
 ## 仕組み
 
-- **押す**とオーナーシップを取得し、押した人にすぐ見えるようローカルで値を反転させ、新しい値を他の全員に送信します。
-- **`ReliableSequenced`** は最新の値が届くことを保証し、古いものは破棄します。これはトグルにまさにぴったりです。
-- **参加するプレイヤー**はオーナーからのみ現在の値を受け取ります。メッセージが状態全体なので、同じ`OnMessage`がライブの変更と追いつきの両方を処理します。
+- 押すとオーナーシップを取得し、押した人にすぐ見えるようローカルで値を反転させ、新しい値を他の全員に送信します。
+- `ReliableSequenced`は最新の値が届くことを保証し、古いものは破棄します。トグルに必要なのは最新の値だけです。
+- 参加するプレイヤーは、オーナーからのみ現在の値を受け取ります。メッセージが状態全体なので、同じ`OnMessage`がライブの変更と追いつきの両方を処理します。
 
 <Callout type="info">
 Native版: `BasisNetworkBehaviour`を継承し、シムのイベントを`OnNetworkMessage`と`OnPlayerJoined`のオーバーライドに置き換え、`TakeOwnership()`と`SendCustomNetworkEvent`を直接呼び出します。

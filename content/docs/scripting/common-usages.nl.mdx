@@ -5,10 +5,10 @@ description: De dagelijkse bouwstenen van een Basis-script, spelers, invoer, UI,
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Deze pagina verzamelt de dingen die bijna elk wereld- of prop-script nodig heeft. Elke sectie toont de aanroep die je schrijft en de regel waar mensen meestal over struikelen. Netwerken heeft een eigen handleiding: zie [Netwerken](/nl/docs/scripting/networking).
+Spelers, invoer, UI, timers, downloads, opslaan en menu's, met voor elk onderwerp de aanroep die je schrijft en de regel waar mensen meestal over struikelen. Netwerken wordt behandeld in [Netwerken](/nl/docs/scripting/networking).
 
 <Callout type="info">
-Voorbeelden gemarkeerd met **Cilbox** draaien binnen de sandbox, dus ze werken ook in content die als `.bee`-bestand is geüpload. Voorbeelden gemarkeerd met **Native** gebruiken de volledige Unity- en Basis-API en werken alleen in code die in de client is gecompileerd. De meeste Cilbox-voorbeelden compileren ook native.
+Voorbeelden gemarkeerd met **Cilbox** draaien binnen de sandbox en werken ook in content die als `.bee`-bestand is geüpload. Voorbeelden gemarkeerd met **Native** gebruiken de volledige Unity- en Basis-API en werken alleen in code die in de client is gecompileerd. De meeste Cilbox-voorbeelden compileren ook native.
 </Callout>
 
 ## Een script schrijven
@@ -39,7 +39,7 @@ De proxy stuurt deze Unity-berichten door naar een Cilbox-script:
 | --- | --- |
 | `Awake`, `Start` | Doe eenmalige setup in `Start`. |
 | `Update`, `FixedUpdate` | Er is geen `LateUpdate`. |
-| `OnEnable`, `OnDisable` | De **eerste** `OnEnable` komt nooit aan, dus abonneer je daar nooit. |
+| `OnEnable`, `OnDisable` | De **eerste** `OnEnable` komt nooit aan. Abonneer je daar niet. |
 | `OnDestroy` | Zeg hier abonnementen op en ruim op. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Hebben een collider nodig, en een Rigidbody aan één kant. |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-Voor een zone die de beweging alleen verandert terwijl de speler erin is, gebruik je overrides onder je eigen sleutel. Het wissen van de sleutel herstelt wat eronder lag, zodat twee zones nooit strijden om de oorspronkelijke waarde.
+Voor een zone die de beweging alleen verandert terwijl de speler erin is, gebruik je overrides onder je eigen sleutel. Het wissen van de sleutel herstelt wat eronder lag, en twee zones strijden nooit om de oorspronkelijke waarde.
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-In client-builds doet het **Basis Locomotion Zone**-component (com.basis.examples) dit zonder code. Het staat niet op de standaard content-allowlists, dus geüploade werelden gebruiken in plaats daarvan de overrides hierboven.
+In client-builds doet het **Basis Locomotion Zone**-component (com.basis.examples) dit zonder code. Het staat niet op de standaard content-allowlists. Geüploade werelden gebruiken in plaats daarvan de overrides hierboven.
 </Callout>
 
 ### Iedereen in de instance
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` werkt zoals geschreven; Basis labelt elk bericht met de content waar het vandaan kwam. In de editor toont **Basis > Tools > Cilbox Permissions** wat elke sandbox toestaat, en het tabblad **Script Check** scant je scripts op aanroepen die geblokkeerd zullen worden. Het venster **Basis > Creator Guide** bevat deze handleiding en de volledige Cilbox-API-referentie offline.
 
 <Callout type="warn">
-Geblokkeerde aanroepen geven geen fout tijdens het bouwen. Een aanroep buiten de whitelist faalt wanneer die wordt uitgevoerd, dus scan scripts voordat je uploadt.
+Geblokkeerde aanroepen geven geen fout tijdens het bouwen. Een aanroep buiten de whitelist faalt pas wanneer die wordt uitgevoerd. Scan scripts voordat je uploadt.
 </Callout>

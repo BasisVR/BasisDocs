@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` 已經會為自己的串流接收網路訊息，因此請用一個小型子類別將請求轉送給記分板：
+`BasisSyncedParameters` 已經會為自己的串流接收網路訊息。請用一個小型子類別將請求轉送給記分板：
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ public class ScoreboardParameters : BasisSyncedParameters
 
 ## 運作方式
 
-- **只有擁有者寫入**分數，因此同時按下的操作會在擁有者端依序套用。
-- **其他所有人傳送請求**給 `CurrentOwnerId`，而不是取得擁有權。取得擁有權會讓兩位玩家各自對同一個舊數值加 1。
-- **晚加入者**不需要額外處理：同步參數會向新玩家傳送關鍵影格。
-- **如果擁有者離開**，擁有權會轉移到連線時間最長的玩家，而他已經擁有目前的分數。
+- 只有擁有者寫入分數。同時按下的操作會在擁有者端依序套用。
+- 其他所有人傳送請求給 `CurrentOwnerId`，而不是取得擁有權。取得擁有權會讓兩位玩家各自對同一個舊數值加 1。
+- 晚加入者不需要額外處理。同步參數會向新玩家傳送關鍵影格。
+- 如果擁有者離開，擁有權會轉移到連線時間最長的玩家，而他已經擁有目前的分數。
 
 <Callout type="info">
-請求只有一個位元組；同步封包比較大，因此在這裡檢查長度就足以區分它們。若有更多訊息類型，請在您自己的訊息前加上同步串流絕不會作為開頭的標記位元組，或將請求處理放在另一個 `BasisNetworkBehaviour` 上。
+請求只有一個位元組，同步封包一定比這大，所以在這裡檢查長度就夠了。若有更多訊息類型，請在您自己的訊息前加上同步串流絕不會作為開頭的標記位元組，或將請求處理放在另一個 `BasisNetworkBehaviour` 上。
 </Callout>

@@ -3,7 +3,7 @@ title: Menus
 description: BasisMenuShim, onglets de paramètres et panneaux de menu avec en-têtes, libellés, boutons, interrupteurs, curseurs et listes déroulantes.
 ---
 
-`BasisMenuShim` ajoute de l'UI au menu du joueur. Les deux appels renvoient null en cas de refus, vérifiez donc toujours.
+`BasisMenuShim` ajoute de l'UI au menu du joueur. Les deux appels renvoient null en cas de refus. Vérifiez toujours.
 
 | Appel | Ajoute |
 | --- | --- |
@@ -51,7 +51,7 @@ Pages : `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (panneaux), `IsOpe
 
 ## Ouvrir un panneau
 
-`Open()` ne fonctionne que dans les 5 secondes qui suivent un appui du joueur sur quelque chose dans votre contenu, pour que le contenu ne puisse pas ouvrir des menus de lui-même.
+`Open()` ne fonctionne que dans les 5 secondes qui suivent un appui du joueur sur quelque chose dans votre contenu, et le contenu ne peut pas ouvrir des menus de lui-même.
 
 ```csharp
 BasisMenuPage arcade;

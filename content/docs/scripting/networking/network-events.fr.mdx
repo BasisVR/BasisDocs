@@ -13,9 +13,9 @@ Un événement réseau est un tableau d'octets envoyé depuis la copie d'un obje
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** envoie à tout le monde sauf vous.
+- `recipients = null` envoie à tout le monde sauf vous.
 - Passez un tableau d'ID de joueurs pour envoyer à des joueurs précis. Incluez votre propre ID pour que le message vous revienne via le réseau.
-- L'objet doit être prêt pour le réseau (`HasNetworkID` vaut true). Un envoi plus tôt journalise une erreur et ne fait rien, envoyez donc depuis `OnNetworkReady` ou plus tard.
+- L'objet doit être prêt pour le réseau (`HasNetworkID` vaut true). Un envoi plus tôt journalise une erreur et ne fait rien. Envoyez depuis `OnNetworkReady` ou plus tard.
 
 <Callout type="warn">
 Les événements **ne sont pas mémorisés**. Un joueur qui rejoint après l'envoi d'un événement ne le reçoit jamais. Si l'événement modifie un état durable, gérez aussi les [joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners).

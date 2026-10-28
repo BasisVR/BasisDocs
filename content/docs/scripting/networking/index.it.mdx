@@ -5,7 +5,7 @@ description: Come fare in modo che un mondo o un prop Basis si comporti allo ste
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Tutto ciò che uno script fa viene eseguito sul computer di un solo giocatore. Se un giocatore apre una porta, nessun altro lo vede finché non lo comunichi alla rete. Questa guida tratta gli strumenti che Basis ti offre per farlo e quando usare ciascuno.
+Tutto ciò che uno script fa viene eseguito sul computer di un solo giocatore. Se un giocatore apre una porta, nessun altro lo vede finché non lo comunichi alla rete.
 
 Per il funzionamento del trasporto stesso (relay del server, metodi di consegna, frequenze di aggiornamento basate sulla distanza), vedi [Sincronizzazione di rete](/it/docs/technical/network-syncing).
 
@@ -19,15 +19,15 @@ Per il funzionamento del trasporto stesso (relay del server, metodi di consegna,
 | **Giocatori arrivati in ritardo** | Giocatori che arrivano dopo che le cose sono cambiate. | Assicurarsi che vedano lo stato attuale, non i valori predefiniti della scena. |
 
 <Callout type="info">
-Regola pratica: se un giocatore che entra cinque minuti dopo deve vederlo, è uno **stato** e appartiene a una variabile sincronizzata (oppure deve essergli reinviato). Se conta solo nel momento in cui accade, è un **evento**.
+Se un giocatore che entra cinque minuti dopo deve vederlo, è uno **stato** e appartiene a una variabile sincronizzata (oppure deve essergli reinviato). Se conta solo nel momento in cui accade, è un **evento**.
 </Callout>
 
-## I mattoni fondamentali
+## Gli elementi di base
 
-- **`BasisNetworkBehaviour`** è la classe base per gli script di rete compilati nel client. Riceve un ID di rete, un proprietario e le callback `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` e `OnPlayerLeft`.
-- **`BasisNetworkShim`** è la stessa cosa per gli script Cilbox. Uno script Cilbox non può derivare da `BasisNetworkBehaviour`, quindi ottiene un `BasisNetworkShim` con `GetComponent` e si sottoscrive ai suoi eventi.
-- **`BasisSyncedObject`** si basa su `BasisNetworkBehaviour` con un flusso di stato compatto e interpolato. **`BasisSyncedParameters`**, **`BasisSyncedTransform`** e **`BasisSyncedRigidbody`** sono componenti pronti all'uso costruiti sopra di esso.
-- **`BasisPickupSyncNetworking`** e **`BasisSeatSync`** sincronizzano pickup e sedili senza codice.
+- `BasisNetworkBehaviour` è la classe base per gli script di rete compilati nel client. Riceve un ID di rete, un proprietario e le callback `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` e `OnPlayerLeft`.
+- `BasisNetworkShim` è la stessa cosa per gli script Cilbox. Uno script Cilbox non può derivare da `BasisNetworkBehaviour`; ottiene invece un `BasisNetworkShim` con `GetComponent` e si sottoscrive ai suoi eventi.
+- `BasisSyncedObject` si basa su `BasisNetworkBehaviour` con un flusso di stato compatto e interpolato. `BasisSyncedParameters`, `BasisSyncedTransform` e `BasisSyncedRigidbody` sono componenti pronti all'uso costruiti sopra di esso.
+- `BasisPickupSyncNetworking` e `BasisSeatSync` sincronizzano pickup e sedili senza codice.
 
 ## Uno script di rete, dall'inizio alla fine
 
@@ -75,7 +75,7 @@ Gli script nativi come questo funzionano nelle build del client. Nei contenuti c
 
 Cosa mostra:
 
-1. Il giocatore che preme il pulsante **prende l'ownership**, così c'è un'unica fonte di verità.
+1. Il giocatore che preme il pulsante prende l'ownership e diventa l'unica fonte di verità.
 2. Il nuovo valore viene **inviato come evento** a tutti gli altri (`Recipients = null` significa tutti tranne te).
 3. Quando qualcuno entra, **solo il proprietario** gli invia il valore attuale.
 

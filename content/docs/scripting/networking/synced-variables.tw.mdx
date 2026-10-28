@@ -16,7 +16,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | 移動中的物件 | [`BasisSyncedTransform`、`BasisSyncedRigidbody` 或 `BasisPickupSyncNetworking`](/tw/docs/scripting/networking/network-components)。 |
 
 <Callout type="warn">
-`BasisSyncedParameters` 和您自己的 `BasisSyncedObject` 子類別不在上傳內容的預設允許清單上，因此除非將該類型加入 content police 選擇器，否則它們會從 `.bee` 中被移除。在上傳的 Cilbox 內容中，請用[網路事件](/tw/docs/scripting/networking/network-events#cilbox)同步數值，並用 **Basis Synced Transform** 同步移動中的物件。
+`BasisSyncedParameters` 和您自己的 `BasisSyncedObject` 子類別不在上傳內容的預設允許清單上。除非將該類型加入 content police 選擇器，否則它們會從 `.bee` 中被移除。在上傳的 Cilbox 內容中，請用[網路事件](/tw/docs/scripting/networking/network-events#cilbox)同步數值，並用 **Basis Synced Transform** 同步移動中的物件。
 </Callout>
 
 ## BasisSyncedParameters：無需序列化程式碼
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **只有擁有者的寫入才算數。** 寫入前請先取得擁有權（請參閱[擁有權](/tw/docs/scripting/networking/ownership)）。
-- **讀取在任何地方都有效。** 在擁有者端，您會得到自己寫入的值；在其他所有人端，您會得到經插值的網路數值。
+- 只有擁有者的寫入才算數。寫入前請先取得擁有權（請參閱[擁有權](/tw/docs/scripting/networking/ownership)）。
+- 讀取在任何地方都有效。在擁有者端，您會得到自己寫入的值；在其他所有人端，您會得到經插值的網路數值。
 - 用 `GetParameterId` 將名稱解析為 id 一次，然後在 `Update` 中使用 id 的多載版本以省去名稱查詢。
 
 沒有變更回呼。請在 `Update` 中讀取數值，並在它與上次看到的值不同時做出反應：
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-請在物件網路就緒之前，於 `Awake` 中註冊每個欄位。欄位配置就是傳輸格式，因此每個客戶端都必須以相同順序註冊相同的欄位。
+請在物件網路就緒之前，於 `Awake` 中註冊每個欄位。欄位配置就是傳輸格式。每個客戶端都必須以相同順序註冊相同的欄位。
 </Callout>
 
-`OnBeforeTransmit` 只會在確實需要傳送封包的影格執行，而不是每一幀，因此請讓它單純複製您的數值。
+`OnBeforeTransmit` 只會在需要傳送封包的影格執行，而不是每一幀。請讓它單純複製您的數值。
 
 若要直接以已註冊的欄位驅動變換，請呼叫 `BindTransform(target, position, rotation, scale, worldSpace)`；之後驅動器會在 job 中套用經插值的數值，不需要執行您的 `Update`。
 
@@ -148,5 +148,5 @@ RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
 
 Cilbox 腳本無法繼承 `BasisSyncedObject`。在上傳的內容中：
 
-- **移動中的物件：** 加入 **Basis Synced Transform** 或 **Basis Pickup Sync Networking** 元件。不需要腳本。
-- **數值：** 將它們保存在擁有者端並以[網路事件](/tw/docs/scripting/networking/network-events#cilbox)傳送，並重新傳送給[晚加入者](/tw/docs/scripting/networking/late-joiners)。[同步切換開關](/tw/docs/scripting/examples/synced-toggle)範例就是範本。
+- 移動中的物件：加入 **Basis Synced Transform** 或 **Basis Pickup Sync Networking** 元件。不需要腳本。
+- 數值：將它們保存在擁有者端並以[網路事件](/tw/docs/scripting/networking/network-events#cilbox)傳送，並重新傳送給[晚加入者](/tw/docs/scripting/networking/late-joiners)。[同步切換開關](/tw/docs/scripting/examples/synced-toggle)範例就是範本。

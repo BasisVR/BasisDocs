@@ -5,10 +5,10 @@ description: De event-shims waarvoor je je aanmeldt. Haal de component op in Sta
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Elke event-shim werkt hetzelfde: roep één keer `GetComponent<T>()` aan in `Start` (Cilbox voegt de component voor je toe) en declareer dan een methode met de callbacknaam van de shim. Basis roept die direct aan, dus er is niets om je op te abonneren of af te melden.
+Elke event-shim werkt hetzelfde: roep één keer `GetComponent<T>()` aan in `Start` (Cilbox voegt de component voor je toe) en declareer dan een methode met de callbacknaam van de shim. Basis roept die direct aan. Er is niets om je op te abonneren of af te melden.
 
 <Callout type="info">
-De meeste event-shims roepen je één keer aan direct nadat je je aanmeldt, met de huidige waarde, zodat je geen aparte opstartcode nodig hebt.
+De meeste event-shims roepen je één keer aan direct nadat je je aanmeldt, met de huidige waarde. Aparte opstartcode is niet nodig.
 </Callout>
 
 ## BasisPlatformEventShim

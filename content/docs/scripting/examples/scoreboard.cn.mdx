@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` 已经会为自己的数据流接收网络消息，因此请用一个小的子类将请求转发给计分板：
+`BasisSyncedParameters` 已经会为自己的数据流接收网络消息。请用一个小的子类将请求转发给计分板：
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ public class ScoreboardParameters : BasisSyncedParameters
 
 ## 工作原理
 
-- **只有所有者写入**分数，因此同时发生的按压会在所有者那里依次应用。
-- **其他所有人向** `CurrentOwnerId` **发送请求**，而不是获取所有权。获取所有权会导致两位玩家各自在同一个旧值上加 1。
-- **后加入者**不需要额外处理：同步参数会向新玩家发送关键帧。
-- **如果所有者离开**，所有权会转移到连接时间最长的玩家，而该玩家已经拥有当前分数。
+- 只有所有者写入分数。同时发生的按压会在所有者那里依次应用。
+- 其他所有人向 `CurrentOwnerId` 发送请求，而不是获取所有权。获取所有权会导致两位玩家各自在同一个旧值上加 1。
+- 后加入者不需要额外处理。同步参数会向新玩家发送关键帧。
+- 如果所有者离开，所有权会转移到连接时间最长的玩家，而该玩家已经拥有当前分数。
 
 <Callout type="info">
-请求只有一个字节；同步数据包更大，因此在这里检查长度就足以区分它们。如需更多消息类型，请在您自己的消息前加上一个同步流永远不会作为开头的标记字节，或者将请求处理放在单独的 `BasisNetworkBehaviour` 上。
+请求只有一个字节，同步数据包总是比它大，在这里检查长度就足以区分两者。如需更多消息类型，请在您自己的消息前加上一个同步流永远不会作为开头的标记字节，或者将请求处理放在单独的 `BasisNetworkBehaviour` 上。
 </Callout>

@@ -24,11 +24,11 @@ Basis 保留了數個 Unity 圖層。請依照說明使用它們，讓玩家、�
 
 ## 選擇圖層
 
-- **牆壁、地板、道具：** Default。
-- **按鈕前方的觸發器體積和隱形阻擋物：** IgnoredByInteractable，讓指標能觸及其後方的東西。
-- **指標永遠不應擊中的裝飾用 collider：** Ignore Raycast。
-- **絕對不要將您的物件放在** Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 上。
+- 牆壁、地板、道具：Default。
+- 按鈕前方的觸發器體積和隱形阻擋物：IgnoredByInteractable。指標會穿過它們，觸及後方的東西。
+- 指標永遠不應擊中的裝飾用 collider：Ignore Raycast。
+- 絕對不要將您的物件放在 Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 上。
 
 <Callout type="info">
-圖層名稱和編號來自 Basis 專案的 Tag Manager。內容是以它們建置的，因此請勿在您的專案中重新命名或重新排序 Basis 圖層。
+圖層名稱和編號來自 Basis 專案的 Tag Manager。內容是以它們建置的。請勿在您的專案中重新命名或重新排序 Basis 圖層。
 </Callout>

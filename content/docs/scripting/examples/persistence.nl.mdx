@@ -90,10 +90,10 @@ public class CourseProgress : MonoBehaviour
 
 ## Regels
 
-- **De speler beslist.** Totdat die opslaan voor je content toestaat, geeft `Save` false terug en `Load` null. Je script blijft draaien, dus handel een ontbrekende opslag altijd af.
-- **Geef je gegevens een versie.** Schrijf eerst een versiebyte en weiger gegevens die je niet begrijpt. Spelers houden oude opslagen wanneer je je wereld bijwerkt.
-- **Valideer bij het laden.** Begrens indices; vertrouw er nooit op dat opgeslagen waarden nog bij je scène passen.
-- **Limieten:** 256 KB per slot, 32 slots en 1 MB per store, 8 schrijfacties per seconde. Sla op bij betekenisvolle events, niet elk frame.
+- De speler beslist. Totdat die opslaan voor je content toestaat, geeft `Save` false terug en `Load` null. Je script blijft hoe dan ook draaien. Handel een ontbrekende opslag altijd af.
+- Geef je gegevens een versie. Schrijf eerst een versiebyte en weiger gegevens die je niet begrijpt. Spelers houden oude opslagen wanneer je je wereld bijwerkt.
+- Valideer bij het laden. Begrens indices; vertrouw er nooit op dat opgeslagen waarden nog bij je scène passen.
+- Limieten: 256 KB per slot, 32 slots en 1 MB per store, 8 schrijfacties per seconde. Sla op bij betekenisvolle events, niet elk frame.
 
 ## Delen tussen content
 

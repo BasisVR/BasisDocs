@@ -5,10 +5,10 @@ description: Basis 腳本的日常構成要素：玩家、輸入、UI、計時�
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-本頁收集了幾乎每個世界或道具腳本都需要的功能。每個章節都會展示您要撰寫的呼叫，以及通常會讓人踩坑的規則。網路有專屬的指南：請參閱[網路](/tw/docs/scripting/networking)。
+玩家、輸入、UI、計時器、下載、存檔和選單，每一項都附上您要撰寫的呼叫，以及最常讓人踩坑的規則。網路的部分請參閱[網路](/tw/docs/scripting/networking)。
 
 <Callout type="info">
-標示為 **Cilbox** 的範例在沙盒內執行，因此也能在以 `.bee` 檔案上傳的內容中運作。標示為 **Native** 的範例使用完整的 Unity 與 Basis API，只能在編譯進客戶端的程式碼中運作。大多數 Cilbox 範例也能以 Native 方式編譯。
+標示為 **Cilbox** 的範例在沙盒內執行，也能在以 `.bee` 檔案上傳的內容中運作。標示為 **Native** 的範例使用完整的 Unity 與 Basis API，只能在編譯進客戶端的程式碼中運作。大多數 Cilbox 範例也能以 Native 方式編譯。
 </Callout>
 
 ## 撰寫腳本
@@ -39,7 +39,7 @@ public class Spinner : MonoBehaviour
 | --- | --- |
 | `Awake`、`Start` | 在 `Start` 中進行一次性設定。 |
 | `Update`、`FixedUpdate` | 沒有 `LateUpdate`。 |
-| `OnEnable`、`OnDisable` | **第一次**的 `OnEnable` 永遠不會到達，因此絕對不要在那裡訂閱。 |
+| `OnEnable`、`OnDisable` | **第一次**的 `OnEnable` 永遠不會到達。不要在那裡訂閱。 |
 | `OnDestroy` | 在這裡取消訂閱並清理。 |
 | `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | 需要 collider，且其中一方需要 Rigidbody。 |
 
@@ -71,7 +71,7 @@ local.SetJumpHeight(1.2f);
 local.Immobilize(true);
 ```
 
-若要製作只在玩家位於其中時才改變移動方式的區域，請在您自己的鍵下使用覆寫。清除該鍵會還原底下原本的設定，因此兩個區域永遠不會爭奪原始值。
+若要製作只在玩家位於其中時才改變移動方式的區域，請在您自己的鍵下使用覆寫。清除該鍵會還原底下原本的設定，兩個區域也就不會爭奪原始值。
 
 ```csharp title="Cilbox"
 // Mode: 0 = Walk, 1 = Fly, 2 = NoClip.
@@ -82,7 +82,7 @@ local.ClearLocomotionOverride("LowGravityZone");
 ```
 
 <Callout type="info">
-在客戶端建置中，**Basis Locomotion Zone** 元件（com.basis.examples）不需要程式碼就能做到這件事。它不在預設的內容允許清單上，因此上傳的世界請改用上述的覆寫。
+在客戶端建置中，**Basis Locomotion Zone** 元件（com.basis.examples）不需要程式碼就能做到這件事。它不在預設的內容允許清單上。上傳的世界請改用上述的覆寫。
 </Callout>
 
 ### 實例中的所有人
@@ -399,5 +399,5 @@ if (BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu) mirror.SetActive(
 `Debug.Log` 照常運作；Basis 會為每則訊息標記其來源內容。在編輯器中，**Basis > Tools > Cilbox Permissions** 會顯示每個沙盒允許的項目，其 **Script Check** 分頁會掃描您的腳本中會被封鎖的呼叫。**Basis > Creator Guide** 視窗可離線查看本指南和完整的 Cilbox API 參考。
 
 <Callout type="warn">
-被封鎖的呼叫不會在建置時擲出例外。白名單以外的呼叫會在執行時失敗，因此請在上傳前掃描腳本。
+被封鎖的呼叫不會在建置時擲出例外。白名單以外的呼叫只會在執行時失敗。請在上傳前掃描腳本。
 </Callout>

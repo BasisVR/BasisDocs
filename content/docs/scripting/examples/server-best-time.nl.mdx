@@ -1,11 +1,11 @@
 ---
 title: Beste tijd op de server
-description: De beste ronde van elke speler op de server opslaan met BasisServerStorageShim, zodat die hen volgt over apparaten heen.
+description: De beste ronde van elke speler op de server opslaan met BasisServerStorageShim, waar die hen over apparaten heen volgt.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim` slaat op de computer van de speler op. `BasisServerStorageShim` slaat op de **server** op, per speler, zodat een beste tijd die op pc is gezet er nog steeds is wanneer ze vanaf Quest langskomen.
+`BasisSaveShim` slaat op de computer van de speler op. `BasisServerStorageShim` slaat op de **server** op, per speler. Een beste tijd die op pc is gezet, is er nog steeds wanneer ze vanaf Quest langskomen.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

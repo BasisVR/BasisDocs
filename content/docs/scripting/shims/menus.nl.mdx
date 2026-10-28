@@ -3,7 +3,7 @@ title: Menu's
 description: BasisMenuShim, instellingentabbladen en menupanelen met kopjes, labels, knoppen, toggles, sliders en dropdowns.
 ---
 
-`BasisMenuShim` voegt UI toe aan het eigen menu van de speler. Beide aanroepen geven null terug als ze worden geweigerd, dus controleer dat altijd.
+`BasisMenuShim` voegt UI toe aan het eigen menu van de speler. Beide aanroepen geven null terug als ze worden geweigerd. Controleer dat altijd.
 
 | Aanroep | Voegt toe |
 | --- | --- |
@@ -51,7 +51,7 @@ Pagina's: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (panelen), `IsOp
 
 ## Een paneel openen
 
-`Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt, zodat content niet zelf menu's kan openen.
+`Open()` werkt alleen binnen 5 seconden nadat de speler iets in je content heeft ingedrukt, en content kan niet zelf menu's openen.
 
 ```csharp
 BasisMenuPage arcade;

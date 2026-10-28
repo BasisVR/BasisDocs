@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 從 Cilbox 腳本呼叫 Unity 的每一次都很昂貴，成本往往遠大於它實際做的工作。這些 shim 透過一次呼叫將整個陣列帶過邊界，並以原生方式執行迴圈。
 
 <Callout type="info">
-經驗法則：如果 `Update` 中的迴圈會處理超過少數幾個 transform 或 blendshape，就將它批次處理。
+如果 `Update` 中的迴圈會處理超過少數幾個 transform 或 blendshape，就將它批次處理。
 </Callout>
 
 ## BasisTransformBatchShim
@@ -69,7 +69,7 @@ follow.BindMeshes(new[] { face }, new[] { mask }, this);
 
 ## BasisVectorArrayShim
 
-將向量拆分成 float 陣列並再合併回來，讓數學運算可以在純 float 上執行，這在直譯器中便宜得多。
+將向量拆分成 float 陣列並再合併回來。在直譯器中，以純 float 做數學運算便宜得多。
 
 ```csharp
 BasisVectorArrayShim.Split(positions, xs, ys, zs);

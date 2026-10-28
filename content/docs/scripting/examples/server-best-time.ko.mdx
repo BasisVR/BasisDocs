@@ -1,11 +1,11 @@
 ---
 title: 서버 최고 기록
-description: BasisServerStorageShim으로 각 플레이어의 최고 랩 기록을 서버에 저장해, 기기를 바꿔도 따라가게 합니다.
+description: BasisServerStorageShim으로 각 플레이어의 최고 랩 기록을 서버에 저장합니다. 기기를 바꿔도 기록이 따라갑니다.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim`은 플레이어의 기기에 저장합니다. `BasisServerStorageShim`은 플레이어별로 **서버에** 저장하므로, PC에서 세운 최고 기록이 Quest로 방문했을 때도 그대로 남아 있습니다.
+`BasisSaveShim`은 플레이어의 기기에 저장합니다. `BasisServerStorageShim`은 플레이어별로 **서버에** 저장합니다. PC에서 세운 최고 기록이 Quest로 방문했을 때도 그대로 남아 있습니다.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

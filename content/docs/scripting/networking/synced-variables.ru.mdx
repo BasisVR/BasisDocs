@@ -16,7 +16,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | Движущийся объект | [`BasisSyncedTransform`, `BasisSyncedRigidbody` или `BasisPickupSyncNetworking`](/ru/docs/scripting/networking/network-components). |
 
 <Callout type="warn">
-`BasisSyncedParameters` и ваши собственные подклассы `BasisSyncedObject` не входят в списки разрешённого по умолчанию для загружаемого контента, поэтому они удаляются из `.bee`, если тип не добавлен в селекторы content police. В загружаемом контенте Cilbox синхронизируйте значения с помощью [сетевых событий](/ru/docs/scripting/networking/network-events#cilbox), а движущиеся объекты с помощью **Basis Synced Transform**.
+`BasisSyncedParameters` и ваши собственные подклассы `BasisSyncedObject` не входят в списки разрешённого по умолчанию для загружаемого контента. Они удаляются из `.bee`, если тип не добавлен в селекторы content police. В загружаемом контенте Cilbox синхронизируйте значения с помощью [сетевых событий](/ru/docs/scripting/networking/network-events#cilbox), а движущиеся объекты с помощью **Basis Synced Transform**.
 </Callout>
 
 ## BasisSyncedParameters: без кода сериализации
@@ -53,8 +53,8 @@ public class Lever : MonoBehaviour
 }
 ```
 
-- **Запись учитывается только у владельца.** Возьмите владение перед записью (смотрите [Владение](/ru/docs/scripting/networking/ownership)).
-- **Чтение работает везде.** У владельца вы получаете записанное значение; у всех остальных интерполированное сетевое значение.
+- Запись учитывается только у владельца. Возьмите владение перед записью (смотрите [Владение](/ru/docs/scripting/networking/ownership)).
+- Чтение работает везде. У владельца вы получаете записанное значение; у всех остальных интерполированное сетевое значение.
 - Один раз преобразуйте имя в id с помощью `GetParameterId` и используйте перегрузки с id в `Update`, чтобы пропустить поиск по имени.
 
 Обратных вызовов при изменении нет. Читайте значение в `Update` и реагируйте, когда оно отличается от того, что вы видели в прошлый раз:
@@ -112,10 +112,10 @@ public class Turret : BasisSyncedObject
 ```
 
 <Callout type="warn">
-Регистрируйте все поля в `Awake`, до того как объект станет готов к работе в сети. Набор полей определяет формат передачи, поэтому каждый клиент должен регистрировать одни и те же поля в одном и том же порядке.
+Регистрируйте все поля в `Awake`, до того как объект станет готов к работе в сети. Набор полей определяет формат передачи. Каждый клиент должен регистрировать одни и те же поля в одном и том же порядке.
 </Callout>
 
-`OnBeforeTransmit` выполняется только в тех кадрах, когда действительно пора отправлять пакет, а не каждый кадр, поэтому пусть он только копирует ваши значения.
+`OnBeforeTransmit` выполняется только в тех кадрах, когда пора отправлять пакет, а не каждый кадр. Пусть он просто копирует ваши значения.
 
 Чтобы управлять трансформом напрямую из зарегистрированных полей, вызовите `BindTransform(target, position, rotation, scale, worldSpace)`; после этого драйвер применяет интерполированные значения в job без выполнения вашего `Update`.
 
@@ -148,5 +148,5 @@ RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
 
 Скрипт Cilbox не может наследоваться от `BasisSyncedObject`. В загружаемом контенте:
 
-- **Движущиеся объекты:** добавьте компонент **Basis Synced Transform** или **Basis Pickup Sync Networking**. Скрипт не нужен.
-- **Значения:** храните их у владельца и отправляйте как [сетевые события](/ru/docs/scripting/networking/network-events#cilbox), повторно отправляя [поздно подключившимся](/ru/docs/scripting/networking/late-joiners). Пример [Синхронизированный переключатель](/ru/docs/scripting/examples/synced-toggle) служит шаблоном.
+- Движущиеся объекты: добавьте компонент **Basis Synced Transform** или **Basis Pickup Sync Networking**. Скрипт не нужен.
+- Значения: храните их у владельца и отправляйте как [сетевые события](/ru/docs/scripting/networking/network-events#cilbox), повторно отправляя [поздно подключившимся](/ru/docs/scripting/networking/late-joiners). Пример [Синхронизированный переключатель](/ru/docs/scripting/examples/synced-toggle) служит шаблоном.

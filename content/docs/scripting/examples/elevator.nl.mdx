@@ -3,7 +3,7 @@ title: Lift
 description: Een bewegend platform waar iedereen samen op meerijdt. Alleen de doelverdieping wordt gesynchroniseerd; elke client beweegt het platform ernaartoe.
 ---
 
-De positie van het platform streamen kost elk frame bandbreedte. Een lift beweegt altijd alleen naar een verdieping, dus synchroniseer de **doelverdieping** en laat elke client het platform zelf bewegen.
+De positie van het platform streamen kost elk frame bandbreedte. Een lift beweegt altijd alleen naar een verdieping. Synchroniseer de **doelverdieping** en laat elke client het platform zelf bewegen.
 
 ## Setup
 
@@ -71,6 +71,6 @@ public class Elevator : MonoBehaviour
 }
 ```
 
-- Elke client voert dezelfde beweging uit, dus passagiers zien een vloeiend platform zonder positiestream.
+- Elke client voert dezelfde beweging uit. Passagiers zien een vloeiend platform zonder positiestream.
 - Een late joiner krijgt de doelverdieping en de huidige hoogte in één bericht van 5 bytes.
 - Let op de `new Vector3(...)`: `p.y` direct wijzigen zou in Cilbox ook de waarde wijzigen waarvan hij is gekopieerd (zie [Sandboxregels](/nl/docs/scripting/sandbox-rules)).

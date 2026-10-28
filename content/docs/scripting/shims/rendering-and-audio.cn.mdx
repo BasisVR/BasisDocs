@@ -21,7 +21,7 @@ string[] readable = BasisGraphicsSettingsShim.ReadableKeys;
 
 ## BasisStatsShim
 
-玩家自己的性能叠加层所显示的内容。只有在有脚本持续读取时才会进行测量，因此请轮询它。
+玩家自己的性能叠加层所显示的内容。Basis 只在有脚本持续读取时才进行测量。请轮询它。
 
 ```csharp
 float fps = BasisStatsShim.FramesPerSecond;

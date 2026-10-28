@@ -9,7 +9,7 @@ Basis 以兩種方式執行程式碼。要使用哪一種，取決於**腳本存
 
 ## Native：編譯進應用程式
 
-Native 腳本是一般的 Unity `MonoBehaviour`，會建置進 Basis 客戶端（或您以 Basis 框架打造的應用程式）。它與應用程式一起編譯，因此會隨下一次客戶端建置發佈，而不是隨世界或道具發佈。
+Native 腳本是一般的 Unity `MonoBehaviour`，會建置進 Basis 客戶端（或您以 Basis 框架打造的應用程式）。它與應用程式一起編譯，會隨下一次客戶端建置發佈，而不是隨世界或道具發佈。
 
 - 完整的 C# 以及完整的 Unity 與 Basis API。
 - 完整的原生速度。
@@ -23,7 +23,7 @@ Native 腳本是一般的 Unity `MonoBehaviour`，會建置進 Basis 客戶端�
 Cilbox 腳本是標記為 `[Cilboxable]` 的 `MonoBehaviour`，它會**包含在**世界、道具或虛擬形象的 `.bee` 檔案中發佈。內容載入時，Basis 會在 Cilbox 直譯器中執行它，並置於該類內容（Scene、Prop 或 Avatar）的沙盒內。
 
 - 可在任何載入該內容的 Basis 客戶端上運作。不需要建置客戶端。
-- 沙盒化：只能呼叫白名單中的類型和方法，因此內容無法傷害玩家的電腦。
+- 沙盒化。只能呼叫白名單中的類型和方法，這樣內容就無法傷害玩家的電腦。
 - 比 Native 慢，因為程式碼是直譯執行的。
 - 使用 shim 取代基底類別，例如使用 `BasisNetworkShim`，而不是繼承 `BasisNetworkBehaviour`。
 
@@ -82,8 +82,8 @@ public class Door : MonoBehaviour
 
 ## 各自的發佈方式
 
-- **Native：** 將腳本加入您的 Unity 專案並建置客戶端。如果 Native 元件放在世界或道具的資源包中，還需要將其類型加入對應的 content police 選擇器，否則內容載入時它會被移除（請參閱[允許的元件](/tw/docs/scripting/allowed-components)）。
-- **Cilbox：** 在您的內容中加入 **Cilbox Scene Basis**（世界）或 **Cilbox Prop Basis**（道具），將腳本標記為 `[Cilboxable]`，然後照常建置 `.bee`。請參閱[基礎](/tw/docs/scripting/examples/basics)。
+- Native：將腳本加入您的 Unity 專案並建置客戶端。如果 Native 元件放在世界或道具的資源包中，還需要將其類型加入對應的 content police 選擇器，否則內容載入時它會被移除（請參閱[允許的元件](/tw/docs/scripting/allowed-components)）。
+- Cilbox：在您的內容中加入 **Cilbox Scene Basis**（世界）或 **Cilbox Prop Basis**（道具），將腳本標記為 `[Cilboxable]`，然後照常建置 `.bee`。請參閱[基礎](/tw/docs/scripting/examples/basics)。
 
 <Callout type="info">
 本文件中的範例都標示為 **Native** 或 **Cilbox**。大多數 Cilbox 範例也能作為 Native 腳本編譯；Native 範例通常需要修改才能在 Cilbox 中執行。需要注意的規則請參閱[沙盒規則](/tw/docs/scripting/sandbox-rules)。

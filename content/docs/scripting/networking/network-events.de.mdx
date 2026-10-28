@@ -13,9 +13,9 @@ Ein Netzwerk-Event ist ein Byte-Array, das von der Kopie eines Objekts bei einem
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** sendet an alle außer Ihnen.
+- `recipients = null` sendet an alle außer Ihnen.
 - Übergeben Sie ein Array mit Spieler-IDs, um an bestimmte Spieler zu senden. Nehmen Sie Ihre eigene ID auf, damit die Nachricht über das Netzwerk zu Ihnen zurückkommt.
-- Das Objekt muss netzwerkbereit sein (`HasNetworkID` ist true). Ein früheres Senden protokolliert einen Fehler und bewirkt nichts, senden Sie also ab `OnNetworkReady` oder später.
+- Das Objekt muss netzwerkbereit sein (`HasNetworkID` ist true). Ein früheres Senden protokolliert einen Fehler und bewirkt nichts. Senden Sie ab `OnNetworkReady` oder später.
 
 <Callout type="warn">
 Events werden **nicht gespeichert**. Ein Spieler, der nach dem Senden eines Events beitritt, erhält es nie. Wenn das Event dauerhaften Zustand ändert, behandeln Sie auch [Late Joiner](/de/docs/scripting/networking/late-joiners).

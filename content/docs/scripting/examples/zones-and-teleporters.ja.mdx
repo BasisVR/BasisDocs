@@ -40,12 +40,12 @@ public class LocalPlayerZone : MonoBehaviour
 ```
 
 <Callout type="info">
-エリア内での移動の変更（低重力、飛行、速い歩行）には、com.basis.examplesの**Basis Locomotion Zone**コンポーネントを使用してください。コードは不要です。
+エリア内での移動の変更（低重力、飛行、速い歩行）には、[よくある使い方](/ja/docs/scripting/common-usages)にある`BasisLocalPlayer`のロコモーションオーバーライドを使用してください。クライアントビルドでは、**Basis Locomotion Zone**コンポーネントでコードなしに同じことができます。
 </Callout>
 
 ## テレポーター
 
-パッドやボタンに追加します。テレポートはローカルプレイヤーにしか影響しないため、ネットワーク処理は不要です。各プレイヤーが自分自身をテレポートします。
+パッドやボタンに追加します。テレポートはローカルプレイヤーにしか影響しません。各プレイヤーが自分自身をテレポートし、ネットワーク処理はありません。
 
 ```csharp title="Teleporter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;
@@ -107,7 +107,7 @@ public class Trampoline : MonoBehaviour
 
 ## ロビーの人数
 
-ロビーエリアに何人のプレイヤーが立っているかを表示します。各クライアントがプレイヤーの位置から自分で数えるため、メッセージは不要です。
+ロビーエリアに何人のプレイヤーが立っているかを表示します。各クライアントがプレイヤーの位置から自分で数え、メッセージは送信されません。
 
 ```csharp title="LobbyCounter.cs (Cilbox)"
 using Basis.Scripts.BasisSdk.Players;

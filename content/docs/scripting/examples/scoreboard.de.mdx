@@ -78,7 +78,7 @@ public class Scoreboard : MonoBehaviour
 }
 ```
 
-`BasisSyncedParameters` empfängt bereits Netzwerknachrichten für seinen eigenen Stream. Leiten Sie Anfragen daher mit einer kleinen Unterklasse an die Anzeigetafel weiter:
+`BasisSyncedParameters` empfängt bereits Netzwerknachrichten für seinen eigenen Stream. Leiten Sie Anfragen mit einer kleinen Unterklasse an die Anzeigetafel weiter:
 
 ```csharp title="ScoreboardParameters.cs (Native)"
 using Basis.Network.Core;
@@ -104,11 +104,11 @@ Verwenden Sie bei der Einrichtung **ScoreboardParameters** anstelle von **Basis 
 
 ## Funktionsweise
 
-- **Nur der Besitzer schreibt** den Punktestand, sodass gleichzeitige Eingaben beim Besitzer nacheinander angewendet werden.
-- **Alle anderen senden eine Anfrage** an `CurrentOwnerId`, anstatt den Besitz zu übernehmen. Eine Besitzübernahme würde es zwei Spielern ermöglichen, jeweils 1 zum selben alten Wert zu addieren.
-- **Später beitretende Spieler** benötigen nichts weiter: Synchronisierte Parameter senden neuen Spielern einen Keyframe.
-- **Wenn der Besitzer geht**, wechselt der Besitz zu dem Spieler, der am längsten verbunden ist und den aktuellen Punktestand bereits hat.
+- Nur der Besitzer schreibt den Punktestand. Gleichzeitige Eingaben werden beim Besitzer nacheinander angewendet.
+- Alle anderen senden eine Anfrage an `CurrentOwnerId`, anstatt den Besitz zu übernehmen. Eine Besitzübernahme würde es zwei Spielern ermöglichen, jeweils 1 zum selben alten Wert zu addieren.
+- Später beitretende Spieler benötigen nichts weiter. Synchronisierte Parameter senden neuen Spielern einen Keyframe.
+- Wenn der Besitzer geht, wechselt der Besitz zu dem Spieler, der am längsten verbunden ist und den aktuellen Punktestand bereits hat.
 
 <Callout type="info">
-Anfragen sind ein Byte groß, Sync-Pakete sind größer, daher reicht hier die Prüfung der Länge, um sie zu unterscheiden. Für weitere Nachrichtentypen stellen Sie Ihren eigenen Nachrichten ein Marker-Byte voran, mit dem der Sync-Stream nie beginnt, oder legen Sie die Anfrageverarbeitung auf ein separates `BasisNetworkBehaviour`.
+Anfragen sind ein Byte groß und Sync-Pakete immer größer. Deshalb reicht hier die Prüfung der Länge. Für weitere Nachrichtentypen stellen Sie Ihren eigenen Nachrichten ein Marker-Byte voran, mit dem der Sync-Stream nie beginnt, oder legen Sie die Anfrageverarbeitung auf ein separates `BasisNetworkBehaviour`.
 </Callout>

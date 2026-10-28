@@ -32,7 +32,7 @@ byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge")
 
 ## BasisServerStorageShim
 
-**儲存在伺服器上**、依玩家區分的資料，因此在該伺服器上它會跟著玩家跨裝置移動。每個呼叫都是非同步的。鍵最多 64 位元組，值最多 64 KB；伺服器會設定每位玩家的總量（預設為 16 KB）。
+**儲存在伺服器上**、依玩家區分的資料。在該伺服器上，它會跟著玩家跨裝置。每個呼叫都是非同步的。鍵最多 64 位元組，值最多 64 KB；伺服器會設定每位玩家的總量（預設為 16 KB）。
 
 ```csharp
 if (!BasisServerStorageShim.IsAvailable(this)) return;

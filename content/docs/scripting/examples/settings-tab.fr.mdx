@@ -67,14 +67,14 @@ BasisMenuPage rules = game.AddTab("Rules");
 rules.AddLabel("Hit every target before the timer runs out.");
 ```
 
-`game.Open()` ne fonctionne que dans les 5 secondes suivant une action du joueur dans votre contenu, ainsi le contenu ne peut pas ouvrir de menus de lui-même.
+`game.Open()` ne fonctionne que dans les 5 secondes suivant une action du joueur dans votre contenu. Le contenu ne peut pas ouvrir de menus de lui-même.
 
 ## Règles
 
-- **Qui peut ajouter un onglet :** les mondes, les props que le joueur local a fait apparaître, et l'avatar du joueur local. `null` signifie refusé ; vérifiez-le.
-- **Les options sont locales.** Chaque joueur règle les siennes. Ne synchronisez un choix que s'il doit changer le monde pour tout le monde.
-- **Mémorisez les choix** avec [BasisSaveShim](/fr/docs/scripting/examples/persistence) s'ils doivent persister jusqu'à la prochaine visite.
+- Qui peut ajouter un onglet : les mondes, les props que le joueur local a fait apparaître, et l'avatar du joueur local. `null` signifie refusé ; vérifiez-le.
+- Les options sont locales. Chaque joueur règle les siennes. Ne synchronisez un choix que s'il doit changer le monde pour tout le monde.
+- Mémorisez les choix avec [BasisSaveShim](/fr/docs/scripting/examples/persistence) s'ils doivent persister jusqu'à la prochaine visite.
 
 <Callout type="info">
-Sur un avatar, ajoutez l'onglet depuis `BasisAvatarShim.OnAvatarReady` quand `isOwner` vaut true, afin que seul le porteur l'obtienne.
+Sur un avatar, ajoutez l'onglet depuis `BasisAvatarShim.OnAvatarReady` quand `isOwner` vaut true. Seul le porteur l'obtient.
 </Callout>

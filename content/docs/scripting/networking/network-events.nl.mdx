@@ -13,9 +13,9 @@ Een netwerkevent is een byte-array die van de kopie van een object bij één spe
 SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
 ```
 
-- **`recipients = null`** verstuurt naar iedereen behalve jou.
+- `recipients = null` verstuurt naar iedereen behalve jou.
 - Geef een array met speler-ID's mee om naar specifieke spelers te sturen. Neem je eigen ID op om het bericht via het netwerk naar jezelf terug te laten komen.
-- Het object moet netwerkklaar zijn (`HasNetworkID` is true). Eerder versturen logt een fout en doet niets, dus verstuur vanaf `OnNetworkReady` of later.
+- Het object moet netwerkklaar zijn (`HasNetworkID` is true). Eerder versturen logt een fout en doet niets. Verstuur vanaf `OnNetworkReady` of later.
 
 <Callout type="warn">
 Events worden **niet onthouden**. Een speler die binnenkomt nadat een event is verstuurd, ontvangt het nooit. Als het event blijvende status verandert, handel dan ook [late joiners](/nl/docs/scripting/networking/late-joiners) af.

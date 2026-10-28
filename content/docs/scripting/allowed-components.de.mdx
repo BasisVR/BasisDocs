@@ -5,7 +5,7 @@ description: Welche Komponenten in hochgeladenen Welten, Props und Avataren erha
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Wenn Inhalte geladen werden, entfernt die **Content Police** von Basis jede Komponente, deren Typ nicht auf der Allowlist für diese Art von Inhalt steht. Mit `[Cilboxable]` markierte Skripte werden vorher in sandboxed Proxies umgewandelt und bleiben daher erhalten.
+Wenn Inhalte geladen werden, entfernt die **Content Police** von Basis jede Komponente, deren Typ nicht auf der Allowlist für diese Art von Inhalt steht. Mit `[Cilboxable]` markierte Skripte bleiben erhalten, weil sie vorher in Proxies für die Sandbox umgewandelt werden.
 
 ## Die Allowlists
 
@@ -34,7 +34,7 @@ Die Selector-Assets sind die maßgebliche Quelle und ändern sich zwischen Versi
 ## Ihre Inhalte prüfen
 
 - Starten Sie den Play Mode: Basis wendet dieselbe Prüfung an, und entfernte Komponenten werden protokolliert.
-- **Basis > Tools > Cilbox Permissions** listet auf, was jede Sandbox Skripten erlaubt aufzurufen.
+- Das Fenster **Basis > Tools > Cilbox Permissions** listet auf, was Skripte in jeder Sandbox aufrufen dürfen.
 
 ## Eine Komponente hinzufügen (Client-Builds)
 

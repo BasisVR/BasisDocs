@@ -1,9 +1,9 @@
 ---
 title: Tag-Nacht-Zyklus
-description: Eine Sonne, die sich nach der Serveruhr bewegt, sodass jeder Spieler ohne Networking-Code dieselbe Tageszeit sieht.
+description: Eine Sonne, die von der Serveruhr gesteuert wird. Jeder Spieler sieht dieselbe Tageszeit, und es gibt keinen Networking-Code.
 ---
 
-Ein Tageszyklus, der von `Time.time` gesteuert wird, läuft bei Spielern auseinander, die zu unterschiedlichen Zeitpunkten beigetreten sind. Wenn Sie ihn über die Serveruhr steuern, bleiben alle ohne Aufwand synchron.
+Ein Tageszyklus, der von `Time.time` gesteuert wird, läuft bei Spielern auseinander, die zu unterschiedlichen Zeitpunkten beigetreten sind. Wenn Sie ihn über die Serveruhr steuern, bleiben alle synchron, ohne dass Nachrichten nötig sind.
 
 ```csharp title="DayNightCycle.cs (Cilbox)"
 using Basis.Shims;

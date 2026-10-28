@@ -1,11 +1,11 @@
 ---
 title: Server Best Time
-description: Saving each player's best lap on the server with BasisServerStorageShim, so it follows them across devices.
+description: Saving each player's best lap on the server with BasisServerStorageShim, where it follows them across devices.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-`BasisSaveShim` saves on the player's machine. `BasisServerStorageShim` saves on the **server**, per player, so a best time set on PC is still there when they visit from Quest.
+`BasisSaveShim` saves on the player's machine. `BasisServerStorageShim` saves on the **server**, per player. A best time set on PC is still there when they visit from Quest.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
 using Basis.Shims;

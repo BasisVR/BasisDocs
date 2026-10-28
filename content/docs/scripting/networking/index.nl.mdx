@@ -5,7 +5,7 @@ description: Hoe je een Basis-wereld of -prop voor elke speler hetzelfde laat we
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
-Alles wat een script doet, draait op de computer van één speler. Als een speler een deur opent, ziet niemand anders dat totdat je het aan het netwerk vertelt. Deze handleiding behandelt de hulpmiddelen die Basis je daarvoor geeft en wanneer je welke gebruikt.
+Alles wat een script doet, draait op de computer van één speler. Als een speler een deur opent, ziet niemand anders dat totdat je het aan het netwerk vertelt.
 
 Voor hoe het transport zelf werkt (server-relay, leveringsmethoden, op afstand gebaseerde updatefrequenties), zie [Netwerksynchronisatie](/nl/docs/technical/network-syncing).
 
@@ -19,15 +19,15 @@ Voor hoe het transport zelf werkt (server-relay, leveringsmethoden, op afstand g
 | **Late joiners** | Spelers die aankomen nadat er dingen zijn veranderd. | Zorgen dat ze de huidige status zien, niet de standaardwaarden van de scène. |
 
 <Callout type="info">
-Vuistregel: als een speler die vijf minuten later binnenkomt het moet zien, is het **status** en hoort het in een gesynchroniseerde variabele (of moet het opnieuw naar die speler worden gestuurd). Als het alleen ertoe doet op het moment dat het gebeurt, is het een **event**.
+Als een speler die vijf minuten later binnenkomt het moet zien, is het **status** en hoort het in een gesynchroniseerde variabele (of moet het opnieuw naar die speler worden gestuurd). Als het alleen ertoe doet op het moment dat het gebeurt, is het een **event**.
 </Callout>
 
 ## De bouwstenen
 
-- **`BasisNetworkBehaviour`** is de basisklasse voor genetwerkte scripts die in de client zijn gecompileerd. Het krijgt een netwerk-ID, een eigenaar en de callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` en `OnPlayerLeft`.
-- **`BasisNetworkShim`** is hetzelfde voor Cilbox-scripts. Een Cilbox-script kan niet afleiden van `BasisNetworkBehaviour`, dus het krijgt een `BasisNetworkShim` via `GetComponent` en abonneert zich op de events daarvan.
-- **`BasisSyncedObject`** bouwt voort op `BasisNetworkBehaviour` met een compacte, geïnterpoleerde statusstroom. **`BasisSyncedParameters`**, **`BasisSyncedTransform`** en **`BasisSyncedRigidbody`** zijn kant-en-klare componenten daarbovenop.
-- **`BasisPickupSyncNetworking`** en **`BasisSeatSync`** synchroniseren pickups en stoelen zonder code.
+- `BasisNetworkBehaviour` is de basisklasse voor genetwerkte scripts die in de client zijn gecompileerd. Het krijgt een netwerk-ID, een eigenaar en de callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` en `OnPlayerLeft`.
+- `BasisNetworkShim` is hetzelfde voor Cilbox-scripts. Een Cilbox-script kan niet afleiden van `BasisNetworkBehaviour`. Het haalt in plaats daarvan een `BasisNetworkShim` op via `GetComponent` en abonneert zich op de events daarvan.
+- `BasisSyncedObject` bouwt voort op `BasisNetworkBehaviour` met een compacte, geïnterpoleerde statusstroom. `BasisSyncedParameters`, `BasisSyncedTransform` en `BasisSyncedRigidbody` zijn kant-en-klare componenten daarbovenop.
+- `BasisPickupSyncNetworking` en `BasisSeatSync` synchroniseren pickups en stoelen zonder code.
 
 ## Een genetwerkt script, van begin tot eind
 
@@ -75,7 +75,7 @@ Native scripts zoals deze werken in client-builds. Schrijf in geüploade content
 
 Wat het laat zien:
 
-1. De speler die op de knop drukt, **neemt het eigenaarschap**, zodat er één bron van waarheid is.
+1. De speler die op de knop drukt, neemt het eigenaarschap en wordt de enige bron van waarheid.
 2. De nieuwe waarde wordt **als event verstuurd** naar alle anderen (`Recipients = null` betekent iedereen behalve jij).
 3. Wanneer iemand binnenkomt, stuurt **alleen de eigenaar** die speler de huidige waarde.
 
