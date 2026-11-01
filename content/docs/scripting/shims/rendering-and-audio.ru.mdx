@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-Воспроизводит голос игрока из объекта, например со сценического микрофона на колонки. Сначала проверяется согласие, и эта проверка обязательна.
+Воспроизводит голос игрока из объекта, например со сценического микрофона на колонки. `RouteVoiceToObject` запрашивает разрешение у этого игрока и запускает маршрут, как только он разрешит. Возвращает id маршрута или 0, если маршрут не удалось запустить, в том числе при маршрутизации локального игрока. `HasConsent` сообщает, есть ли у вас уже его разрешение; сам он разрешения не запрашивает.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-Для синхронизированного видео используйте компонент **Basis Media Player** ([Медиаплеер](/ru/docs/world/media-player)). Скрипты могут читать его `OutputTexture`; управление воспроизведением заблокировано, чтобы запрос URL нельзя было обойти.
+Для синхронизированного видео используйте компонент **Basis Media Player** ([Медиаплеер](/ru/docs/world/media-player)). Скрипты миров могут читать его `OutputTexture`, но управление воспроизведением заблокировано, чтобы запрос URL нельзя было обойти. Скрипты пропов также могут использовать воспроизведение, статус и события.

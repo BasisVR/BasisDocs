@@ -15,7 +15,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.NetworkReady += () => Debug.Log("ready");
     net.NetworkMessageReceived += OnMessage;
     net.OwnershipTransfer += owner => Debug.Log($"owner {owner.playerId}");

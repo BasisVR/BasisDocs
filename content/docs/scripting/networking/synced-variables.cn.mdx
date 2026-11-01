@@ -139,7 +139,7 @@ RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | 所有者可以发送的频率（每秒 20 次）。值未改变时不发送任何内容。 |
 | `KeyframeIntervalSeconds` | 0.5 | 发送完整状态的频率，以便修复丢失的增量。空闲时会降低频率。 |
-| `DistanceReduction` | 开 | 降低向远处玩家发送的频率。 |
+| `DistanceReduction` | 开 | 当最近的玩家在远处时降低发送频率。所有接收者的频率都相同。 |
 | `RelevanceCulling` / `RelevanceRadius` | 关 / 50 | 完全不向半径之外的玩家发送。 |
 | `Extrapolate` | 关 | 数据包延迟时，让远程值短暂继续向前推进。 |
 | `UseDirectP2P` | 开 | 存在直接点对点连接时使用它。 |

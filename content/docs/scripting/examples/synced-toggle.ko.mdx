@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## 작동 방식
 
 - 누르면 소유권을 가져오고, 누른 사람이 즉시 볼 수 있도록 로컬에서 값을 뒤집은 다음, 새 값을 다른 모든 사람에게 보냅니다.
-- `ReliableSequenced`는 최신 값의 도착을 보장하고 오래된 값은 버립니다. 토글에는 최신 값만 중요합니다.
+- `ReliableOrdered`는 모든 변경이 순서대로 도착하도록 보장합니다. 씬의 모든 오브젝트는 하나의 네트워크 채널을 공유하므로, `ReliableSequenced`를 쓰면 이 메시지 직후에 다른 오브젝트가 보낸 메시지가 이를 대체해 토글이 사라질 수 있습니다.
 - 참여하는 플레이어는 소유자에게서만 현재 값을 받습니다. 메시지가 전체 상태를 담고 있어서 같은 `OnMessage`가 실시간 변경과 따라잡기를 모두 처리합니다.
 
 <Callout type="info">

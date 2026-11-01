@@ -14,7 +14,7 @@ public class PerformanceScaler : MonoBehaviour
     public GameObject[] gpuHeavy;
     public GameObject[] cpuHeavy;
     float nextCheck;
-    bool reduced, lowQuality;
+    bool cutCpu, cutGpu, lowQuality;
 
     void Start()
     {
@@ -34,19 +34,24 @@ public class PerformanceScaler : MonoBehaviour
         float target = BasisStatsShim.TargetFramesPerSecond;
         if (target <= 0f) return;
         float fps = BasisStatsShim.FramesPerSecond;
-        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
-        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+        bool reduced = cutCpu || cutGpu;
+        if (!reduced && fps < target * 0.8f)
+        {
+            int bottleneck = BasisStatsShim.Bottleneck;
+            cutGpu = bottleneck == BasisStatsShim.BottleneckGpu;
+            cutCpu = bottleneck == BasisStatsShim.BottleneckCpu;
+            Apply();
+        }
+        else if (reduced && fps > target * 0.95f) { cutCpu = false; cutGpu = false; Apply(); }
     }
 
     void Apply()
     {
-        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
-        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
-        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in gpuHeavy) g.SetActive(!(lowQuality || cutGpu));
         foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
     }
 }
 ```
 
 - 两个阈值（80% 时削减，95% 时恢复）可以防止效果反复闪烁开关。
-- 瓶颈信息告诉您该削减哪一侧：GPU 瓶颈时削减镜子和粒子，CPU 瓶颈时削减人群和脚本。
+- 瓶颈信息告诉您该削减哪一侧：GPU 瓶颈时削减镜子和粒子，CPU 瓶颈时削减人群和脚本。如果仍在测量中，或读数为均衡，则不会削减任何内容，下一次检查时会再试。

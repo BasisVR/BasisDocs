@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - Les points en direct font 12 octets chacun ; le dessin complet pour un joueur arrivé en retard tient en un seul message compressé.
 - Un instantané compressé se distingue d'un point isolé par sa longueur. Un vrai tableau ajouterait un octet de type de message.
-- Le dernier joueur à avoir dessiné possède le tableau et c'est lui qui répond aux joueurs arrivés en retard.
+- Le dernier joueur à avoir dessiné possède le tableau et c'est lui qui répond aux joueurs arrivés en retard. Il ne demande la propriété que lorsque le joueur ne possède pas déjà le tableau. La demander à chaque point coûterait un aller-retour serveur à chaque fois.

@@ -38,12 +38,13 @@ public class Spinner : MonoBehaviour
 | Сообщение | Примечания |
 | --- | --- |
 | `Awake`, `Start` | Выполняйте однократную настройку в `Start`. |
-| `Update`, `FixedUpdate` | `LateUpdate` нет. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | **Первый** `OnEnable` никогда не приходит. Не подписывайтесь там. |
-| `OnDestroy` | Отписывайтесь и выполняйте очистку здесь. |
+| `OnDestroy` | Выполняйте очистку здесь. В Cilbox `-=` не удаляет обработчики делегатов. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Нужен коллайдер и Rigidbody с одной из сторон. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-Не передаются: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` и корутины. Вместо корутин используйте отложенные события (см. [Таймеры и отложенные события](#timers-and-delayed-events)).
+Не передаются: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` и корутины. Вместо корутин используйте отложенные события (см. [Таймеры и отложенные события](#timers-and-delayed-events)).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### Взаимодействие с объектами
 
-**Basis Pickup Interactable** вызывает события, когда игрок хватает его и нажимает «использовать». Для объекта, который нажимают, но не поднимают, добавьте **Basis Interactable Shim** и обрабатывайте `ButtonDown` и `ButtonUp`.
+**Basis Pickup Interactable** вызывает события, когда игрок хватает его и нажимает «использовать». Для объекта, который нажимают, но не поднимают, добавьте **Basis Interactable Button** в редакторе и назначьте `ButtonDown` (и `ButtonUp` в мирах). В пропе песочница разрешает только задавать `ButtonDown`, поэтому назначайте его через `=`, а не `+=`.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 Код не нужен: **Basis Platform Switch** (com.basis.examples) включает и выключает объекты и компоненты для каждой платформы по списку правил.
 </Callout>
 
-Тот же шаблон подписки существует и для других изменений: `BasisLanguageEventShim` вызывает `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` вызывает `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`, а `BasisPermissionEventShim` вызывает `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`.
+Тот же шаблон подписки существует и для других изменений: `BasisLanguageEventShim` вызывает `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` вызывает `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`, а `BasisPermissionEventShim` вызывает `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`. `BasisPermissionEventShim` привязывает скрипты объекта один раз, при первом включении. Если эти события нужны второму скрипту на том же объекте, вызовите `GetComponent<BasisPermissionEventShim>().Rebind()`.
 
 ## Загрузка изображений и текста
 
-Загрузки проверяют адрес до отправки любого запроса и отклоняют перенаправления. Новые хосты игроки одобряют при первом обращении.
+Загрузки проверяют адрес до отправки любого запроса и отклоняют перенаправления и адреса, которые разрешаются в частные, loopback или link-local сети. Загрузки текста просят игрока одобрить адрес, которому он ещё не доверяет. Загрузки изображений начинаются сразу, без запроса.
 
 ```csharp title="Cilbox"
 using Basis;

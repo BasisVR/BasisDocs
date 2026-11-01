@@ -3,11 +3,11 @@ title: Menüs
 description: BasisMenuShim, Einstellungs-Tabs und Menü-Panels mit Überschriften, Beschriftungen, Buttons, Schaltern, Slidern und Dropdowns.
 ---
 
-`BasisMenuShim` fügt dem eigenen Menü des Spielers UI hinzu. Beide Aufrufe geben null zurück, wenn sie abgelehnt werden. Prüfen Sie das immer.
+`BasisMenuShim` fügt dem eigenen Menü des Spielers UI hinzu. Beide Aufrufe geben null zurück, wenn sie abgelehnt werden. Prüfen Sie das immer. Über alles hinweg, was gleichzeitig geladen ist, gibt es höchstens 4 Panels und 8 Einstellungs-Tabs von Inhalten, daher kann ein Aufruf abgelehnt werden, weil andere Inhalte zuerst da waren.
 
 | Aufruf | Fügt hinzu |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | Einen Tab in den Einstellungen des Spielers (bis zu 4 pro Inhalt). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Einen Tab in den Einstellungen des Spielers (bis zu 4 pro Inhalt). `AddTab` auf einem Einstellungs-Tab fügt einen weiteren Einstellungs-Tab hinzu. |
 | `BasisMenuShim.AddPanel(this, title)` | Ein Panel mit eigenem Menü-Button (eines pro Inhalt, bis zu 8 Tabs). |
 
 ## Eine Seite aufbauen

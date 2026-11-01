@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 虛擬形象元件
 
-在虛擬形象沙盒中，`BasisAvatar` 會解析為 `BasisAvatarShim`。照常撰寫 `BasisAvatar` 即可。
+在虛擬形象沙盒中，`BasisAvatar` 會解析為 `BasisAvatarShim`。照常撰寫 `BasisAvatar` 即可。例外是 `PlayspaceInput`，它只存在於 `BasisAvatarShim` 上（請參閱[玩家](/tw/docs/scripting/shims/players#basisplayspaceinputshim)）。
 
 ```csharp title="AvatarGlow.cs (Cilbox, avatar)"
 using Basis.Scripts.BasisSdk;

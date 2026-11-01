@@ -38,12 +38,13 @@ The proxy forwards these Unity messages to a Cilbox script:
 | Message | Notes |
 | --- | --- |
 | `Awake`, `Start` | Do one time setup in `Start`. |
-| `Update`, `FixedUpdate` | There is no `LateUpdate`. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | The **first** `OnEnable` never arrives. Do not subscribe there. |
-| `OnDestroy` | Unsubscribe and clean up here. |
+| `OnDestroy` | Clean up here. `-=` does not remove delegate handlers in Cilbox. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Need a collider, and a Rigidbody on one side. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-Not forwarded: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` and coroutines. Use delayed events instead of coroutines (see [Timers and delayed events](#timers-and-delayed-events)).
+Not forwarded: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` and coroutines. Use delayed events instead of coroutines (see [Timers and delayed events](#timers-and-delayed-events)).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### Interacting with objects
 
-A **Basis Pickup Interactable** raises events when a player grabs it and presses use. For something that is pressed but not picked up, add a **Basis Interactable Shim** and handle `ButtonDown` and `ButtonUp`.
+A **Basis Pickup Interactable** raises events when a player grabs it and presses use. For something that is pressed but not picked up, add a **Basis Interactable Button** in the editor and assign `ButtonDown` (and `ButtonUp` in worlds). In a prop the sandbox only allows setting `ButtonDown`. Assign it with `=`, not `+=`.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 No code needed: **Basis Platform Switch** (com.basis.examples) enables and disables objects and components per platform from a list of rules.
 </Callout>
 
-The same opt in pattern exists for other changes: `BasisLanguageEventShim` calls `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` calls `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`, and `BasisPermissionEventShim` calls `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`.
+The same opt in pattern exists for other changes: `BasisLanguageEventShim` calls `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` calls `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`, and `BasisPermissionEventShim` calls `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`. `BasisPermissionEventShim` binds the object's scripts once, on first enable. If a second script on the same object needs the events, call `GetComponent<BasisPermissionEventShim>().Rebind()`.
 
 ## Loading images and text
 
-Downloads check the address before any request goes out, and refuse redirects. Players approve new hosts the first time.
+Downloads check the address before any request goes out, and refuse redirects and addresses that resolve to private, loopback or link-local networks. Text downloads ask the player to approve an address they have not trusted yet. Image downloads start straight away without asking.
 
 ```csharp title="Cilbox"
 using Basis;

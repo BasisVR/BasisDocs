@@ -21,9 +21,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 기본적으로 허용되는 것
 
-**월드와 소품:** 렌더링(메시, 스킨드 메시, 라인, 트레일, 파티클, LOD 컴포넌트, 라이트, 리플렉션 프로브, 카메라), 물리(콜라이더, 리지드바디, 조인트), 오디오 소스와 Steam Audio, Animator와 애니메이션, UI 캔버스와 TextMesh Pro, `VideoPlayer`, VFX Graph 바인더, AudioLink, Basis 컨스트레인트, Basis 미디어 플레이어, 거울, 좌석, 픽업, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, 차량, `BasisPlatformSwitch`, 그리고 Cilbox 샌드박스와 shim. 월드는 추가로 내비게이션(`NavMeshAgent`, `NavMeshObstacle`), 포스트 프로세싱 볼륨, 아바타 받침대를 허용합니다.
+**월드와 소품:** 렌더링(메시, 스킨드 메시, 라인, 트레일, 파티클, LOD 컴포넌트, 라이트, 리플렉션 프로브, 카메라), 물리(콜라이더, 리지드바디, 조인트), 오디오 소스와 Steam Audio, Animator와 애니메이션, UI 캔버스와 TextMesh Pro, `VideoPlayer`, VFX Graph 바인더, AudioLink, Basis 컨스트레인트, Basis 미디어 플레이어, 거울, 좌석, 픽업, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, 차량, `BasisPlatformSwitch`, 그리고 Cilbox 샌드박스와 shim. 둘 다 내비게이션(`NavMeshAgent`, `NavMeshObstacle`)을 허용합니다. 월드는 추가로 포스트 프로세싱 볼륨과 아바타 받침대를 허용합니다. 소품 목록에는 `BasisNetworkShim`이 포함되어 있지 않습니다. 소품에서는 코드에서 `SafeUtil.MakeNetworkable(this)`로 추가하세요.
 
-**아바타:** 렌더링, 물리, 오디오, Animator, 컨스트레인트, 좌석, 동기화 transform, OSC, 아바타 shim. 카메라, 라이트, UI, 비디오는 허용되지 않습니다.
+**아바타:** 렌더링, 물리, 오디오, Animator, 컨스트레인트, 좌석, 동기화 transform, OSC, 아바타 shim, 거울, 픽업, VFX Graph, 그리고 Basis 미디어 플레이어, FFUnity, AudioLink의 ytdlp 플레이어를 통한 비디오. 카메라, 라이트, UI, `VideoPlayer`는 허용되지 않습니다.
 
 **기본적으로 허용되지 않음**(클라이언트 빌드 전용): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader`, 그리고 직접 만든 모든 네이티브 `MonoBehaviour`.
 
@@ -33,7 +33,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 콘텐츠 확인
 
-- 플레이 모드에 들어갑니다. Basis가 같은 검사를 적용하며, 제거된 컴포넌트는 로그에 기록됩니다.
+- Basis 아바타, 소품, 씬 인스펙터의 **Content Police** 섹션에 제거될 항목이 나열됩니다. 콘텐츠 검사는 빌드 시점이 아니라 클라이언트가 콘텐츠를 로드할 때만 이루어집니다. 업로드하기 전에 여기서 확인하세요.
+- 클라이언트가 컴포넌트를 제거하면 `Component X is not approved and will be removed`를 로그에 남깁니다.
 - **Basis > Tools > Cilbox Permissions** 창에는 각 샌드박스가 스크립트에 허용하는 호출이 나열됩니다.
 
 ## 컴포넌트 추가(클라이언트 빌드)

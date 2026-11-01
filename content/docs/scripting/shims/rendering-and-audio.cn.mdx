@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-从物体播放玩家的语音，例如舞台麦克风将声音送到扬声器。会先检查同意，且这一步不可省略。
+从物体播放玩家的语音，例如舞台麦克风将声音送到扬声器。`RouteVoiceToObject` 会请求该玩家的许可，并在其允许后启动路由。它返回一个路由 id，如果路由无法启动则返回 0，路由本地玩家也属于这种情况。`HasConsent` 会告诉您是否已获得其许可；它不会发出请求。
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-如需同步视频，请使用 **Basis Media Player** 组件（[媒体播放器](/cn/docs/world/media-player)）。脚本可以读取其 `OutputTexture`；播放控制被阻止，以免 URL 提示被跳过。
+如需同步视频，请使用 **Basis Media Player** 组件（[媒体播放器](/cn/docs/world/media-player)）。世界脚本可以读取其 `OutputTexture`，但播放控制被阻止，以免 URL 提示被跳过。道具脚本还可以使用播放、状态和事件。

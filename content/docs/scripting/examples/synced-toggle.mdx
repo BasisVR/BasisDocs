@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## How it works
 
 - Pressing takes ownership, flips the value locally so the presser sees it instantly, and sends the new value to everyone else.
-- `ReliableSequenced` guarantees the latest value arrives and drops older ones. A toggle only cares about the latest value.
+- `ReliableOrdered` makes sure every change arrives, in order. With `ReliableSequenced`, a message from another object sent just after this one could replace it and the toggle would be lost, because every scene object shares one network channel.
 - A joining player gets the current value from the owner only. Because the message is the whole state, the same `OnMessage` handles both live changes and catch up.
 
 <Callout type="info">

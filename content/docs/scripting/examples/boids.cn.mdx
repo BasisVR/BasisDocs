@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - 数学运算在普通浮点数上进行，在解释器中比 `Vector3` 运算符便宜得多。
 - `SetPositions(Transform[], float[])` 在一次原生调用中写入所有鸟的位置。
-- 如果鸟群必须在玩家之间精确对齐，请使用 `BasisNetworkTimeShim.ServerTimeSeconds` 代替 `Time.time`。
+- 如果鸟群必须在玩家之间精确对齐，请将 `Time.time * speed` 替换为 `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`。请在值仍是 `double` 时取余数：服务器时间对 `float` 来说太大了，鸟群会静止不动。

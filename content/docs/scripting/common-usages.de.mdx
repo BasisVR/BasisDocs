@@ -38,12 +38,13 @@ Der Proxy leitet diese Unity-Nachrichten an ein Cilbox-Skript weiter:
 | Nachricht | Hinweise |
 | --- | --- |
 | `Awake`, `Start` | Einmalige Initialisierung in `Start` durchführen. |
-| `Update`, `FixedUpdate` | Es gibt kein `LateUpdate`. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | Das **erste** `OnEnable` kommt nie an. Abonnieren Sie dort nichts. |
-| `OnDestroy` | Hier abmelden und aufräumen. |
+| `OnDestroy` | Hier aufräumen. `-=` entfernt in Cilbox keine Delegate-Handler. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Benötigen einen Collider und auf einer Seite einen Rigidbody. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-Nicht weitergeleitet: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` und Coroutines. Verwenden Sie verzögerte Ereignisse statt Coroutines (siehe [Timer und verzögerte Ereignisse](#timers-and-delayed-events)).
+Nicht weitergeleitet: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` und Coroutines. Verwenden Sie verzögerte Ereignisse statt Coroutines (siehe [Timer und verzögerte Ereignisse](#timers-and-delayed-events)).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### Mit Objekten interagieren
 
-Ein **Basis Pickup Interactable** löst Ereignisse aus, wenn ein Spieler es greift und auf Benutzen drückt. Für etwas, das gedrückt, aber nicht aufgehoben wird, fügen Sie einen **Basis Interactable Shim** hinzu und behandeln `ButtonDown` und `ButtonUp`.
+Ein **Basis Pickup Interactable** löst Ereignisse aus, wenn ein Spieler es greift und auf Benutzen drückt. Für etwas, das gedrückt, aber nicht aufgehoben wird, fügen Sie im Editor einen **Basis Interactable Button** hinzu und weisen `ButtonDown` zu (und in Welten `ButtonUp`). In einem Prop erlaubt die Sandbox nur das Setzen von `ButtonDown`, also weisen Sie es mit `=` statt mit `+=` zu.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 Kein Code nötig: **Basis Platform Switch** (com.basis.examples) aktiviert und deaktiviert Objekte und Komponenten pro Plattform anhand einer Liste von Regeln.
 </Callout>
 
-Dasselbe Anmeldemuster gibt es für andere Änderungen: `BasisLanguageEventShim` ruft `OnLanguageChanged(string code)` auf, `BasisGraphicsSettingsEventShim` ruft `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` auf, und `BasisPermissionEventShim` ruft `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)` auf.
+Dasselbe Anmeldemuster gibt es für andere Änderungen: `BasisLanguageEventShim` ruft `OnLanguageChanged(string code)` auf, `BasisGraphicsSettingsEventShim` ruft `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` auf, und `BasisPermissionEventShim` ruft `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)` auf. `BasisPermissionEventShim` bindet die Skripte des Objekts einmal, beim ersten Aktivieren. Wenn ein zweites Skript auf demselben Objekt die Ereignisse braucht, rufen Sie `GetComponent<BasisPermissionEventShim>().Rebind()` auf.
 
 ## Bilder und Text laden
 
-Downloads prüfen die Adresse, bevor eine Anfrage hinausgeht, und lehnen Weiterleitungen ab. Spieler bestätigen neue Hosts beim ersten Mal.
+Downloads prüfen die Adresse, bevor eine Anfrage hinausgeht, und lehnen Weiterleitungen sowie Adressen ab, die in private, Loopback- oder Link-Local-Netzwerke auflösen. Text-Downloads fragen den Spieler nach einer Freigabe für eine Adresse, der er noch nicht vertraut hat. Bild-Downloads starten sofort ohne Nachfrage.
 
 ```csharp title="Cilbox"
 using Basis;

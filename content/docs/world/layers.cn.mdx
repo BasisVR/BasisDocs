@@ -24,7 +24,8 @@ Basis 保留了若干 Unity 层。请按照说明使用它们，以便玩家、�
 
 ## 选择层
 
-- 墙壁、地面、道具：Default。
+- 墙壁和地面：Default。
+- 道具碰撞体：Interactable。道具验证器会对位于其他层的碰撞体发出警告，并提供将其移过去的选项。
 - 按钮前方的触发体积和不可见阻挡物：IgnoredByInteractable。指针会穿过它们，到达后面的东西。
 - 指针永远不应命中的装饰性碰撞体：Ignore Raycast。
 - 绝不要将您的物体放在 Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 层上。

@@ -4,6 +4,7 @@ description: Un portal que ofrece trasladar al jugador a otro servidor de Basis,
 ---
 
 ```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
 using Basis.Shims;
 using Cilbox;
 using TMPro;
@@ -13,12 +14,12 @@ using UnityEngine;
 public class ServerPortal : MonoBehaviour
 {
     public string host = "play.example.com";
-    public int port = 4296;
+    public ushort port = 4296;
     public TextMeshPro sign;
 
     void Start()
     {
-        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
         sign.text = host;
     }
 
@@ -33,5 +34,6 @@ public class ServerPortal : MonoBehaviour
 }
 ```
 
+- Añada un **Basis Interactable Button** al portal en el editor.
 - La solicitud debe venir de una pulsación del propio jugador, y el jugador siempre ve la dirección y confirma.
 - Para servidores privados, pase una contraseña como cuarto argumento.

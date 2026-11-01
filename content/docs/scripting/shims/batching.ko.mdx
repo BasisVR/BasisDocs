@@ -13,7 +13,7 @@ Cilbox 스크립트에서 Unity로의 모든 호출은 비용이 크며, 실제�
 
 ## BasisTransformBatchShim
 
-많은 트랜스폼의 위치, 회전, 스케일을 한 번에 읽거나 씁니다.
+많은 트랜스폼의 위치를 한 번에 읽거나, 위치, 회전, 스케일을 한 번에 씁니다. 회전이나 스케일을 일괄로 읽는 기능은 없습니다.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-거리는 제곱 값입니다(`radiusSq`). `skipMask` 비트는 인덱스로 구를 제외합니다.
+거리는 제곱 값입니다(`radiusSq`). 따라서 위의 `0.25f`는 반지름 0.5 m입니다. `skipMask` 비트는 인덱스로 구를 제외합니다. `RaySpheresMask`는 32비트 마스크를 반환하므로 처음 32개의 중심만 검사합니다.

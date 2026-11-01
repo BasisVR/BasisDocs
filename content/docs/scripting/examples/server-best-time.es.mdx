@@ -8,6 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 `BasisSaveShim` guarda en el equipo del jugador. `BasisServerStorageShim` guarda en el **servidor**, por jugador. Un mejor tiempo conseguido en PC sigue ahí cuando el jugador visita desde Quest.
 
 ```csharp title="ServerBestTime.cs (Cilbox)"
+using System.Globalization;
 using Basis.Shims;
 using Cilbox;
 using TMPro;
@@ -25,7 +26,7 @@ public class ServerBestTime : MonoBehaviour
         if (!BasisServerStorageShim.IsAvailable(this)) { label.text = "Times are not saved on this server"; return; }
         BasisServerStorageShim.LoadString(this, Key, (result, text) =>
         {
-            if (result == BasisServerStorageResult.Ok && float.TryParse(text, out float saved)) best = saved;
+            if (result == BasisServerStorageResult.Ok && float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out float saved)) best = saved;
             Show();
         });
     }
@@ -35,7 +36,7 @@ public class ServerBestTime : MonoBehaviour
         if (seconds >= best) return;
         best = seconds;
         Show();
-        BasisServerStorageShim.SaveString(this, Key, best.ToString("F3"), result =>
+        BasisServerStorageShim.SaveString(this, Key, best.ToString("F3", CultureInfo.InvariantCulture), result =>
         {
             if (result != BasisServerStorageResult.Ok) Debug.LogWarning($"best lap not saved: {result}");
         });
@@ -44,6 +45,8 @@ public class ServerBestTime : MonoBehaviour
     void Show() => label.text = best < float.MaxValue ? $"Your best: {best:F2}s" : "No lap yet";
 }
 ```
+
+El tiempo se escribe y se lee con `CultureInfo.InvariantCulture`, de modo que un mejor tiempo guardado en un PC configurado en alemán (`12,345`) se lee correctamente en un Quest configurado en inglés.
 
 <Callout type="info">
 El almacenamiento es por jugador y por servidor, con un total pequeño (16 KB por defecto) compartido por todo el contenido. Guarde valores compactos, no registros.

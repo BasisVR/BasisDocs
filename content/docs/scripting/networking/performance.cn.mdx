@@ -10,7 +10,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - 发送状态，而不是逐帧发送。同步变量只在值变化时发送。不要在 `Update` 中调用 `SendCustomNetworkEvent`。
 - 使用最小的类型。用 `Byte` 或 `Bool` 代替 `Int`，用范围浮点数代替原始浮点数。
 - 高频数据使用不可靠传输。可靠消息会重发直到送达，这会带来更高的开销，并在丢包时增加延迟。
-- 保持 `DistanceReduction` 开启。远处的玩家会收到更少的更新。对于房间外无人需要看到的物体，请开启 `RelevanceCulling`。
+- 保持 `DistanceReduction` 开启。当所有玩家都在远处时，对象会降低发送频率。它以最近的玩家为准，因此只要有一位玩家在附近，所有人都会保持完整频率。对于房间外无人需要看到的物体，请开启 `RelevanceCulling`。
 - 一个对象，多个值。一个包含十个值的 `BasisSyncedParameters` 比十个各含一个值的对象开销更低，因为每个对象都有自己的头部和关键帧。
 - 批量发送事件。将多个变化打包进一条消息，而不是每次变化发送一条消息。
 
@@ -27,7 +27,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | 两位玩家争夺同一个值 | 双方都在写入。只有所有者应当写入；在玩家采取行动时获取所有权。 |
 | 修改后值又跳回原样 | 您在未拥有对象的情况下写入了同步变量，因此所有者的数据流覆盖了它。 |
 | 有人加入时一切都被重置 | 在 `Start` 或 `OnNetworkReady` 中获取了所有权，因此新来者以默认值成为了所有者。 |
-| 事件处理程序触发两次 | 在 `Start` 中订阅后又在 `OnEnable` 中再次订阅，或者从未在 `OnDestroy` 中取消订阅。 |
+| 事件处理程序触发两次 | 在 `Start` 中订阅后又在 `OnEnable` 中再次订阅。在 Cilbox 中 `-=` 无法移除处理程序，因此请只在 `Start` 中订阅一次。 |
 
 ## 工具
 

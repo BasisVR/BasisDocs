@@ -20,7 +20,7 @@ BasisSaveShim.Save(this, "progress", bytes);
 byte[] data = BasisSaveShim.Load(this, "progress");
 BasisSaveShim.Delete(this, "progress");
 
-// Shared between a world and its props.
+// Shared with any content that uses the same store name.
 BasisSaveShim.Save(this, "my-game", "progress", bytes);
 
 // Readable by other content.

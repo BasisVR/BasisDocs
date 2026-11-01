@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 | 元件 | 同步內容 | 可上傳 | 備註 |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | 被握持物件的姿勢以及由誰握持。 | 是 | 抓取時取得擁有權。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。 |
+| **Basis Pickup Sync Networking** | 被握持物件的姿勢以及由誰握持。 | 是 | 抓取時取得擁有權。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。關閉 `CanNetworkSteal` 時，只有目前的擁有者能抓取它，而且它會一直由最後握持它的人擁有。 |
 | **Basis Synced Transform** | 位置、旋轉和縮放。各軸可個別切換與壓縮。 | 是 | 適用於擁有者以程式碼或動畫移動的任何東西。 |
 | **Basis Seat Sync** | 誰坐在 **Basis Seat** 上。 | 是 | 在兩位玩家同時嘗試坐下時進行仲裁。 |
 | **Basis Media Player** | 影片 URL、播放狀態和時間。 | 是 | 請參閱[媒體播放器](/tw/docs/world/media-player)。 |

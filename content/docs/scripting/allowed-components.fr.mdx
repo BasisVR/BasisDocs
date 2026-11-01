@@ -21,9 +21,9 @@ Chacune est une liste de noms de types complets. La correspondance est exacte : 
 
 ## Ce qui est autorisé par défaut
 
-**Mondes et props :** le rendu (composants mesh, skinned mesh, line, trail, particules et LOD, lumières, reflection probes, caméras), la physique (colliders, rigidbodies, joints), les sources audio et Steam Audio, les animators et l'animation, les canvas UI et TextMesh Pro, `VideoPlayer`, les binders VFX Graph, AudioLink, les contraintes Basis, le lecteur multimédia Basis, le miroir, les sièges, les pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, les véhicules, `BasisPlatformSwitch`, ainsi que la sandbox Cilbox et ses shims. Les mondes autorisent aussi la navigation (`NavMeshAgent`, `NavMeshObstacle`), les volumes de post-traitement et le piédestal d'avatar.
+**Mondes et props :** le rendu (composants mesh, skinned mesh, line, trail, particules et LOD, lumières, reflection probes, caméras), la physique (colliders, rigidbodies, joints), les sources audio et Steam Audio, les animators et l'animation, les canvas UI et TextMesh Pro, `VideoPlayer`, les binders VFX Graph, AudioLink, les contraintes Basis, le lecteur multimédia Basis, le miroir, les sièges, les pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, les véhicules, `BasisPlatformSwitch`, ainsi que la sandbox Cilbox et ses shims. Les deux autorisent la navigation (`NavMeshAgent`, `NavMeshObstacle`). Les mondes autorisent aussi les volumes de post-traitement et le piédestal d'avatar. La liste des props n'inclut pas `BasisNetworkShim`. Dans un prop, ajoutez-le depuis le code avec `SafeUtil.MakeNetworkable(this)`.
 
-**Avatars :** le rendu, la physique, l'audio, les animators, les contraintes, les sièges, les transforms synchronisés, OSC et les shims d'avatar. Pas de caméras, de lumières, d'UI ni de vidéo.
+**Avatars :** le rendu, la physique, l'audio, les animators, les contraintes, les sièges, les transforms synchronisés, OSC, les shims d'avatar, les miroirs, les pickups, VFX Graph, et la vidéo via le lecteur multimédia Basis, FFUnity et le lecteur ytdlp d'AudioLink. Pas de caméras, de lumières, d'UI ni de `VideoPlayer`.
 
 **Non autorisés par défaut** (builds du client uniquement) : `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader`, et tout `MonoBehaviour` natif de votre cru.
 
@@ -33,7 +33,8 @@ Les assets de sélecteur font foi et changent d'une version à l'autre. Ouvrez-l
 
 ## Vérifier votre contenu
 
-- Entrez en mode play : Basis applique le même contrôle, et les composants supprimés sont journalisés.
+- La section **Content Police** des inspecteurs Basis Avatar, Prop et Scene liste ce qui serait supprimé. Le contenu n'est contrôlé qu'au chargement par le client, pas au moment du build. Vérifiez ici avant de téléverser.
+- Lorsque le client supprime un composant, il journalise `Component X is not approved and will be removed`.
 - La fenêtre **Basis > Tools > Cilbox Permissions** liste ce que chaque sandbox permet aux scripts d'appeler.
 
 ## Ajouter un composant (builds du client)

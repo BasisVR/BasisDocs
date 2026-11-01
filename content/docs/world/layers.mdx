@@ -24,7 +24,8 @@ Basis reserves several Unity layers. Use them as described so players, pointers 
 
 ## Choosing a layer
 
-- Walls, floors, props: Default.
+- Walls and floors: Default.
+- Prop colliders: Interactable. The prop validator warns about colliders on other layers and offers to move them.
 - Trigger volumes and invisible blockers in front of buttons: IgnoredByInteractable. Pointers pass through to what is behind them.
 - Decorative colliders the pointer should never hit: Ignore Raycast.
 - Never put your objects on Player, LocalPlayerAvatar, RemotePlayerAvatar or OverlayUI.

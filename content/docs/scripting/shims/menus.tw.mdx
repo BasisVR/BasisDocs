@@ -3,11 +3,11 @@ title: 選單
 description: BasisMenuShim、設定分頁與選單面板，包含標題、標籤、按鈕、切換開關、滑桿與下拉選單。
 ---
 
-`BasisMenuShim` 會將 UI 加入玩家自己的選單。兩種呼叫在遭拒時都會傳回 null。請務必檢查。
+`BasisMenuShim` 會將 UI 加入玩家自己的選單。兩種呼叫在遭拒時都會傳回 null。請務必檢查。在同時載入的所有內容中，最多只能有 4 個面板和 8 個內容設定分頁，因此呼叫可能因為其他內容先佔用了名額而遭拒。
 
 | 呼叫 | 加入的內容 |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家設定中的一個分頁（每個內容最多 4 個）。 |
+| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家設定中的一個分頁（每個內容最多 4 個）。在設定分頁上呼叫 `AddTab` 會再加入一個設定分頁。 |
 | `BasisMenuShim.AddPanel(this, title)` | 一個擁有專屬選單按鈕的面板（每個內容一個，最多 8 個分頁）。 |
 
 ## 建立頁面

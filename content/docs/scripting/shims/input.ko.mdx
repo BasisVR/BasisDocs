@@ -1,6 +1,6 @@
 ---
 title: 입력
-description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger, BasisUIExtensions.
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableButton, BasisActionTrigger, BasisUIExtensions.
 ---
 
 ## BasisControllerInputShim
@@ -44,25 +44,29 @@ BasisHapticsShim.Play(this, BasisHapticHand.Right);
 BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 ```
 
-## BasisInteractableShim
+## BasisInteractableButton
 
-오브젝트를 포인터로 누를 수 있게 만들고, 렌더러에 호버 색과 누름 색을 적용합니다.
+오브젝트를 포인터로 누를 수 있게 만들고, 렌더러에 호버 색과 누름 색을 적용합니다. 에디터에서 추가하세요. `GetComponent`가 자동으로 추가해 주지 않습니다. 더 이상 사용되지 않는 `BasisInteractableShim`을 대체합니다.
+
+소품에서는 샌드박스가 `ButtonDown` 설정만 허용하므로 `=`로 할당하고 `ButtonUp`은 빼세요.
 
 ```csharp
-BasisInteractableShim button;
+using Basis.Scripts.BasisSdk.Interactions;
+
+BasisInteractableButton button;
 
 void Start()
 {
-    button = GetComponent<BasisInteractableShim>();
-    button.ButtonDown += OnDown;
-    button.ButtonUp += OnUp;
+    button = GetComponent<BasisInteractableButton>();
+    button.ButtonDown = OnDown;
+    button.ButtonUp = OnUp;
 }
 
 void OnDown() { lamp.SetActive(!lamp.activeSelf); }
 void OnUp() { }
 ```
 
-인스펙터 필드: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName`(머티리얼 색상 속성).
+인스펙터 필드: `isEnabled`, `UseHighlight`, `UseMaterialColor`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName`(머티리얼 색상 속성).
 
 ## BasisActionTrigger
 

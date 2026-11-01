@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - 數學運算在純 float 上執行，在直譯器中比 `Vector3` 運算子便宜得多。
 - `SetPositions(Transform[], float[])` 會在一次原生呼叫中寫入每一隻鳥。
-- 如果鳥群必須在玩家之間完全對齊，請使用 `BasisNetworkTimeShim.ServerTimeSeconds` 取代 `Time.time`。
+- 如果鳥群必須在玩家之間完全對齊，請將 `Time.time * speed` 替換為 `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`。請在數值仍是 `double` 時取餘數：伺服器時間對 `float` 來說太大了，鳥群會靜止不動。

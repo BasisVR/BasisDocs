@@ -13,7 +13,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## BasisTransformBatchShim
 
-Чтение или запись позиций, поворотов и масштабов множества трансформов за раз.
+Чтение позиций или запись позиций, поворотов и масштабов множества трансформов за раз. Пакетного чтения поворотов и масштабов нет.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-Расстояния задаются в квадрате (`radiusSq`). Биты `skipMask` исключают сферы по индексу.
+Расстояния задаются в квадрате (`radiusSq`), поэтому `0.25f` выше соответствует радиусу 0,5 м. Биты `skipMask` исключают сферы по индексу. `RaySpheresMask` возвращает 32-битную маску, поэтому проверяет только первые 32 центра.

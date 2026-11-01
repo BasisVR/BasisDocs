@@ -14,7 +14,7 @@ public class PerformanceScaler : MonoBehaviour
     public GameObject[] gpuHeavy;
     public GameObject[] cpuHeavy;
     float nextCheck;
-    bool reduced, lowQuality;
+    bool cutCpu, cutGpu, lowQuality;
 
     void Start()
     {
@@ -34,19 +34,24 @@ public class PerformanceScaler : MonoBehaviour
         float target = BasisStatsShim.TargetFramesPerSecond;
         if (target <= 0f) return;
         float fps = BasisStatsShim.FramesPerSecond;
-        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
-        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+        bool reduced = cutCpu || cutGpu;
+        if (!reduced && fps < target * 0.8f)
+        {
+            int bottleneck = BasisStatsShim.Bottleneck;
+            cutGpu = bottleneck == BasisStatsShim.BottleneckGpu;
+            cutCpu = bottleneck == BasisStatsShim.BottleneckCpu;
+            Apply();
+        }
+        else if (reduced && fps > target * 0.95f) { cutCpu = false; cutGpu = false; Apply(); }
     }
 
     void Apply()
     {
-        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
-        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
-        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in gpuHeavy) g.SetActive(!(lowQuality || cutGpu));
         foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
     }
 }
 ```
 
 - Dos umbrales (80 % para reducir, 95 % para restaurar) evitan que se active y desactive constantemente.
-- El cuello de botella indica qué lado reducir: espejos y partículas para la GPU, multitudes y scripts para la CPU.
+- El cuello de botella indica qué lado reducir: espejos y partículas para la GPU, multitudes y scripts para la CPU. Mientras todavía está midiendo, o indica equilibrio, no se reduce nada y la siguiente comprobación lo vuelve a intentar.

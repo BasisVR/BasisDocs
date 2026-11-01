@@ -28,10 +28,12 @@ SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unr
 | `Unreliable` | 아마도 | 아니요 | 다음 업데이트가 이번 것을 대체하는 높은 빈도의 업데이트. |
 | `Sequenced` | 아마도 | 오래된 것은 버려짐 | 최신 값이 우선. 예를 들어 실시간 슬라이더. |
 | `ReliableUnordered` | 예 | 아니요 | 서로 독립적인 일회성 동작. |
-| `ReliableSequenced` | 최신 것만 | 예 | 최종 값만 중요한 토글. |
+| `ReliableSequenced` | 최신 것만 | 예 | 최신 값만 중요한 단일 값. 모든 씬 오브젝트가 하나의 채널을 공유하므로, **어떤** 오브젝트의 더 새로운 메시지든 내 메시지를 대체할 수 있습니다. |
 | `ReliableOrdered` | 예 | 예 | 모든 메시지와 그 순서가 중요한 것: 점수, 게임 단계. |
 
 확실하지 않으면 `ReliableOrdered`를 사용하세요.
+
+`Unreliable`, `Sequenced`, `ReliableSequenced`는 메시지를 조각으로 나눌 수 없으므로, 약 988바이트를 넘으면 `TooBigPacketException`이 발생합니다. 기본값이 `Unreliable`이므로 큰 페이로드에는 `ReliableOrdered`나 `ReliableUnordered`를 넘기세요.
 
 ## 수신
 
@@ -83,11 +85,11 @@ void ReadHit(byte[] buffer)
 }
 ```
 
-큰 페이로드(그림, 레벨 레이아웃)는 `BasisCompressionShim.Compress`와 `Decompress`(LZ4, 압축 해제 시 최대 1 MB)로 압축할 수 있습니다.
+큰 페이로드(그림, 레벨 레이아웃)는 `BasisCompressionShim.Compress`와 `Decompress`(LZ4, 압축 해제 시 최대 1 MB)로 압축할 수 있습니다. 다른 방식은 약 988바이트로 제한되므로 `ReliableOrdered`나 `ReliableUnordered`로 보내세요.
 
 ## Cilbox [#cilbox]
 
-Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없습니다. 대신 `BasisNetworkShim`을 가져오세요. `GetComponent`를 호출하면 Cilbox가 컴포넌트를 추가합니다. `Start`에서 구독하고 `OnDestroy`에서 구독을 해제하세요.
+Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없습니다. 대신 `SafeUtil.MakeNetworkable(this)`에서 `BasisNetworkShim`을 가져오세요. 이 메서드는 오브젝트에 있는 shim을 반환하거나, 없으면 추가합니다. `Start`에서 한 번만 구독하세요. Cilbox에서는 `-=`로 핸들러가 제거되지 않습니다([샌드박스 규칙](/ko/docs/scripting/sandbox-rules#events-and-delegates) 참조).
 
 ```csharp title="NetworkedCounter.cs (Cilbox)"
 using System;
@@ -107,16 +109,9 @@ public class NetworkedCounter : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
-    }
-
-    void OnDestroy()
-    {
-        if (net == null) return;
-        net.NetworkMessageReceived -= OnMessage;
-        net.PlayerJoined -= OnPlayerJoined;
     }
 
     public void Increment()
@@ -158,7 +153,7 @@ public class NetworkedCounter : MonoBehaviour
 | `OnPlayerLeft(...)` | `PlayerLeft` |
 
 <Callout type="info">
-`SafeUtil.MakeNetworkable(this)`는 `GetComponent<BasisNetworkShim>()`과 같은 일을 하며 shim을 반환합니다.
+`GetComponent<BasisNetworkShim>()`은 에디터에서 배치한 shim만 찾습니다. 이벤트 shim과 달리 Cilbox가 자동으로 추가해 주지 않습니다. 소품에서는 직접 배치한 shim이 소품 허용 목록에 없기 때문에 로드 시 제거되므로, 항상 `MakeNetworkable`을 사용하세요.
 </Callout>
 
 ## 메시지 없이 모든 클라이언트에서 같은 결과

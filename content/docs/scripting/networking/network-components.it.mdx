@@ -9,7 +9,7 @@ La maggior parte della sincronizzazione non richiede script. Aggiungi uno di que
 
 | Componente | Sincronizza | Caricabile | Note |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | La posa di un oggetto tenuto in mano e chi lo tiene. | Sì | Prende l'ownership quando viene afferrato. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Pickup Sync Networking** | La posa di un oggetto tenuto in mano e chi lo tiene. | Sì | Prende l'ownership quando viene afferrato. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. Con `CanNetworkSteal` disattivato, solo il proprietario attuale può afferrarlo, e resta di proprietà di chi l'ha tenuto per ultimo. |
 | **Basis Synced Transform** | Posizione, rotazione e scala. Interruttori e compressione per asse. | Sì | Per qualsiasi cosa il proprietario muova da codice o animazione. |
 | **Basis Seat Sync** | Chi siede in un **Basis Seat**. | Sì | Fa da arbitro quando due giocatori provano a sedersi contemporaneamente. |
 | **Basis Media Player** | URL del video, stato di riproduzione e tempo. | Sì | Vedi [Media Player](/it/docs/world/media-player). |

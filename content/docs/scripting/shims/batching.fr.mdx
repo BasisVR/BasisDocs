@@ -13,7 +13,7 @@ Si une boucle dans `Update` touche plus d'une poignée de transforms ou de blend
 
 ## BasisTransformBatchShim
 
-Lire ou écrire les positions, rotations et échelles de nombreux transforms à la fois.
+Lire les positions, ou écrire les positions, rotations et échelles, de nombreux transforms à la fois. Il n'existe pas de lecture groupée pour les rotations ni pour les échelles.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-Les distances sont au carré (`radiusSq`). Les bits de `skipMask` excluent des sphères par index.
+Les distances sont au carré (`radiusSq`), donc `0.25f` ci-dessus correspond à un rayon de 0,5 m. Les bits de `skipMask` excluent des sphères par index. `RaySpheresMask` renvoie un masque de 32 bits, donc il ne teste que les 32 premiers centres.

@@ -41,11 +41,24 @@ BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
 
 Alleen avatars. Stuurt de eigen beweging van de drager aan. `Additive` mengt met hun invoer, `Override` vervangt die.
 
+`PlayspaceInput` is een member van `BasisAvatarShim`, niet van `BasisAvatar`, dus declareer het shim-type om het te gebruiken. Invoer geldt één frame: schrijf die vanuit `Update` zolang je de speler wilt aansturen, en als je stopt, gaat de besturing terug. Spelers kunnen gescripte invoer uitzetten met de instelling `enablescriptedplayerinput`.
+
 ```csharp
-BasisPlayspaceInputShim input = avatar.PlayspaceInput;
-input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
-input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
-input.Clear();
+using Basis.Shims;
+
+BasisAvatarShim avatar;
+
+void Start()
+{
+    avatar = BasisAvatarShim.GetGameObject(this).GetComponent<BasisAvatarShim>();
+}
+
+void Update()
+{
+    BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+    input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+    input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+}
 ```
 
 ## BasisSeatShim

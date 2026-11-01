@@ -21,9 +21,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## デフォルトで許可されているもの
 
-**ワールドとプロップ:** レンダリング（メッシュ、スキンメッシュ、ライン、トレイル、パーティクル、LODコンポーネント、ライト、リフレクションプローブ、カメラ）、物理（コライダー、リジッドボディ、ジョイント）、オーディオソースとSteam Audio、Animatorとアニメーション、UIキャンバスとTextMesh Pro、`VideoPlayer`、VFX Graphバインダー、AudioLink、Basisコンストレイント、Basisメディアプレイヤー、ミラー、座席、ピックアップ、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、乗り物、`BasisPlatformSwitch`、そしてCilboxサンドボックスとシム。ワールドではさらに、ナビゲーション（`NavMeshAgent`、`NavMeshObstacle`）、ポストプロセスボリューム、アバターペデスタルも許可されています。
+**ワールドとプロップ:** レンダリング（メッシュ、スキンメッシュ、ライン、トレイル、パーティクル、LODコンポーネント、ライト、リフレクションプローブ、カメラ）、物理（コライダー、リジッドボディ、ジョイント）、オーディオソースとSteam Audio、Animatorとアニメーション、UIキャンバスとTextMesh Pro、`VideoPlayer`、VFX Graphバインダー、AudioLink、Basisコンストレイント、Basisメディアプレイヤー、ミラー、座席、ピックアップ、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、乗り物、`BasisPlatformSwitch`、そしてCilboxサンドボックスとシム。どちらでもナビゲーション（`NavMeshAgent`、`NavMeshObstacle`）が許可されています。ワールドではさらに、ポストプロセスボリュームとアバターペデスタルも許可されています。プロップのリストには`BasisNetworkShim`が含まれていません。プロップでは、コードから`SafeUtil.MakeNetworkable(this)`で追加してください。
 
-**アバター:** レンダリング、物理、オーディオ、Animator、コンストレイント、座席、同期トランスフォーム、OSC、アバターシム。カメラ、ライト、UI、ビデオは使えません。
+**アバター:** レンダリング、物理、オーディオ、Animator、コンストレイント、座席、同期トランスフォーム、OSC、アバターシム、ミラー、ピックアップ、VFX Graph、そしてBasisメディアプレイヤー、FFUnity、AudioLinkのytdlpプレイヤーによるビデオ。カメラ、ライト、UI、`VideoPlayer`は使えません。
 
 **デフォルトで許可されていないもの**（クライアントビルドのみ）: `BasisSyncedParameters`、`BasisSyncedRigidbody`、`BasisLocomotionZone`、`BasisRuntimeLoader`、そして独自のNative `MonoBehaviour`すべて。
 
@@ -33,7 +33,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## コンテンツの確認
 
-- プレイモードに入ります。Basisは同じ取り締まりを適用し、削除されたコンポーネントはログに記録されます。
+- Basisのアバター、プロップ、シーンの各インスペクターにある**Content Police**セクションに、削除されるものが一覧表示されます。コンテンツの取り締まりはビルド時ではなく、クライアントが読み込むときにだけ行われます。アップロードする前にここで確認してください。
+- クライアントがコンポーネントを削除すると、`Component X is not approved and will be removed`とログに出力されます。
 - 各サンドボックスでスクリプトが呼び出せるものは、**Basis > Tools > Cilbox Permissions**ウィンドウに一覧表示されます。
 
 ## コンポーネントの追加（クライアントビルド）

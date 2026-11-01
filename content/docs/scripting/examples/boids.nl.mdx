@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - Het rekenwerk draait op gewone floats, wat in de interpreter veel goedkoper is dan `Vector3`-operatoren.
 - `SetPositions(Transform[], float[])` schrijft elke vogel in één native aanroep.
-- Gebruik `BasisNetworkTimeShim.ServerTimeSeconds` in plaats van `Time.time` als de zwerm precies gelijk moet lopen tussen spelers.
+- Als de zwerm precies gelijk moet lopen tussen spelers, vervang dan `Time.time * speed` door `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Neem de rest terwijl de waarde nog een `double` is: servertijd is veel te groot voor een `float`, en de zwerm zou stilstaan.

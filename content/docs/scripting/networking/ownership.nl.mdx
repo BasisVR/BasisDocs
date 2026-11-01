@@ -18,7 +18,7 @@ De server bepaalt het eigenaarschap en twee spelers kunnen nooit allebei eigenaa
 | `IsOwnedLocallyOnClient` | Wordt ingesteld op het moment dat je eigenaarschap **aanvraagt**, voordat de server antwoordt. Hiermee kun je het object al besturen zonder op een round trip te wachten. |
 | `CurrentOwnerId` | Speler-ID van de eigenaar. |
 | `currentOwnedPlayer` | De eigenaar als `BasisNetworkPlayer`. |
-| `HasNetworkID` | False totdat het object netwerkklaar is. Eigenaarschap heeft daarvoor geen betekenis. |
+| `HasNetworkID` | False totdat het object netwerkklaar is. `OnOwnershipTransfer` kan daarvoor al afgaan terwijl `IsLocalOwner()` nog false teruggeeft, dus herhaal de eigenaarschapslogica in `OnNetworkReady`. |
 
 ## Eigenaarschap nemen
 
@@ -36,7 +36,9 @@ BasisOwnershipResult result = await TakeOwnershipAsync();
 if (result.Success) StartDriving();
 ```
 
-Vraag wie de eigenaar is zonder het te nemen:
+Voordat `HasNetworkID` true is, meldt `TakeOwnershipAsync` meteen succes zonder de server te vragen. Roep het aan vanuit `OnNetworkReady` of later.
+
+Vraag wie de eigenaar is. Als nog niemand eigenaar is, maakt de server jou de eigenaar:
 
 ```csharp title="Native"
 BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
@@ -50,11 +52,14 @@ Neem het eigenaarschap op het moment dat een speler iets **doet** met het object
 ## Reageren op overdrachten
 
 ```csharp title="Native"
-public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+public override void OnNetworkReady() => UpdateOwner();
+
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
-    bool mine = IsLocalOwner();
-    body.isKinematic = !mine;
-    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+    body.isKinematic = !IsLocalOwner();
+    ownerLabel.text = currentOwnedPlayer != null && currentOwnedPlayer.Player != null ? currentOwnedPlayer.Player.SafeDisplayName : "";
 }
 
 public override void OnServerOwnershipDestroyed()
@@ -66,15 +71,20 @@ public override void OnServerOwnershipDestroyed()
 ```csharp title="Cilbox"
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
+    net.NetworkReady += UpdateOwner;
     net.OwnershipTransfer += OnOwnerChanged;
 }
 
-void OnOwnerChanged(BasisNetworkPlayer newOwner)
+void OnOwnerChanged(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
     body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
 }
 ```
+
+De overdracht naar de eerste eigenaar komt binnen voordat het object netwerkklaar is, dus beide voorbeelden voeren dezelfde controle opnieuw uit in `OnNetworkReady`.
 
 ## Wie in het begin eigenaar is van een object
 
@@ -112,4 +122,4 @@ public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMeth
 }
 ```
 
-**Pickups nemen automatisch eigenaarschap.** `BasisPickupSyncNetworking` neemt het eigenaarschap wanneer het wordt vastgepakt. Zet `CanNetworkSteal` uit om te voorkomen dat andere spelers een voorwerp uit iemands hand grijpen.
+**Pickups nemen automatisch eigenaarschap.** `BasisPickupSyncNetworking` neemt het eigenaarschap wanneer het wordt vastgepakt. Met `CanNetworkSteal` uit kan alleen de huidige eigenaar het voorwerp vastpakken, en wordt het eigenaarschap bij loslaten niet vrijgegeven, dus blijft het vastzitten aan wie het als laatste vasthield.

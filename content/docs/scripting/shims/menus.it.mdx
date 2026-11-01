@@ -3,11 +3,11 @@ title: Menu
 description: BasisMenuShim, schede delle impostazioni e pannelli del menu con intestazioni, etichette, pulsanti, interruttori, slider e menu a tendina.
 ---
 
-`BasisMenuShim` aggiunge UI al menu del giocatore. Entrambe le chiamate restituiscono null quando vengono rifiutate. Controlla sempre.
+`BasisMenuShim` aggiunge UI al menu del giocatore. Entrambe le chiamate restituiscono null quando vengono rifiutate. Controlla sempre. Considerando tutto ciò che è caricato contemporaneamente, ci sono al massimo 4 pannelli e 8 schede di impostazioni dei contenuti, quindi una chiamata può essere rifiutata perché un altro contenuto è arrivato prima.
 
 | Chiamata | Aggiunge |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | Una scheda nelle impostazioni del giocatore (fino a 4 per contenuto). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Una scheda nelle impostazioni del giocatore (fino a 4 per contenuto). `AddTab` su una scheda delle impostazioni aggiunge un'altra scheda delle impostazioni. |
 | `BasisMenuShim.AddPanel(this, title)` | Un pannello con un proprio pulsante nel menu (uno per contenuto, fino a 8 schede). |
 
 ## Costruire una pagina

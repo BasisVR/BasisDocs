@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - Математика выполняется на простых float, что в интерпретаторе намного дешевле операторов `Vector3`.
 - `SetPositions(Transform[], float[])` записывает всех птиц одним нативным вызовом.
-- Используйте `BasisNetworkTimeShim.ServerTimeSeconds` вместо `Time.time`, если стая должна точно совпадать у всех игроков.
+- Если стая должна точно совпадать у всех игроков, замените `Time.time * speed` на `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Берите остаток, пока значение ещё `double`: серверное время слишком велико для `float`, и стая стояла бы на месте.

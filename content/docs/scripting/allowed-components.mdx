@@ -21,9 +21,9 @@ Each is a list of full type names. Matching is exact: a subclass of an allowed t
 
 ## What is allowed by default
 
-**Worlds and props:** rendering (mesh, skinned mesh, line, trail, particle and LOD components, lights, reflection probes, cameras), physics (colliders, rigidbodies, joints), audio sources and Steam Audio, animators and animation, UI canvases and TextMesh Pro, `VideoPlayer`, VFX Graph binders, AudioLink, Basis constraints, the Basis media player, mirror, seats, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, vehicles, `BasisPlatformSwitch`, and the Cilbox sandbox and shims. Worlds also allow navigation (`NavMeshAgent`, `NavMeshObstacle`), post processing volumes and the avatar pedestal.
+**Worlds and props:** rendering (mesh, skinned mesh, line, trail, particle and LOD components, lights, reflection probes, cameras), physics (colliders, rigidbodies, joints), audio sources and Steam Audio, animators and animation, UI canvases and TextMesh Pro, `VideoPlayer`, VFX Graph binders, AudioLink, Basis constraints, the Basis media player, mirror, seats, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, vehicles, `BasisPlatformSwitch`, and the Cilbox sandbox and shims. Both allow navigation (`NavMeshAgent`, `NavMeshObstacle`). Worlds also allow post processing volumes and the avatar pedestal. The prop list does not include `BasisNetworkShim`. In a prop, add it from code with `SafeUtil.MakeNetworkable(this)`.
 
-**Avatars:** rendering, physics, audio, animators, constraints, seats, synced transforms, OSC and the avatar shims. No cameras, lights, UI or video.
+**Avatars:** rendering, physics, audio, animators, constraints, seats, synced transforms, OSC, the avatar shims, mirrors, pickups, VFX Graph, and video through the Basis media player, FFUnity and AudioLink's ytdlp player. No cameras, lights, UI or `VideoPlayer`.
 
 **Not allowed by default** (client builds only): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader`, and any native `MonoBehaviour` of your own.
 
@@ -33,7 +33,8 @@ The selector assets are the source of truth and change between versions. Open th
 
 ## Checking your content
 
-- Enter play mode: Basis applies the same policing, and removed components are logged.
+- The **Content Police** section of the Basis Avatar, Prop and Scene inspectors lists what would be removed. Content is only policed when the client loads it, not at build time. Check here before you upload.
+- When the client removes a component it logs `Component X is not approved and will be removed`.
 - The **Basis > Tools > Cilbox Permissions** window lists what each sandbox lets scripts call.
 
 ## Adding a component (client builds)

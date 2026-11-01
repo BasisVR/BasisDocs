@@ -25,7 +25,7 @@ Se un giocatore che entra cinque minuti dopo deve vederlo, è uno **stato** e ap
 ## Gli elementi di base
 
 - `BasisNetworkBehaviour` è la classe base per gli script di rete compilati nel client. Riceve un ID di rete, un proprietario e le callback `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` e `OnPlayerLeft`.
-- `BasisNetworkShim` è la stessa cosa per gli script Cilbox. Uno script Cilbox non può derivare da `BasisNetworkBehaviour`; ottiene invece un `BasisNetworkShim` con `GetComponent` e si sottoscrive ai suoi eventi.
+- `BasisNetworkShim` è la stessa cosa per gli script Cilbox. Uno script Cilbox non può derivare da `BasisNetworkBehaviour`; ottiene invece un `BasisNetworkShim` da `SafeUtil.MakeNetworkable(this)` e si sottoscrive ai suoi eventi.
 - `BasisSyncedObject` si basa su `BasisNetworkBehaviour` con un flusso di stato compatto e interpolato. `BasisSyncedParameters`, `BasisSyncedTransform` e `BasisSyncedRigidbody` sono componenti pronti all'uso costruiti sopra di esso.
 - `BasisPickupSyncNetworking` e `BasisSeatSync` sincronizzano pickup e sedili senza codice.
 

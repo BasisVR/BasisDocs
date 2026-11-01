@@ -3,11 +3,11 @@ title: Menús
 description: BasisMenuShim, pestañas de ajustes y paneles de menú con encabezados, etiquetas, botones, interruptores, deslizadores y desplegables.
 ---
 
-`BasisMenuShim` añade UI al menú del propio jugador. Ambas llamadas devuelven null cuando se rechazan. Compruébelo siempre.
+`BasisMenuShim` añade UI al menú del propio jugador. Ambas llamadas devuelven null cuando se rechazan. Compruébelo siempre. Entre todo lo que está cargado a la vez hay como máximo 4 paneles y 8 pestañas de ajustes de contenido, así que una llamada puede rechazarse porque otro contenido llegó antes.
 
 | Llamada | Añade |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | Una pestaña en los ajustes del jugador (hasta 4 por contenido). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Una pestaña en los ajustes del jugador (hasta 4 por contenido). `AddTab` en una pestaña de ajustes añade otra pestaña de ajustes. |
 | `BasisMenuShim.AddPanel(this, title)` | Un panel con su propio botón de menú (uno por contenido, hasta 8 pestañas). |
 
 ## Construir una página

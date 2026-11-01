@@ -9,7 +9,7 @@ Voor de meeste synchronisatie is geen script nodig. Voeg een van deze componente
 
 | Component | Synchroniseert | Geüpload | Opmerkingen |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | De pose van een vastgehouden object en wie het vasthoudt. | Ja | Neemt eigenaarschap bij vastpakken. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Pickup Sync Networking** | De pose van een vastgehouden object en wie het vasthoudt. | Ja | Neemt eigenaarschap bij vastpakken. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. Met `CanNetworkSteal` uit kan alleen de huidige eigenaar het vastpakken, en blijft het eigendom van wie het als laatste vasthield. |
 | **Basis Synced Transform** | Positie, rotatie en schaal. Schakelaars en compressie per as. | Ja | Voor alles wat de eigenaar vanuit code of animatie beweegt. |
 | **Basis Seat Sync** | Wie er in een **Basis Seat** zit. | Ja | Beslecht wanneer twee spelers tegelijk proberen te gaan zitten. |
 | **Basis Media Player** | Video-URL, afspeelstatus en tijd. | Ja | Zie [Mediaspeler](/nl/docs/world/media-player). |

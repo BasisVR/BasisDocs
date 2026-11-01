@@ -10,7 +10,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - Envíe estado, no fotogramas. Las variables sincronizadas solo se envían cuando cambian los valores. No llame a `SendCustomNetworkEvent` desde `Update`.
 - Use el tipo más pequeño. Un `Byte` o `Bool` en lugar de un `Int`, un float con rango en lugar de uno sin procesar.
 - Use entrega no fiable para datos de alta frecuencia. Los mensajes fiables se reenvían hasta que llegan, lo que cuesta más y añade retraso cuando se pierden paquetes.
-- Deje `DistanceReduction` activado. Los jugadores lejanos reciben menos actualizaciones. Active `RelevanceCulling` para objetos que nadie fuera de una sala necesita ver.
+- Deje `DistanceReduction` activado. Cuando todos los jugadores están lejos, el objeto envía con menos frecuencia. Se basa en el jugador más cercano, así que un solo jugador cerca mantiene la frecuencia completa para todos. Active `RelevanceCulling` para objetos que nadie fuera de una sala necesita ver.
 - Un objeto, muchos valores. Un `BasisSyncedParameters` con diez valores es más barato que diez objetos con un valor cada uno, porque cada objeto lleva su propia cabecera y sus propios keyframes.
 - Agrupe eventos. Empaquete varios cambios en un solo mensaje en lugar de enviar un mensaje por cambio.
 
@@ -27,7 +27,7 @@ Los objetos sincronizados inactivos no cuestan casi nada: no se envía nada mien
 | Dos jugadores se pelean por un valor | Ambos lo escriben. Solo el propietario debería escribir; tome la propiedad cuando un jugador actúe. |
 | El valor vuelve atrás después de cambiarlo | Escribió una variable sincronizada sin ser propietario del objeto, así que el flujo del propietario la sobrescribió. |
 | Todo se restablece cuando alguien se une | La propiedad se toma en `Start` u `OnNetworkReady`, así que el recién llegado se convierte en propietario con los valores predeterminados. |
-| Los manejadores de eventos se disparan dos veces | Se suscribieron en `Start` y otra vez en `OnEnable`, o nunca se cancelaron las suscripciones en `OnDestroy`. |
+| Los manejadores de eventos se disparan dos veces | Se suscribieron en `Start` y otra vez en `OnEnable`. En Cilbox `-=` no elimina un manejador, así que suscríbase una sola vez en `Start`. |
 
 ## Herramientas
 

@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - Die Mathematik läuft auf einfachen floats, was im Interpreter viel günstiger ist als `Vector3`-Operatoren.
 - `SetPositions(Transform[], float[])` schreibt jeden Vogel in einem einzigen nativen Aufruf.
-- Verwenden Sie `BasisNetworkTimeShim.ServerTimeSeconds` statt `Time.time`, wenn der Schwarm zwischen Spielern exakt übereinstimmen muss.
+- Wenn der Schwarm zwischen Spielern exakt übereinstimmen muss, ersetzen Sie `Time.time * speed` durch `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Bilden Sie den Rest, solange der Wert noch ein `double` ist: Die Serverzeit ist viel zu groß für einen `float`, und der Schwarm würde stillstehen.

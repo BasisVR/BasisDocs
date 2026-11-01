@@ -18,7 +18,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | `IsOwnedLocallyOnClient` | 在您**請求**擁有權的那一刻、伺服器回應之前就會設定。讓您無需等待一次往返就能開始操控物件。 |
 | `CurrentOwnerId` | 擁有者的玩家 ID。 |
 | `currentOwnedPlayer` | 以 `BasisNetworkPlayer` 表示的擁有者。 |
-| `HasNetworkID` | 在物件網路就緒之前為 false。在那之前擁有權沒有意義。 |
+| `HasNetworkID` | 在物件網路就緒之前為 false。`OnOwnershipTransfer` 可能在那之前觸發，而此時 `IsLocalOwner()` 仍回傳 false，因此請在 `OnNetworkReady` 中重複擁有權邏輯。 |
 
 ## 取得擁有權
 
@@ -36,7 +36,9 @@ BasisOwnershipResult result = await TakeOwnershipAsync();
 if (result.Success) StartDriving();
 ```
 
-詢問誰擁有它而不取得它：
+在 `HasNetworkID` 為 true 之前，`TakeOwnershipAsync` 會立即回報成功，而不會詢問伺服器。請在 `OnNetworkReady` 中或之後呼叫它。
+
+詢問誰擁有它。如果還沒有人擁有它，伺服器會讓您成為擁有者：
 
 ```csharp title="Native"
 BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
@@ -50,11 +52,14 @@ if (who.Success) Debug.Log($"owner is {who.PlayerId}");
 ## 回應轉移
 
 ```csharp title="Native"
-public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+public override void OnNetworkReady() => UpdateOwner();
+
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
-    bool mine = IsLocalOwner();
-    body.isKinematic = !mine;
-    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+    body.isKinematic = !IsLocalOwner();
+    ownerLabel.text = currentOwnedPlayer != null && currentOwnedPlayer.Player != null ? currentOwnedPlayer.Player.SafeDisplayName : "";
 }
 
 public override void OnServerOwnershipDestroyed()
@@ -66,15 +71,20 @@ public override void OnServerOwnershipDestroyed()
 ```csharp title="Cilbox"
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
+    net.NetworkReady += UpdateOwner;
     net.OwnershipTransfer += OnOwnerChanged;
 }
 
-void OnOwnerChanged(BasisNetworkPlayer newOwner)
+void OnOwnerChanged(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
     body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
 }
 ```
+
+第一位擁有者的轉移會在物件網路就緒之前抵達，因此兩個範例都會在 `OnNetworkReady` 中再次執行相同的檢查。
 
 ## 物件一開始由誰擁有
 
@@ -112,4 +122,4 @@ public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMeth
 }
 ```
 
-**拾取物會自動取得擁有權。** `BasisPickupSyncNetworking` 在被抓取時會取得擁有權。將 `CanNetworkSteal` 關閉，即可阻止其他玩家從別人手中搶走物品。
+**拾取物會自動取得擁有權。** `BasisPickupSyncNetworking` 在被抓取時會取得擁有權。將 `CanNetworkSteal` 關閉時，只有目前的擁有者能抓取該物品，而且放下時不會釋放擁有權，因此它會一直鎖定給最後握持它的人。

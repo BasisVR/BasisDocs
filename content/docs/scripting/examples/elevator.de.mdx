@@ -8,7 +8,7 @@ Die Position der Plattform zu streamen kostet in jedem Frame Bandbreite. Ein Auf
 ## Setup
 
 1. Erstellen Sie die Plattform mit einem Collider.
-2. Fügen Sie **Elevator** und Buttons hinzu, die `GoTo(floor)` aufrufen. Legen Sie die Stockwerkshöhen im Inspector fest.
+2. Fügen Sie **Elevator** hinzu, legen Sie die Stockwerkshöhen fest und weisen Sie im Inspector einen UI-Button für aufwärts und einen für abwärts zu.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- Die Buttons werden im Code in `Start` verbunden. Ein **On Click** im Inspector kann `GoTo` nicht aufrufen, weil Cilbox das Skript durch einen Proxy ersetzt.
 - Jeder Client führt dieselbe Bewegung aus. Mitfahrende sehen eine flüssige Plattform, ohne dass Positionen gestreamt werden.
 - Ein Late Joiner erhält das Zielstockwerk und die aktuelle Höhe in einer einzigen 5-Byte-Nachricht.
 - Beachten Sie das `new Vector3(...)`: Würden Sie `p.y` direkt ändern, würde sich in Cilbox auch der Wert ändern, von dem kopiert wurde (siehe [Sandbox-Regeln](/de/docs/scripting/sandbox-rules)).

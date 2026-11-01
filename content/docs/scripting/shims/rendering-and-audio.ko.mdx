@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-무대 마이크가 스피커로 소리를 보내는 것처럼, 오브젝트에서 플레이어의 목소리를 재생합니다. 동의를 먼저 확인하며, 이는 선택 사항이 아닙니다.
+무대 마이크가 스피커로 소리를 보내는 것처럼, 오브젝트에서 플레이어의 목소리를 재생합니다. `RouteVoiceToObject`는 해당 플레이어에게 허락을 요청하고, 허락하면 라우트를 시작합니다. 라우트 ID를 반환하며, 라우트를 시작할 수 없으면 0을 반환합니다(로컬 플레이어를 라우팅하려는 경우 포함). `HasConsent`는 이미 허락을 받았는지 알려 줄 뿐, 허락을 요청하지는 않습니다.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-동기화된 비디오에는 **Basis Media Player** 컴포넌트([미디어 플레이어](/ko/docs/world/media-player))를 사용하세요. 스크립트는 그 `OutputTexture`를 읽을 수 있으며, URL 확인 창을 건너뛸 수 없도록 재생 제어는 차단되어 있습니다.
+동기화된 비디오에는 **Basis Media Player** 컴포넌트([미디어 플레이어](/ko/docs/world/media-player))를 사용하세요. 월드 스크립트는 그 `OutputTexture`를 읽을 수 있지만, URL 확인 창을 건너뛸 수 없도록 재생 제어는 차단되어 있습니다. 소품 스크립트는 재생, 상태, 이벤트도 사용할 수 있습니다.

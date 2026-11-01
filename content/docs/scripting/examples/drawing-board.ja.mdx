@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - ライブの点は1つあたり12バイトです。途中参加者向けの描画全体は、圧縮された1通のメッセージになります。
 - 圧縮スナップショットと単一の点は、長さで区別しています。実際のボードでは、メッセージの種類を示すバイトを追加するとよいでしょう。
-- 最後に描いたプレイヤーがボードを所有し、途中参加者に応答するのもそのプレイヤーです。
+- 最後に描いたプレイヤーがボードを所有し、途中参加者に応答するのもそのプレイヤーです。オーナーシップは、プレイヤーがまだボードを所有していないときにだけ要求します。点ごとに要求すると、そのたびにサーバーとの往復が発生します。

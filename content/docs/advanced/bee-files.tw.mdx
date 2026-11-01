@@ -53,10 +53,10 @@ Connector 是一份 JSON 文件（`BasisBundleConnector`），可在不載入內
 | `AssetToLoadName` | 要從資源包中開啟的場景或預製件。 |
 | `AssetBundleCRC`、`AssetBundleHash` | 解密後 Unity 資源包的完整性檢查。 |
 | `EndByte` | 該區段在檔案中的長度。 |
-| `AssetBundleEndByte` | 當後面接有額外資料時，Unity 資源包在解密後區段內的結束位置。 |
+| `AssetBundleEndByte` | 區段開頭處加密 Unity 資源包的長度。為零表示整個區段都是該資源包。 |
 | `GraphicsStatePayloads` | 依圖形 API 和品質等級嵌入的著色器預熱資料的偏移量。 |
 
-解密後的區段是一個 Unity **AssetBundle**，後面可選擇性地接上**圖形狀態**資料，用於預熱著色器，讓內容第一次被看到時不會卡頓。
+區段以一個加密的 Unity **AssetBundle** 開頭，後面可選擇性地接上個別加密的**圖形狀態**資料區塊，用於預熱著色器，讓內容第一次被看到時不會卡頓。客戶端會先在 `AssetBundleEndByte` 處切分該區段，再分別解密各部分。
 
 **Generic** 區段僅限虛擬形象：一個加密的 `.glb`（glTF 2.0 二進位檔）加上虛擬形象設定資料。只有當檔案中沒有適用於客戶端平台的區段時，客戶端才會退而使用它。這樣虛擬形象在從未針對其建置的平台上也能顯示。
 

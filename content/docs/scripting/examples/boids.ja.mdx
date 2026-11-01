@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - 計算は単純なfloatで行います。インタープリターでは`Vector3`の演算子よりずっと安価です。
 - `SetPositions(Transform[], float[])`は、すべての鳥を1回のネイティブ呼び出しで書き込みます。
-- 群れをプレイヤー間で正確に揃える必要がある場合は、`Time.time`の代わりに`BasisNetworkTimeShim.ServerTimeSeconds`を使用してください。
+- 群れをプレイヤー間で正確に揃える必要がある場合は、`Time.time * speed`を`(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`に置き換えてください。剰余は値がまだ`double`のうちに取ってください。サーバー時刻は`float`には大きすぎるため、そうしないと群れが止まったままになります。

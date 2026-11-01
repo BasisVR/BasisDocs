@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - The maths runs on plain floats, which is much cheaper in the interpreter than `Vector3` operators.
 - `SetPositions(Transform[], float[])` writes every bird in one native call.
-- Use `BasisNetworkTimeShim.ServerTimeSeconds` instead of `Time.time` if the flock must line up exactly between players.
+- If the flock must line up exactly between players, replace `Time.time * speed` with `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Take the remainder while the value is still a `double`: server time is far too large for a `float`, and the flock would stand still.

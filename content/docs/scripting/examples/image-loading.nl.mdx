@@ -54,11 +54,11 @@ public class RemoteImage : MonoBehaviour
 
 ## Regels
 
-- Alleen https. Gewone http, kale IP-adressen en alles wat naar een lokaal netwerkadres verwijst, worden geweigerd voordat er een verzoek wordt gedaan.
+- Alleen http en https. Adressen die een privé-, loopback- of link-local-netwerkadres zijn of daarnaar verwijzen, worden geweigerd voordat er een verzoek wordt gedaan.
 - Geen redirects. Host de afbeelding op het uiteindelijke adres.
-- Spelers keuren hosts goed. De eerste keer dat content om een nieuwe host vraagt, krijgt de speler een melding. Totdat die accepteert, mislukt de download en blijft je placeholder staan.
+- Afbeeldingsdownloads starten meteen; de speler wordt niets gevraagd.
 - Elke speler downloadt de afbeelding zelf; er valt niets te synchroniseren. Om iedereen dezelfde wisselende afbeelding te laten tonen, synchroniseer je de **URL-index** (zie [Gesynchroniseerde schakelaar](/nl/docs/scripting/examples/synced-toggle) voor het patroon) en laad je lokaal.
 
 <Callout type="info">
-Gebruik voor tekst `BasisStringDownloader.DownloadString` met dezelfde regels, en `BasisJson.Parse` om JSON te lezen.
+Gebruik voor tekst `BasisStringDownloader.DownloadString`, en `BasisJson.Parse` om JSON te lezen. Daarvoor gelden dezelfde adresregels, en de speler wordt bovendien gevraagd een adres goed te keuren dat die nog niet vertrouwt. Totdat die accepteert, start de download niet.
 </Callout>

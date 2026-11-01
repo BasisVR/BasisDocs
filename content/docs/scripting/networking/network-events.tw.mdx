@@ -28,10 +28,12 @@ SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unr
 | `Unreliable` | 不一定 | 否 | 高頻率更新，下一筆會取代這一筆。 |
 | `Sequenced` | 不一定 | 舊的會被丟棄 | 最新值優先，例如即時滑桿。 |
 | `ReliableUnordered` | 是 | 否 | 互相獨立的一次性動作。 |
-| `ReliableSequenced` | 最新的 | 是 | 只有最終值重要的切換開關。 |
+| `ReliableSequenced` | 最新的 | 是 | 只有最新值重要的單一數值。所有場景物件共用一個通道，因此來自**任何**物件的較新訊息都可能取代您的訊息。 |
 | `ReliableOrdered` | 是 | 是 | 每則訊息及其順序都重要的任何東西：分數、遊戲步驟。 |
 
 不確定時，請使用 `ReliableOrdered`。
+
+`Unreliable`、`Sequenced` 和 `ReliableSequenced` 無法將訊息切割成片段，因此任何超過約 988 位元組的訊息都會擲回 `TooBigPacketException`。`Unreliable` 是預設值，因此較大的資料內容請傳入 `ReliableOrdered` 或 `ReliableUnordered`。
 
 ## 接收
 
@@ -83,11 +85,11 @@ void ReadHit(byte[] buffer)
 }
 ```
 
-大型資料內容（一幅繪圖、一個關卡配置）可以使用 `BasisCompressionShim.Compress` 和 `Decompress` 壓縮（LZ4，解壓後最多 1 MB）。
+大型資料內容（一幅繪圖、一個關卡配置）可以使用 `BasisCompressionShim.Compress` 和 `Decompress` 壓縮（LZ4，解壓後最多 1 MB）。請用 `ReliableOrdered` 或 `ReliableUnordered` 傳送它們，因為其他方式的上限約為 988 位元組。
 
 ## Cilbox [#cilbox]
 
-Cilbox 腳本無法繼承 `BasisNetworkBehaviour`。請改為取得 `BasisNetworkShim`；當您呼叫 `GetComponent` 時，Cilbox 會加入該元件。在 `Start` 中訂閱，在 `OnDestroy` 中取消訂閱。
+Cilbox 腳本無法繼承 `BasisNetworkBehaviour`。請改為透過 `SafeUtil.MakeNetworkable(this)` 取得 `BasisNetworkShim`，它會回傳物件上已有的那一個，或加入一個新的。在 `Start` 中訂閱一次。在 Cilbox 中，`-=` 無法移除處理常式（請參閱[沙盒規則](/tw/docs/scripting/sandbox-rules#events-and-delegates)）。
 
 ```csharp title="NetworkedCounter.cs (Cilbox)"
 using System;
@@ -107,16 +109,9 @@ public class NetworkedCounter : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
-    }
-
-    void OnDestroy()
-    {
-        if (net == null) return;
-        net.NetworkMessageReceived -= OnMessage;
-        net.PlayerJoined -= OnPlayerJoined;
     }
 
     public void Increment()
@@ -158,7 +153,7 @@ public class NetworkedCounter : MonoBehaviour
 | `OnPlayerLeft(...)` | `PlayerLeft` |
 
 <Callout type="info">
-`SafeUtil.MakeNetworkable(this)` 的作用與 `GetComponent<BasisNetworkShim>()` 相同，並會回傳該 shim。
+`GetComponent<BasisNetworkShim>()` 只會找到您在編輯器中放置的 shim。與事件 shim 不同，Cilbox 不會替您加入它。在道具中，手動放置的 shim 會在載入時被移除，因為道具允許清單不包含它，所以請一律使用 `MakeNetworkable`。
 </Callout>
 
 ## 不傳訊息也能在每個客戶端得到相同結果

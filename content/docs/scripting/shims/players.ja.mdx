@@ -37,15 +37,28 @@ BasisVelocityShim.SetVelocity(new Vector3(v.x, 10f, v.z)); // jump pad
 BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
 ```
 
-## BasisPlayspaceInputShim
+## BasisPlayspaceInputShim [#basisplayspaceinputshim]
 
 アバター専用です。着用者自身の移動を操作します。`Additive`はプレイヤーの入力と混ぜ合わせ、`Override`は入力を置き換えます。
 
+`PlayspaceInput`は`BasisAvatar`ではなく`BasisAvatarShim`のメンバーなので、使うにはシムの型で宣言してください。入力は1フレームだけ有効です。プレイヤーを操作したい間は`Update`から書き込み続け、やめると操作がプレイヤーに戻ります。プレイヤーは`enablescriptedplayerinput`設定でスクリプトによる入力をオフにできます。
+
 ```csharp
-BasisPlayspaceInputShim input = avatar.PlayspaceInput;
-input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
-input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
-input.Clear();
+using Basis.Shims;
+
+BasisAvatarShim avatar;
+
+void Start()
+{
+    avatar = BasisAvatarShim.GetGameObject(this).GetComponent<BasisAvatarShim>();
+}
+
+void Update()
+{
+    BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+    input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+    input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+}
 ```
 
 ## BasisSeatShim

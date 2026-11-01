@@ -1,6 +1,6 @@
 ---
 title: Ввод
-description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger и BasisUIExtensions.
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableButton, BasisActionTrigger и BasisUIExtensions.
 ---
 
 ## BasisControllerInputShim
@@ -44,25 +44,29 @@ BasisHapticsShim.Play(this, BasisHapticHand.Right);
 BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 ```
 
-## BasisInteractableShim
+## BasisInteractableButton
 
-Делает объект нажимаемым указателем, с цветами наведения и нажатия на его рендерере.
+Делает объект нажимаемым указателем, с цветами наведения и нажатия на его рендерере. Добавьте его в редакторе; `GetComponent` не добавляет его за вас. Он заменяет устаревший `BasisInteractableShim`.
+
+В пропе песочница разрешает только задавать `ButtonDown`, поэтому назначайте его через `=` и не задавайте `ButtonUp`.
 
 ```csharp
-BasisInteractableShim button;
+using Basis.Scripts.BasisSdk.Interactions;
+
+BasisInteractableButton button;
 
 void Start()
 {
-    button = GetComponent<BasisInteractableShim>();
-    button.ButtonDown += OnDown;
-    button.ButtonUp += OnUp;
+    button = GetComponent<BasisInteractableButton>();
+    button.ButtonDown = OnDown;
+    button.ButtonUp = OnUp;
 }
 
 void OnDown() { lamp.SetActive(!lamp.activeSelf); }
 void OnUp() { }
 ```
 
-Поля в инспекторе: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (свойство цвета материала).
+Поля в инспекторе: `isEnabled`, `UseHighlight`, `UseMaterialColor`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (свойство цвета материала).
 
 ## BasisActionTrigger
 

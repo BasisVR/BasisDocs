@@ -38,12 +38,13 @@ public class Spinner : MonoBehaviour
 | 消息 | 说明 |
 | --- | --- |
 | `Awake`、`Start` | 在 `Start` 中进行一次性初始化。 |
-| `Update`、`FixedUpdate` | 没有 `LateUpdate`。 |
+| `Update`、`FixedUpdate`、`LateUpdate` | |
 | `OnEnable`、`OnDisable` | **第一次** `OnEnable` 永远不会到达。不要在那里订阅。 |
-| `OnDestroy` | 在这里取消订阅并清理。 |
+| `OnDestroy` | 在这里清理。在 Cilbox 中，`-=` 无法移除委托处理程序。 |
 | `OnTriggerEnter/Stay/Exit`、`OnCollisionEnter/Stay/Exit` | 需要碰撞体，并且其中一方需要 Rigidbody。 |
+| `OnRenderObject`、`OnWillRenderObject` | |
 
-不转发：`LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 和协程。请使用延迟事件代替协程（参见[计时器与延迟事件](#timers-and-delayed-events)）。
+不转发：`OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 和协程。请使用延迟事件代替协程（参见[计时器与延迟事件](#timers-and-delayed-events)）。
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### 与物体交互
 
-**Basis Pickup Interactable** 会在玩家抓取它并按下使用键时触发事件。对于只需按下而不需拾取的物体，请添加 **Basis Interactable Shim** 并处理 `ButtonDown` 和 `ButtonUp`。
+**Basis Pickup Interactable** 会在玩家抓取它并按下使用键时触发事件。对于只需按下而不需拾取的物体，请在编辑器中添加 **Basis Interactable Button**，并赋值 `ButtonDown`（在世界中还有 `ButtonUp`）。在道具中，沙盒只允许设置 `ButtonDown`，所以请用 `=` 而不是 `+=` 来赋值。
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 无需代码：**Basis Platform Switch**（com.basis.examples）可以根据规则列表按平台启用和禁用物体与组件。
 </Callout>
 
-同样的选择启用模式也适用于其他变化：`BasisLanguageEventShim` 调用 `OnLanguageChanged(string code)`，`BasisGraphicsSettingsEventShim` 调用 `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`，`BasisPermissionEventShim` 调用 `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`。
+同样的选择启用模式也适用于其他变化：`BasisLanguageEventShim` 调用 `OnLanguageChanged(string code)`，`BasisGraphicsSettingsEventShim` 调用 `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`，`BasisPermissionEventShim` 调用 `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`。`BasisPermissionEventShim` 只会在第一次启用时绑定一次对象上的脚本。如果同一对象上的第二个脚本也需要这些事件，请调用 `GetComponent<BasisPermissionEventShim>().Rebind()`。
 
 ## 加载图片和文本
 
-下载会在发出任何请求之前检查地址，并拒绝重定向。玩家第一次遇到新主机时需要批准。
+下载会在发出任何请求之前检查地址，并拒绝重定向以及解析到私有、环回或链路本地网络的地址。文本下载会请玩家批准他们尚未信任的地址。图片下载会立即开始，不会询问。
 
 ```csharp title="Cilbox"
 using Basis;

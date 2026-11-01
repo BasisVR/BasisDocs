@@ -24,7 +24,8 @@ Basis 保留了數個 Unity 圖層。請依照說明使用它們，讓玩家、�
 
 ## 選擇圖層
 
-- 牆壁、地板、道具：Default。
+- 牆壁與地板：Default。
+- 道具 collider：Interactable。道具驗證器會對位於其他圖層的 collider 發出警告，並提供將其移過去的選項。
 - 按鈕前方的觸發器體積和隱形阻擋物：IgnoredByInteractable。指標會穿過它們，觸及後方的東西。
 - 指標永遠不應擊中的裝飾用 collider：Ignore Raycast。
 - 絕對不要將您的物件放在 Player、LocalPlayerAvatar、RemotePlayerAvatar 或 OverlayUI 上。

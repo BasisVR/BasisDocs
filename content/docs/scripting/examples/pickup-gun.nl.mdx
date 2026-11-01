@@ -40,7 +40,7 @@ public class PickupGun : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         pickup.OnInteractStartEvent.AddListener(OnGrab);
         pickup.OnInteractEndEvent.AddListener(OnDrop);

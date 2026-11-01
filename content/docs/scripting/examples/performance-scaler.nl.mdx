@@ -14,7 +14,7 @@ public class PerformanceScaler : MonoBehaviour
     public GameObject[] gpuHeavy;
     public GameObject[] cpuHeavy;
     float nextCheck;
-    bool reduced, lowQuality;
+    bool cutCpu, cutGpu, lowQuality;
 
     void Start()
     {
@@ -34,19 +34,24 @@ public class PerformanceScaler : MonoBehaviour
         float target = BasisStatsShim.TargetFramesPerSecond;
         if (target <= 0f) return;
         float fps = BasisStatsShim.FramesPerSecond;
-        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
-        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+        bool reduced = cutCpu || cutGpu;
+        if (!reduced && fps < target * 0.8f)
+        {
+            int bottleneck = BasisStatsShim.Bottleneck;
+            cutGpu = bottleneck == BasisStatsShim.BottleneckGpu;
+            cutCpu = bottleneck == BasisStatsShim.BottleneckCpu;
+            Apply();
+        }
+        else if (reduced && fps > target * 0.95f) { cutCpu = false; cutGpu = false; Apply(); }
     }
 
     void Apply()
     {
-        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
-        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
-        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in gpuHeavy) g.SetActive(!(lowQuality || cutGpu));
         foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
     }
 }
 ```
 
 - Twee drempels (80% om terug te schroeven, 95% om te herstellen) voorkomen dat het steeds aan en uit flikkert.
-- De bottleneck vertelt welke kant je moet verminderen: spiegels en particles voor de GPU, menigten en scripts voor de CPU.
+- De bottleneck vertelt welke kant je moet verminderen: spiegels en particles voor de GPU, menigten en scripts voor de CPU. Zolang die nog aan het meten is, of in balans is, wordt er niets verminderd en probeert de volgende controle het opnieuw.

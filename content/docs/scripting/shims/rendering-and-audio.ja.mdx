@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-ステージのマイクからスピーカーに流すように、プレイヤーの声をオブジェクトから再生します。最初に同意が確認され、これは省略できません。
+ステージのマイクからスピーカーに流すように、プレイヤーの声をオブジェクトから再生します。`RouteVoiceToObject`はそのプレイヤーに許可を求め、許可されるとルートを開始します。戻り値はルートIDで、ルートを開始できなかった場合は0です（ローカルプレイヤーをルーティングしようとした場合も含みます）。`HasConsent`は、すでに許可を得ているかどうかを返すだけで、許可を求めることはしません。
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-同期されたビデオには、**Basis Media Player**コンポーネント（[メディアプレイヤー](/ja/docs/world/media-player)）を使用してください。スクリプトはその`OutputTexture`を読み取れますが、URL確認プロンプトを回避できないように再生操作はブロックされています。
+同期されたビデオには、**Basis Media Player**コンポーネント（[メディアプレイヤー](/ja/docs/world/media-player)）を使用してください。ワールドのスクリプトはその`OutputTexture`を読み取れますが、URL確認プロンプトを回避できないように再生操作はブロックされています。プロップのスクリプトでは、再生、ステータス、イベントも使えます。

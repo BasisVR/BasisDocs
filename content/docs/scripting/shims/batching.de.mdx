@@ -13,7 +13,7 @@ Wenn eine Schleife in `Update` mehr als eine Handvoll Transforms oder Blendshape
 
 ## BasisTransformBatchShim
 
-Positionen, Rotationen und Skalierungen vieler Transforms auf einmal lesen oder schreiben.
+Positionen lesen oder Positionen, Rotationen und Skalierungen schreiben, für viele Transforms auf einmal. Für Rotationen und Skalierungen gibt es kein gebündeltes Lesen.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-Abstände sind quadriert (`radiusSq`). Bits in `skipMask` schließen Kugeln über ihren Index aus.
+Abstände sind quadriert (`radiusSq`), daher entspricht `0.25f` oben einem Radius von 0,5 m. Bits in `skipMask` schließen Kugeln über ihren Index aus. `RaySpheresMask` gibt eine 32-Bit-Maske zurück und prüft daher nur die ersten 32 Mittelpunkte.

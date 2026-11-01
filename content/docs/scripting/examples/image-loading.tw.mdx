@@ -54,11 +54,11 @@ public class RemoteImage : MonoBehaviour
 
 ## 規則
 
-- 僅限 https。純 http、原始 IP 位址，以及任何解析為區域網路位址的請求，都會在送出前被拒絕。
+- 僅限 http 與 https。本身是或解析為私人、回送或連結本機網路位址的位址，都會在送出請求前被拒絕。
 - 不允許重新導向。請將圖片放在其最終位址。
-- 玩家需核准主機。內容第一次要求新的主機時，會提示玩家。在他們接受之前，下載會失敗，您的佔位圖會保持顯示。
+- 圖片下載會立即開始，不會詢問玩家。
 - 每位玩家都會自行下載圖片；沒有需要同步的東西。若要讓所有人顯示相同且會變換的圖片，請同步 **URL 索引**（模式請參閱[同步切換開關](/tw/docs/scripting/examples/synced-toggle)）並在本機載入。
 
 <Callout type="info">
-文字請使用遵循相同規則的 `BasisStringDownloader.DownloadString`，並使用 `BasisJson.Parse` 讀取 JSON。
+文字請使用 `BasisStringDownloader.DownloadString`，並使用 `BasisJson.Parse` 讀取 JSON。它遵循相同的位址規則，而且還會請玩家核准他們尚未信任的位址。在他們接受之前，下載不會開始。
 </Callout>

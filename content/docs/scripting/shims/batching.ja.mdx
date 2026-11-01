@@ -13,7 +13,7 @@ CilboxスクリプトからUnityへの呼び出しは、どれもコストが高
 
 ## BasisTransformBatchShim
 
-多数のTransformの位置、回転、スケールを一度に読み書きします。
+多数のTransformの位置を一度に読み取るか、位置、回転、スケールを一度に書き込みます。回転やスケールをまとめて読み取る機能はありません。
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-距離は2乗値です（`radiusSq`）。`skipMask`のビットで、インデックスごとに球を除外します。
+距離は2乗値です（`radiusSq`）。そのため、上の`0.25f`は半径0.5 mを表します。`skipMask`のビットで、インデックスごとに球を除外します。`RaySpheresMask`は32ビットのマスクを返すため、テストされるのは最初の32個の中心だけです。

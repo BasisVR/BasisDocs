@@ -41,11 +41,24 @@ BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
 
 僅限虛擬形象。驅動穿戴者自己的移動。`Additive` 會與他們的輸入混合，`Override` 則會取代它。
 
+`PlayspaceInput` 是 `BasisAvatarShim` 的成員，而不是 `BasisAvatar` 的成員，因此要使用它，請宣告 shim 類型。輸入只會持續一幀：在您想驅動玩家的整段期間都要在 `Update` 中寫入，停止寫入就會把控制權交還給玩家。玩家可以透過 `enablescriptedplayerinput` 設定關閉腳本輸入。
+
 ```csharp
-BasisPlayspaceInputShim input = avatar.PlayspaceInput;
-input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
-input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
-input.Clear();
+using Basis.Shims;
+
+BasisAvatarShim avatar;
+
+void Start()
+{
+    avatar = BasisAvatarShim.GetGameObject(this).GetComponent<BasisAvatarShim>();
+}
+
+void Update()
+{
+    BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+    input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+    input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+}
 ```
 
 ## BasisSeatShim

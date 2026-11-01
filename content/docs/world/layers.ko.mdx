@@ -24,7 +24,8 @@ Basis는 여러 Unity 레이어를 예약해 둡니다. 플레이어, 포인터,
 
 ## 레이어 선택
 
-- 벽, 바닥, 소품: Default.
+- 벽과 바닥: Default.
+- 소품 콜라이더: Interactable. 소품 검사기는 다른 레이어에 있는 콜라이더에 대해 경고하고 옮기도록 제안합니다.
 - 버튼 앞의 트리거 볼륨과 보이지 않는 차단물: IgnoredByInteractable. 포인터가 이를 통과해 뒤에 있는 것에 닿습니다.
 - 포인터가 절대 맞으면 안 되는 장식용 콜라이더: Ignore Raycast.
 - Player, LocalPlayerAvatar, RemotePlayerAvatar, OverlayUI 레이어에는 절대 오브젝트를 두지 마세요.

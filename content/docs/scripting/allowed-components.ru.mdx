@@ -21,9 +21,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Что разрешено по умолчанию
 
-**Миры и пропы:** рендеринг (компоненты mesh, skinned mesh, line, trail, частиц и LOD, источники света, reflection probes, камеры), физика (коллайдеры, rigidbody, joints), источники звука и Steam Audio, аниматоры и анимация, UI canvas и TextMesh Pro, `VideoPlayer`, биндеры VFX Graph, AudioLink, констрейнты Basis, медиаплеер Basis, зеркало, сиденья, предметы для подбора, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, транспорт, `BasisPlatformSwitch`, а также песочница Cilbox и шимы. В мирах также разрешены навигация (`NavMeshAgent`, `NavMeshObstacle`), тома постобработки и пьедестал аватара.
+**Миры и пропы:** рендеринг (компоненты mesh, skinned mesh, line, trail, частиц и LOD, источники света, reflection probes, камеры), физика (коллайдеры, rigidbody, joints), источники звука и Steam Audio, аниматоры и анимация, UI canvas и TextMesh Pro, `VideoPlayer`, биндеры VFX Graph, AudioLink, констрейнты Basis, медиаплеер Basis, зеркало, сиденья, предметы для подбора, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, транспорт, `BasisPlatformSwitch`, а также песочница Cilbox и шимы. И там, и там разрешена навигация (`NavMeshAgent`, `NavMeshObstacle`). В мирах также разрешены тома постобработки и пьедестал аватара. Список для пропов не включает `BasisNetworkShim`. В пропе добавляйте его из кода через `SafeUtil.MakeNetworkable(this)`.
 
-**Аватары:** рендеринг, физика, звук, аниматоры, констрейнты, сиденья, синхронизированные трансформы, OSC и шимы аватаров. Без камер, источников света, UI и видео.
+**Аватары:** рендеринг, физика, звук, аниматоры, констрейнты, сиденья, синхронизированные трансформы, OSC, шимы аватаров, зеркала, предметы для подбора, VFX Graph и видео через медиаплеер Basis, FFUnity и плеер ytdlp из AudioLink. Без камер, источников света, UI и `VideoPlayer`.
 
 **Не разрешено по умолчанию** (только в сборках клиента): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` и любые ваши собственные нативные `MonoBehaviour`.
 
@@ -33,7 +33,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## Проверка контента
 
-- Войдите в режим воспроизведения: Basis применяет ту же проверку, а удалённые компоненты записываются в лог.
+- Раздел **Content Police** в инспекторах Basis Avatar, Prop и Scene показывает, что будет удалено. Контент проверяется только при загрузке в клиенте, а не во время сборки. Проверьте здесь перед загрузкой на сервер.
+- Когда клиент удаляет компонент, он пишет в лог `Component X is not approved and will be removed`.
 - Окно **Basis > Tools > Cilbox Permissions** показывает, что каждая песочница позволяет вызывать скриптам.
 
 ## Добавление компонента (сборки клиента)

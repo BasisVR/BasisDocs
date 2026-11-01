@@ -37,7 +37,7 @@ public class NpcFollow : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.RequestOwnershipIfNone();
         remotePosition = transform.position;

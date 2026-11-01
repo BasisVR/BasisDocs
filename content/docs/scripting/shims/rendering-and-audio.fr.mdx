@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-Diffuse la voix d'un joueur depuis un objet, comme un micro de scène qui alimente des haut-parleurs. Le consentement est vérifié en premier et n'est pas facultatif.
+Diffuse la voix d'un joueur depuis un objet, comme un micro de scène qui alimente des haut-parleurs. `RouteVoiceToObject` demande l'autorisation à ce joueur et démarre la route dès qu'il l'accorde. Il renvoie un identifiant de route, ou 0 si la route n'a pas pu démarrer, ce qui inclut le routage du joueur local. `HasConsent` vous indique si vous avez déjà son autorisation ; il ne la demande pas.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-Pour une vidéo synchronisée, utilisez le composant **Basis Media Player** ([Lecteur multimédia](/fr/docs/world/media-player)). Les scripts peuvent lire sa `OutputTexture` ; les commandes de lecture sont bloquées pour que la demande d'URL ne puisse pas être contournée.
+Pour une vidéo synchronisée, utilisez le composant **Basis Media Player** ([Lecteur multimédia](/fr/docs/world/media-player)). Les scripts de monde peuvent lire sa `OutputTexture`, mais les commandes de lecture sont bloquées pour que la demande d'URL ne puisse pas être contournée. Les scripts de props peuvent aussi utiliser la lecture, l'état et les événements.

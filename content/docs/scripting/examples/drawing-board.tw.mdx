@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - 即時的點每個 12 位元組；給晚加入者的完整繪圖則是一則壓縮過的訊息。
 - 壓縮快照與單一點是靠長度區分的。真正的白板應該加上一個訊息類型位元組。
-- 最後一位繪圖的玩家擁有白板，也是唯一負責回應晚加入者的人。
+- 最後一位繪圖的玩家擁有白板，也是唯一負責回應晚加入者的人。只有在玩家尚未擁有白板時，它才會要求擁有權。如果每個點都要求一次，每次都要花費一趟伺服器往返。

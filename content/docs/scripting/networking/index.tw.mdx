@@ -25,7 +25,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 ## 構成要素
 
 - `BasisNetworkBehaviour` 是編譯進客戶端的網路腳本的基底類別。它擁有網路 ID、擁有者，以及 `OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined` 和 `OnPlayerLeft` 回呼。
-- `BasisNetworkShim` 是 Cilbox 腳本的對應版本。Cilbox 腳本無法繼承 `BasisNetworkBehaviour`，而是透過 `GetComponent` 取得 `BasisNetworkShim` 並訂閱其事件。
+- `BasisNetworkShim` 是 Cilbox 腳本的對應版本。Cilbox 腳本無法繼承 `BasisNetworkBehaviour`，而是透過 `SafeUtil.MakeNetworkable(this)` 取得 `BasisNetworkShim` 並訂閱其事件。
 - `BasisSyncedObject` 建立在 `BasisNetworkBehaviour` 之上，提供精簡且經插值的狀態串流。`BasisSyncedParameters`、`BasisSyncedTransform` 和 `BasisSyncedRigidbody` 是以它為基礎的現成元件。
 - `BasisPickupSyncNetworking` 和 `BasisSeatSync` 不需程式碼即可同步拾取物和座位。
 

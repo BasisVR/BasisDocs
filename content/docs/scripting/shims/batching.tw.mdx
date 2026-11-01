@@ -13,7 +13,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## BasisTransformBatchShim
 
-一次讀取或寫入大量 transform 的位置、旋轉與縮放。
+一次讀取大量 transform 的位置，或寫入其位置、旋轉與縮放。旋轉與縮放沒有批次讀取。
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-距離為平方值（`radiusSq`）。`skipMask` 的位元會依索引排除球體。
+距離為平方值（`radiusSq`），因此上面的 `0.25f` 是 0.5 公尺的半徑。`skipMask` 的位元會依索引排除球體。`RaySpheresMask` 會回傳一個 32 位元遮罩，因此它只會測試前 32 個中心點。

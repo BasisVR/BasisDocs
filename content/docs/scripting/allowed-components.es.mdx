@@ -21,9 +21,9 @@ Cada una es una lista de nombres de tipo completos. La coincidencia es exacta: u
 
 ## Qué está permitido de forma predeterminada
 
-**Mundos y props:** renderizado (componentes de malla, malla con skinning, línea, estela, partículas y LOD, luces, reflection probes, cámaras), física (colliders, rigidbodies, joints), fuentes de audio y Steam Audio, animators y animación, canvases de UI y TextMesh Pro, `VideoPlayer`, binders de VFX Graph, AudioLink, constraints de Basis, el reproductor multimedia de Basis, espejo, asientos, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, vehículos, `BasisPlatformSwitch`, y el sandbox y los shims de Cilbox. Los mundos también permiten navegación (`NavMeshAgent`, `NavMeshObstacle`), volúmenes de post procesado y el pedestal de avatar.
+**Mundos y props:** renderizado (componentes de malla, malla con skinning, línea, estela, partículas y LOD, luces, reflection probes, cámaras), física (colliders, rigidbodies, joints), fuentes de audio y Steam Audio, animators y animación, canvases de UI y TextMesh Pro, `VideoPlayer`, binders de VFX Graph, AudioLink, constraints de Basis, el reproductor multimedia de Basis, espejo, asientos, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, vehículos, `BasisPlatformSwitch`, y el sandbox y los shims de Cilbox. Ambos permiten navegación (`NavMeshAgent`, `NavMeshObstacle`). Los mundos también permiten volúmenes de post procesado y el pedestal de avatar. La lista de props no incluye `BasisNetworkShim`. En un prop, añádalo desde código con `SafeUtil.MakeNetworkable(this)`.
 
-**Avatares:** renderizado, física, audio, animators, constraints, asientos, transforms sincronizados, OSC y los shims de avatar. Sin cámaras, luces, UI ni vídeo.
+**Avatares:** renderizado, física, audio, animators, constraints, asientos, transforms sincronizados, OSC, los shims de avatar, espejos, pickups, VFX Graph y vídeo a través del reproductor multimedia de Basis, FFUnity y el reproductor ytdlp de AudioLink. Sin cámaras, luces, UI ni `VideoPlayer`.
 
 **No permitidos de forma predeterminada** (solo compilaciones del cliente): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` y cualquier `MonoBehaviour` nativo propio.
 
@@ -33,7 +33,8 @@ Los assets selectores son la fuente de verdad y cambian entre versiones. Ábralo
 
 ## Comprobar su contenido
 
-- Entre en modo de juego: Basis aplica la misma vigilancia y los componentes eliminados se registran en el log.
+- La sección **Content Police** de los inspectores Basis Avatar, Prop y Scene muestra lo que se eliminaría. El contenido solo se vigila cuando el cliente lo carga, no al compilar. Compruébelo aquí antes de subirlo.
+- Cuando el cliente elimina un componente, registra en el log `Component X is not approved and will be removed`.
 - La ventana **Basis > Tools > Cilbox Permissions** muestra lo que cada sandbox permite llamar a los scripts.
 
 ## Añadir un componente (compilaciones del cliente)

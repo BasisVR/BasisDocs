@@ -9,7 +9,7 @@ Los scripts Cilbox de un avatar se ejecutan en **todos los clientes** que cargan
 
 ## El componente de avatar
 
-Dentro del sandbox de avatar, `BasisAvatar` se resuelve como `BasisAvatarShim`. Escriba `BasisAvatar` como de costumbre.
+Dentro del sandbox de avatar, `BasisAvatar` se resuelve como `BasisAvatarShim`. Escriba `BasisAvatar` como de costumbre. La excepción es `PlayspaceInput`, que solo existe en `BasisAvatarShim` (consulte [Jugadores](/es/docs/scripting/shims/players#basisplayspaceinputshim)).
 
 ```csharp title="AvatarGlow.cs (Cilbox, avatar)"
 using Basis.Scripts.BasisSdk;

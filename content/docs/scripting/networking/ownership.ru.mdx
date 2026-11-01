@@ -18,7 +18,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 | `IsOwnedLocallyOnClient` | Устанавливается в момент, когда вы **запрашиваете** владение, до ответа сервера. Позволяет начать управлять объектом, не дожидаясь ответа сервера. |
 | `CurrentOwnerId` | ID игрока-владельца. |
 | `currentOwnedPlayer` | Владелец в виде `BasisNetworkPlayer`. |
-| `HasNetworkID` | False, пока объект не готов к работе в сети. До этого владение не имеет смысла. |
+| `HasNetworkID` | False, пока объект не готов к работе в сети. `OnOwnershipTransfer` может сработать раньше, пока `IsLocalOwner()` ещё возвращает false, поэтому повторяйте логику владения в `OnNetworkReady`. |
 
 ## Получение владения
 
@@ -36,7 +36,9 @@ BasisOwnershipResult result = await TakeOwnershipAsync();
 if (result.Success) StartDriving();
 ```
 
-Узнать, кто владеет объектом, не забирая его:
+Пока `HasNetworkID` не стал true, `TakeOwnershipAsync` сразу сообщает об успехе, не спрашивая сервер. Вызывайте его из `OnNetworkReady` или позже.
+
+Узнать, кто владеет объектом. Если им ещё никто не владеет, сервер сделает владельцем вас:
 
 ```csharp title="Native"
 BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
@@ -50,11 +52,14 @@ if (who.Success) Debug.Log($"owner is {who.PlayerId}");
 ## Реакция на передачу
 
 ```csharp title="Native"
-public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+public override void OnNetworkReady() => UpdateOwner();
+
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
-    bool mine = IsLocalOwner();
-    body.isKinematic = !mine;
-    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+    body.isKinematic = !IsLocalOwner();
+    ownerLabel.text = currentOwnedPlayer != null && currentOwnedPlayer.Player != null ? currentOwnedPlayer.Player.SafeDisplayName : "";
 }
 
 public override void OnServerOwnershipDestroyed()
@@ -66,15 +71,20 @@ public override void OnServerOwnershipDestroyed()
 ```csharp title="Cilbox"
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
+    net.NetworkReady += UpdateOwner;
     net.OwnershipTransfer += OnOwnerChanged;
 }
 
-void OnOwnerChanged(BasisNetworkPlayer newOwner)
+void OnOwnerChanged(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
     body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
 }
 ```
+
+Передача первому владельцу приходит до того, как объект готов к работе в сети, поэтому оба примера повторяют ту же проверку в `OnNetworkReady`.
 
 ## Кто владеет объектом изначально
 
@@ -112,4 +122,4 @@ public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMeth
 }
 ```
 
-**Подбираемые предметы берут владение автоматически.** `BasisPickupSyncNetworking` берёт владение при захвате. Выключите `CanNetworkSteal`, чтобы другие игроки не могли выхватить предмет из чужой руки.
+**Подбираемые предметы берут владение автоматически.** `BasisPickupSyncNetworking` берёт владение при захвате. При выключенном `CanNetworkSteal` схватить предмет может только текущий владелец, а владение не освобождается, когда предмет отпускают, поэтому он остаётся закреплён за тем, кто держал его последним.
