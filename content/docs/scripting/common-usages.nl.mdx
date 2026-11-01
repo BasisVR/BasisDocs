@@ -38,12 +38,13 @@ De proxy stuurt deze Unity-berichten door naar een Cilbox-script:
 | Bericht | Opmerkingen |
 | --- | --- |
 | `Awake`, `Start` | Doe eenmalige setup in `Start`. |
-| `Update`, `FixedUpdate` | Er is geen `LateUpdate`. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | De **eerste** `OnEnable` komt nooit aan. Abonneer je daar niet. |
-| `OnDestroy` | Zeg hier abonnementen op en ruim op. |
+| `OnDestroy` | Ruim hier op. `-=` verwijdert in Cilbox geen delegate-handlers. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Hebben een collider nodig, en een Rigidbody aan één kant. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-Niet doorgestuurd: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` en coroutines. Gebruik vertraagde events in plaats van coroutines (zie [Timers en vertraagde events](#timers-and-delayed-events)).
+Niet doorgestuurd: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` en coroutines. Gebruik vertraagde events in plaats van coroutines (zie [Timers en vertraagde events](#timers-and-delayed-events)).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### Interactie met objecten
 
-Een **Basis Pickup Interactable** geeft events wanneer een speler het vastpakt en op gebruiken drukt. Voor iets dat wordt ingedrukt maar niet opgepakt, voeg je een **Basis Interactable Shim** toe en verwerk je `ButtonDown` en `ButtonUp`.
+Een **Basis Pickup Interactable** geeft events wanneer een speler het vastpakt en op gebruiken drukt. Voor iets dat wordt ingedrukt maar niet opgepakt, voeg je in de editor een **Basis Interactable Button** toe en wijs je `ButtonDown` toe (en in werelden `ButtonUp`). In een prop staat de sandbox alleen het instellen van `ButtonDown` toe, dus wijs het toe met `=` in plaats van `+=`.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 Geen code nodig: **Basis Platform Switch** (com.basis.examples) schakelt objecten en componenten per platform in en uit op basis van een lijst met regels.
 </Callout>
 
-Hetzelfde opt-in-patroon bestaat voor andere wijzigingen: `BasisLanguageEventShim` roept `OnLanguageChanged(string code)` aan, `BasisGraphicsSettingsEventShim` roept `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` aan, en `BasisPermissionEventShim` roept `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)` aan.
+Hetzelfde opt-in-patroon bestaat voor andere wijzigingen: `BasisLanguageEventShim` roept `OnLanguageChanged(string code)` aan, `BasisGraphicsSettingsEventShim` roept `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` aan, en `BasisPermissionEventShim` roept `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)` aan. `BasisPermissionEventShim` koppelt de scripts van het object één keer, bij de eerste activering. Als een tweede script op hetzelfde object de events nodig heeft, roep dan `GetComponent<BasisPermissionEventShim>().Rebind()` aan.
 
 ## Afbeeldingen en tekst laden
 
-Downloads controleren het adres voordat er een verzoek uitgaat, en weigeren redirects. Spelers keuren nieuwe hosts de eerste keer goed.
+Downloads controleren het adres voordat er een verzoek uitgaat, en weigeren redirects en adressen die verwijzen naar private, loopback- of link-local-netwerken. Tekstdownloads vragen de speler om een adres goed te keuren dat die nog niet vertrouwt. Afbeeldingsdownloads starten meteen zonder te vragen.
 
 ```csharp title="Cilbox"
 using Basis;

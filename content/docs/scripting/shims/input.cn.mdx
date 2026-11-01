@@ -1,6 +1,6 @@
 ---
 title: 输入
-description: BasisControllerInputShim、BasisDesktopInputShim、BasisHapticsShim、BasisInteractableShim、BasisActionTrigger 和 BasisUIExtensions。
+description: BasisControllerInputShim、BasisDesktopInputShim、BasisHapticsShim、BasisInteractableButton、BasisActionTrigger 和 BasisUIExtensions。
 ---
 
 ## BasisControllerInputShim
@@ -44,25 +44,29 @@ BasisHapticsShim.Play(this, BasisHapticHand.Right);
 BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 ```
 
-## BasisInteractableShim
+## BasisInteractableButton
 
-让物体可以用指针按下，并在其渲染器上显示悬停和按下的颜色。
+让物体可以用指针按下，并在其渲染器上显示悬停和按下的颜色。请在编辑器中添加它；`GetComponent` 不会为您添加。它取代了已过时的 `BasisInteractableShim`。
+
+在道具中，沙盒只允许设置 `ButtonDown`，所以请用 `=` 赋值，并省略 `ButtonUp`。
 
 ```csharp
-BasisInteractableShim button;
+using Basis.Scripts.BasisSdk.Interactions;
+
+BasisInteractableButton button;
 
 void Start()
 {
-    button = GetComponent<BasisInteractableShim>();
-    button.ButtonDown += OnDown;
-    button.ButtonUp += OnUp;
+    button = GetComponent<BasisInteractableButton>();
+    button.ButtonDown = OnDown;
+    button.ButtonUp = OnUp;
 }
 
 void OnDown() { lamp.SetActive(!lamp.activeSelf); }
 void OnUp() { }
 ```
 
-检查器字段：`isEnabled`、`Color`、`HoverColor`、`InteractColor`、`DisabledColor`、`PropertyName`（材质的颜色属性）。
+检查器字段：`isEnabled`、`UseHighlight`、`UseMaterialColor`、`Color`、`HoverColor`、`InteractColor`、`DisabledColor`、`PropertyName`（材质的颜色属性）。
 
 ## BasisActionTrigger
 

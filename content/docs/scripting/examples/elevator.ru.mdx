@@ -8,7 +8,7 @@ description: Движущаяся платформа, на которой все
 ## Настройка
 
 1. Создайте платформу с коллайдером.
-2. Добавьте **Elevator** и кнопки, вызывающие `GoTo(floor)`. Задайте высоты этажей в инспекторе.
+2. Добавьте **Elevator**, задайте высоты этажей и назначьте в инспекторе UI-кнопки «вверх» и «вниз».
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- Кнопки подключаются из кода в `Start`. **On Click** в инспекторе не может вызвать `GoTo`, потому что Cilbox заменяет скрипт прокси.
 - Каждый клиент выполняет одно и то же движение. Пассажиры видят плавную платформу без потока позиций.
 - Поздно подключившийся получает целевой этаж и текущую высоту одним сообщением в 5 байт.
 - Обратите внимание на `new Vector3(...)`: прямое изменение `p.y` в Cilbox изменило бы и значение, из которого оно было скопировано (см. [Правила песочницы](/ru/docs/scripting/sandbox-rules)).

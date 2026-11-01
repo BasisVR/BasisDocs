@@ -54,11 +54,11 @@ public class RemoteImage : MonoBehaviour
 
 ## Regeln
 
-- Nur https. Einfaches http, rohe IP-Adressen und alles, was zu einer lokalen Netzwerkadresse aufgelöst wird, werden abgelehnt, bevor eine Anfrage gestellt wird.
+- Nur http und https. Adressen, die eine private, Loopback- oder Link-Local-Netzwerkadresse sind oder zu einer solchen aufgelöst werden, werden abgelehnt, bevor eine Anfrage gestellt wird.
 - Keine Weiterleitungen. Hosten Sie das Bild unter seiner endgültigen Adresse.
-- Spieler genehmigen Hosts. Wenn Inhalte zum ersten Mal einen neuen Host anfragen, wird der Spieler gefragt. Bis er zustimmt, schlägt der Download fehl und Ihr Platzhalter bleibt sichtbar.
+- Bild-Downloads starten sofort; der Spieler wird nicht gefragt.
 - Jeder Spieler lädt das Bild selbst herunter; es gibt nichts zu synchronisieren. Damit alle dasselbe wechselnde Bild anzeigen, synchronisieren Sie den **URL-Index** (siehe [Synchronisierter Schalter](/de/docs/scripting/examples/synced-toggle) für das Muster) und laden lokal.
 
 <Callout type="info">
-Für Text verwenden Sie `BasisStringDownloader.DownloadString` mit denselben Regeln und `BasisJson.Parse`, um JSON zu lesen.
+Für Text verwenden Sie `BasisStringDownloader.DownloadString` und `BasisJson.Parse`, um JSON zu lesen. Dafür gelten dieselben Adressregeln, und zusätzlich wird der Spieler gebeten, eine Adresse freizugeben, der er noch nicht vertraut hat. Bis er zustimmt, startet der Download nicht.
 </Callout>

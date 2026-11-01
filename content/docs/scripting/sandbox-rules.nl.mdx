@@ -9,9 +9,10 @@ Cilbox interpreteert de gecompileerde code van je script binnen een sandbox. De 
 
 ## Levenscyclus
 
-- Geen `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` of coroutines. Gebruik `Update` en [vertraagde events](/nl/docs/scripting/common-usages#timers-and-delayed-events).
+- Doorgestuurd naar je script: `Awake` (draait vlak voor `Start`), `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnEnable`, `OnDisable`, `OnDestroy`, de trigger- en collision-callbacks, `OnRenderObject` en `OnWillRenderObject`.
+- Geen `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` of coroutines. Gebruik `Update` en [vertraagde events](/nl/docs/scripting/common-usages#timers-and-delayed-events).
 - De eerste `OnEnable` wordt overgeslagen. Zet dingen op in `Start` en ruim op in `OnDestroy`.
-- Leid niet af van `BasisNetworkBehaviour`. De proxy die je script vervangt, is er geen. Gebruik `BasisNetworkShim` (zie [Netwerkevents](/nl/docs/scripting/networking/network-events#cilbox)).
+- Leid niet af van `BasisNetworkBehaviour`. De proxy die je script vervangt, is er geen. Haal een `BasisNetworkShim` op via `SafeUtil.MakeNetworkable(this)` (zie [Netwerkevents](/nl/docs/scripting/networking/network-events#cilbox)).
 
 ## Structs delen hun waarde
 
@@ -34,18 +35,24 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - Een toegestaan type staat al zijn publieke methoden toe, tenzij dat type ook een methodebeperking heeft. Velden worden geweigerd, tenzij ze vermeld staan.
 - Parameter-, generieke en returntypes worden ook gecontroleerd. Een aanroep kan de naamcontrole doorstaan en toch worden geweigerd vanwege een van zijn types.
-- `this.GetComponent` werkt altijd. `gameObject.GetComponent` is beperkt, en de prop-sandbox staat niet toe om ermee door de hiërarchie te lopen.
-- `AddComponent`, `SendMessage` en `BroadcastMessage` zijn altijd geblokkeerd. Cilbox voegt een `BasisNetworkShim` en de event-shims voor je toe bij `GetComponent`.
+- `GetComponent` werkt in elke sandbox. De prop-sandbox blokkeert het doorlopen van de hiërarchie (`GetComponentInChildren`, `GetComponentInParent`, `GetComponents`).
+- Om een ander Cilbox-script te vinden, roep je `gameObject.GetComponent<OtherScript>()` aan. `this.GetComponent<OtherScript>()` geeft null terug voor Cilbox-types. Native componenten werken op beide manieren.
+- `AddComponent`, `SendMessage` en `BroadcastMessage` zijn altijd geblokkeerd. `GetComponent` voegt de event-shims voor je toe als ze ontbreken, maar niet `BasisNetworkShim`; gebruik daarvoor `SafeUtil.MakeNetworkable(this)`.
+- `is`, `as` en casts vergelijken het exacte type, voor native types en ook voor je eigen klassen. `component is Collider` is false voor een `BoxCollider`, dus test op het concrete type.
+- Arrays van arrays (`float[][]`, of `new[] { a, b }` waarbij `a` en `b` arrays zijn) worden geweigerd. Gebruik een platte array en bereken de index zelf.
+- Een `typeof(...)` die een type uit een andere assembly noemt, in de statische initialisatie van een `[Cilboxable]`-klasse, stopt de Cilbox-verwerking voor de hele scène. In de editor draait dan elk script native zonder duidelijke foutmelding, wat elk ander sandboxprobleem verbergt.
 - `Debug.DrawLine` en `Debug.DrawRay` bestaan niet in de `Debug` van de sandbox, en ernaar verwijzen zorgt ervoor dat geen enkel script in de content meer laadt.
 - Constanten zijn gratis. Een `const` heeft geen whitelist-vermelding nodig.
 
-## Events en delegates
+## Events en delegates [#events-and-delegates]
 
-Elke keer dat je een methode als delegate gebruikt, wordt het een nieuwe wrapper, en `-=` verwijdert misschien niet degene die je hebt toegevoegd. Voor publishers die langer leven dan je script, kun je beter een waarde pollen in `Update` in plaats van je te abonneren.
+Elke keer dat je een methode als delegate gebruikt, wordt het een nieuwe wrapper, dus `-=` verwijdert nooit degene die je hebt toegevoegd. Abonneer je één keer in `Start`; abonneren in `OnEnable` stapelt elke keer een nieuwe handler op. Voor publishers die langer leven dan je script, kun je beter een waarde pollen in `Update` in plaats van je te abonneren.
 
 ## Content police
 
 Elk component in je content dat niet `[Cilboxable]` is en ook niet op de allowlist staat, wordt **bij het laden vernietigd**. Een script converteren en een component toestaan zijn twee aparte dingen. Zie [Toegestane componenten](/nl/docs/scripting/allowed-components).
+
+Scriptvelden worden gecontroleerd op het type van het object dat ze bevatten, niet op het gedeclareerde type van het veld. Een `Behaviour`-veld met een component dat niet is toegestaan komt terug als null, en een arrayveld waarvan het elementtype niet is toegestaan gooit `Contraband ARRAY` en stopt dat script.
 
 ## Avatar-scripts draaien op ieders computer
 

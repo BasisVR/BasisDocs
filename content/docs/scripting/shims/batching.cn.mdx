@@ -13,7 +13,7 @@ Cilbox 脚本对 Unity 的每次调用都很昂贵，开销往往远超其实际
 
 ## BasisTransformBatchShim
 
-一次读取或写入大量变换的位置、旋转和缩放。
+一次读取大量变换的位置，或写入其位置、旋转和缩放。旋转和缩放没有批量读取。
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-距离以平方表示（`radiusSq`）。`skipMask` 的各个位按索引排除球体。
+距离以平方表示（`radiusSq`），因此上面的 `0.25f` 是 0.5 米的半径。`skipMask` 的各个位按索引排除球体。`RaySpheresMask` 返回一个 32 位掩码，因此它只测试前 32 个中心点。

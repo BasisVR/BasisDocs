@@ -3,11 +3,11 @@ title: Menus
 description: BasisMenuShim, settings tabs and menu panels with headers, labels, buttons, toggles, sliders and dropdowns.
 ---
 
-`BasisMenuShim` adds UI to the player's own menu. Both calls return null when refused. Always check.
+`BasisMenuShim` adds UI to the player's own menu. Both calls return null when refused. Always check. Across everything loaded at once there are at most 4 panels and 8 content settings tabs. A call can be refused because other content got there first.
 
 | Call | Adds |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | A tab in the player's settings (up to 4 per content). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | A tab in the player's settings (up to 4 per content). `AddTab` on a settings tab adds another settings tab. |
 | `BasisMenuShim.AddPanel(this, title)` | A panel with its own menu button (one per content, up to 8 tabs). |
 
 ## Building a page

@@ -53,10 +53,10 @@ Chaque entrée `BasisBundleGenerated` décrit une section :
 | `AssetToLoadName` | La scène ou le prefab à ouvrir depuis le bundle. |
 | `AssetBundleCRC`, `AssetBundleHash` | Contrôles d'intégrité du bundle Unity déchiffré. |
 | `EndByte` | La longueur de la section dans le fichier. |
-| `AssetBundleEndByte` | L'endroit où le bundle Unity se termine dans la section déchiffrée, lorsque des données supplémentaires le suivent. |
+| `AssetBundleEndByte` | La longueur du bundle Unity chiffré au début de la section. Zéro signifie que toute la section est le bundle. |
 | `GraphicsStatePayloads` | Décalages des données intégrées de préchauffage des shaders par API graphique et niveau de qualité. |
 
-Une section déchiffrée est un **AssetBundle** Unity, éventuellement suivi de données d'**état graphique** utilisées pour préchauffer les shaders afin que le contenu ne saccade pas la première fois qu'il est vu.
+Une section commence par un **AssetBundle** Unity chiffré, éventuellement suivi de blocs d'**état graphique** chiffrés séparément, utilisés pour préchauffer les shaders afin que le contenu ne saccade pas la première fois qu'il est vu. Le client découpe la section à `AssetBundleEndByte` avant de déchiffrer chaque partie.
 
 La section **Generic** est réservée aux avatars : un `.glb` chiffré (glTF 2.0 binaire) plus des données de configuration d'avatar. Un client ne s'en sert qu'en repli, lorsque le fichier n'a pas de section pour sa plateforme. Ainsi, un avatar s'affiche quand même sur des plateformes pour lesquelles il n'a jamais été compilé.
 

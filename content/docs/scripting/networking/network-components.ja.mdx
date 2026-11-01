@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 | コンポーネント | 同期するもの | アップロード | 備考 |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | 持たれているオブジェクトのポーズと、誰が持っているか。 | 可 | 掴んだときにオーナーシップを取得します。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。 |
+| **Basis Pickup Sync Networking** | 持たれているオブジェクトのポーズと、誰が持っているか。 | 可 | 掴んだときにオーナーシップを取得します。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。`CanNetworkSteal`がオフの場合、掴めるのは現在のオーナーだけで、最後に持っていた人が所有したままになります。 |
 | **Basis Synced Transform** | 位置、回転、スケール。軸ごとのトグルと圧縮。 | 可 | オーナーがコードやアニメーションで動かすあらゆるもの向け。 |
 | **Basis Seat Sync** | 誰が**Basis Seat**に座っているか。 | 可 | 2人のプレイヤーが同時に座ろうとしたときに調停します。 |
 | **Basis Media Player** | ビデオのURL、再生状態、時刻。 | 可 | [Media Player](/ja/docs/world/media-player)を参照してください。 |

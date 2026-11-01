@@ -9,9 +9,10 @@ Cilbox interpreta el código compilado de su script dentro de un sandbox. La may
 
 ## Ciclo de vida
 
-- No hay `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni corrutinas. Use `Update` y [eventos diferidos](/es/docs/scripting/common-usages#timers-and-delayed-events).
+- Se reenvían a su script: `Awake` (se ejecuta justo antes de `Start`), `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnEnable`, `OnDisable`, `OnDestroy`, las callbacks de trigger y de colisión, `OnRenderObject` y `OnWillRenderObject`.
+- No hay `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni corrutinas. Use `Update` y [eventos diferidos](/es/docs/scripting/common-usages#timers-and-delayed-events).
 - El primer `OnEnable` se descarta. Inicialice en `Start` y libere en `OnDestroy`.
-- No derive de `BasisNetworkBehaviour`. El proxy que sustituye a su script no lo es. Use `BasisNetworkShim` (consulte [Eventos de red](/es/docs/scripting/networking/network-events#cilbox)).
+- No derive de `BasisNetworkBehaviour`. El proxy que sustituye a su script no lo es. Obtenga un `BasisNetworkShim` de `SafeUtil.MakeNetworkable(this)` (consulte [Eventos de red](/es/docs/scripting/networking/network-events#cilbox)).
 
 ## Las structs comparten su valor
 
@@ -34,18 +35,24 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - Un tipo de la lista blanca permite todos sus métodos públicos, a menos que ese tipo también tenga una restricción de métodos. Los campos están denegados a menos que estén en la lista.
 - También se comprueban los tipos de parámetros, genéricos y de retorno. Una llamada puede superar la comprobación del nombre y aun así ser rechazada por uno de sus tipos.
-- `this.GetComponent` siempre funciona. `gameObject.GetComponent` está restringido, y el sandbox de props no permite recorrer la jerarquía con él.
-- `AddComponent`, `SendMessage` y `BroadcastMessage` están siempre bloqueados. Cilbox añade por usted un `BasisNetworkShim` y los shims de eventos al llamar a `GetComponent`.
+- `GetComponent` funciona en todos los sandboxes. El sandbox de props bloquea el recorrido de la jerarquía (`GetComponentInChildren`, `GetComponentInParent`, `GetComponents`).
+- Para encontrar otro script de Cilbox, llame a `gameObject.GetComponent<OtherScript>()`. `this.GetComponent<OtherScript>()` devuelve null para los tipos de Cilbox. Los componentes nativos funcionan de las dos formas.
+- `AddComponent`, `SendMessage` y `BroadcastMessage` están siempre bloqueados. `GetComponent` añade por usted los shims de eventos si faltan, pero no `BasisNetworkShim`; para ese, use `SafeUtil.MakeNetworkable(this)`.
+- `is`, `as` y los casts coinciden con el tipo exacto, tanto para tipos nativos como para sus propias clases. `component is Collider` es false para un `BoxCollider`, así que compruebe el tipo concreto.
+- Los arrays de arrays (`float[][]`, o `new[] { a, b }` donde `a` y `b` son arrays) se rechazan. Use un array plano y calcule el índice usted mismo.
+- Un `typeof(...)` que nombra un tipo de otro ensamblado, dentro del inicializador estático de una clase `[Cilboxable]`, detiene el procesamiento de Cilbox para toda la escena. En el editor, todos los scripts se ejecutan entonces de forma nativa sin un error evidente, lo que oculta todos los demás problemas del sandbox.
 - `Debug.DrawLine` y `Debug.DrawRay` no existen en el `Debug` del sandbox, y hacer referencia a ellos impide que se cargue cualquier script del contenido.
 - Las constantes son gratuitas. Una `const` no necesita entrada en la lista blanca.
 
-## Eventos y delegados
+## Eventos y delegados [#events-and-delegates]
 
-Cada vez que usa un método como delegado se convierte en un nuevo envoltorio, y `-=` puede no eliminar el que añadió. Para publicadores que viven más que su script, consulte un valor en `Update` en lugar de suscribirse.
+Cada vez que usa un método como delegado se convierte en un nuevo envoltorio, así que `-=` nunca elimina el que añadió. Suscríbase una sola vez en `Start`; suscribirse en `OnEnable` acumula un nuevo manejador cada vez. Para publicadores que viven más que su script, consulte un valor en `Update` en lugar de suscribirse.
 
 ## Content police
 
 Cualquier componente de su contenido que no sea `[Cilboxable]` ni esté en la lista de permitidos se **destruye al cargar**. Convertir un script y permitir un componente son cosas distintas. Consulte [Componentes permitidos](/es/docs/scripting/allowed-components).
+
+Los campos de los scripts se comprueban según el tipo del objeto que contienen, no según el tipo declarado del campo. Un campo `Behaviour` que contiene un componente no permitido vuelve como null, y un campo de array cuyo tipo de elemento no está permitido lanza `Contraband ARRAY` y detiene ese script.
 
 ## Los scripts de avatar se ejecutan en la máquina de todos
 

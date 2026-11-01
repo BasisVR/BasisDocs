@@ -53,10 +53,10 @@ Each `BasisBundleGenerated` entry describes one section:
 | `AssetToLoadName` | The scene or prefab to open from the bundle. |
 | `AssetBundleCRC`, `AssetBundleHash` | Integrity checks for the decrypted Unity bundle. |
 | `EndByte` | The section's length in the file. |
-| `AssetBundleEndByte` | Where the Unity bundle ends inside the decrypted section, when extra data follows it. |
+| `AssetBundleEndByte` | Length of the encrypted Unity bundle at the start of the section. Zero means the whole section is the bundle. |
 | `GraphicsStatePayloads` | Offsets of embedded shader prewarm data per graphics API and quality level. |
 
-A decrypted section is a Unity **AssetBundle**, optionally followed by **graphics state** data used to prewarm shaders so the content does not stutter the first time it is seen.
+A section starts with an encrypted Unity **AssetBundle**, optionally followed by separately encrypted **graphics state** blocks used to prewarm shaders so the content does not stutter the first time it is seen. The client slices the section at `AssetBundleEndByte` before decrypting each part.
 
 The **Generic** section is avatar only: an encrypted `.glb` (glTF 2.0 binary) plus avatar setup data. A client falls back to it only when the file has no section for its platform. That way an avatar still shows up on platforms it was never built for.
 

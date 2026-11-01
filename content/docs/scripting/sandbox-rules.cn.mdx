@@ -9,9 +9,10 @@ Cilbox 在沙盒中解释执行您脚本的编译代码。大多数 C# 都能正
 
 ## 生命周期
 
-- 没有 `LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 或协程。请使用 `Update` 和[延迟事件](/cn/docs/scripting/common-usages#timers-and-delayed-events)。
+- 会转发给您脚本的有：`Awake`（在 `Start` 之前运行）、`Start`、`Update`、`FixedUpdate`、`LateUpdate`、`OnEnable`、`OnDisable`、`OnDestroy`、触发器和碰撞回调、`OnRenderObject` 以及 `OnWillRenderObject`。
+- 没有 `OnGUI`、`OnAnimatorIK`、`OnParticleCollision` 或协程。请使用 `Update` 和[延迟事件](/cn/docs/scripting/common-usages#timers-and-delayed-events)。
 - 第一次 `OnEnable` 会被丢弃。请在 `Start` 中初始化，在 `OnDestroy` 中清理。
-- 不要派生自 `BasisNetworkBehaviour`。替换您脚本的代理并不是它的子类。请使用 `BasisNetworkShim`（参见[网络事件](/cn/docs/scripting/networking/network-events#cilbox)）。
+- 不要派生自 `BasisNetworkBehaviour`。替换您脚本的代理并不是它的子类。请通过 `SafeUtil.MakeNetworkable(this)` 获取 `BasisNetworkShim`（参见[网络事件](/cn/docs/scripting/networking/network-events#cilbox)）。
 
 ## 结构体共享同一个值
 
@@ -34,18 +35,24 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - 白名单中的类型允许调用其所有公共方法，除非该类型还设置了方法限制。字段默认被拒绝，除非已列出。
 - 参数类型、泛型类型和返回类型也会被检查。一个调用可能通过了名称检查，却因为其中某个类型而被拒绝。
-- `this.GetComponent` 始终可用。`gameObject.GetComponent` 受到限制，道具沙盒不允许用它遍历层级。
-- `AddComponent`、`SendMessage` 和 `BroadcastMessage` 始终被阻止。在 `GetComponent` 时，Cilbox 会为您添加 `BasisNetworkShim` 和事件 shim。
+- `GetComponent` 在所有沙盒中都可用。道具沙盒会阻止遍历层级（`GetComponentInChildren`、`GetComponentInParent`、`GetComponents`）。
+- 要查找另一个 Cilbox 脚本，请调用 `gameObject.GetComponent<OtherScript>()`。对于 Cilbox 类型，`this.GetComponent<OtherScript>()` 会返回 null。Native 组件两种写法都可以。
+- `AddComponent`、`SendMessage` 和 `BroadcastMessage` 始终被阻止。如果事件 shim 不存在，`GetComponent` 会为您添加它们，但不会添加 `BasisNetworkShim`；后者请使用 `SafeUtil.MakeNetworkable(this)`。
+- `is`、`as` 和类型转换只匹配确切的类型，对 Native 类型和您自己的类都是如此。对于 `BoxCollider`，`component is Collider` 为 false，因此请检查具体类型。
+- 数组的数组（`float[][]`，或者 `a` 和 `b` 都是数组时的 `new[] { a, b }`）会被拒绝。请使用一维数组并自行计算索引。
+- 在 `[Cilboxable]` 类的静态初始化器中，如果 `typeof(...)` 引用了另一个程序集中的类型，就会导致整个场景的 Cilbox 处理停止。在编辑器中，所有脚本随后都会以 Native 方式运行，且没有明显的错误，这会掩盖其他所有沙盒问题。
 - 沙盒的 `Debug` 中不存在 `Debug.DrawLine` 和 `Debug.DrawRay`，引用它们会导致内容中的所有脚本都无法加载。
 - 常量是免费的。`const` 不需要白名单条目。
 
-## 事件与委托
+## 事件与委托 [#events-and-delegates]
 
-每次将方法用作委托时，它都会成为一个新的包装器，`-=` 可能无法移除您之前添加的那个。对于生命周期比您的脚本更长的发布者，请在 `Update` 中轮询值，而不是订阅。
+每次将方法用作委托时，它都会成为一个新的包装器，因此 `-=` 永远无法移除您之前添加的那个。请在 `Start` 中只订阅一次；在 `OnEnable` 中订阅，每次都会叠加一个新的处理程序。对于生命周期比您的脚本更长的发布者，请在 `Update` 中轮询值，而不是订阅。
 
 ## Content police
 
 内容中任何既不是 `[Cilboxable]`、也不在允许列表中的组件都会**在加载时被销毁**。转换脚本与允许组件是两件独立的事。参见[允许的组件](/cn/docs/scripting/allowed-components)。
+
+脚本字段会根据其所持有对象的类型进行检查，而不是字段声明的类型。持有不被允许组件的 `Behaviour` 字段会变为 null，而元素类型不被允许的数组字段会抛出 `Contraband ARRAY` 并使该脚本停止运行。
 
 ## 虚拟形象脚本在每个人的电脑上运行
 

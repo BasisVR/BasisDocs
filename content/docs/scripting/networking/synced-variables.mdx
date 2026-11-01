@@ -139,7 +139,7 @@ In `BasisSyncedParameters` the same choice is the **Compression** setting on eac
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | How often the owner may send (20 per second). Nothing is sent while values are unchanged. |
 | `KeyframeIntervalSeconds` | 0.5 | How often a full state is sent so lost deltas heal. Backs off while idle. |
-| `DistanceReduction` | on | Send less often to players far away. |
+| `DistanceReduction` | on | Send less often when the nearest player is far away. The rate is the same for every recipient. |
 | `RelevanceCulling` / `RelevanceRadius` | off / 50 | Do not send at all to players beyond the radius. |
 | `Extrapolate` | off | Keep moving remote values forward briefly when packets are late. |
 | `UseDirectP2P` | on | Use a direct peer connection when one exists. |

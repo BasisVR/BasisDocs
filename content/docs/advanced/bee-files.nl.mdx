@@ -53,10 +53,10 @@ Elke `BasisBundleGenerated`-vermelding beschrijft één sectie:
 | `AssetToLoadName` | De scène of prefab die uit de bundle moet worden geopend. |
 | `AssetBundleCRC`, `AssetBundleHash` | Integriteitscontroles voor de ontsleutelde Unity-bundle. |
 | `EndByte` | De lengte van de sectie in het bestand. |
-| `AssetBundleEndByte` | Waar de Unity-bundle eindigt binnen de ontsleutelde sectie, wanneer er extra gegevens op volgen. |
+| `AssetBundleEndByte` | Lengte van de versleutelde Unity-bundle aan het begin van de sectie. Nul betekent dat de hele sectie de bundle is. |
 | `GraphicsStatePayloads` | Offsets van ingebedde shader-prewarmgegevens per grafische API en kwaliteitsniveau. |
 
-Een ontsleutelde sectie is een Unity-**AssetBundle**, optioneel gevolgd door **graphics state**-gegevens die worden gebruikt om shaders voor te verwarmen, zodat de content niet hapert de eerste keer dat die wordt gezien.
+Een sectie begint met een versleutelde Unity-**AssetBundle**, optioneel gevolgd door afzonderlijk versleutelde **graphics state**-blokken die worden gebruikt om shaders voor te verwarmen, zodat de content niet hapert de eerste keer dat die wordt gezien. De client knipt de sectie op bij `AssetBundleEndByte` voordat elk deel wordt ontsleuteld.
 
 De **Generic**-sectie is alleen voor avatars: een versleuteld `.glb`-bestand (glTF 2.0 binair) plus avatar-setupgegevens. Een client valt er alleen op terug wanneer het bestand geen sectie voor zijn platform heeft. Zo verschijnt een avatar toch op platforms waarvoor die nooit is gebouwd.
 

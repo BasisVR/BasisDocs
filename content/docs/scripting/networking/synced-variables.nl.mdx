@@ -139,7 +139,7 @@ In `BasisSyncedParameters` is dezelfde keuze de instelling **Compression** op el
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | Hoe vaak de eigenaar mag versturen (20 per seconde). Er wordt niets verstuurd zolang waarden ongewijzigd zijn. |
 | `KeyframeIntervalSeconds` | 0.5 | Hoe vaak een volledige status wordt verstuurd zodat verloren delta's herstellen. Vertraagt wanneer inactief. |
-| `DistanceReduction` | aan | Minder vaak versturen naar spelers die ver weg zijn. |
+| `DistanceReduction` | aan | Minder vaak versturen wanneer de dichtstbijzijnde speler ver weg is. De frequentie is voor elke ontvanger gelijk. |
 | `RelevanceCulling` / `RelevanceRadius` | uit / 50 | Helemaal niet versturen naar spelers buiten de straal. |
 | `Extrapolate` | uit | Externe waarden kort laten doorbewegen wanneer pakketten laat zijn. |
 | `UseDirectP2P` | aan | Een directe peer-verbinding gebruiken wanneer die bestaat. |

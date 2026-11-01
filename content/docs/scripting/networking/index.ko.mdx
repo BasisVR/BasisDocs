@@ -25,7 +25,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 ## 구성 요소
 
 - `BasisNetworkBehaviour`는 클라이언트에 컴파일되는 네트워크 스크립트의 기본 클래스입니다. 네트워크 ID, 소유자, 그리고 `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined`, `OnPlayerLeft` 콜백을 갖습니다.
-- `BasisNetworkShim`은 Cilbox 스크립트를 위한 같은 기능입니다. Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없습니다. 대신 `GetComponent`로 `BasisNetworkShim`을 가져와 이벤트를 구독합니다.
+- `BasisNetworkShim`은 Cilbox 스크립트를 위한 같은 기능입니다. Cilbox 스크립트는 `BasisNetworkBehaviour`를 상속할 수 없습니다. 대신 `SafeUtil.MakeNetworkable(this)`에서 `BasisNetworkShim`을 가져와 이벤트를 구독합니다.
 - `BasisSyncedObject`는 `BasisNetworkBehaviour`를 기반으로 압축되고 보간되는 상태 스트림을 제공합니다. `BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`는 그 위에 만들어진 기성 컴포넌트입니다.
 - `BasisPickupSyncNetworking`과 `BasisSeatSync`는 코드 없이 픽업과 좌석을 동기화합니다.
 

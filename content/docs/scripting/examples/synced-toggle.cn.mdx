@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## 工作原理
 
 - 按下按钮会获取所有权，在本地翻转该值以便按下者立即看到，然后将新值发送给其他所有人。
-- `ReliableSequenced` 保证最新的值一定送达并丢弃较旧的值。开关只关心最新的值。
+- `ReliableOrdered` 确保每次变化都会按顺序送达。所有场景对象共用一个网络通道，因此如果使用 `ReliableSequenced`，另一个对象紧接着发出的消息可能会取代这条消息，开关的变化就会丢失。
 - 加入的玩家只会从所有者那里获得当前值。由于消息就是完整的状态，同一个 `OnMessage` 既能处理实时变化，也能处理追赶同步。
 
 <Callout type="info">

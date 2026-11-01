@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-Plays a player's voice from an object, such as a stage microphone feeding speakers. Consent is checked first and is not optional.
+Plays a player's voice from an object, such as a stage microphone feeding speakers. `RouteVoiceToObject` asks that player for permission and starts the route once they allow it. It returns a route id, or 0 if the route could not start, which includes routing the local player. `HasConsent` tells you whether you already have their permission; it does not ask.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-For synced video, use the **Basis Media Player** component ([Media Player](/en/docs/world/media-player)). Scripts can read its `OutputTexture`; playback controls are blocked so the URL prompt cannot be skipped.
+For synced video, use the **Basis Media Player** component ([Media Player](/en/docs/world/media-player)). World scripts can read its `OutputTexture`, but playback controls are blocked so the URL prompt cannot be skipped. Prop scripts can also use playback, status and events.

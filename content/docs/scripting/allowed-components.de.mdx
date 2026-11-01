@@ -21,9 +21,9 @@ Jede ist eine Liste vollständiger Typnamen. Der Abgleich ist exakt: Eine Unterk
 
 ## Was standardmäßig erlaubt ist
 
-**Welten und Props:** Rendering (Mesh-, Skinned-Mesh-, Line-, Trail-, Partikel- und LOD-Komponenten, Lichter, Reflection Probes, Kameras), Physik (Collider, Rigidbodies, Joints), Audioquellen und Steam Audio, Animatoren und Animation, UI-Canvases und TextMesh Pro, `VideoPlayer`, VFX-Graph-Binder, AudioLink, Basis-Constraints, der Basis-Mediaplayer, Spiegel, Sitze, Pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, Fahrzeuge, `BasisPlatformSwitch` sowie die Cilbox-Sandbox und Shims. Welten erlauben zusätzlich Navigation (`NavMeshAgent`, `NavMeshObstacle`), Post-Processing-Volumes und das Avatar-Podest.
+**Welten und Props:** Rendering (Mesh-, Skinned-Mesh-, Line-, Trail-, Partikel- und LOD-Komponenten, Lichter, Reflection Probes, Kameras), Physik (Collider, Rigidbodies, Joints), Audioquellen und Steam Audio, Animatoren und Animation, UI-Canvases und TextMesh Pro, `VideoPlayer`, VFX-Graph-Binder, AudioLink, Basis-Constraints, der Basis-Mediaplayer, Spiegel, Sitze, Pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, Fahrzeuge, `BasisPlatformSwitch` sowie die Cilbox-Sandbox und Shims. Beide erlauben Navigation (`NavMeshAgent`, `NavMeshObstacle`). Welten erlauben zusätzlich Post-Processing-Volumes und das Avatar-Podest. Die Prop-Liste enthält `BasisNetworkShim` nicht. Fügen Sie ihn in einem Prop per Code mit `SafeUtil.MakeNetworkable(this)` hinzu.
 
-**Avatare:** Rendering, Physik, Audio, Animatoren, Constraints, Sitze, synchronisierte Transforms, OSC und die Avatar-Shims. Keine Kameras, Lichter, UI oder Videos.
+**Avatare:** Rendering, Physik, Audio, Animatoren, Constraints, Sitze, synchronisierte Transforms, OSC, die Avatar-Shims, Spiegel, Pickups, VFX Graph sowie Video über den Basis-Mediaplayer, FFUnity und den ytdlp-Player von AudioLink. Keine Kameras, Lichter, UI oder `VideoPlayer`.
 
 **Standardmäßig nicht erlaubt** (nur Client-Builds): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` und jedes eigene native `MonoBehaviour`.
 
@@ -33,7 +33,8 @@ Die Selector-Assets sind die maßgebliche Quelle und ändern sich zwischen Versi
 
 ## Ihre Inhalte prüfen
 
-- Starten Sie den Play Mode: Basis wendet dieselbe Prüfung an, und entfernte Komponenten werden protokolliert.
+- Der Abschnitt **Content Police** in den Inspectors von Basis Avatar, Prop und Scene listet auf, was entfernt würde. Inhalte werden erst geprüft, wenn der Client sie lädt, nicht beim Build. Prüfen Sie hier, bevor Sie hochladen.
+- Wenn der Client eine Komponente entfernt, protokolliert er `Component X is not approved and will be removed`.
 - Das Fenster **Basis > Tools > Cilbox Permissions** listet auf, was Skripte in jeder Sandbox aufrufen dürfen.
 
 ## Eine Komponente hinzufügen (Client-Builds)

@@ -16,7 +16,7 @@ public class VoiceStage : MonoBehaviour
     public Transform speaker;
     public float range = 60f;
 
-    int route = -1;
+    int route;
     ushort routedPlayer;
     float nextCheck;
 
@@ -31,17 +31,17 @@ public class VoiceStage : MonoBehaviour
             if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
         }
 
-        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        if (onStage != null && route != 0 && onStage.playerId == routedPlayer) return;
         Stop();
-        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        if (onStage == null) return;
         route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
         routedPlayer = onStage.playerId;
     }
 
     void Stop()
     {
-        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-        route = -1;
+        if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = 0;
     }
 
     void OnDestroy() => Stop();
@@ -49,5 +49,5 @@ public class VoiceStage : MonoBehaviour
 ```
 
 - 各クライアントは、すでに持っている位置情報から声をローカルでルーティングします。追加のネットワーク通信はありません。
-- 最初に話者の同意が確認されます。ボイスルーティングを許可していないプレイヤーの声は通常どおり聞こえます。
+- `RouteVoiceToObject`は話者に許可を求めます。許可されるまで、または拒否された場合、その声は通常どおり聞こえます。
 - `BasisNetworkPlayer.GetAllPlayers`がサンドボックスで許可されていることを、**Basis > Tools > Cilbox Permissions**で確認してください。

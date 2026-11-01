@@ -16,7 +16,7 @@ public class VoiceStage : MonoBehaviour
     public Transform speaker;
     public float range = 60f;
 
-    int route = -1;
+    int route;
     ushort routedPlayer;
     float nextCheck;
 
@@ -31,17 +31,17 @@ public class VoiceStage : MonoBehaviour
             if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
         }
 
-        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        if (onStage != null && route != 0 && onStage.playerId == routedPlayer) return;
         Stop();
-        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        if (onStage == null) return;
         route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
         routedPlayer = onStage.playerId;
     }
 
     void Stop()
     {
-        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-        route = -1;
+        if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = 0;
     }
 
     void OnDestroy() => Stop();
@@ -49,5 +49,5 @@ public class VoiceStage : MonoBehaviour
 ```
 
 - 每個客戶端都根據已有的位置在本機路由語音，不會產生額外的網路流量。
-- 會先檢查講者的同意。尚未允許語音路由的玩家會以正常方式被聽到。
+- `RouteVoiceToObject` 會向講者請求許可。在他們允許之前，或者如果他們拒絕，他們會以正常方式被聽到。
 - 請在 **Basis > Tools > Cilbox Permissions** 中確認您的沙盒允許 `BasisNetworkPlayer.GetAllPlayers`。

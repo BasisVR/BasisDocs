@@ -1,6 +1,6 @@
 ---
 title: 入力
-description: BasisControllerInputShim、BasisDesktopInputShim、BasisHapticsShim、BasisInteractableShim、BasisActionTrigger、BasisUIExtensions。
+description: BasisControllerInputShim、BasisDesktopInputShim、BasisHapticsShim、BasisInteractableButton、BasisActionTrigger、BasisUIExtensions。
 ---
 
 ## BasisControllerInputShim
@@ -44,25 +44,29 @@ BasisHapticsShim.Play(this, BasisHapticHand.Right);
 BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 ```
 
-## BasisInteractableShim
+## BasisInteractableButton
 
-オブジェクトをポインターで押せるようにし、レンダラーにホバー時と押下時の色を付けます。
+オブジェクトをポインターで押せるようにし、レンダラーにホバー時と押下時の色を付けます。エディターで追加してください。`GetComponent`では自動で追加されません。廃止された`BasisInteractableShim`を置き換えるものです。
+
+プロップではサンドボックスが`ButtonDown`の設定しか許可しないため、`=`で代入し、`ButtonUp`は使わないでください。
 
 ```csharp
-BasisInteractableShim button;
+using Basis.Scripts.BasisSdk.Interactions;
+
+BasisInteractableButton button;
 
 void Start()
 {
-    button = GetComponent<BasisInteractableShim>();
-    button.ButtonDown += OnDown;
-    button.ButtonUp += OnUp;
+    button = GetComponent<BasisInteractableButton>();
+    button.ButtonDown = OnDown;
+    button.ButtonUp = OnUp;
 }
 
 void OnDown() { lamp.SetActive(!lamp.activeSelf); }
 void OnUp() { }
 ```
 
-インスペクターのフィールド: `isEnabled`、`Color`、`HoverColor`、`InteractColor`、`DisabledColor`、`PropertyName`（マテリアルの色プロパティ）。
+インスペクターのフィールド: `isEnabled`、`UseHighlight`、`UseMaterialColor`、`Color`、`HoverColor`、`InteractColor`、`DisabledColor`、`PropertyName`（マテリアルの色プロパティ）。
 
 ## BasisActionTrigger
 

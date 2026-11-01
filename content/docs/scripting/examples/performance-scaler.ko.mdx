@@ -14,7 +14,7 @@ public class PerformanceScaler : MonoBehaviour
     public GameObject[] gpuHeavy;
     public GameObject[] cpuHeavy;
     float nextCheck;
-    bool reduced, lowQuality;
+    bool cutCpu, cutGpu, lowQuality;
 
     void Start()
     {
@@ -34,19 +34,24 @@ public class PerformanceScaler : MonoBehaviour
         float target = BasisStatsShim.TargetFramesPerSecond;
         if (target <= 0f) return;
         float fps = BasisStatsShim.FramesPerSecond;
-        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
-        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+        bool reduced = cutCpu || cutGpu;
+        if (!reduced && fps < target * 0.8f)
+        {
+            int bottleneck = BasisStatsShim.Bottleneck;
+            cutGpu = bottleneck == BasisStatsShim.BottleneckGpu;
+            cutCpu = bottleneck == BasisStatsShim.BottleneckCpu;
+            Apply();
+        }
+        else if (reduced && fps > target * 0.95f) { cutCpu = false; cutGpu = false; Apply(); }
     }
 
     void Apply()
     {
-        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
-        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
-        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in gpuHeavy) g.SetActive(!(lowQuality || cutGpu));
         foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
     }
 }
 ```
 
 - 두 개의 임계값(줄이기 80%, 되돌리기 95%)으로 켜졌다 꺼졌다 깜빡이는 것을 막습니다.
-- 병목이 어느 쪽을 줄일지 알려 줍니다. GPU라면 거울과 파티클, CPU라면 군중과 스크립트입니다.
+- 병목이 어느 쪽을 줄일지 알려 줍니다. GPU라면 거울과 파티클, CPU라면 군중과 스크립트입니다. 아직 측정 중이거나 균형 상태로 읽히는 동안에는 아무것도 줄이지 않고, 다음 확인에서 다시 시도합니다.

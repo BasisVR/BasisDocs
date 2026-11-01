@@ -139,7 +139,7 @@ En `BasisSyncedParameters` esa misma elección es el ajuste **Compression** de c
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | Con qué frecuencia puede enviar el propietario (20 por segundo). No se envía nada mientras los valores no cambian. |
 | `KeyframeIntervalSeconds` | 0.5 | Con qué frecuencia se envía un estado completo para que se recuperen los deltas perdidos. Se espacia mientras está inactivo. |
-| `DistanceReduction` | activado | Enviar con menos frecuencia a los jugadores lejanos. |
+| `DistanceReduction` | activado | Enviar con menos frecuencia cuando el jugador más cercano está lejos. La frecuencia es la misma para todos los destinatarios. |
 | `RelevanceCulling` / `RelevanceRadius` | desactivado / 50 | No enviar nada a los jugadores más allá del radio. |
 | `Extrapolate` | desactivado | Seguir moviendo brevemente los valores remotos hacia delante cuando los paquetes llegan tarde. |
 | `UseDirectP2P` | activado | Usar una conexión directa entre pares cuando exista. |

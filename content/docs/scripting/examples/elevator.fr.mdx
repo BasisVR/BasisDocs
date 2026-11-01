@@ -8,7 +8,7 @@ Diffuser en continu la position de la plateforme coûte de la bande passante à 
 ## Configuration
 
 1. Créez la plateforme avec un collider.
-2. Ajoutez **Elevator** et des boutons qui appellent `GoTo(floor)`. Réglez les hauteurs des étages dans l'inspecteur.
+2. Ajoutez **Elevator**, réglez les hauteurs des étages, et assignez un bouton UI de montée et un de descente dans l'inspecteur.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- Les boutons sont câblés depuis le code dans `Start`. Un **On Click** dans l'inspecteur ne peut pas appeler `GoTo`, car Cilbox remplace le script par un proxy.
 - Chaque client exécute le même mouvement. Les passagers voient une plateforme fluide sans flux de positions.
 - Un joueur arrivé en retard reçoit l'étage cible et la hauteur actuelle en un seul message de 5 octets.
 - Remarquez le `new Vector3(...)` : modifier `p.y` directement changerait aussi, dans Cilbox, la valeur dont il a été copié (voir [Règles de la sandbox](/fr/docs/scripting/sandbox-rules)).

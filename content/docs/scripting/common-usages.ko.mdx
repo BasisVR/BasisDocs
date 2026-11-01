@@ -38,12 +38,13 @@ public class Spinner : MonoBehaviour
 | 메시지 | 참고 |
 | --- | --- |
 | `Awake`, `Start` | 일회성 설정은 `Start`에서 하세요. |
-| `Update`, `FixedUpdate` | `LateUpdate`는 없습니다. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | **첫 번째** `OnEnable`은 도착하지 않습니다. 여기서 구독하지 마세요. |
-| `OnDestroy` | 여기서 구독을 해제하고 정리하세요. |
+| `OnDestroy` | 여기서 정리하세요. Cilbox에서는 `-=`로 델리게이트 핸들러가 제거되지 않습니다. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | 콜라이더가 필요하고, 한쪽에 Rigidbody가 있어야 합니다. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-전달되지 않는 것: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision`, 코루틴. 코루틴 대신 지연 이벤트를 사용하세요([타이머와 지연 이벤트](#timers-and-delayed-events) 참조).
+전달되지 않는 것: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision`, 코루틴. 코루틴 대신 지연 이벤트를 사용하세요([타이머와 지연 이벤트](#timers-and-delayed-events) 참조).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### 오브젝트와 상호작용
 
-**Basis Pickup Interactable**은 플레이어가 잡고 사용 버튼을 누를 때 이벤트를 발생시킵니다. 집어 들지 않고 누르기만 하는 것에는 **Basis Interactable Shim**을 추가하고 `ButtonDown`과 `ButtonUp`을 처리하세요.
+**Basis Pickup Interactable**은 플레이어가 잡고 사용 버튼을 누를 때 이벤트를 발생시킵니다. 집어 들지 않고 누르기만 하는 것에는 에디터에서 **Basis Interactable Button**을 추가하고 `ButtonDown`(월드에서는 `ButtonUp`도)을 할당하세요. 소품에서는 샌드박스가 `ButtonDown` 설정만 허용하므로 `+=`가 아니라 `=`로 할당하세요.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 코드가 필요 없습니다: **Basis Platform Switch**(com.basis.examples)는 규칙 목록에 따라 플랫폼별로 오브젝트와 컴포넌트를 활성화하거나 비활성화합니다.
 </Callout>
 
-다른 변경에도 같은 옵트인 패턴이 있습니다. `BasisLanguageEventShim`은 `OnLanguageChanged(string code)`를, `BasisGraphicsSettingsEventShim`은 `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`를, `BasisPermissionEventShim`은 `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`를 호출합니다.
+다른 변경에도 같은 옵트인 패턴이 있습니다. `BasisLanguageEventShim`은 `OnLanguageChanged(string code)`를, `BasisGraphicsSettingsEventShim`은 `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)`를, `BasisPermissionEventShim`은 `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`를 호출합니다. `BasisPermissionEventShim`은 처음 활성화될 때 한 번만 오브젝트의 스크립트를 바인딩합니다. 같은 오브젝트의 두 번째 스크립트도 이벤트가 필요하면 `GetComponent<BasisPermissionEventShim>().Rebind()`를 호출하세요.
 
 ## 이미지와 텍스트 로드
 
-다운로드는 요청이 나가기 전에 주소를 확인하며 리디렉션을 거부합니다. 플레이어는 새 호스트를 처음에 승인합니다.
+다운로드는 요청이 나가기 전에 주소를 확인하며, 리디렉션과 사설, 루프백, 링크 로컬 네트워크로 해석되는 주소를 거부합니다. 텍스트 다운로드는 플레이어가 아직 신뢰하지 않은 주소에 대해 승인을 요청합니다. 이미지 다운로드는 묻지 않고 바로 시작됩니다.
 
 ```csharp title="Cilbox"
 using Basis;

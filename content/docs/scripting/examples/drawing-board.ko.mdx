@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - 실시간 점은 각각 12바이트이며, 늦게 참여한 플레이어를 위한 전체 그림은 압축된 메시지 하나입니다.
 - 압축된 스냅샷과 단일 점은 길이로 구분합니다. 실제 보드라면 메시지 유형 바이트를 추가할 것입니다.
-- 마지막으로 그린 플레이어가 보드를 소유하며, 그 플레이어가 늦게 참여한 플레이어에게 응답합니다.
+- 마지막으로 그린 플레이어가 보드를 소유하며, 그 플레이어가 늦게 참여한 플레이어에게 응답합니다. 소유권은 플레이어가 아직 보드를 소유하지 않았을 때만 요청합니다. 점마다 요청하면 매번 서버 왕복이 발생합니다.

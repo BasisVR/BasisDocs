@@ -3,11 +3,11 @@ title: 菜单
 description: BasisMenuShim、设置标签页和菜单面板，包含标题、标签、按钮、开关、滑块和下拉菜单。
 ---
 
-`BasisMenuShim` 会向玩家自己的菜单添加 UI。两个调用在被拒绝时都会返回 null。请始终进行检查。
+`BasisMenuShim` 会向玩家自己的菜单添加 UI。两个调用在被拒绝时都会返回 null。请始终进行检查。在同时加载的所有内容中，最多只能有 4 个面板和 8 个内容设置标签页，因此调用可能因为其他内容先占用了名额而被拒绝。
 
 | 调用 | 添加内容 |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家设置中的一个标签页（每个内容最多 4 个）。 |
+| `BasisMenuShim.AddSettingsTab(this, title)` | 玩家设置中的一个标签页（每个内容最多 4 个）。在设置标签页上调用 `AddTab` 会再添加一个设置标签页。 |
 | `BasisMenuShim.AddPanel(this, title)` | 带有独立菜单按钮的面板（每个内容一个，最多 8 个标签页）。 |
 
 ## 构建页面

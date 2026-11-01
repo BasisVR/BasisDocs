@@ -1,6 +1,6 @@
 ---
 title: Entrées
-description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger et BasisUIExtensions.
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableButton, BasisActionTrigger et BasisUIExtensions.
 ---
 
 ## BasisControllerInputShim
@@ -44,25 +44,29 @@ BasisHapticsShim.Play(this, BasisHapticHand.Right);
 BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
 ```
 
-## BasisInteractableShim
+## BasisInteractableButton
 
-Rend un objet pressable avec le pointeur, avec des couleurs de survol et d'appui sur son renderer.
+Rend un objet pressable avec le pointeur, avec des couleurs de survol et d'appui sur son renderer. Ajoutez-le dans l'éditeur ; `GetComponent` ne l'ajoute pas pour vous. Il remplace le `BasisInteractableShim` obsolète.
+
+Dans un prop, la sandbox ne permet que d'assigner `ButtonDown`, donc assignez-le avec `=` et omettez `ButtonUp`.
 
 ```csharp
-BasisInteractableShim button;
+using Basis.Scripts.BasisSdk.Interactions;
+
+BasisInteractableButton button;
 
 void Start()
 {
-    button = GetComponent<BasisInteractableShim>();
-    button.ButtonDown += OnDown;
-    button.ButtonUp += OnUp;
+    button = GetComponent<BasisInteractableButton>();
+    button.ButtonDown = OnDown;
+    button.ButtonUp = OnUp;
 }
 
 void OnDown() { lamp.SetActive(!lamp.activeSelf); }
 void OnUp() { }
 ```
 
-Champs de l'inspecteur : `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (la propriété de couleur du matériau).
+Champs de l'inspecteur : `isEnabled`, `UseHighlight`, `UseMaterialColor`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (la propriété de couleur du matériau).
 
 ## BasisActionTrigger
 

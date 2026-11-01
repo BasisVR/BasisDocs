@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## Funktionsweise
 
 - Drücken übernimmt den Besitz, kehrt den Wert lokal um, damit der Drückende ihn sofort sieht, und sendet den neuen Wert an alle anderen.
-- `ReliableSequenced` garantiert, dass der neueste Wert ankommt, und verwirft ältere. Für einen Schalter zählt nur der neueste Wert.
+- `ReliableOrdered` stellt sicher, dass jede Änderung ankommt, und zwar in Reihenfolge. Alle Szenenobjekte teilen sich einen Netzwerkkanal, daher könnte mit `ReliableSequenced` eine Nachricht eines anderen Objekts, die kurz nach dieser gesendet wird, sie ersetzen, und der Schaltvorgang ginge verloren.
 - Ein beitretender Spieler erhält den aktuellen Wert nur vom Besitzer. Da die Nachricht den gesamten Zustand enthält, verarbeitet derselbe `OnMessage`-Handler sowohl Live-Änderungen als auch das Aufholen.
 
 <Callout type="info">

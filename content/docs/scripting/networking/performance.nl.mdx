@@ -10,7 +10,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 - Verstuur status, geen frames. Gesynchroniseerde variabelen versturen alleen wanneer waarden veranderen. Roep `SendCustomNetworkEvent` niet aan vanuit `Update`.
 - Gebruik het kleinste type. Een `Byte` of `Bool` in plaats van een `Int`, een ranged float in plaats van een onbewerkte.
 - Gebruik onbetrouwbare levering voor gegevens met hoge frequentie. Betrouwbare berichten worden opnieuw verzonden totdat ze aankomen, wat meer kost en vertraging toevoegt wanneer pakketten wegvallen.
-- Laat `DistanceReduction` aan. Spelers ver weg krijgen minder updates. Zet `RelevanceCulling` aan voor objecten die niemand buiten een ruimte hoeft te zien.
+- Laat `DistanceReduction` aan. Wanneer alle spelers ver weg zijn, verstuurt het object minder vaak. Het gaat uit van de dichtstbijzijnde speler, dus één speler dichtbij houdt de volledige verzendfrequentie voor iedereen. Zet `RelevanceCulling` aan voor objecten die niemand buiten een ruimte hoeft te zien.
 - Eén object, veel waarden. Eén `BasisSyncedParameters` met tien waarden is goedkoper dan tien objecten met elk één waarde, omdat elk object zijn eigen header en keyframes meedraagt.
 - Bundel events. Pak meerdere wijzigingen in één bericht in, in plaats van één bericht per wijziging te versturen.
 
@@ -27,7 +27,7 @@ Inactieve gesynchroniseerde objecten kosten bijna niets: er wordt niets verstuur
 | Twee spelers vechten om een waarde | Ze schrijven het allebei. Alleen de eigenaar zou moeten schrijven; neem eigenaarschap wanneer een speler iets doet. |
 | De waarde springt terug nadat je die verandert | Je hebt een gesynchroniseerde variabele geschreven zonder eigenaar van het object te zijn, dus de stroom van de eigenaar heeft die overschreven. |
 | Alles wordt gereset wanneer iemand binnenkomt | Eigenaarschap wordt genomen in `Start` of `OnNetworkReady`, dus de nieuwkomer wordt eigenaar met standaardwaarden. |
-| Event-handlers worden twee keer aangeroepen | Geabonneerd in `Start` en opnieuw in `OnEnable`, of nooit afgemeld in `OnDestroy`. |
+| Event-handlers worden twee keer aangeroepen | Geabonneerd in `Start` en opnieuw in `OnEnable`. In Cilbox verwijdert `-=` geen handler, dus abonneer je één keer in `Start`. |
 
 ## Hulpmiddelen
 

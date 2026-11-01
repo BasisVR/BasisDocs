@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - Les calculs portent sur de simples floats, ce qui coûte beaucoup moins cher dans l'interpréteur que les opérateurs de `Vector3`.
 - `SetPositions(Transform[], float[])` écrit tous les oiseaux en un seul appel natif.
-- Utilisez `BasisNetworkTimeShim.ServerTimeSeconds` au lieu de `Time.time` si la nuée doit être parfaitement alignée entre les joueurs.
+- Si la nuée doit être parfaitement alignée entre les joueurs, remplacez `Time.time * speed` par `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Prenez le reste tant que la valeur est encore un `double` : le temps serveur est bien trop grand pour un `float`, et la nuée resterait immobile.

@@ -37,7 +37,7 @@ public class CourseProgress : MonoBehaviour
         if (reached >= 0)
         {
             Transform point = checkpoints[reached];
-            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation);
         }
         ShowBest();
     }

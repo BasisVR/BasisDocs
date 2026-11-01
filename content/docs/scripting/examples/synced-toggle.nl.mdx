@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## Hoe het werkt
 
 - Indrukken neemt het eigenaarschap, draait de waarde lokaal om zodat degene die drukt het direct ziet, en verstuurt de nieuwe waarde naar alle anderen.
-- `ReliableSequenced` garandeert dat de laatste waarde aankomt en gooit oudere weg. Een schakelaar geeft alleen om de laatste waarde.
+- `ReliableOrdered` zorgt ervoor dat elke wijziging aankomt, in volgorde. Alle scèneobjecten delen één netwerkkanaal, dus met `ReliableSequenced` zou een bericht van een ander object dat kort na dit bericht wordt verstuurd het kunnen vervangen, en zou de schakeling verloren gaan.
 - Een speler die binnenkomt krijgt de huidige waarde alleen van de eigenaar. Omdat het bericht de volledige status is, verwerkt dezelfde `OnMessage` zowel live wijzigingen als het bijwerken.
 
 <Callout type="info">

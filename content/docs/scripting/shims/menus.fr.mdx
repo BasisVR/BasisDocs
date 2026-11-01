@@ -3,11 +3,11 @@ title: Menus
 description: BasisMenuShim, onglets de paramètres et panneaux de menu avec en-têtes, libellés, boutons, interrupteurs, curseurs et listes déroulantes.
 ---
 
-`BasisMenuShim` ajoute de l'UI au menu du joueur. Les deux appels renvoient null en cas de refus. Vérifiez toujours.
+`BasisMenuShim` ajoute de l'UI au menu du joueur. Les deux appels renvoient null en cas de refus. Vérifiez toujours. Pour l'ensemble de ce qui est chargé en même temps, il y a au plus 4 panneaux et 8 onglets de paramètres de contenu, donc un appel peut être refusé parce qu'un autre contenu est passé en premier.
 
 | Appel | Ajoute |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | Un onglet dans les paramètres du joueur (jusqu'à 4 par contenu). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Un onglet dans les paramètres du joueur (jusqu'à 4 par contenu). `AddTab` sur un onglet de paramètres ajoute un autre onglet de paramètres. |
 | `BasisMenuShim.AddPanel(this, title)` | Un panneau avec son propre bouton de menu (un par contenu, jusqu'à 8 onglets). |
 
 ## Construire une page

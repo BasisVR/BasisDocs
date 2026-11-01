@@ -25,7 +25,7 @@ Als een speler die vijf minuten later binnenkomt het moet zien, is het **status*
 ## De bouwstenen
 
 - `BasisNetworkBehaviour` is de basisklasse voor genetwerkte scripts die in de client zijn gecompileerd. Het krijgt een netwerk-ID, een eigenaar en de callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` en `OnPlayerLeft`.
-- `BasisNetworkShim` is hetzelfde voor Cilbox-scripts. Een Cilbox-script kan niet afleiden van `BasisNetworkBehaviour`. Het haalt in plaats daarvan een `BasisNetworkShim` op via `GetComponent` en abonneert zich op de events daarvan.
+- `BasisNetworkShim` is hetzelfde voor Cilbox-scripts. Een Cilbox-script kan niet afleiden van `BasisNetworkBehaviour`. Het haalt in plaats daarvan een `BasisNetworkShim` op via `SafeUtil.MakeNetworkable(this)` en abonneert zich op de events daarvan.
 - `BasisSyncedObject` bouwt voort op `BasisNetworkBehaviour` met een compacte, geïnterpoleerde statusstroom. `BasisSyncedParameters`, `BasisSyncedTransform` en `BasisSyncedRigidbody` zijn kant-en-klare componenten daarbovenop.
 - `BasisPickupSyncNetworking` en `BasisSeatSync` synchroniseren pickups en stoelen zonder code.
 

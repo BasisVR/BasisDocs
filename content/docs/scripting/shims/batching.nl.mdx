@@ -13,7 +13,7 @@ Als een lus in `Update` meer dan een handvol transforms of blendshapes aanraakt,
 
 ## BasisTransformBatchShim
 
-Lees of schrijf posities, rotaties en schalen van veel transforms tegelijk.
+Lees posities, of schrijf posities, rotaties en schalen, van veel transforms tegelijk. Er is geen gebundelde leesactie voor rotaties of schalen.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-Afstanden zijn gekwadrateerd (`radiusSq`). Bits in `skipMask` sluiten bollen uit op index.
+Afstanden zijn gekwadrateerd (`radiusSq`), dus `0.25f` hierboven is een straal van 0,5 m. Bits in `skipMask` sluiten bollen uit op index. `RaySpheresMask` geeft een 32-bits masker terug, dus het test alleen de eerste 32 middelpunten.

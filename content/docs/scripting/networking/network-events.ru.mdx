@@ -28,10 +28,12 @@ SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unr
 | `Unreliable` | Возможно | Нет | Частые обновления, где следующее заменяет текущее. |
 | `Sequenced` | Возможно | Старые отбрасываются | Побеждает последнее значение, например живой ползунок. |
 | `ReliableUnordered` | Да | Нет | Независимые разовые действия. |
-| `ReliableSequenced` | Последнее | Да | Переключатель, где важно только итоговое значение. |
+| `ReliableSequenced` | Последнее | Да | Одно значение, где важно только последнее. Все объекты сцены используют один общий канал, поэтому более новое сообщение от **любого** объекта может заменить ваше. |
 | `ReliableOrdered` | Да | Да | Всё, где важно каждое сообщение и их порядок: счёт, шаги игры. |
 
 Если сомневаетесь, используйте `ReliableOrdered`.
+
+`Unreliable`, `Sequenced` и `ReliableSequenced` не умеют разбивать сообщение на фрагменты, поэтому всё, что больше примерно 988 байт, выбрасывает `TooBigPacketException`. По умолчанию используется `Unreliable`, поэтому для больших полезных нагрузок передавайте `ReliableOrdered` или `ReliableUnordered`.
 
 ## Получение
 
@@ -83,11 +85,11 @@ void ReadHit(byte[] buffer)
 }
 ```
 
-Большие полезные нагрузки (рисунок, планировка уровня) можно сжимать с помощью `BasisCompressionShim.Compress` и `Decompress` (LZ4, до 1 МБ в распакованном виде).
+Большие полезные нагрузки (рисунок, планировка уровня) можно сжимать с помощью `BasisCompressionShim.Compress` и `Decompress` (LZ4, до 1 МБ в распакованном виде). Отправляйте их с `ReliableOrdered` или `ReliableUnordered`, так как остальные методы ограничены примерно 988 байтами.
 
 ## Cilbox [#cilbox]
 
-Скрипт Cilbox не может наследоваться от `BasisNetworkBehaviour`. Вместо этого получите `BasisNetworkShim`; Cilbox добавляет компонент, когда вы вызываете `GetComponent`. Подписывайтесь в `Start` и отписывайтесь в `OnDestroy`.
+Скрипт Cilbox не может наследоваться от `BasisNetworkBehaviour`. Получите `BasisNetworkShim` из `SafeUtil.MakeNetworkable(this)`, который возвращает уже имеющийся на объекте шим или добавляет его. Подписывайтесь один раз в `Start`. В Cilbox `-=` не удаляет обработчики (см. [Правила песочницы](/ru/docs/scripting/sandbox-rules#events-and-delegates)).
 
 ```csharp title="NetworkedCounter.cs (Cilbox)"
 using System;
@@ -107,16 +109,9 @@ public class NetworkedCounter : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
-    }
-
-    void OnDestroy()
-    {
-        if (net == null) return;
-        net.NetworkMessageReceived -= OnMessage;
-        net.PlayerJoined -= OnPlayerJoined;
     }
 
     public void Increment()
@@ -158,7 +153,7 @@ public class NetworkedCounter : MonoBehaviour
 | `OnPlayerLeft(...)` | `PlayerLeft` |
 
 <Callout type="info">
-`SafeUtil.MakeNetworkable(this)` делает то же самое, что и `GetComponent<BasisNetworkShim>()`, и возвращает шим.
+`GetComponent<BasisNetworkShim>()` находит только шим, который вы разместили в редакторе. В отличие от шимов событий, Cilbox не добавляет его за вас. В пропе вручную размещённый шим удаляется при загрузке, потому что список разрешённых компонентов для пропов его не включает, поэтому всегда используйте `MakeNetworkable`.
 </Callout>
 
 ## Одинаковый результат на каждом клиенте без сообщений

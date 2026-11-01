@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - 계산은 일반 float로 실행되며, 인터프리터에서는 `Vector3` 연산자보다 훨씬 저렴합니다.
 - `SetPositions(Transform[], float[])`는 한 번의 네이티브 호출로 모든 새를 씁니다.
-- 플레이어 사이에서 무리가 정확히 일치해야 한다면 `Time.time` 대신 `BasisNetworkTimeShim.ServerTimeSeconds`를 사용하세요.
+- 플레이어 사이에서 무리가 정확히 일치해야 한다면 `Time.time * speed`를 `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`로 바꾸세요. 나머지는 값이 아직 `double`일 때 구해야 합니다. 서버 시간은 `float`에 담기에는 너무 커서, 그렇지 않으면 무리가 멈춰 있게 됩니다.

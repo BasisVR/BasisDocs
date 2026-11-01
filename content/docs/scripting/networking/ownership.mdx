@@ -18,7 +18,7 @@ The server decides ownership and two players can never both own an object.
 | `IsOwnedLocallyOnClient` | Set the moment you **request** ownership, before the server answers. Lets you start driving the object without waiting a round trip. |
 | `CurrentOwnerId` | Player ID of the owner. |
 | `currentOwnedPlayer` | The owner as a `BasisNetworkPlayer`. |
-| `HasNetworkID` | False until the object is network ready. Ownership is meaningless before that. |
+| `HasNetworkID` | False until the object is network ready. `OnOwnershipTransfer` can fire before this while `IsLocalOwner()` still returns false. Repeat ownership logic in `OnNetworkReady`. |
 
 ## Taking ownership
 
@@ -36,7 +36,9 @@ BasisOwnershipResult result = await TakeOwnershipAsync();
 if (result.Success) StartDriving();
 ```
 
-Ask who owns it without taking it:
+Before `HasNetworkID` is true, `TakeOwnershipAsync` reports success straight away without asking the server. Call it from `OnNetworkReady` or later.
+
+Ask who owns it. If nobody owns it yet, the server makes you the owner:
 
 ```csharp title="Native"
 BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
@@ -50,11 +52,14 @@ Take ownership at the moment a player **acts** on the object: grabbing it, press
 ## Reacting to transfers
 
 ```csharp title="Native"
-public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+public override void OnNetworkReady() => UpdateOwner();
+
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
-    bool mine = IsLocalOwner();
-    body.isKinematic = !mine;
-    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+    body.isKinematic = !IsLocalOwner();
+    ownerLabel.text = currentOwnedPlayer != null && currentOwnedPlayer.Player != null ? currentOwnedPlayer.Player.SafeDisplayName : "";
 }
 
 public override void OnServerOwnershipDestroyed()
@@ -66,15 +71,20 @@ public override void OnServerOwnershipDestroyed()
 ```csharp title="Cilbox"
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
+    net.NetworkReady += UpdateOwner;
     net.OwnershipTransfer += OnOwnerChanged;
 }
 
-void OnOwnerChanged(BasisNetworkPlayer newOwner)
+void OnOwnerChanged(BasisNetworkPlayer newOwner) => UpdateOwner();
+
+void UpdateOwner()
 {
     body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
 }
 ```
+
+Both samples run the same check again in `OnNetworkReady`, because the first owner's transfer arrives before the object is network ready.
 
 ## Who owns an object at first
 
@@ -112,4 +122,4 @@ public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMeth
 }
 ```
 
-**Pickups take ownership automatically.** `BasisPickupSyncNetworking` takes ownership when grabbed. Set `CanNetworkSteal` off to stop other players grabbing an item out of someone's hand.
+**Pickups take ownership automatically.** `BasisPickupSyncNetworking` takes ownership when grabbed. With `CanNetworkSteal` off, only the current owner can grab the item. Ownership is not released on drop, so the item stays locked to whoever held it last.

@@ -8,7 +8,7 @@ Transmitir la posición de la plataforma cuesta ancho de banda en cada fotograma
 ## Configuración
 
 1. Cree la plataforma con un collider.
-2. Añada **Elevator** y botones que llamen a `GoTo(floor)`. Establezca las alturas de las plantas en el inspector.
+2. Añada **Elevator**, establezca las alturas de las plantas y asigne un botón de UI de subida y otro de bajada en el inspector.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- Los botones se conectan desde código en `Start`. Un **On Click** del inspector no puede llamar a `GoTo`, porque Cilbox sustituye el script por un proxy.
 - Cada cliente ejecuta el mismo movimiento. Los pasajeros ven una plataforma fluida sin un flujo de posiciones.
 - Quien se une tarde recibe la planta de destino y la altura actual en un único mensaje de 5 bytes.
 - Fíjese en el `new Vector3(...)`: cambiar `p.y` directamente también cambiaría en Cilbox el valor del que se copió (consulte [Reglas del sandbox](/es/docs/scripting/sandbox-rules)).

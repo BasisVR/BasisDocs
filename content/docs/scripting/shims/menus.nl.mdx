@@ -3,11 +3,11 @@ title: Menu's
 description: BasisMenuShim, instellingentabbladen en menupanelen met kopjes, labels, knoppen, toggles, sliders en dropdowns.
 ---
 
-`BasisMenuShim` voegt UI toe aan het eigen menu van de speler. Beide aanroepen geven null terug als ze worden geweigerd. Controleer dat altijd.
+`BasisMenuShim` voegt UI toe aan het eigen menu van de speler. Beide aanroepen geven null terug als ze worden geweigerd. Controleer dat altijd. Over alles wat tegelijk is geladen zijn er maximaal 4 panelen en 8 instellingstabbladen van content, dus een aanroep kan worden geweigerd omdat andere content er eerder was.
 
 | Aanroep | Voegt toe |
 | --- | --- |
-| `BasisMenuShim.AddSettingsTab(this, title)` | Een tabblad in de instellingen van de speler (maximaal 4 per content). |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Een tabblad in de instellingen van de speler (maximaal 4 per content). `AddTab` op een instellingstabblad voegt nog een instellingstabblad toe. |
 | `BasisMenuShim.AddPanel(this, title)` | Een paneel met een eigen menuknop (één per content, maximaal 8 tabbladen). |
 
 ## Een pagina bouwen

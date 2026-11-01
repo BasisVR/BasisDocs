@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - I punti in tempo reale occupano 12 byte ciascuno; l'intero disegno per chi arriva in ritardo è un unico messaggio compresso.
 - Uno snapshot compresso si distingue da un singolo punto per la sua lunghezza. Una lavagna reale aggiungerebbe un byte per il tipo di messaggio.
-- L'ultimo giocatore che ha disegnato possiede la lavagna ed è l'unico che risponde a chi arriva in ritardo.
+- L'ultimo giocatore che ha disegnato possiede la lavagna ed è l'unico che risponde a chi arriva in ritardo. Chiede l'ownership solo quando il giocatore non possiede già la lavagna. Chiederla a ogni punto costerebbe ogni volta un viaggio di andata e ritorno al server.

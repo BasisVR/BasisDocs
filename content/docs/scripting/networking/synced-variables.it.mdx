@@ -139,7 +139,7 @@ In `BasisSyncedParameters` la stessa scelta è l'impostazione **Compression** su
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | Con quale frequenza il proprietario può inviare (20 al secondo). Non viene inviato nulla finché i valori restano invariati. |
 | `KeyframeIntervalSeconds` | 0.5 | Ogni quanto viene inviato uno stato completo per recuperare i delta persi. Si dirada quando inattivo. |
-| `DistanceReduction` | attivo | Invia meno spesso ai giocatori lontani. |
+| `DistanceReduction` | attivo | Invia meno spesso quando il giocatore più vicino è lontano. La frequenza è la stessa per ogni destinatario. |
 | `RelevanceCulling` / `RelevanceRadius` | disattivo / 50 | Non inviare affatto ai giocatori oltre il raggio. |
 | `Extrapolate` | disattivo | Continua a far avanzare brevemente i valori remoti quando i pacchetti sono in ritardo. |
 | `UseDirectP2P` | attivo | Usa una connessione peer diretta quando esiste. |

@@ -28,10 +28,12 @@ Events are **not remembered**. A player who joins after an event was sent never 
 | `Unreliable` | Maybe | No | High rate updates where the next one replaces this one. |
 | `Sequenced` | Maybe | Old ones dropped | Latest value wins, for example a live slider. |
 | `ReliableUnordered` | Yes | No | Independent one off actions. |
-| `ReliableSequenced` | Latest | Yes | A toggle where only the final value matters. |
+| `ReliableSequenced` | Latest | Yes | A single value where only the latest matters. All scene objects share one channel, so a newer message from **any** object can replace yours. |
 | `ReliableOrdered` | Yes | Yes | Anything where every message and its order matters: scores, game steps. |
 
 When unsure, use `ReliableOrdered`.
+
+`Unreliable`, `Sequenced` and `ReliableSequenced` cannot split a message into fragments, so anything over about 988 bytes throws `TooBigPacketException`. `Unreliable` is the default. Pass `ReliableOrdered` or `ReliableUnordered` for larger payloads.
 
 ## Receiving
 
@@ -83,11 +85,11 @@ void ReadHit(byte[] buffer)
 }
 ```
 
-Large payloads (a drawing, a level layout) can be compressed with `BasisCompressionShim.Compress` and `Decompress` (LZ4, up to 1 MB unpacked).
+Large payloads (a drawing, a level layout) can be compressed with `BasisCompressionShim.Compress` and `Decompress` (LZ4, up to 1 MB unpacked). Send them with `ReliableOrdered` or `ReliableUnordered`, since the other methods are limited to about 988 bytes.
 
 ## Cilbox
 
-A Cilbox script cannot derive from `BasisNetworkBehaviour`. Get a `BasisNetworkShim` instead; Cilbox adds the component when you call `GetComponent`. Subscribe in `Start` and unsubscribe in `OnDestroy`.
+A Cilbox script cannot derive from `BasisNetworkBehaviour`. Get a `BasisNetworkShim` from `SafeUtil.MakeNetworkable(this)`, which returns the one on the object or adds it. Subscribe once in `Start`. `-=` does not remove handlers in Cilbox (see [Sandbox Rules](/en/docs/scripting/sandbox-rules#events-and-delegates)).
 
 ```csharp title="NetworkedCounter.cs (Cilbox)"
 using System;
@@ -107,16 +109,9 @@ public class NetworkedCounter : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
-    }
-
-    void OnDestroy()
-    {
-        if (net == null) return;
-        net.NetworkMessageReceived -= OnMessage;
-        net.PlayerJoined -= OnPlayerJoined;
     }
 
     public void Increment()
@@ -158,7 +153,7 @@ The events on `BasisNetworkShim` mirror the overrides on `BasisNetworkBehaviour`
 | `OnPlayerLeft(...)` | `PlayerLeft` |
 
 <Callout type="info">
-`SafeUtil.MakeNetworkable(this)` does the same as `GetComponent<BasisNetworkShim>()` and returns the shim.
+`GetComponent<BasisNetworkShim>()` only finds a shim you placed in the editor. Unlike the event shims, Cilbox does not add it for you. In a prop, a hand-placed one is removed on load because the prop allowlist does not include it. Use `MakeNetworkable` everywhere.
 </Callout>
 
 ## Same result on every client without a message

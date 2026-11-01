@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - Los cálculos se hacen sobre floats simples, lo cual es mucho más barato en el intérprete que los operadores de `Vector3`.
 - `SetPositions(Transform[], float[])` escribe todos los pájaros en una sola llamada nativa.
-- Use `BasisNetworkTimeShim.ServerTimeSeconds` en lugar de `Time.time` si la bandada debe coincidir exactamente entre jugadores.
+- Si la bandada debe coincidir exactamente entre jugadores, sustituya `Time.time * speed` por `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Calcule el resto mientras el valor sigue siendo un `double`: el tiempo del servidor es demasiado grande para un `float`, y la bandada se quedaría quieta.

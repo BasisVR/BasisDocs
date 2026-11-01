@@ -46,4 +46,4 @@ public class Flock : MonoBehaviour
 
 - I calcoli girano su float semplici, il che nell'interprete è molto più economico degli operatori di `Vector3`.
 - `SetPositions(Transform[], float[])` scrive tutti gli uccelli in un'unica chiamata nativa.
-- Usa `BasisNetworkTimeShim.ServerTimeSeconds` invece di `Time.time` se lo stormo deve essere esattamente allineato tra i giocatori.
+- Se lo stormo deve essere esattamente allineato tra i giocatori, sostituisci `Time.time * speed` con `(float)(BasisNetworkTimeShim.ServerTimeSeconds * speed % (2d * Mathf.PI))`. Calcola il resto finché il valore è ancora un `double`: il tempo del server è troppo grande per un `float` e lo stormo resterebbe fermo.

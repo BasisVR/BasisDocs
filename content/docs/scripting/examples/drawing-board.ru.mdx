@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - Точки в реальном времени занимают по 12 байт; весь рисунок для поздно подключившегося это одно сжатое сообщение.
 - Сжатый снимок отличается от одиночной точки по длине. В настоящей доске стоит добавить байт типа сообщения.
-- Доской владеет последний рисовавший игрок, и именно он отвечает поздно подключившимся.
+- Доской владеет последний рисовавший игрок, и именно он отвечает поздно подключившимся. Владение запрашивается, только если игрок ещё не владеет доской. Запрос на каждой точке каждый раз требовал бы обмена с сервером туда и обратно.

@@ -4,6 +4,7 @@ description: Ein Portal, das dem Spieler mit BasisConnectionShim anbietet, zu ei
 ---
 
 ```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
 using Basis.Shims;
 using Cilbox;
 using TMPro;
@@ -13,12 +14,12 @@ using UnityEngine;
 public class ServerPortal : MonoBehaviour
 {
     public string host = "play.example.com";
-    public int port = 4296;
+    public ushort port = 4296;
     public TextMeshPro sign;
 
     void Start()
     {
-        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
         sign.text = host;
     }
 
@@ -33,5 +34,6 @@ public class ServerPortal : MonoBehaviour
 }
 ```
 
+- Fügen Sie dem Portal im Editor einen **Basis Interactable Button** hinzu.
 - Die Anfrage muss von einem eigenen Druck des Spielers kommen, und der Spieler sieht immer die Adresse und bestätigt sie.
 - Übergeben Sie für private Server ein Passwort als viertes Argument.

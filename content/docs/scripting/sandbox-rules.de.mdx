@@ -9,9 +9,10 @@ Cilbox interpretiert den kompilierten Code Ihres Skripts in einer Sandbox. Das m
 
 ## Lebenszyklus
 
-- Kein `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` und keine Coroutines. Verwenden Sie `Update` und [verzögerte Ereignisse](/de/docs/scripting/common-usages#timers-and-delayed-events).
+- An Ihr Skript weitergeleitet werden: `Awake` (läuft direkt vor `Start`), `Start`, `Update`, `FixedUpdate`, `LateUpdate`, `OnEnable`, `OnDisable`, `OnDestroy`, die Trigger- und Collision-Callbacks, `OnRenderObject` und `OnWillRenderObject`.
+- Kein `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` und keine Coroutines. Verwenden Sie `Update` und [verzögerte Ereignisse](/de/docs/scripting/common-usages#timers-and-delayed-events).
 - Das erste `OnEnable` wird verworfen. Initialisieren Sie in `Start` und räumen Sie in `OnDestroy` auf.
-- Erben Sie nicht von `BasisNetworkBehaviour`. Der Proxy, der Ihr Skript ersetzt, ist keines. Verwenden Sie `BasisNetworkShim` (siehe [Netzwerkereignisse](/de/docs/scripting/networking/network-events#cilbox)).
+- Erben Sie nicht von `BasisNetworkBehaviour`. Der Proxy, der Ihr Skript ersetzt, ist keines. Holen Sie sich einen `BasisNetworkShim` über `SafeUtil.MakeNetworkable(this)` (siehe [Netzwerkereignisse](/de/docs/scripting/networking/network-events#cilbox)).
 
 ## Structs teilen sich ihren Wert
 
@@ -34,18 +35,24 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - Ein freigegebener Typ erlaubt alle seine öffentlichen Methoden, sofern dieser Typ nicht zusätzlich eine Methodeneinschränkung hat. Felder sind verboten, sofern sie nicht aufgeführt sind.
 - Parameter-, generische und Rückgabetypen werden ebenfalls geprüft. Ein Aufruf kann die Namensprüfung bestehen und trotzdem wegen eines seiner Typen abgelehnt werden.
-- `this.GetComponent` funktioniert immer. `gameObject.GetComponent` ist eingeschränkt, und die Prop-Sandbox erlaubt nicht, damit die Hierarchie zu durchlaufen.
-- `AddComponent`, `SendMessage` und `BroadcastMessage` sind immer blockiert. Cilbox fügt bei `GetComponent` automatisch einen `BasisNetworkShim` und die Event-Shims für Sie hinzu.
+- `GetComponent` funktioniert in jeder Sandbox. Die Prop-Sandbox blockiert das Durchlaufen der Hierarchie (`GetComponentInChildren`, `GetComponentInParent`, `GetComponents`).
+- Um ein anderes Cilbox-Skript zu finden, rufen Sie `gameObject.GetComponent<OtherScript>()` auf. `this.GetComponent<OtherScript>()` gibt für Cilbox-Typen null zurück. Native Komponenten funktionieren auf beide Arten.
+- `AddComponent`, `SendMessage` und `BroadcastMessage` sind immer blockiert. `GetComponent` fügt die Event-Shims für Sie hinzu, falls sie fehlen, aber nicht `BasisNetworkShim`; verwenden Sie dafür `SafeUtil.MakeNetworkable(this)`.
+- `is`, `as` und Casts prüfen den exakten Typ, bei nativen Typen ebenso wie bei Ihren eigenen Klassen. `component is Collider` ist für einen `BoxCollider` false, prüfen Sie also auf den konkreten Typ.
+- Arrays von Arrays (`float[][]` oder `new[] { a, b }`, wobei `a` und `b` Arrays sind) werden abgelehnt. Verwenden Sie ein flaches Array und berechnen Sie den Index selbst.
+- Ein `typeof(...)`, das einen Typ aus einer anderen Assembly nennt, im statischen Initialisierer einer `[Cilboxable]`-Klasse stoppt die Cilbox-Verarbeitung für die ganze Szene. Im Editor laufen dann alle Skripte nativ ohne erkennbaren Fehler, was jedes andere Sandbox-Problem verdeckt.
 - `Debug.DrawLine` und `Debug.DrawRay` existieren nicht im `Debug` der Sandbox, und ein Verweis darauf verhindert, dass irgendein Skript im Inhalt geladen wird.
 - Konstanten kosten nichts. Eine `const` braucht keinen Whitelist-Eintrag.
 
-## Events und Delegates
+## Events und Delegates [#events-and-delegates]
 
-Jedes Mal, wenn Sie eine Methode als Delegate verwenden, entsteht ein neuer Wrapper, und `-=` entfernt den hinzugefügten möglicherweise nicht. Bei Publishern, die Ihr Skript überdauern, fragen Sie besser einen Wert in `Update` ab, statt sich zu abonnieren.
+Jedes Mal, wenn Sie eine Methode als Delegate verwenden, entsteht ein neuer Wrapper, daher entfernt `-=` den hinzugefügten nie. Abonnieren Sie einmal in `Start`; ein Abonnement in `OnEnable` stapelt jedes Mal einen neuen Handler. Bei Publishern, die Ihr Skript überdauern, fragen Sie besser einen Wert in `Update` ab, statt sich zu abonnieren.
 
 ## Content Police
 
 Jede Komponente in Ihrem Inhalt, die weder `[Cilboxable]` ist noch auf der Allowlist steht, wird **beim Laden zerstört**. Ein Skript zu konvertieren und eine Komponente zu erlauben sind zwei getrennte Dinge. Siehe [Erlaubte Komponenten](/de/docs/scripting/allowed-components).
+
+Skriptfelder werden anhand des Typs des Objekts geprüft, das sie enthalten, nicht anhand des deklarierten Feldtyps. Ein `Behaviour`-Feld, das eine nicht erlaubte Komponente enthält, kommt als null zurück, und ein Array-Feld, dessen Elementtyp nicht erlaubt ist, wirft `Contraband ARRAY` und stoppt dieses Skript.
 
 ## Avatar-Skripte laufen auf dem Rechner jedes Spielers
 

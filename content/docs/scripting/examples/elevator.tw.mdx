@@ -8,7 +8,7 @@ description: 所有人一起搭乘的移動平台。只同步目標樓層；每�
 ## 設定
 
 1. 建立帶有碰撞體的平台。
-2. 加入 **Elevator** 以及呼叫 `GoTo(floor)` 的按鈕。在檢查器中設定各樓層的高度。
+2. 加入 **Elevator**，在檢查器中設定各樓層的高度，並指定一個向上和一個向下的 UI 按鈕。
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- 按鈕是在 `Start` 中透過程式碼連接的。檢查器中的 **On Click** 無法呼叫 `GoTo`，因為 Cilbox 會用代理物件取代該腳本。
 - 每個客戶端都執行相同的運動。乘客看到的是平滑的平台，不需要位置串流。
 - 晚加入者會在一則 5 位元組的訊息中收到目標樓層與目前高度。
 - 請注意 `new Vector3(...)`：在 Cilbox 中直接修改 `p.y` 也會改到它被複製來源的值（請參閱[沙盒規則](/tw/docs/scripting/sandbox-rules)）。

@@ -16,7 +16,7 @@ public class VoiceStage : MonoBehaviour
     public Transform speaker;
     public float range = 60f;
 
-    int route = -1;
+    int route;
     ushort routedPlayer;
     float nextCheck;
 
@@ -31,17 +31,17 @@ public class VoiceStage : MonoBehaviour
             if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
         }
 
-        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        if (onStage != null && route != 0 && onStage.playerId == routedPlayer) return;
         Stop();
-        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        if (onStage == null) return;
         route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
         routedPlayer = onStage.playerId;
     }
 
     void Stop()
     {
-        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-        route = -1;
+        if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = 0;
     }
 
     void OnDestroy() => Stop();
@@ -49,5 +49,5 @@ public class VoiceStage : MonoBehaviour
 ```
 
 - 각 클라이언트가 이미 가진 위치 정보로 목소리를 로컬에서 라우팅합니다. 추가 네트워크 트래픽은 없습니다.
-- 발표자의 동의를 먼저 확인합니다. 음성 라우팅을 허용하지 않은 플레이어의 목소리는 평소처럼 들립니다.
+- `RouteVoiceToObject`는 발표자에게 허락을 요청합니다. 허락하기 전까지, 또는 거절하면 그 목소리는 평소처럼 들립니다.
 - **Basis > Tools > Cilbox Permissions**에서 샌드박스에 `BasisNetworkPlayer.GetAllPlayers`가 허용되어 있는지 확인하세요.

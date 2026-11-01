@@ -8,7 +8,7 @@ description: 모두가 함께 타는 움직이는 플랫폼. 목표 층만 동�
 ## 설정
 
 1. 콜라이더가 있는 플랫폼을 만듭니다.
-2. **Elevator**와 `GoTo(floor)`를 호출하는 버튼을 추가합니다. 인스펙터에서 층 높이를 설정합니다.
+2. **Elevator**를 추가하고, 인스펙터에서 층 높이를 설정한 뒤 위로 가는 UI 버튼과 아래로 가는 UI 버튼을 할당합니다.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- 버튼은 `Start`에서 코드로 연결합니다. Cilbox가 스크립트를 프록시로 바꾸기 때문에 인스펙터의 **On Click**으로는 `GoTo`를 호출할 수 없습니다.
 - 모든 클라이언트가 같은 움직임을 실행합니다. 탑승자는 위치 스트림 없이도 부드럽게 움직이는 플랫폼을 봅니다.
 - 늦게 참여한 플레이어는 목표 층과 현재 높이를 5바이트 메시지 하나로 받습니다.
 - `new Vector3(...)`에 주목하세요. `p.y`를 직접 바꾸면 Cilbox에서는 복사 원본의 값까지 바뀝니다([샌드박스 규칙](/ko/docs/scripting/sandbox-rules) 참고).

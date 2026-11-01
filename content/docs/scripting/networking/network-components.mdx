@@ -9,7 +9,7 @@ Most syncing needs no script. Add one of these components and configure it in th
 
 | Component | Syncs | Uploaded | Notes |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | A held object's pose and who holds it. | Yes | Takes ownership on grab. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Pickup Sync Networking** | A held object's pose and who holds it. | Yes | Takes ownership on grab. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. With `CanNetworkSteal` off, only the current owner can grab it, and it stays owned by whoever held it last. |
 | **Basis Synced Transform** | Position, rotation and scale. Per axis toggles and compression. | Yes | For anything the owner moves from code or animation. |
 | **Basis Seat Sync** | Who sits in a **Basis Seat**. | Yes | Arbitrates when two players try to sit at once. |
 | **Basis Media Player** | Video URL, play state and time. | Yes | See [Media Player](/en/docs/world/media-player). |

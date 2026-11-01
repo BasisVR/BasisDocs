@@ -8,7 +8,7 @@ Trasmettere in streaming la posizione della piattaforma costa banda a ogni frame
 ## Preparazione
 
 1. Crea la piattaforma con un collider.
-2. Aggiungi **Elevator** e dei pulsanti che chiamano `GoTo(floor)`. Imposta le altezze dei piani nell'Inspector.
+2. Aggiungi **Elevator**, imposta le altezze dei piani e assegna un pulsante UI per salire e uno per scendere nell'Inspector.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- I pulsanti vengono collegati dal codice in `Start`. Un **On Click** dell'Inspector non può chiamare `GoTo`, perché Cilbox sostituisce lo script con un proxy.
 - Ogni client esegue lo stesso movimento. Chi viaggia vede una piattaforma fluida senza uno streaming di posizione.
 - Chi arriva in ritardo riceve il piano di destinazione e l'altezza attuale in un unico messaggio da 5 byte.
 - Nota il `new Vector3(...)`: modificare direttamente `p.y` in Cilbox cambierebbe anche il valore da cui è stato copiato (vedi [Regole della sandbox](/it/docs/scripting/sandbox-rules)).

@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - 实时发送的点每个 12 字节；发给后加入者的完整画作是一条压缩消息。
 - 压缩快照与单个点通过长度来区分。实际的画板应再加一个消息类型字节。
-- 最后一位作画的玩家拥有画板，并由这位玩家回应后加入者。
+- 最后一位作画的玩家拥有画板，并由这位玩家回应后加入者。只有当玩家尚未拥有画板时，它才会请求所有权。如果每个点都请求一次，每次都要花费一个服务器往返。

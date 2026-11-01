@@ -9,7 +9,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 | Компонент | Синхронизирует | Загружаемый | Примечания |
 | --- | --- | --- | --- |
-| **Basis Pickup Sync Networking** | Позу удерживаемого объекта и то, кто его держит. | Да | Берёт владение при захвате. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. |
+| **Basis Pickup Sync Networking** | Позу удерживаемого объекта и то, кто его держит. | Да | Берёт владение при захвате. `CanNetworkSteal`, `AttachToHandOnGrab`, `FullRateWhileHeld`, `RemoteDeadReckon`. При выключенном `CanNetworkSteal` схватить его может только текущий владелец, и он остаётся во владении того, кто держал его последним. |
 | **Basis Synced Transform** | Позицию, вращение и масштаб. Переключатели и сжатие по каждой оси. | Да | Для всего, что владелец двигает из кода или анимацией. |
 | **Basis Seat Sync** | Кто сидит в **Basis Seat**. | Да | Разрешает конфликт, когда два игрока пытаются сесть одновременно. |
 | **Basis Media Player** | URL видео, состояние воспроизведения и время. | Да | Смотрите [Медиаплеер](/ru/docs/world/media-player). |

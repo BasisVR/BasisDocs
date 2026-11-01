@@ -21,9 +21,9 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 默认允许的内容
 
-**世界和道具**：渲染（网格、蒙皮网格、线条、拖尾、粒子和 LOD 组件、灯光、反射探针、摄像机）、物理（碰撞体、刚体、关节）、音频源和 Steam Audio、Animator 和动画、UI canvas 和 TextMesh Pro、`VideoPlayer`、VFX Graph 绑定器、AudioLink、Basis 约束、Basis 媒体播放器、镜子、座位、拾取物、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、载具、`BasisPlatformSwitch`，以及 Cilbox 沙盒和 shim。世界还允许导航（`NavMeshAgent`、`NavMeshObstacle`）、后处理体积和虚拟形象展台。
+**世界和道具**：渲染（网格、蒙皮网格、线条、拖尾、粒子和 LOD 组件、灯光、反射探针、摄像机）、物理（碰撞体、刚体、关节）、音频源和 Steam Audio、Animator 和动画、UI canvas 和 TextMesh Pro、`VideoPlayer`、VFX Graph 绑定器、AudioLink、Basis 约束、Basis 媒体播放器、镜子、座位、拾取物、`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisSeatSync`、载具、`BasisPlatformSwitch`，以及 Cilbox 沙盒和 shim。两者都允许导航（`NavMeshAgent`、`NavMeshObstacle`）。世界还允许后处理体积和虚拟形象展台。道具列表不包含 `BasisNetworkShim`。在道具中，请在代码里用 `SafeUtil.MakeNetworkable(this)` 添加它。
 
-**虚拟形象**：渲染、物理、音频、Animator、约束、座位、同步变换、OSC 以及虚拟形象 shim。不允许摄像机、灯光、UI 或视频。
+**虚拟形象**：渲染、物理、音频、Animator、约束、座位、同步变换、OSC、虚拟形象 shim、镜子、拾取物、VFX Graph，以及通过 Basis 媒体播放器、FFUnity 和 AudioLink 的 ytdlp 播放器播放的视频。不允许摄像机、灯光、UI 或 `VideoPlayer`。
 
 **默认不允许**（仅限客户端构建）：`BasisSyncedParameters`、`BasisSyncedRigidbody`、`BasisLocomotionZone`、`BasisRuntimeLoader`，以及您自己的任何 Native `MonoBehaviour`。
 
@@ -33,7 +33,8 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 ## 检查您的内容
 
-- 进入播放模式：Basis 会应用相同的检查，被移除的组件会记录在日志中。
+- Basis Avatar、Prop 和 Scene 检查器中的 **Content Police** 部分会列出将被移除的内容。内容只会在客户端加载时接受检查，而不是在构建时。请在上传前在这里检查。
+- 客户端移除组件时会记录 `Component X is not approved and will be removed`。
 - 在 **Basis > Tools > Cilbox Permissions** 窗口中可以看到每个沙盒允许脚本调用的内容。
 
 ## 添加组件（客户端构建）

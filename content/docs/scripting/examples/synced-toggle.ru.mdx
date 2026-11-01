@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## Как это работает
 
 - Нажатие берёт владение, меняет значение локально, чтобы нажавший сразу увидел результат, и отправляет новое значение всем остальным.
-- `ReliableSequenced` гарантирует, что последнее значение дойдёт, а более старые будут отброшены. Переключателю важно только последнее значение.
+- `ReliableOrdered` гарантирует, что каждое изменение дойдёт, и в правильном порядке. Все объекты сцены используют один общий сетевой канал, поэтому с `ReliableSequenced` сообщение другого объекта, отправленное сразу после этого, могло бы его заменить, и переключение потерялось бы.
 - Подключающийся игрок получает текущее значение только от владельца. Поскольку сообщение содержит всё состояние, один и тот же `OnMessage` обрабатывает и живые изменения, и наверстывание.
 
 <Callout type="info">

@@ -25,7 +25,7 @@ If a player who joins five minutes later needs to see it, it is **state** and be
 ## The building blocks
 
 - `BasisNetworkBehaviour` is the base class for networked scripts compiled into the client. It gets a network ID, an owner, and the callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` and `OnPlayerLeft`.
-- `BasisNetworkShim` is the same thing for Cilbox scripts. A Cilbox script cannot derive from `BasisNetworkBehaviour`; it gets a `BasisNetworkShim` with `GetComponent` and subscribes to its events instead.
+- `BasisNetworkShim` is the same thing for Cilbox scripts. A Cilbox script cannot derive from `BasisNetworkBehaviour`; it gets a `BasisNetworkShim` from `SafeUtil.MakeNetworkable(this)` and subscribes to its events instead.
 - `BasisSyncedObject` builds on `BasisNetworkBehaviour` with a compact, interpolated state stream. `BasisSyncedParameters`, `BasisSyncedTransform` and `BasisSyncedRigidbody` are ready made components on top of it.
 - `BasisPickupSyncNetworking` and `BasisSeatSync` sync pickups and seats with no code.
 

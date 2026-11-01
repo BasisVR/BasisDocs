@@ -13,7 +13,7 @@ If a loop in `Update` touches more than a handful of transforms or blendshapes, 
 
 ## BasisTransformBatchShim
 
-Read or write positions, rotations and scales of many transforms at once.
+Read positions, or write positions, rotations and scales, of many transforms at once. There is no batched read for rotations or scales.
 
 ```csharp
 using Basis.Shims;
@@ -90,4 +90,4 @@ if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.positi
 uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
 ```
 
-Distances are squared (`radiusSq`). `skipMask` bits exclude spheres by index.
+Distances are squared (`radiusSq`): the `0.25f` above is a 0.5 m radius. `skipMask` bits exclude spheres by index. `RaySpheresMask` returns a 32 bit mask and only tests the first 32 centres.

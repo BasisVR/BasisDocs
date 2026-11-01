@@ -8,7 +8,7 @@ description: 全員が一緒に乗れる移動プラットフォーム。同期�
 ## セットアップ
 
 1. コライダー付きのプラットフォームを作成します。
-2. **Elevator**と、`GoTo(floor)`を呼び出すボタンを追加します。各階の高さはインスペクターで設定します。
+2. **Elevator**を追加し、インスペクターで各階の高さを設定して、上り用と下り用のUIボタンを割り当てます。
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- ボタンは`Start`でコードから接続しています。Cilboxはスクリプトをプロキシに置き換えるため、インスペクターの**On Click**からは`GoTo`を呼び出せません。
 - すべてのクライアントが同じ動きを実行します。位置のストリームがなくても、乗っている人には滑らかなプラットフォームが見えます。
 - 途中参加者は、目的の階と現在の高さを5バイトのメッセージ1通で受け取ります。
 - `new Vector3(...)`に注目してください。Cilboxでは`p.y`を直接変更すると、コピー元の値も変わってしまいます（[サンドボックスのルール](/ja/docs/scripting/sandbox-rules)を参照）。

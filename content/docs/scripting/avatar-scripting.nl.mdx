@@ -9,7 +9,7 @@ De Cilbox-scripts van een avatar draaien op **elke client** die de avatar laadt,
 
 ## Het avatar-component
 
-Binnen de avatar-sandbox verwijst `BasisAvatar` naar `BasisAvatarShim`. Schrijf `BasisAvatar` zoals gewoonlijk.
+Binnen de avatar-sandbox verwijst `BasisAvatar` naar `BasisAvatarShim`. Schrijf `BasisAvatar` zoals gewoonlijk. De uitzondering is `PlayspaceInput`, dat alleen bestaat op `BasisAvatarShim` (zie [Spelers](/nl/docs/scripting/shims/players#basisplayspaceinputshim)).
 
 ```csharp title="AvatarGlow.cs (Cilbox, avatar)"
 using Basis.Scripts.BasisSdk;

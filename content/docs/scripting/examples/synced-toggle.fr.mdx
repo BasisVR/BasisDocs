@@ -37,7 +37,7 @@ public class SyncedToggle : MonoBehaviour
         on = startOn;
         Apply();
         button.onClick.AddListener(OnPressed);
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -73,7 +73,7 @@ public class SyncedToggle : MonoBehaviour
     void Send(ushort[] recipients)
     {
         if (!net.HasNetworkID) return;
-        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableOrdered, recipients);
     }
 
     void Apply()
@@ -86,7 +86,7 @@ public class SyncedToggle : MonoBehaviour
 ## Fonctionnement
 
 - Appuyer prend la propriété, inverse la valeur localement pour que la personne qui appuie la voie immédiatement, puis envoie la nouvelle valeur à tous les autres.
-- `ReliableSequenced` garantit que la dernière valeur arrive et abandonne les plus anciennes. Un interrupteur n'a besoin que de la dernière valeur.
+- `ReliableOrdered` garantit que chaque changement arrive, dans l'ordre. Tous les objets de la scène partagent un même canal réseau, donc avec `ReliableSequenced`, un message d'un autre objet envoyé juste après celui-ci pourrait le remplacer, et le basculement serait perdu.
 - Un joueur qui rejoint reçoit la valeur actuelle uniquement de la part du propriétaire. Comme le message contient l'état complet, le même `OnMessage` gère à la fois les changements en direct et la mise à niveau.
 
 <Callout type="info">

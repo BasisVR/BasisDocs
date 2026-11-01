@@ -21,9 +21,9 @@ Elk is een lijst met volledige typenamen. De vergelijking is exact: een subklass
 
 ## Wat standaard is toegestaan
 
-**Werelden en props:** rendering (mesh-, skinned mesh-, line-, trail-, particle- en LOD-componenten, lichten, reflection probes, camera's), physics (colliders, rigidbodies, joints), audio sources en Steam Audio, animators en animatie, UI-canvassen en TextMesh Pro, `VideoPlayer`, VFX Graph-binders, AudioLink, Basis-constraints, de Basis-mediaspeler, spiegel, stoelen, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, voertuigen, `BasisPlatformSwitch`, en de Cilbox-sandbox en shims. Werelden staan ook navigatie toe (`NavMeshAgent`, `NavMeshObstacle`), post processing volumes en het avatar-voetstuk.
+**Werelden en props:** rendering (mesh-, skinned mesh-, line-, trail-, particle- en LOD-componenten, lichten, reflection probes, camera's), physics (colliders, rigidbodies, joints), audio sources en Steam Audio, animators en animatie, UI-canvassen en TextMesh Pro, `VideoPlayer`, VFX Graph-binders, AudioLink, Basis-constraints, de Basis-mediaspeler, spiegel, stoelen, pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, voertuigen, `BasisPlatformSwitch`, en de Cilbox-sandbox en shims. Beide staan navigatie toe (`NavMeshAgent`, `NavMeshObstacle`). Werelden staan ook post processing volumes en het avatar-voetstuk toe. De prop-lijst bevat `BasisNetworkShim` niet. Voeg die in een prop vanuit code toe met `SafeUtil.MakeNetworkable(this)`.
 
-**Avatars:** rendering, physics, audio, animators, constraints, stoelen, gesynchroniseerde transforms, OSC en de avatar-shims. Geen camera's, lichten, UI of video.
+**Avatars:** rendering, physics, audio, animators, constraints, stoelen, gesynchroniseerde transforms, OSC, de avatar-shims, spiegels, pickups, VFX Graph, en video via de Basis-mediaspeler, FFUnity en de ytdlp-speler van AudioLink. Geen camera's, lichten, UI of `VideoPlayer`.
 
 **Standaard niet toegestaan** (alleen client-builds): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` en elke eigen native `MonoBehaviour`.
 
@@ -33,7 +33,8 @@ De selector-assets zijn de bron van waarheid en veranderen tussen versies. Open 
 
 ## Je content controleren
 
-- Ga naar play mode: Basis past dezelfde controle toe, en verwijderde componenten worden gelogd.
+- De sectie **Content Police** in de inspectors van Basis Avatar, Prop en Scene toont wat er verwijderd zou worden. Content wordt pas gecontroleerd wanneer de client die laadt, niet tijdens het builden. Controleer het hier voordat je uploadt.
+- Wanneer de client een component verwijdert, logt die `Component X is not approved and will be removed`.
 - Het venster **Basis > Tools > Cilbox Permissions** toont wat elke sandbox scripts laat aanroepen.
 
 ## Een component toevoegen (client-builds)

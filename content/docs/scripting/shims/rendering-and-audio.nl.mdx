@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-Speelt de stem van een speler af vanuit een object, zoals een podiummicrofoon die luidsprekers voedt. Toestemming wordt eerst gecontroleerd en is niet optioneel.
+Speelt de stem van een speler af vanuit een object, zoals een podiummicrofoon die luidsprekers voedt. `RouteVoiceToObject` vraagt die speler om toestemming en start de route zodra die het toestaat. Het geeft een route-id terug, of 0 als de route niet kon starten, wat ook geldt voor het routeren van de lokale speler. `HasConsent` vertelt je of je hun toestemming al hebt; het vraagt er niet om.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-Voor gesynchroniseerde video gebruik je de component **Basis Media Player** ([Mediaspeler](/nl/docs/world/media-player)). Scripts kunnen de `OutputTexture` ervan lezen; afspeelbediening is geblokkeerd zodat de URL-prompt niet kan worden overgeslagen.
+Voor gesynchroniseerde video gebruik je de component **Basis Media Player** ([Mediaspeler](/nl/docs/world/media-player)). Wereldscripts kunnen de `OutputTexture` ervan lezen, maar afspeelbediening is geblokkeerd zodat de URL-prompt niet kan worden overgeslagen. Propscripts kunnen ook afspelen, status en events gebruiken.

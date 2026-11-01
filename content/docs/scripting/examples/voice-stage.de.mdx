@@ -16,7 +16,7 @@ public class VoiceStage : MonoBehaviour
     public Transform speaker;
     public float range = 60f;
 
-    int route = -1;
+    int route;
     ushort routedPlayer;
     float nextCheck;
 
@@ -31,17 +31,17 @@ public class VoiceStage : MonoBehaviour
             if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
         }
 
-        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        if (onStage != null && route != 0 && onStage.playerId == routedPlayer) return;
         Stop();
-        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        if (onStage == null) return;
         route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
         routedPlayer = onStage.playerId;
     }
 
     void Stop()
     {
-        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-        route = -1;
+        if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = 0;
     }
 
     void OnDestroy() => Stop();
@@ -49,5 +49,5 @@ public class VoiceStage : MonoBehaviour
 ```
 
 - Jeder Client leitet die Stimme lokal anhand der Positionen um, die er bereits hat. Es entsteht kein zusätzlicher Netzwerkverkehr.
-- Die Zustimmung des Sprechers wird zuerst geprüft. Spieler, die das Voice-Routing nicht erlaubt haben, werden normal gehört.
+- `RouteVoiceToObject` bittet den Sprecher um Erlaubnis. Bis er zustimmt, oder wenn er ablehnt, wird er normal gehört.
 - Prüfen Sie unter **Basis > Tools > Cilbox Permissions**, dass `BasisNetworkPlayer.GetAllPlayers` in Ihrer Sandbox erlaubt ist.

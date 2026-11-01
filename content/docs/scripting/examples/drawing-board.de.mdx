@@ -23,7 +23,7 @@ public class DrawingBoard : MonoBehaviour
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
     }
@@ -31,7 +31,7 @@ public class DrawingBoard : MonoBehaviour
     public void AddPoint(Vector3 localPoint)
     {
         if (points.Count >= maxPoints) return;
-        net.TakeOwnership();
+        if (!net.IsOwnedLocallyOnServer) net.TakeOwnership();
         points.Add(localPoint);
         Redraw();
         byte[] one = new byte[12];
@@ -75,4 +75,4 @@ public class DrawingBoard : MonoBehaviour
 
 - Live-Punkte sind jeweils 12 Bytes groß; die gesamte Zeichnung für einen Late Joiner ist eine einzige komprimierte Nachricht.
 - Ein komprimierter Snapshot wird anhand seiner Länge von einem einzelnen Punkt unterschieden. Eine echte Tafel würde ein Byte für den Nachrichtentyp hinzufügen.
-- Der Spieler, der zuletzt gezeichnet hat, besitzt die Tafel und ist derjenige, der Late Joinern antwortet.
+- Der Spieler, der zuletzt gezeichnet hat, besitzt die Tafel und ist derjenige, der Late Joinern antwortet. Das Skript fordert die Ownership nur an, wenn der Spieler die Tafel noch nicht besitzt. Bei jedem Punkt zu fragen würde jedes Mal einen Roundtrip zum Server kosten.

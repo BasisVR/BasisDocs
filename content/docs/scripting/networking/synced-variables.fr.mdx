@@ -139,7 +139,7 @@ Dans `BasisSyncedParameters`, ce même choix correspond au réglage **Compressio
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | Fréquence à laquelle le propriétaire peut envoyer (20 par seconde). Rien n'est envoyé tant que les valeurs ne changent pas. |
 | `KeyframeIntervalSeconds` | 0.5 | Fréquence d'envoi d'un état complet pour corriger les deltas perdus. Ralentit pendant l'inactivité. |
-| `DistanceReduction` | activé | Envoie moins souvent aux joueurs éloignés. |
+| `DistanceReduction` | activé | Envoie moins souvent quand le joueur le plus proche est loin. La fréquence est la même pour chaque destinataire. |
 | `RelevanceCulling` / `RelevanceRadius` | désactivé / 50 | N'envoie rien du tout aux joueurs au-delà du rayon. |
 | `Extrapolate` | désactivé | Continue brièvement à faire avancer les valeurs distantes quand les paquets sont en retard. |
 | `UseDirectP2P` | activé | Utilise une connexion pair à pair directe lorsqu'elle existe. |

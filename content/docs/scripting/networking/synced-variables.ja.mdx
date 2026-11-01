@@ -139,7 +139,7 @@ RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
 | --- | --- | --- |
 | `SendIntervalSeconds` | 0.05 | オーナーが送信できる頻度（1秒あたり20回）。値が変わらない間は何も送信されません。 |
 | `KeyframeIntervalSeconds` | 0.5 | 失われた差分を修復するために完全な状態を送信する頻度。アイドル中は間隔が延びます。 |
-| `DistanceReduction` | オン | 遠くにいるプレイヤーへの送信頻度を下げます。 |
+| `DistanceReduction` | オン | 最も近いプレイヤーが遠くにいるとき、送信頻度を下げます。頻度はすべての受信者で同じです。 |
 | `RelevanceCulling` / `RelevanceRadius` | オフ / 50 | 半径より外のプレイヤーにはまったく送信しません。 |
 | `Extrapolate` | オフ | パケットが遅れたとき、リモートの値を短時間前方に動かし続けます。 |
 | `UseDirectP2P` | オン | 直接のピア接続がある場合はそれを使用します。 |

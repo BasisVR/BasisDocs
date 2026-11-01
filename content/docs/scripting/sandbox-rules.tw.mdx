@@ -9,9 +9,10 @@ Cilbox 會在沙盒內直譯您腳本的編譯後程式碼。大多數 C# 都能
 
 ## 生命週期
 
-- 沒有 `LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision`，也沒有協程。請使用 `Update` 和[延遲事件](/tw/docs/scripting/common-usages#timers-and-delayed-events)。
+- 會轉發給您腳本的有：`Awake`（在 `Start` 之前執行）、`Start`、`Update`、`FixedUpdate`、`LateUpdate`、`OnEnable`、`OnDisable`、`OnDestroy`、觸發器與碰撞回呼、`OnRenderObject` 以及 `OnWillRenderObject`。
+- 沒有 `OnGUI`、`OnAnimatorIK`、`OnParticleCollision`，也沒有協程。請使用 `Update` 和[延遲事件](/tw/docs/scripting/common-usages#timers-and-delayed-events)。
 - 第一次的 `OnEnable` 會被丟棄。請在 `Start` 中設定，在 `OnDestroy` 中清理。
-- 不要繼承 `BasisNetworkBehaviour`。取代您腳本的代理物件並不是它。請使用 `BasisNetworkShim`（請參閱[網路事件](/tw/docs/scripting/networking/network-events#cilbox)）。
+- 不要繼承 `BasisNetworkBehaviour`。取代您腳本的代理物件並不是它。請透過 `SafeUtil.MakeNetworkable(this)` 取得 `BasisNetworkShim`（請參閱[網路事件](/tw/docs/scripting/networking/network-events#cilbox)）。
 
 ## 結構共用同一個值
 
@@ -34,18 +35,24 @@ Vector3 p = new Vector3(target.x, 0f, target.z);
 
 - 白名單中的類型會允許其所有公開方法，除非該類型另外設有方法限制。欄位預設被拒絕，除非有列出。
 - 參數、泛型和回傳類型也會被檢查。一個呼叫可能通過名稱檢查，卻仍因其中某個類型而遭拒絕。
-- `this.GetComponent` 永遠可用。`gameObject.GetComponent` 受到限制，且道具沙盒不允許用它走訪階層。
-- `AddComponent`、`SendMessage` 和 `BroadcastMessage` 永遠被封鎖。Cilbox 會在 `GetComponent` 時為您加入 `BasisNetworkShim` 和事件 shim。
+- `GetComponent` 在每個沙盒中都可用。道具沙盒會封鎖走訪階層（`GetComponentInChildren`、`GetComponentInParent`、`GetComponents`）。
+- 若要尋找另一個 Cilbox 腳本，請呼叫 `gameObject.GetComponent<OtherScript>()`。對於 Cilbox 類型，`this.GetComponent<OtherScript>()` 會回傳 null。Native 元件兩種寫法都可以。
+- `AddComponent`、`SendMessage` 和 `BroadcastMessage` 永遠被封鎖。如果缺少事件 shim，`GetComponent` 會為您加入它們，但不會加入 `BasisNetworkShim`；後者請使用 `SafeUtil.MakeNetworkable(this)`。
+- `is`、`as` 和型別轉換只會比對確切的類型，對 Native 類型和您自己的類別都是如此。對於 `BoxCollider`，`component is Collider` 為 false，因此請檢查具體的類型。
+- 陣列的陣列（`float[][]`，或是 `a` 和 `b` 都是陣列時的 `new[] { a, b }`）會遭拒絕。請使用一維陣列並自行計算索引。
+- 在 `[Cilboxable]` 類別的靜態初始化器中，如果 `typeof(...)` 指名了另一個組件中的類型，就會讓整個場景的 Cilbox 處理停止。在編輯器中，所有腳本隨後都會以 Native 方式執行，且沒有明顯的錯誤，這會掩蓋其他所有沙盒問題。
 - 沙盒的 `Debug` 中沒有 `Debug.DrawLine` 和 `Debug.DrawRay`，只要引用它們，內容中的所有腳本都會無法載入。
 - 常數是免費的。`const` 不需要白名單項目。
 
-## 事件與委派
+## 事件與委派 [#events-and-delegates]
 
-每次將方法作為委派使用時，它都會變成新的包裝器，`-=` 也就可能無法移除您先前加入的那一個。對於壽命比您的腳本更長的發布者，請在 `Update` 中輪詢數值，而不是訂閱。
+每次將方法作為委派使用時，它都會變成新的包裝器，因此 `-=` 永遠無法移除您先前加入的那一個。請在 `Start` 中只訂閱一次；在 `OnEnable` 中訂閱，每次都會疊加一個新的處理常式。對於壽命比您的腳本更長的發布者，請在 `Update` 中輪詢數值，而不是訂閱。
 
 ## Content police
 
 內容中任何既不是 `[Cilboxable]`、也不在允許清單上的元件，都會**在載入時被摧毀**。轉換腳本和允許元件是兩件不同的事。請參閱[允許的元件](/tw/docs/scripting/allowed-components)。
+
+腳本欄位會依其所持有物件的類型進行檢查，而不是欄位宣告的類型。持有不被允許元件的 `Behaviour` 欄位會變成 null，而元素類型不被允許的陣列欄位會擲回 `Contraband ARRAY` 並讓該腳本停止。
 
 ## 虛擬形象腳本會在每個人的電腦上執行
 

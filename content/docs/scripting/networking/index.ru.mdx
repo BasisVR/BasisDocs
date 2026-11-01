@@ -25,7 +25,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 ## Строительные блоки
 
 - `BasisNetworkBehaviour` это базовый класс для сетевых скриптов, скомпилированных в клиент. Он получает сетевой ID, владельца и обратные вызовы `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` и `OnPlayerLeft`.
-- `BasisNetworkShim` то же самое для скриптов Cilbox. Скрипт Cilbox не может наследоваться от `BasisNetworkBehaviour`; вместо этого он получает `BasisNetworkShim` через `GetComponent` и подписывается на его события.
+- `BasisNetworkShim` то же самое для скриптов Cilbox. Скрипт Cilbox не может наследоваться от `BasisNetworkBehaviour`; вместо этого он получает `BasisNetworkShim` из `SafeUtil.MakeNetworkable(this)` и подписывается на его события.
 - `BasisSyncedObject` построен на `BasisNetworkBehaviour` и добавляет компактный интерполируемый поток состояния. `BasisSyncedParameters`, `BasisSyncedTransform` и `BasisSyncedRigidbody` это готовые компоненты поверх него.
 - `BasisPickupSyncNetworking` и `BasisSeatSync` синхронизируют подбираемые предметы и сиденья без кода.
 

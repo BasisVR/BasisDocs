@@ -8,7 +8,7 @@ Streaming the platform's position costs bandwidth every frame. An elevator only 
 ## Setup
 
 1. Create the platform with a collider.
-2. Add **Elevator** and buttons that call `GoTo(floor)`. Set the floor heights in the inspector.
+2. Add **Elevator**, set the floor heights, and assign an up and a down UI button in the inspector.
 
 ```csharp title="Elevator.cs (Cilbox)"
 using Basis;
@@ -17,6 +17,7 @@ using Basis.Scripts.Networking.NetworkedAvatar;
 using Basis.Shims;
 using Cilbox;
 using UnityEngine;
+using UnityEngine.UI;
 
 [Cilboxable]
 public class Elevator : MonoBehaviour
@@ -24,16 +25,22 @@ public class Elevator : MonoBehaviour
     public Transform platform;
     public float[] floorHeights;
     public float speed = 1.5f;
+    public Button upButton, downButton;
 
     BasisNetworkShim net;
     int target;
 
     void Start()
     {
-        net = GetComponent<BasisNetworkShim>();
+        net = SafeUtil.MakeNetworkable(this);
         net.NetworkMessageReceived += OnMessage;
         net.PlayerJoined += OnPlayerJoined;
+        upButton.onClick.AddListener(GoUp);
+        downButton.onClick.AddListener(GoDown);
     }
+
+    void GoUp() => GoTo(Mathf.Min(target + 1, floorHeights.Length - 1));
+    void GoDown() => GoTo(Mathf.Max(target - 1, 0));
 
     public void GoTo(int floor)
     {
@@ -71,6 +78,7 @@ public class Elevator : MonoBehaviour
 }
 ```
 
+- The buttons are wired from code in `Start`. An inspector **On Click** cannot call `GoTo`, because Cilbox replaces the script with a proxy.
 - Every client runs the same motion. Riders see a smooth platform without a position stream.
 - A late joiner gets the target floor and the current height in one 5 byte message.
 - Note the `new Vector3(...)`: changing `p.y` directly would also change the value it was copied from in Cilbox (see [Sandbox Rules](/en/docs/scripting/sandbox-rules)).

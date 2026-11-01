@@ -64,23 +64,22 @@ string[] conditions = BasisPlatformShim.Conditions;
 
 ## BasisVoiceRoutingShim
 
-Spielt die Stimme eines Spielers von einem Objekt ab, etwa von einem Bühnenmikrofon, das Lautsprecher speist. Die Zustimmung wird zuerst geprüft und ist nicht optional.
+Spielt die Stimme eines Spielers von einem Objekt ab, etwa von einem Bühnenmikrofon, das Lautsprecher speist. `RouteVoiceToObject` bittet diesen Spieler um Erlaubnis und startet die Route, sobald er zustimmt. Es gibt eine Routen-ID zurück, oder 0, wenn die Route nicht starten konnte, was auch das Routen des lokalen Spielers einschließt. `HasConsent` sagt Ihnen, ob Sie seine Erlaubnis bereits haben; es fragt nicht nach.
 
 ```csharp
 using Basis.Scripts.Networking.NetworkedAvatar;
 
-int route = -1;
+int route;
 
 public void StartBroadcast(BasisNetworkPlayer speaker)
 {
-    if (!BasisVoiceRoutingShim.HasConsent(speaker)) return;
     route = BasisVoiceRoutingShim.RouteVoiceToObject(speaker, speakerBox, 1f, 40f);
 }
 
 public void StopBroadcast()
 {
-    if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
-    route = -1;
+    if (route != 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+    route = 0;
 }
 ```
 
@@ -96,4 +95,4 @@ video.url = "https://example.com/trailer.mp4";
 video.Play();
 ```
 
-Für synchronisierte Videos verwenden Sie die Komponente **Basis Media Player** ([Media Player](/de/docs/world/media-player)). Skripte können ihre `OutputTexture` lesen; die Wiedergabesteuerung ist gesperrt, damit die URL-Abfrage nicht umgangen werden kann.
+Für synchronisierte Videos verwenden Sie die Komponente **Basis Media Player** ([Media Player](/de/docs/world/media-player)). Welt-Skripte können ihre `OutputTexture` lesen, aber die Wiedergabesteuerung ist gesperrt, damit die URL-Abfrage nicht umgangen werden kann. Prop-Skripte können zusätzlich Wiedergabe, Status und Events verwenden.

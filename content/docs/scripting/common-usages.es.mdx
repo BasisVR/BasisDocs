@@ -38,12 +38,13 @@ El proxy reenvía estos mensajes de Unity a un script Cilbox:
 | Mensaje | Notas |
 | --- | --- |
 | `Awake`, `Start` | Haga la inicialización única en `Start`. |
-| `Update`, `FixedUpdate` | No existe `LateUpdate`. |
+| `Update`, `FixedUpdate`, `LateUpdate` | |
 | `OnEnable`, `OnDisable` | El **primer** `OnEnable` nunca llega. No se suscriba ahí. |
-| `OnDestroy` | Cancele suscripciones y limpie aquí. |
+| `OnDestroy` | Limpie aquí. `-=` no elimina los manejadores de delegados en Cilbox. |
 | `OnTriggerEnter/Stay/Exit`, `OnCollisionEnter/Stay/Exit` | Necesitan un collider, y un Rigidbody en uno de los lados. |
+| `OnRenderObject`, `OnWillRenderObject` | |
 
-No se reenvían: `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni las corrutinas. Use eventos diferidos en lugar de corrutinas (consulte [Temporizadores y eventos diferidos](#timers-and-delayed-events)).
+No se reenvían: `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` ni las corrutinas. Use eventos diferidos en lugar de corrutinas (consulte [Temporizadores y eventos diferidos](#timers-and-delayed-events)).
 
 ```csharp
 // Wrong: the first OnEnable is dropped, so this never registers on the first activation.
@@ -65,7 +66,7 @@ using Basis.Scripts.BasisSdk.Players;
 
 BasisLocalPlayer local = BasisLocalPlayer.Instance;
 local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
-local.Teleport(spawnPoint.position, spawnPoint.rotation, BasisTeleportMode.Instant);
+local.Teleport(spawnPoint.position, spawnPoint.rotation);
 local.SetDefaultMovementSpeed(3.5f);
 local.SetJumpHeight(1.2f);
 local.Immobilize(true);
@@ -128,14 +129,14 @@ BasisVelocityShim.AddVelocity(transform.forward * 6f);
 
 ### Interactuar con objetos
 
-Un **Basis Pickup Interactable** genera eventos cuando un jugador lo agarra y pulsa usar. Para algo que se pulsa pero no se recoge, añada un **Basis Interactable Shim** y gestione `ButtonDown` y `ButtonUp`.
+Un **Basis Pickup Interactable** genera eventos cuando un jugador lo agarra y pulsa usar. Para algo que se pulsa pero no se recoge, añada un **Basis Interactable Button** en el editor y asigne `ButtonDown` (y `ButtonUp` en los mundos). En un prop, el sandbox solo permite asignar `ButtonDown`, así que asígnelo con `=` en lugar de `+=`.
 
 ```csharp title="Cilbox"
-using Basis.Shims;
+using Basis.Scripts.BasisSdk.Interactions;
 
 void Start()
 {
-    GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+    GetComponent<BasisInteractableButton>().ButtonDown = OnPressed;
 }
 
 void OnPressed() { door.SetActive(!door.activeSelf); }
@@ -228,7 +229,7 @@ BasisNetworkShim net;
 
 void Start()
 {
-    net = GetComponent<BasisNetworkShim>();
+    net = SafeUtil.MakeNetworkable(this);
     net.SendCustomEventDelayedSeconds(CloseDoor, 3f);
     net.SendCustomEventDelayedFrames(Rebuild, 2);
 }
@@ -273,11 +274,11 @@ void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
 Sin código: **Basis Platform Switch** (com.basis.examples) activa y desactiva objetos y componentes según la plataforma a partir de una lista de reglas.
 </Callout>
 
-El mismo patrón de activación existe para otros cambios: `BasisLanguageEventShim` llama a `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` llama a `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` y `BasisPermissionEventShim` llama a `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`.
+El mismo patrón de activación existe para otros cambios: `BasisLanguageEventShim` llama a `OnLanguageChanged(string code)`, `BasisGraphicsSettingsEventShim` llama a `OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)` y `BasisPermissionEventShim` llama a `OnLocalPermissionsChanged(bool isAdmin, bool isModerator)`. `BasisPermissionEventShim` vincula los scripts del objeto una sola vez, en la primera activación. Si un segundo script en el mismo objeto necesita los eventos, llame a `GetComponent<BasisPermissionEventShim>().Rebind()`.
 
 ## Cargar imágenes y texto
 
-Las descargas comprueban la dirección antes de enviar cualquier petición y rechazan las redirecciones. Los jugadores aprueban los nuevos hosts la primera vez.
+Las descargas comprueban la dirección antes de enviar cualquier petición, y rechazan las redirecciones y las direcciones que se resuelven en redes privadas, de loopback o link-local. Las descargas de texto piden al jugador que apruebe una dirección en la que aún no ha confiado. Las descargas de imágenes empiezan de inmediato sin preguntar.
 
 ```csharp title="Cilbox"
 using Basis;

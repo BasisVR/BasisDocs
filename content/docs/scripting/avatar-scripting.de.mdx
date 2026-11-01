@@ -9,7 +9,7 @@ Die Cilbox-Skripte eines Avatars laufen auf **jedem Client**, der den Avatar lä
 
 ## Die Avatar-Komponente
 
-In der Avatar-Sandbox wird `BasisAvatar` zu `BasisAvatarShim` aufgelöst. Schreiben Sie `BasisAvatar` wie gewohnt.
+In der Avatar-Sandbox wird `BasisAvatar` zu `BasisAvatarShim` aufgelöst. Schreiben Sie `BasisAvatar` wie gewohnt. Die Ausnahme ist `PlayspaceInput`, das es nur auf `BasisAvatarShim` gibt (siehe [Spieler](/de/docs/scripting/shims/players#basisplayspaceinputshim)).
 
 ```csharp title="AvatarGlow.cs (Cilbox, avatar)"
 using Basis.Scripts.BasisSdk;
