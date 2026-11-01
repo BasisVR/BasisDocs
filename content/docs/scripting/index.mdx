@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 Scripting provides advanced functionality within the Basis framework. This documentation will guide you through creating, building and testing scripts using Unity and the Basis SDK.
 
-Basis also makes use of the `Cilbox` sandboxed CIL emulator Unity package.
+## Native and Cilbox
+
+Basis has two kinds of scripts:
+
+- **Native** scripts are compiled into the application. They have the full Unity and Basis API and native speed, but only exist in clients built with them. Use them when building an app or game on Basis.
+- **Cilbox** scripts are runtime scripts. They ship inside a world, prop or avatar, are marked `[Cilboxable]`, and run in a sandbox on any client that loads the content. Use them for user content.
+
+See [Native and Cilbox](/en/docs/scripting/native-and-cilbox) for the full comparison.
 
 ## Quick Start Guide
 
 <Cards>
   <Card
+    title="Native and Cilbox"
+    description="Compiled into the app versus runtime scripts in content"
+    href="/en/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="Scripting"
     description="How to use Scripts"
     href="/en/docs/scripting/scripting"
+  />
+  <Card
+    title="Common Usages"
+    description="Players, input, UI, timers, loading data, saving and menus"
+    href="/en/docs/scripting/common-usages"
+  />
+  <Card
+    title="Sandbox Rules"
+    description="Cilbox gotchas and performance costs"
+    href="/en/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="Avatar Scripting"
+    description="Scripts on avatars, wearer versus everyone"
+    href="/en/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="Networking"
+    description="Synced variables, network events, ownership and late joiners"
+    href="/en/docs/scripting/networking"
+  />
+  <Card
+    title="Examples"
+    description="Complete scripts for common world and prop features"
+    href="/en/docs/scripting/examples"
   />
   <Card
     title="OSC"

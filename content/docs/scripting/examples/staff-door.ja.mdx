@@ -1,0 +1,33 @@
+---
+title: スタッフ用ドア
+description: 管理者とモデレーターにだけ開くドア。ロールが変わるとライブで更新されます。
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- ドアはスタッフ自身のクライアント上でだけオフになります。他の誰にも影響せず、ネットワーク処理もありません。
+- *他の*スタッフの上にバッジを表示するには、`BasisPermissionsShim.IsModerator(player, callback)`で問い合わせてください。これはサーバーとの往復の通信になります。
+- クライアント側のチェックは、正直なプレイヤーを締め出すためのものです。改造されたクライアントに到達されてはならないものには頼らないでください。

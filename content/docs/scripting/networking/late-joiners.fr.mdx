@@ -1,0 +1,44 @@
+---
+title: Joueurs arrivés en retard
+description: S'assurer que les joueurs qui rejoignent après un changement voient l'état actuel plutôt que les valeurs par défaut de la scène.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un joueur qui rejoint charge la scène exactement telle que vous l'avez construite. Tout ce qui a changé depuis (une porte ouverte, un score qui a augmenté, une lumière éteinte) lui reste invisible tant que personne ne l'en informe.
+
+## Variables synchronisées : géré pour vous
+
+`BasisSyncedObject` et tout ce qui est construit dessus (`BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`, `BasisPickupSyncNetworking`) envoient une keyframe complète chaque fois qu'un joueur rejoint. Si le propriétaire est parti et que personne ne possède encore l'objet, un joueur qui dispose de l'état l'envoie au nouveau venu à sa place. Vous n'avez rien à faire.
+
+## Événements réseau : renvoyer l'état
+
+Les événements ne sont pas mémorisés. Si un événement a modifié un état durable, renvoyez cet **état** (et non l'historique des événements) au nouveau joueur. Seul le propriétaire s'en charge. Le nouveau venu reçoit un seul message au lieu d'un message de chaque joueur.
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+Concevez vos messages de sorte qu'appliquer l'état complet passe par le même code qu'appliquer un changement. L'[exemple d'interrupteur synchronisé](/fr/docs/scripting/examples/synced-toggle) le fait avec un seul octet.
+
+<Callout type="warn">
+Ne rejouez pas une liste d'événements passés à un nouveau venu (par exemple « porte ouverte, porte fermée, porte ouverte »). Envoyez le résultat actuel. Les rejeux deviennent longs, arrivent périmés et cassent dès qu'un événement dépend du timing.
+</Callout>
+
+## Points à vérifier
+
+- Cela fonctionne-t-il si le propriétaire n'est pas le premier joueur ? Testez avec trois clients : A rejoint, B rejoint et modifie quelque chose, A part, C rejoint.
+- Quelque chose est-il défini dans `Start` alors que cela devrait venir du réseau ? Le `Start` d'un joueur arrivé en retard s'exécute avant son premier message réseau. Affichez un état neutre jusqu'à l'arrivée du premier message ou de la première valeur synchronisée.
+- Props persistants. Les props générés depuis une configuration de chargement doivent avoir **Persistent** activé pour exister chez les joueurs qui rejoignent plus tard. Voir [Props de scène](/fr/docs/world/scene-props).

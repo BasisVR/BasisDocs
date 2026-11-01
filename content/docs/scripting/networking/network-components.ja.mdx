@@ -1,0 +1,37 @@
+---
+title: ネットワークコンポーネント
+description: ピックアップ、座席、トランスフォーム、リジッドボディ、パラメーターをコードなしで同期する既製のコンポーネント。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+ほとんどの同期にはスクリプトは不要です。以下のコンポーネントのいずれかを追加し、インスペクターで設定してください。**アップロード**とは、そのコンポーネントがアップロードされるワールドとプロップのデフォルト許可リストに含まれていることを意味します。それ以外はクライアントビルドで、またはコンテンツポリスのセレクターに追加した後に動作します（[許可されたコンポーネント](/ja/docs/scripting/allowed-components)を参照）。
+
+| コンポーネント | 同期するもの | アップロード | 備考 |
+| --- | --- | --- | --- |
+| **Basis Pickup Sync Networking** | 持たれているオブジェクトのポーズと、誰が持っているか。 | 可 | 掴んだときにオーナーシップを取得します。`CanNetworkSteal`、`AttachToHandOnGrab`、`FullRateWhileHeld`、`RemoteDeadReckon`。 |
+| **Basis Synced Transform** | 位置、回転、スケール。軸ごとのトグルと圧縮。 | 可 | オーナーがコードやアニメーションで動かすあらゆるもの向け。 |
+| **Basis Seat Sync** | 誰が**Basis Seat**に座っているか。 | 可 | 2人のプレイヤーが同時に座ろうとしたときに調停します。 |
+| **Basis Media Player** | ビデオのURL、再生状態、時刻。 | 可 | [Media Player](/ja/docs/world/media-player)を参照してください。 |
+| **Basis Synced Rigidbody** | ポーズと、線速度および角速度。 | 不可 | リモートのコピーはキネマティック（`DriveRemoteKinematic`）で、オーナーのシミュレーションに従います。 |
+| **Basis Synced Parameters** | 名前付きの値: float、ベクトル、色、int、bool。 | 不可 | [同期変数](/ja/docs/scripting/networking/synced-variables)を参照してください。 |
+
+<Callout type="warn">
+**Basis Object Sync Networking**は非推奨です。古いコンテンツではピックアップとして引き続き読み込まれますが、新しいコンテンツでは**Basis Pickup Sync Networking**を使用してください。
+</Callout>
+
+## 同期されたピックアップ
+
+1. オブジェクトにコライダーと**Rigidbody**を追加します。
+2. **Basis Pickup Interactable**を追加します。
+3. **Basis Pickup Sync Networking**を追加し、その`BasisPickupInteractable`フィールドにピックアップを割り当てます。
+
+プレイモードでは、インスペクターにライブの同期状態（オーナー、バッファの深さ、帯域幅）が表示されます。
+
+## Cilbox
+
+Cilboxスクリプトは同期コンポーネントを継承できませんが、それらと並べて配置することはできます。オブジェクトの移動は**Basis Synced Transform**に任せ、それ以外のすべてには`BasisNetworkShim`を使用してください。
+
+## アバター
+
+アバターでは`BasisSyncedTransform`、`BasisPickupSyncNetworking`、`BasisNetworkShim`が許可されています。[アバタースクリプティング](/ja/docs/scripting/avatar-scripting)を参照してください。

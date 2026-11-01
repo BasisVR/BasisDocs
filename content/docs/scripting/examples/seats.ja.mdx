@@ -1,0 +1,60 @@
+---
+title: 座席
+description: Basis SeatとBasis Seat Syncを使い、スクリプトからプレイヤーを座らせる方法、回転椅子、降車ボタン。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## セットアップ
+
+1. 椅子に**Basis Seat**を追加し、座る位置を配置します。com.basis.examplesの`SimpleSeat`プレハブは既製のものです。
+2. 誰が座っているかを全員に見えるようにし、2人のプレイヤーが同じ座席に座れないように**Basis Seat Sync**を追加します。
+
+プレイヤーは座席をポイントすることで座れます。以下のスクリプトは、プレイヤーを座らせ、椅子を回転させ、立ち上がれるようにするボタンを追加します。
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| メンバー | 意味 |
+| --- | --- |
+| `IsAvailable` | 誰も座っておらず、プレイヤーの設定で座席が無効になっていない。 |
+| `IsLocalPlayerSeated` | ローカルプレイヤーがこの座席に座っている。 |
+| `HasOccupant` | 誰かがこの座席に座っている。 |
+| `TrySeatLocalPlayer()` | 座席が空いていればローカルプレイヤーを座らせます。 |
+| `SetOccupantYaw(degrees)` | 座席の回転制限の範囲内で、座っているプレイヤーの向きを変えます。 |
+| `EjectLocalPlayer()` | ローカルプレイヤーを立ち上がらせます。 |
+
+<Callout type="info">
+座席が動かすのはローカルプレイヤーだけで、スクリプト自体にネットワーク処理は必要ありません。誰が座っているかは**Basis Seat Sync**が処理します。
+</Callout>

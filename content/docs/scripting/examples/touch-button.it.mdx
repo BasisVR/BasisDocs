@@ -1,0 +1,53 @@
+---
+title: Pulsante a tocco
+description: Un pulsante che si preme toccandolo con una delle due mani, usando le posizioni delle ossa delle mani del giocatore locale.
+---
+
+Puntare funziona ovunque, ma in VR è più naturale premere un pulsante con il dito. Questo script legge le posizioni delle mani del giocatore locale e si attiva quando una di esse si avvicina.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- Le ossa delle punte delle dita richiedono un avatar con le ossa delle dita. Usa `LeftHand` e `RightHand` con un raggio più grande per una pressione con il palmo.
+- `touching` fa sì che si attivi una volta per tocco invece che a ogni frame.
+- Per condividere il risultato, invialo come [evento di rete](/it/docs/scripting/examples/synced-toggle) da `Press`.

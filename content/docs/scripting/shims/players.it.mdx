@@ -1,0 +1,94 @@
+---
+title: Giocatori
+description: BasisPlayersShim, BasisVelocityShim, BasisPlayspaceInputShim, BasisSeatShim, BasisAvatarSwitchShim e BasisPermissionsShim.
+---
+
+## BasisPlayersShim
+
+L'elenco dei giocatori. I giocatori vengono restituiti come `IBasisPlayer` in sola lettura; le pose vengono restituite come vettori copiati.
+
+```csharp
+using Basis.Shims;
+using Basis.Scripts.BasisSdk.Players;
+
+int count = BasisPlayersShim.Count;
+IBasisPlayer me = BasisPlayersShim.Local;
+IBasisPlayer nearest = BasisPlayersShim.Nearest(transform.position);
+IBasisPlayer[] close = BasisPlayersShim.Within(transform.position, 5f);
+IBasisPlayer byId = BasisPlayersShim.GetById(playerId);
+IBasisPlayer byUuid = BasisPlayersShim.GetByUUID(uuid);
+string[] names = BasisPlayersShim.DisplayNames;
+int questPlayers = BasisPlayersShim.CountOnPlatform("Android");
+
+Vector3 position = nearest.GetPosition();
+Vector3 head = nearest.GetBonePosition(HumanBodyBones.Head);
+float scale = nearest.GetAvatarScale();
+bool loaded = nearest.IsAvatarLoaded();
+ushort id = nearest.GetPlayerId();
+```
+
+## BasisVelocityShim
+
+Solo nei mondi. Spinge il giocatore locale nello spazio del mondo, in metri al secondo.
+
+```csharp
+Vector3 v = BasisVelocityShim.Velocity;
+BasisVelocityShim.SetVelocity(new Vector3(v.x, 10f, v.z)); // jump pad
+BasisVelocityShim.AddVelocity(transform.forward * 8f);     // boost
+```
+
+## BasisPlayspaceInputShim
+
+Solo negli avatar. Guida il movimento di chi indossa l'avatar. `Additive` si somma al suo input, `Override` lo sostituisce.
+
+```csharp
+BasisPlayspaceInputShim input = avatar.PlayspaceInput;
+input.SetLocomotion(BasisPlayerInputBlend.Additive, new Vector2(0f, 1f), 0f, false, 0f);
+input.SetVerticalDelta(BasisPlayerInputBlend.Additive, 0.25f);
+input.Clear();
+```
+
+## BasisSeatShim
+
+```csharp
+if (BasisSeatShim.IsSeated)
+{
+    BasisSeat seat = BasisSeatShim.CurrentSeat;
+    seatLabel.text = seat.name;
+}
+```
+
+## BasisAvatarSwitchShim
+
+Ti avvisa quando un giocatore cambia avatar. Segue il giocatore e continua a funzionare tra un cambio e l'altro. Chiama Dispose quando hai finito.
+
+```csharp
+BasisAvatarSwitchShim watcher;
+
+void Start()
+{
+    watcher = new BasisAvatarSwitchShim(BasisPlayersShim.Local);
+    watcher.Switched += OnSwitched;
+}
+
+void OnSwitched() { Debug.Log("new avatar"); }
+
+void OnDestroy() { watcher?.Dispose(); }
+```
+
+## BasisPermissionsShim
+
+I ruoli del giocatore locale rispondono subito. Chiedere di un altro giocatore richiede un viaggio di andata e ritorno e la risposta arriva in una callback.
+
+```csharp
+if (BasisPermissionsShim.LocalIsModerator || BasisPermissionsShim.LocalIsAdmin) staffDoor.SetActive(true);
+
+BasisPermissionsShim.IsModerator(player, isMod =>
+{
+    badge.SetActive(isMod);
+});
+
+bool canKick = BasisPermissionsShim.LocalHasPermission("basis.moderation.kick");
+```
+
+Per i cambiamenti mentre il giocatore è nel mondo, usa `BasisPermissionEventShim` ([Eventi](/it/docs/scripting/shims/events)).

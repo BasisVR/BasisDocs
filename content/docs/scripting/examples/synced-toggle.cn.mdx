@@ -1,0 +1,94 @@
+---
+title: 同步开关
+description: 为每位玩家（包括之后加入的玩家）打开或关闭物体的按钮。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+这是最小的完整联网脚本：一个字节的状态，在变化时发送，并重新发送给任何加入的人。
+
+## 设置
+
+1. 创建一个带有 **Button** 的世界空间 canvas。
+2. 将 **SyncedToggle** 添加到 canvas 上。分配按钮和要开关的物体（一盏灯、一面镜子、一扇门）。
+
+## 脚本
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## 工作原理
+
+- 按下按钮会获取所有权，在本地翻转该值以便按下者立即看到，然后将新值发送给其他所有人。
+- `ReliableSequenced` 保证最新的值一定送达并丢弃较旧的值。开关只关心最新的值。
+- 加入的玩家只会从所有者那里获得当前值。由于消息就是完整的状态，同一个 `OnMessage` 既能处理实时变化，也能处理追赶同步。
+
+<Callout type="info">
+Native 版本：派生自 `BasisNetworkBehaviour`，用 `OnNetworkMessage` 和 `OnPlayerJoined` 重写方法替换 shim 事件，并直接调用 `TakeOwnership()` 和 `SendCustomNetworkEvent`。
+</Callout>

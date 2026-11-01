@@ -1,0 +1,86 @@
+---
+title: 퀴즈
+description: 웹의 JSON 파일에서 문제를 불러오고, 현재 문제를 동기화해 모두가 같은 라운드를 플레이합니다.
+---
+
+## 문제 파일
+
+https로 JSON 파일을 호스팅하세요.
+
+```json
+{ "questions": [
+  { "q": "What does BEE stand for?", "a": ["Basis Encrypted Experience", "Big Event Engine"], "correct": 0 }
+] }
+```
+
+## 스크립트
+
+```csharp title="TriviaQuiz.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class TriviaQuiz : MonoBehaviour
+{
+    public string url = "https://example.github.io/questions.json";
+    public TextMeshPro questionLabel;
+    public TextMeshPro[] answerLabels;
+
+    BasisNetworkShim net;
+    BasisJsonNode questions;
+    int index;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+        questionLabel.text = "Loading...";
+        new BasisStringDownloader().DownloadString(url, result =>
+        {
+            if (!result.Success) { questionLabel.text = "Could not load questions"; return; }
+            BasisJsonNode root = BasisJson.Parse(result.Result);
+            questions = root != null ? root.Get("questions") : null;
+            Show();
+        });
+    }
+
+    public void NextQuestion()
+    {
+        if (questions == null || questions.Count == 0) return;
+        net.TakeOwnership();
+        index = (index + 1) % questions.Count;
+        Show();
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)index }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null || data.Length < 1) return;
+        index = data[0];
+        Show();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) net.SendCustomNetworkEvent(new[] { (byte)index }, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Show()
+    {
+        if (questions == null || index >= questions.Count) return;
+        BasisJsonNode q = questions.Get(index);
+        questionLabel.text = q.GetString("q", "");
+        string[] answers = q.GetStringArray("a");
+        for (int i = 0; i < answerLabels.Length; i++) answerLabels[i].text = i < answers.Length ? answers[i] : "";
+    }
+}
+```
+
+- 동기화되는 것은 **문제 인덱스**뿐입니다. 모든 클라이언트가 같은 파일을 다운로드합니다.
+- 플레이어는 처음 한 번 호스트를 승인합니다. 그 전까지 표지판에는 로딩 중이라고 표시됩니다.

@@ -1,0 +1,110 @@
+---
+title: 網路
+description: BasisNetworkShim、BasisNetworkTimeShim、BasisSharedRandomShim、BasisBinaryShim、BasisCompressionShim 與 BasisConnectionShim。
+---
+
+## BasisNetworkShim
+
+Cilbox 中傳送網路事件與追蹤擁有權的方式。完整指南：[網路](/tw/docs/scripting/networking)。
+
+```csharp
+using Basis;
+using Basis.Network.Core;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.NetworkReady += () => Debug.Log("ready");
+    net.NetworkMessageReceived += OnMessage;
+    net.OwnershipTransfer += owner => Debug.Log($"owner {owner.playerId}");
+    net.PlayerJoined += player => { };
+    net.PlayerLeft += player => { };
+}
+
+void Send() => net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered);
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method) { }
+void Grab() => net.TakeOwnership();
+bool Mine => net.HasNetworkID && net.IsOwnedLocallyOnServer;
+```
+
+延遲回呼取代了協程：`net.SendCustomEventDelayedSeconds(Close, 3f)` 與 `net.SendCustomEventDelayedFrames(Rebuild, 2)`。
+
+## BasisNetworkTimeShim
+
+伺服器的時鐘，在每個客戶端上都相同（誤差在網路延遲以內）。用它來製作所有人同步看到的倒數計時與日夜循環。
+
+```csharp
+using Basis.Shims;
+
+double now = BasisNetworkTimeShim.ServerTimeSeconds;
+System.DateTime utc = BasisNetworkTimeShim.ServerUtcNow;
+
+// A 24 minute day cycle that matches for everyone.
+float dayFraction = (float)(now % 1440.0 / 1440.0);
+sun.transform.rotation = Quaternion.Euler(dayFraction * 360f - 90f, 30f, 0f);
+```
+
+## BasisSharedRandomShim
+
+相同的種子與索引會在每個客戶端上產生相同的數字，完全不需要訊息。
+
+```csharp
+float roll = BasisSharedRandomShim.Value(42, round);
+float speed = BasisSharedRandomShim.Range(42, round, 2f, 5f);
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Index taken from the server clock: a new value every 5 minutes, the same for everyone.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+long window = BasisSharedRandomShim.WindowIndex(300d);
+```
+
+## BasisBinaryShim
+
+只需一次呼叫就能將數字與向量打包進位元組陣列，在沙盒中比 `BinaryWriter` 快得多。每個 `Write` 都會傳回下一個偏移量。
+
+```csharp
+byte[] buffer = new byte[4 + 12 + 16];
+int at = BasisBinaryShim.WriteInt32(buffer, 0, score);
+at = BasisBinaryShim.WriteVector3(buffer, at, transform.position);
+at = BasisBinaryShim.WriteQuaternion(buffer, at, transform.rotation);
+net.SendCustomNetworkEvent(buffer, DeliveryMethod.Sequenced);
+
+// Receiving
+int s = BasisBinaryShim.ReadInt32(data, 0);
+Vector3 p = BasisBinaryShim.ReadVector3(data, 4);
+Quaternion r = BasisBinaryShim.ReadQuaternion(data, 16);
+```
+
+陣列版本（`WriteSingles`、`WriteVector3s`、`ReadQuaternions` 等）可一次打包許多值。
+
+## BasisCompressionShim
+
+LZ4 壓縮。無法縮小的資料只會多花一個位元組。對於任何格式錯誤或解壓後大於 1 MB 的資料，`Decompress` 會傳回 null。
+
+```csharp
+net.SendCustomNetworkEvent(BasisCompressionShim.Compress(drawing), DeliveryMethod.ReliableOrdered);
+
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+{
+    byte[] drawing = BasisCompressionShim.Decompress(data);
+    if (drawing == null) return;
+}
+```
+
+## BasisConnectionShim
+
+請玩家移動到另一台伺服器。必須由玩家自己的按下或點擊來呼叫；玩家會看到位址，並且必須接受。
+
+```csharp
+public void OnPortalPressed()
+{
+    BasisConnectionShim.RequestConnect(this, "play.example.com", 4296, null, result =>
+    {
+        if (result != BasisConnectionResult.Accepted) sign.text = "Maybe next time";
+    });
+}
+
+public void OnLeavePressed() => BasisConnectionShim.RequestDisconnect(this);
+```

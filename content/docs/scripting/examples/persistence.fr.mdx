@@ -1,0 +1,125 @@
+---
+title: Persistance
+description: Sauvegarder la progression d'un joueur entre les visites avec BasisSaveShim, empaqueter des valeurs en octets et partager des sauvegardes entre un monde et ses props.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` stocke des octets sur la machine du joueur, classés sous l'ID de votre contenu. C'est par joueur : chaque joueur a sa propre sauvegarde, et rien n'est synchronisé.
+
+## Script
+
+Ce script sauvegarde les checkpoints atteints par un joueur et son meilleur temps, et le replace à son dernier checkpoint quand il revient.
+
+```csharp title="CourseProgress.cs (Cilbox)"
+using System.IO;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class CourseProgress : MonoBehaviour
+{
+    const string Slot = "progress";
+    const byte Version = 1;
+
+    public Transform[] checkpoints;
+    public TextMeshPro bestLabel;
+
+    int reached = -1;
+    float bestTime = float.MaxValue;
+
+    void Start()
+    {
+        Load();
+        if (reached >= 0)
+        {
+            Transform point = checkpoints[reached];
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+        }
+        ShowBest();
+    }
+
+    public void ReachCheckpoint(int index)
+    {
+        if (index <= reached) return;
+        reached = index;
+        Save();
+    }
+
+    public void FinishRun(float seconds)
+    {
+        if (seconds < bestTime) bestTime = seconds;
+        reached = -1;
+        Save();
+        ShowBest();
+    }
+
+    void Save()
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(Version);
+            writer.Write(reached);
+            writer.Write(bestTime);
+            BasisSaveShim.Save(this, Slot, stream.ToArray());
+        }
+    }
+
+    void Load()
+    {
+        byte[] data = BasisSaveShim.Load(this, Slot);
+        if (data == null || data.Length < 9) return;
+        using (var reader = new BinaryReader(new MemoryStream(data)))
+        {
+            if (reader.ReadByte() != Version) return;
+            reached = Mathf.Clamp(reader.ReadInt32(), -1, checkpoints.Length - 1);
+            bestTime = reader.ReadSingle();
+        }
+    }
+
+    void ShowBest()
+    {
+        bestLabel.text = bestTime < float.MaxValue ? $"Best: {bestTime:F1}s" : "No time yet";
+    }
+}
+```
+
+## Règles
+
+- Le joueur décide. Tant qu'il n'a pas autorisé la sauvegarde pour votre contenu, `Save` renvoie false et `Load` renvoie null. Votre script continue de s'exécuter dans tous les cas. Gérez toujours l'absence de sauvegarde.
+- Versionnez vos données. Écrivez d'abord un octet de version et refusez les données que vous ne comprenez pas. Les joueurs conservent leurs anciennes sauvegardes quand vous mettez à jour votre monde.
+- Validez au chargement. Bornez les indices ; ne supposez jamais que les valeurs sauvegardées correspondent toujours à votre scène.
+- Limites : 256 Ko par emplacement, 32 emplacements et 1 Mo par store, 8 écritures par seconde. Sauvegardez lors d'événements significatifs, pas à chaque frame.
+
+## Partage entre contenus
+
+Nommez un store pour partager des sauvegardes, par exemple entre un monde et les props qu'il fait apparaître :
+
+```csharp
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "my-game", "progress");
+```
+
+Les portées contrôlent qui peut lire et écrire :
+
+| Portée | Lecture | Écriture |
+| --- | --- | --- |
+| `BasisSaveScope.Protected` | Ce contenu uniquement | Ce contenu uniquement |
+| `BasisSaveScope.ReadOnly` | Tout contenu (avec votre Content ID) | Ce contenu uniquement |
+| `BasisSaveScope.Shared` | Tout contenu qui nomme le store | Tout contenu qui nomme le store |
+
+```csharp
+// Publish a badge other worlds can read.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+
+// Another world reads it.
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+<Callout type="warn">
+Les sauvegardes résident sur la machine du joueur et peuvent être modifiées par lui. Ne les utilisez pas pour quoi que ce soit qui doit être fiable, comme les classements.
+</Callout>

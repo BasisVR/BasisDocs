@@ -1,0 +1,75 @@
+---
+title: Sandboxregels
+description: De Cilbox-regels die niet vanzelfsprekend zijn uit de API, en de prestatiekosten om rekening mee te houden.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox interpreteert de gecompileerde code van je script binnen een sandbox. De meeste C# werkt, maar deze regels laten bijna iedereen een keer struikelen.
+
+## Levenscyclus
+
+- Geen `LateUpdate`, `OnGUI`, `OnAnimatorIK`, `OnParticleCollision` of coroutines. Gebruik `Update` en [vertraagde events](/nl/docs/scripting/common-usages#timers-and-delayed-events).
+- De eerste `OnEnable` wordt overgeslagen. Zet dingen op in `Start` en ruim op in `OnDestroy`.
+- Leid niet af van `BasisNetworkBehaviour`. De proxy die je script vervangt, is er geen. Gebruik `BasisNetworkShim` (zie [Netwerkevents](/nl/docs/scripting/networking/network-events#cilbox)).
+
+## Structs delen hun waarde
+
+Een Unity-struct (`Vector3`, `Quaternion`, `Color`) naar een variabele kopiëren deelt dezelfde waarde. Een veld van de kopie wijzigen, wijzigt ook het origineel.
+
+```csharp
+// Wrong: also moves `target`.
+Vector3 p = target;
+p.y = 0f;
+
+// Right: build a new value.
+Vector3 p = new Vector3(target.x, 0f, target.z);
+```
+
+- `points[i].x = 5f` op een array gaat stilletjes verloren. Schrijf `points[i] = new Vector3(5f, points[i].y, points[i].z)`.
+- `points[i] += offset` gooit een exceptie. Schrijf `points[i] = points[i] + offset`.
+- Waarden uit Unity-aanroepen en operatoren (`a + b`, `transform.position`, `new Vector3(...)`) zijn nieuw en veilig om te wijzigen.
+
+## Aanroepen en rechten
+
+- Een toegestaan type staat al zijn publieke methoden toe, tenzij dat type ook een methodebeperking heeft. Velden worden geweigerd, tenzij ze vermeld staan.
+- Parameter-, generieke en returntypes worden ook gecontroleerd. Een aanroep kan de naamcontrole doorstaan en toch worden geweigerd vanwege een van zijn types.
+- `this.GetComponent` werkt altijd. `gameObject.GetComponent` is beperkt, en de prop-sandbox staat niet toe om ermee door de hiërarchie te lopen.
+- `AddComponent`, `SendMessage` en `BroadcastMessage` zijn altijd geblokkeerd. Cilbox voegt een `BasisNetworkShim` en de event-shims voor je toe bij `GetComponent`.
+- `Debug.DrawLine` en `Debug.DrawRay` bestaan niet in de `Debug` van de sandbox, en ernaar verwijzen zorgt ervoor dat geen enkel script in de content meer laadt.
+- Constanten zijn gratis. Een `const` heeft geen whitelist-vermelding nodig.
+
+## Events en delegates
+
+Elke keer dat je een methode als delegate gebruikt, wordt het een nieuwe wrapper, en `-=` verwijdert misschien niet degene die je hebt toegevoegd. Voor publishers die langer leven dan je script, kun je beter een waarde pollen in `Update` in plaats van je te abonneren.
+
+## Content police
+
+Elk component in je content dat niet `[Cilboxable]` is en ook niet op de allowlist staat, wordt **bij het laden vernietigd**. Een script converteren en een component toestaan zijn twee aparte dingen. Zie [Toegestane componenten](/nl/docs/scripting/allowed-components).
+
+## Avatar-scripts draaien op ieders computer
+
+Elk Cilbox-script op een avatar draait op elke client die de avatar laadt, tot aan de behaviour-limiet per avatar. Laat logica die alleen voor de drager is afhangen van `avatar.IsOwnedLocally` (zie [Avatar-scripting](/nl/docs/scripting/avatar-scripting)).
+
+## Prestaties
+
+Geïnterpreteerde code is veel langzamer dan native code. Ruwe kosten op een desktop-pc:
+
+| Bewerking | Kosten |
+| --- | --- |
+| Eenvoudige rekenkunde op floats | ~15 ns |
+| Een van je eigen methoden aanroepen | ~270 ns |
+| Een `Vector3`-operator (`a + b`) | ~1.7 µs, plus garbage |
+| Een Unity-aanroep zoals `Mathf.Sqrt` | ~0.9 µs |
+
+Zo houd je scripts goedkoop:
+
+- Doe werk bij events, niet elk frame. Controleer timers, afstanden en UI een paar keer per seconde.
+- Gebruik liever floats dan `Vector3`-wiskunde in lussen. Vectorwiskunde in een hete lus is ongeveer 100x langzamer dan dezelfde wiskunde op losse floats.
+- Laat componenten het zware werk doen. Animators, particle systems, physics en constraints draaien native.
+- Pool objecten in plaats van bij elk schot `Instantiate` aan te roepen.
+- Bundel transform-werk. `BasisTransformSyncShim` leest, schrijft of kopieert hele arrays van transforms in één aanroep, en `BasisBlendShapeSyncShim` doet hetzelfde voor blendshapes.
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions** toont de whitelist van elke sandbox, en het tabblad **Script Check** scant je scripts op geblokkeerde aanroepen voordat je uploadt.
+</Callout>

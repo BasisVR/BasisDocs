@@ -1,0 +1,67 @@
+---
+title: Minimappa
+description: Una minimappa dall'alto in tempo reale che segue il giocatore locale, usando una telecamera, una render texture e una maschera Graphics.Blit facoltativa.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurazione
+
+1. Crea un asset **Render Texture**, per esempio 512 x 512.
+2. Crea una **Camera** che guarda dritto verso il basso. Imposta **Projection** su Orthographic, **Target Texture** sulla render texture, e una **Culling Mask** che escluda giocatori e UI.
+3. Mostra la render texture su una **Raw Image** in un canvas, oppure su un materiale.
+4. Aggiungi **Minimap** alla telecamera.
+
+## Script
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Mappa rotonda con Graphics.Blit
+
+Per mascherare la texture quadrata in un cerchio, eseguine il blit attraverso un materiale a ogni frame. `Graphics.Blit` è l'unica chiamata di disegno disponibile per gli script Cilbox.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+Una telecamera per la minimappa renderizza la scena una seconda volta. Mantieni piccola la sua render texture, restrittiva la sua culling mask, e disattivala sui livelli di qualità bassi con `BasisGraphicsSettingsShim.QualityTier`.
+</Callout>

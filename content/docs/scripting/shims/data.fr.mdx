@@ -1,0 +1,118 @@
+---
+title: Données
+description: BasisSaveShim, BasisServerStorageShim, BasisJson, BasisWebRequestShim, BasisExternalLinkShim et les téléchargeurs d'images et de texte.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+La sauvegarde, le stockage serveur et les requêtes web demandent d'abord le consentement du joueur. Tant qu'il n'a pas accepté, les appels échouent en douceur (false, null ou `NotAllowed`) et le reste de votre script continue de tourner.
+</Callout>
+
+## BasisSaveShim
+
+Des octets sauvegardés sur la machine du joueur. 256 Ko par emplacement, 32 emplacements et 1 Mo par stockage.
+
+```csharp
+using Basis.Shims;
+
+BasisSaveShim.Save(this, "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Shared between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+
+// Readable by other content.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+Plus : [exemple Persistance](/fr/docs/scripting/examples/persistence).
+
+## BasisServerStorageShim
+
+Des données sauvegardées **sur le serveur**, par joueur. Elles suivent le joueur d'un appareil à l'autre sur ce serveur. Chaque appel est asynchrone. Les clés font jusqu'à 64 octets, les valeurs jusqu'à 64 Ko ; le serveur fixe un total par joueur (16 Ko par défaut).
+
+```csharp
+if (!BasisServerStorageShim.IsAvailable(this)) return;
+
+BasisServerStorageShim.SaveString(this, "best-lap", lap.ToString("F2"), result =>
+{
+    if (result != BasisServerStorageResult.Ok) Debug.LogWarning(result.ToString());
+});
+
+BasisServerStorageShim.LoadString(this, "best-lap", (result, text) =>
+{
+    if (result == BasisServerStorageResult.Ok) bestLabel.text = text;
+});
+
+BasisServerStorageShim.Keys(this, (result, keys) => { });
+BasisServerStorageShim.Usage(this, (result, used, limit) => usage.text = $"{used} / {limit} bytes");
+```
+
+Les résultats incluent `Ok`, `NotFound`, `Full`, `RateLimited`, `NotConnected` et `NotAllowed`. Plus : [exemple Classement serveur](/fr/docs/scripting/examples/server-best-time).
+
+## BasisJson
+
+Analyse le JSON côté hôte ; votre script ne voit que des nœuds et des valeurs simples.
+
+```csharp
+BasisJsonNode root = BasisJson.Parse(text, out string error);
+if (root == null) { Debug.LogWarning(error); return; }
+
+string title = root.GetString("title", "Untitled");
+BasisJsonNode items = root.Get("items");
+for (int i = 0; i < items.Count; i++)
+{
+    BasisJsonNode item = items.Get(i);
+    string name = item.GetString("name", "");
+    int price = item.GetInt("price", 0);
+    string[] tags = item.GetStringArray("tags");
+}
+bool hasKey = root.Has("version");
+string[] keys = root.Keys;
+```
+
+## BasisWebRequestShim
+
+GET et POST HTTPS pour les mondes et les props. 256 Ko en envoi, 4 Mo en réception, 15 secondes, 30 requêtes par minute.
+
+```csharp
+BasisWebRequestShim.GetText(this, "https://api.example.com/scores", (result, status, text) =>
+{
+    if (result == BasisWebResult.Ok) ShowScores(text);
+});
+
+BasisWebRequestShim.PostText(this, "https://api.example.com/scores", "{\"score\":42}", BasisWebRequestShim.Json, (result, status, reply) => { });
+```
+
+## BasisImageDownloader et BasisStringDownloader
+
+```csharp
+using Basis;
+
+new BasisImageDownloader().DownloadImage(url, result =>
+{
+    if (result.Success) poster.material.mainTexture = result.Result;
+});
+
+new BasisStringDownloader().DownloadString(url, result =>
+{
+    if (result.Success) Load(result.Result);
+});
+```
+
+## BasisExternalLinkShim
+
+Ouvre un site web dans le navigateur du joueur après sa confirmation. Appelez-le depuis un appui du joueur lui-même.
+
+```csharp
+public void OnLinkPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) label.text = "example.com";
+    });
+}
+```

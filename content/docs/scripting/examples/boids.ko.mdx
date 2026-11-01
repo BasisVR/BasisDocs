@@ -1,0 +1,49 @@
+---
+title: Boids
+description: BasisTransformBatchShim으로 트랜스폼 쓰기를 일괄 처리해 Cilbox에서 저렴하게 움직이는 새 200마리 무리.
+---
+
+Cilbox 스크립트에서 트랜스폼 200개를 하나씩 움직이면 프레임마다 수백 번의 인터프리터 호출이 듭니다. 일괄 처리하면 한 번으로 줄어듭니다.
+
+```csharp title="Flock.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Flock : MonoBehaviour
+{
+    public Transform[] birds;
+    public float radius = 10f;
+    public float speed = 0.4f;
+
+    float[] xyz;
+    float[] phase;
+
+    void Start()
+    {
+        xyz = new float[birds.Length * 3];
+        phase = new float[birds.Length];
+        for (int i = 0; i < phase.Length; i++) phase[i] = i * 0.37f;
+    }
+
+    void Update()
+    {
+        float t = Time.time * speed;
+        Vector3 c = transform.position;
+        float cx = c.x, cy = c.y, cz = c.z;
+        for (int i = 0; i < birds.Length; i++)
+        {
+            float a = t + phase[i];
+            xyz[i * 3] = cx + Mathf.Cos(a) * radius;
+            xyz[i * 3 + 1] = cy + Mathf.Sin(a * 2f) * 2f;
+            xyz[i * 3 + 2] = cz + Mathf.Sin(a) * radius;
+        }
+        BasisTransformBatchShim.SetPositions(birds, xyz);
+    }
+}
+```
+
+- 계산은 일반 float로 실행되며, 인터프리터에서는 `Vector3` 연산자보다 훨씬 저렴합니다.
+- `SetPositions(Transform[], float[])`는 한 번의 네이티브 호출로 모든 새를 씁니다.
+- 플레이어 사이에서 무리가 정확히 일치해야 한다면 `Time.time` 대신 `BasisNetworkTimeShim.ServerTimeSeconds`를 사용하세요.

@@ -1,0 +1,98 @@
+---
+title: Invoer
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger en BasisUIExtensions.
+---
+
+## BasisControllerInputShim
+
+Alleen werelden. De toestand van VR-controllers. Alles leest als losgelaten zolang het menu open is of de pointer boven UI staat.
+
+```csharp
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return;
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Primary)) Jump();
+    bool holding = BasisControllerInputShim.GetButton(BasisControllerHand.Left, BasisControllerButton.Grip);
+    float trigger = BasisControllerInputShim.GetTrigger(BasisControllerHand.Right);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+Knoppen: `Trigger`, `Grip`, `Primary`, `Secondary`, `StickClick`, `Menu`.
+
+## BasisDesktopInputShim
+
+Muisinvoer op desktop. Knop 0 is links, 1 rechts, 2 midden.
+
+```csharp
+if (!BasisDesktopInputShim.HasMouse) return;
+if (BasisDesktopInputShim.GetMouseButtonDown(0)) Shoot();
+Vector2 delta = BasisDesktopInputShim.MouseDelta;
+float scroll = BasisDesktopInputShim.MouseScroll.y;
+Vector2 screen = BasisDesktopInputShim.MousePosition;
+```
+
+## BasisHapticsShim
+
+Laat de controllers van de lokale speler trillen. Sterkte 0 tot 1, hoogstens 1 seconde, 10 pulsen per seconde per content. Geeft false terug als er niets is afgespeeld.
+
+```csharp
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## BasisInteractableShim
+
+Maakt een object indrukbaar met de pointer, met hover- en drukkleuren op de renderer.
+
+```csharp
+BasisInteractableShim button;
+
+void Start()
+{
+    button = GetComponent<BasisInteractableShim>();
+    button.ButtonDown += OnDown;
+    button.ButtonUp += OnUp;
+}
+
+void OnDown() { lamp.SetActive(!lamp.activeSelf); }
+void OnUp() { }
+```
+
+Inspector-velden: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName` (de kleureigenschap van het materiaal).
+
+## BasisActionTrigger
+
+Stuurt Unity UI-pointer-events door naar je script. Voeg het toe aan een UI-element.
+
+```csharp
+using UnityEngine.EventSystems;
+
+void Start()
+{
+    var trigger = GetComponent<BasisActionTrigger>();
+    trigger.PointerEnter += e => highlight.SetActive(true);
+    trigger.PointerExit += e => highlight.SetActive(false);
+    trigger.PointerClick += e => Select();
+}
+```
+
+Ook beschikbaar: `PointerDown`, `PointerUp`, `BeginDrag`, `Drag`, `EndDrag`, `Drop`, `Scroll`.
+
+## BasisUIExtensions
+
+`Toggle.onValueChanged` verwacht een `UnityAction<bool>`. Met deze extensie kun je in plaats daarvan een methode meegeven.
+
+```csharp
+using Basis.Shims;
+using UnityEngine.UI;
+
+public Toggle musicToggle;
+
+void Start() { musicToggle.AddListener(OnMusic); }
+
+void OnMusic(bool on) { music.SetActive(on); }
+```

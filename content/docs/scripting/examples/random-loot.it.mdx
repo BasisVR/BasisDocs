@@ -1,0 +1,32 @@
+---
+title: Bottino casuale
+description: Un forziere che mostra a ogni giocatore lo stesso oggetto casuale senza inviare messaggi, usando BasisSharedRandomShim.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- Ogni 10 minuti di tempo del server il forziere estrae di nuovo, e ogni client estrae lo stesso oggetto.
+- Dai a ogni forziere il proprio `seed` così non mostrano tutti la stessa cosa.
+- Per un'estrazione attivata da un giocatore, invia solo il numero del round come evento di rete e lascia che ogni client calcoli `RangeInt(seed, round, ...)`.

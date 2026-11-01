@@ -1,0 +1,37 @@
+---
+title: Server-Portal
+description: Ein Portal, das dem Spieler mit BasisConnectionShim anbietet, zu einem anderen Basis-Server zu wechseln.
+---
+
+```csharp title="ServerPortal.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class ServerPortal : MonoBehaviour
+{
+    public string host = "play.example.com";
+    public int port = 4296;
+    public TextMeshPro sign;
+
+    void Start()
+    {
+        GetComponent<BasisInteractableShim>().ButtonDown += OnPressed;
+        sign.text = host;
+    }
+
+    void OnPressed()
+    {
+        BasisConnectionShim.RequestConnect(this, host, port, null, result =>
+        {
+            if (result == BasisConnectionResult.Declined) sign.text = "Maybe next time";
+            else if (result != BasisConnectionResult.Accepted) sign.text = $"Can't connect: {result}";
+        });
+    }
+}
+```
+
+- Die Anfrage muss von einem eigenen Druck des Spielers kommen, und der Spieler sieht immer die Adresse und bestätigt sie.
+- Übergeben Sie für private Server ein Passwort als viertes Argument.

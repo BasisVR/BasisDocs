@@ -1,0 +1,118 @@
+---
+title: 数据
+description: BasisSaveShim、BasisServerStorageShim、BasisJson、BasisWebRequestShim、BasisExternalLinkShim 以及图片和文本下载器。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+<Callout type="info">
+保存、服务器存储和网络请求都会先征求玩家的同意。在玩家同意之前，调用会温和地失败（返回 false、null 或 `NotAllowed`），脚本的其余部分照常运行。
+</Callout>
+
+## BasisSaveShim
+
+保存在玩家电脑上的字节数据。每个槽位 256 KB，每个存储区 32 个槽位、共 1 MB。
+
+```csharp
+using Basis.Shims;
+
+BasisSaveShim.Save(this, "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "progress");
+BasisSaveShim.Delete(this, "progress");
+
+// Shared between a world and its props.
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+
+// Readable by other content.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+更多内容：[持久化示例](/cn/docs/scripting/examples/persistence)。
+
+## BasisServerStorageShim
+
+按玩家保存**在服务器上**的数据。在该服务器上，数据会随玩家在不同设备之间同步。每个调用都是异步的。键最长 64 字节，值最大 64 KB；服务器会设定每位玩家的总上限（默认 16 KB）。
+
+```csharp
+if (!BasisServerStorageShim.IsAvailable(this)) return;
+
+BasisServerStorageShim.SaveString(this, "best-lap", lap.ToString("F2"), result =>
+{
+    if (result != BasisServerStorageResult.Ok) Debug.LogWarning(result.ToString());
+});
+
+BasisServerStorageShim.LoadString(this, "best-lap", (result, text) =>
+{
+    if (result == BasisServerStorageResult.Ok) bestLabel.text = text;
+});
+
+BasisServerStorageShim.Keys(this, (result, keys) => { });
+BasisServerStorageShim.Usage(this, (result, used, limit) => usage.text = $"{used} / {limit} bytes");
+```
+
+结果包括 `Ok`、`NotFound`、`Full`、`RateLimited`、`NotConnected` 和 `NotAllowed`。更多内容：[服务器最佳时间示例](/cn/docs/scripting/examples/server-best-time)。
+
+## BasisJson
+
+在宿主端解析 JSON；您的脚本只会看到节点和普通值。
+
+```csharp
+BasisJsonNode root = BasisJson.Parse(text, out string error);
+if (root == null) { Debug.LogWarning(error); return; }
+
+string title = root.GetString("title", "Untitled");
+BasisJsonNode items = root.Get("items");
+for (int i = 0; i < items.Count; i++)
+{
+    BasisJsonNode item = items.Get(i);
+    string name = item.GetString("name", "");
+    int price = item.GetInt("price", 0);
+    string[] tags = item.GetStringArray("tags");
+}
+bool hasKey = root.Has("version");
+string[] keys = root.Keys;
+```
+
+## BasisWebRequestShim
+
+供世界和道具使用的 HTTPS GET 和 POST。上传 256 KB、下载 4 MB、超时 15 秒、每分钟 30 个请求。
+
+```csharp
+BasisWebRequestShim.GetText(this, "https://api.example.com/scores", (result, status, text) =>
+{
+    if (result == BasisWebResult.Ok) ShowScores(text);
+});
+
+BasisWebRequestShim.PostText(this, "https://api.example.com/scores", "{\"score\":42}", BasisWebRequestShim.Json, (result, status, reply) => { });
+```
+
+## BasisImageDownloader 和 BasisStringDownloader
+
+```csharp
+using Basis;
+
+new BasisImageDownloader().DownloadImage(url, result =>
+{
+    if (result.Success) poster.material.mainTexture = result.Result;
+});
+
+new BasisStringDownloader().DownloadString(url, result =>
+{
+    if (result.Success) Load(result.Result);
+});
+```
+
+## BasisExternalLinkShim
+
+在玩家确认后，于其浏览器中打开网站。请在玩家自己的按下操作中调用。
+
+```csharp
+public void OnLinkPressed()
+{
+    BasisExternalLinkShim.Open(this, "https://example.com", result =>
+    {
+        if (result != BasisExternalLinkResult.Opened) label.text = "example.com";
+    });
+}
+```

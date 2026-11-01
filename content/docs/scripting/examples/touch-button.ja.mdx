@@ -1,0 +1,53 @@
+---
+title: タッチボタン
+description: ローカルプレイヤーの手のボーン位置を使い、どちらかの手で触れると押されるボタン。
+---
+
+ポインターはどこでも使えますが、VRでは指でボタンを押すほうが自然に感じられます。このスクリプトはローカルプレイヤーの手の位置を読み取り、手が近づいたときに発火します。
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- 指先のボーンには、指のボーンを持つアバターが必要です。手のひらで押す場合は、`LeftHand`と`RightHand`をより大きな半径で使用してください。
+- `touching`により、毎フレームではなく1回のタッチにつき1回だけ発火します。
+- 結果を共有するには、`Press`から[ネットワークイベント](/ja/docs/scripting/examples/synced-toggle)として送信してください。

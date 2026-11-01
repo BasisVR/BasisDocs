@@ -1,0 +1,34 @@
+---
+title: Capas
+description: Las capas de Unity que usa Basis, qué significa cada una para las colisiones, la interacción y las cámaras, y cuál usar para sus objetos.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis reserva varias capas de Unity. Úselas como se describe para que los jugadores, los punteros y las cámaras traten sus objetos correctamente.
+
+| # | Capa | Se usa para |
+| --- | --- | --- |
+| 0 | Default | Geometría normal del mundo. Los jugadores colisionan con ella y los punteros la alcanzan. |
+| 1 | TransparentFX | Predeterminada de Unity. |
+| 2 | Ignore Raycast | Los punteros y los raycasts no la alcanzan, y la cámara en tercera persona la ignora. |
+| 3 | Player | El character controller del jugador local. |
+| 4 | Water | Predeterminada de Unity. |
+| 5 | UI | UI en espacio de mundo. |
+| 6 | LocalPlayerAvatar | Su propio avatar. Se oculta de su vista en primera persona cuando es necesario. |
+| 7 | RemotePlayerAvatar | Los avatares de otros jugadores. |
+| 8 | Interactable | Objetos que el puntero debe resaltar y con los que debe interactuar. |
+| 9 | OverlayUI | UI dibujada por encima de todo, como el menú. |
+| 10 | IgnoredByInteractable | Visible y sólida, pero los punteros la atraviesan. Úsela para cristales o volúmenes de trigger delante de botones. |
+| 11 | HandHeldCameraUI | La UI propia de la cámara de mano. |
+
+## Elegir una capa
+
+- Paredes, suelos, props: Default.
+- Volúmenes de trigger y bloqueadores invisibles delante de botones: IgnoredByInteractable. Los punteros los atraviesan y llegan a lo que hay detrás.
+- Colliders decorativos que el puntero nunca debe alcanzar: Ignore Raycast.
+- Nunca coloque sus objetos en Player, LocalPlayerAvatar, RemotePlayerAvatar ni OverlayUI.
+
+<Callout type="info">
+Los nombres y números de las capas provienen del Tag Manager del proyecto Basis. El contenido se compila con ellos. No renombre ni reordene las capas de Basis en su proyecto.
+</Callout>

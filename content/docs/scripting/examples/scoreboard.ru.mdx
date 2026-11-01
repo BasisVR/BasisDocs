@@ -1,0 +1,114 @@
+---
+title: Табло
+description: Сетевой счёт, истинное значение которого хранит один владелец, а другие игроки просят владельца добавить очки.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> Это нативный пример для сборок клиента: `BasisSyncedParameters` и собственные скрипты не входят в список разрешённого по умолчанию для загружаемого контента. Для табло на Cilbox используйте описанный ниже шаблон запроса через владельца с сетевыми событиями, как в примере [Синхронизированный переключатель](/ru/docs/scripting/examples/synced-toggle).
+
+Счёт должен быть точным и должен переживать подключение и уход игроков. Два игрока, добавившие очко в один и тот же момент, должны дать +2, а не +1. Этот пример хранит счёт у одного владельца и направляет каждое изменение через него.
+
+## Настройка
+
+1. Добавьте **Basis Synced Parameters** на объект табло. Добавьте два параметра с именами `Red` и `Blue`, тип **Int**, **Interpolate** выключен.
+2. Добавьте **Scoreboard** на тот же объект и назначьте компонент параметров и две надписи.
+3. Подключите кнопки (или триггеры ворот) к `AddRed`, `AddBlue` и `ResetScores`.
+
+## Скрипт
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` уже получает сетевые сообщения для своего собственного потока. Направляйте запросы в табло с помощью небольшого подкласса:
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+Используйте **ScoreboardParameters** вместо **Basis Synced Parameters** при настройке.
+
+## Как это работает
+
+- Счёт записывает только владелец. Одновременные нажатия применяются у владельца одно за другим.
+- Все остальные отправляют запрос на `CurrentOwnerId` вместо того, чтобы брать владение. Если бы они брали владение, два игрока могли бы каждый добавить 1 к одному и тому же старому значению.
+- Поздно подключившимся ничего дополнительно не нужно. Синхронизированные параметры отправляют новым игрокам ключевой кадр.
+- Если владелец уходит, владение переходит к игроку, дольше всех находящемуся в сети, у которого уже есть текущий счёт.
+
+<Callout type="info">
+Запросы занимают один байт, а пакеты синхронизации всегда больше. Поэтому здесь достаточно проверить длину. Для большего числа типов сообщений начинайте свои сообщения с байта-маркера, с которого поток синхронизации никогда не начинается, или вынесите обработку запросов в отдельный `BasisNetworkBehaviour`.
+</Callout>

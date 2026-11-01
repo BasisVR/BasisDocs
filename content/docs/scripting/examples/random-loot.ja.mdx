@@ -1,0 +1,32 @@
+---
+title: ランダムな戦利品
+description: BasisSharedRandomShimを使い、メッセージを送信せずにすべてのプレイヤーに同じランダムなアイテムを見せる宝箱。
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- サーバー時間で10分ごとに宝箱の中身が再抽選され、すべてのクライアントが同じアイテムを引きます。
+- すべての宝箱が同じものを表示しないように、それぞれに別の`seed`を設定してください。
+- プレイヤーが引き金となる抽選では、ラウンド番号だけをネットワークイベントとして送信し、各クライアントに`RangeInt(seed, round, ...)`を計算させてください。

@@ -1,0 +1,152 @@
+---
+title: 同期変数
+description: BasisSyncedParametersまたは独自のBasisSyncedObjectを使って、値を全員で同じに保つ方法。圧縮と補間を含みます。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+同期変数とは、**オーナー**が書き込み、他のすべてのプレイヤーが読み取る値です。Basisはこれをコンパクトな差分ストリームとして送信し、受信側で連続的な値を補間し、途中参加したプレイヤーには完全なキーフレームを送信します。シリアライズのコードを書く必要はありません。
+
+## 連続的か確実かの選択
+
+| 必要なもの | 使うもの |
+| --- | --- |
+| 頻繁に変わり、滑らかに見えるべき値（レバー、ダイヤル、色のフェード） | **Interpolate**をオンにした同期変数。 |
+| 正確である必要があり、まれにしか変わらない値（スコア、モード、ドアの開閉フラグ） | **Interpolate**をオフにした同期変数（`Int`、`Bool`、`Byte`）、または確実な[ネットワークイベント](/ja/docs/scripting/networking/network-events)。 |
+| 動くオブジェクト | [`BasisSyncedTransform`、`BasisSyncedRigidbody`、または`BasisPickupSyncNetworking`](/ja/docs/scripting/networking/network-components)。 |
+
+<Callout type="warn">
+`BasisSyncedParameters`と独自の`BasisSyncedObject`サブクラスは、アップロードされるコンテンツのデフォルト許可リストに含まれていません。型をコンテンツポリスのセレクターに追加しない限り、`.bee`から取り除かれます。アップロードするCilboxコンテンツでは、値は[ネットワークイベント](/ja/docs/scripting/networking/network-events#cilbox)で、動くオブジェクトは**Basis Synced Transform**で同期してください。
+</Callout>
+
+## BasisSyncedParameters: シリアライズのコード不要
+
+**Basis Synced Parameters**コンポーネントを追加し、インスペクターで名前付きパラメーターを宣言します。それぞれに型（`Float`、`Angle`、`Vector2`、`Vector3`、`Vector4`、`Color`、`Rotation`、`Int`、`UInt`、`UShort`、`Bool`、`Byte`）、**Interpolate**フラグ、軸ごとの圧縮設定があります。
+
+その後、任意のスクリプトから名前で読み書きします。
+
+```csharp title="Lever.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Lever : MonoBehaviour
+{
+    public BasisSyncedParameters sync;
+    public Transform handle;
+    int angleId;
+
+    void Start()
+    {
+        angleId = sync.GetParameterId("Angle");
+    }
+
+    public void SetAngleFromHand(float degrees)
+    {
+        if (!sync.IsLocalOwner()) sync.TakeOwnership();
+        sync.SetAngle(angleId, degrees);
+    }
+
+    void Update()
+    {
+        handle.localRotation = Quaternion.Euler(sync.GetAngle(angleId), 0f, 0f);
+    }
+}
+```
+
+- 書き込みはオーナー上でのみ有効です。書き込む前にオーナーシップを取得してください（[オーナーシップ](/ja/docs/scripting/networking/ownership)を参照）。
+- 読み取りはどこでも動作します。オーナー上では自分が書き込んだ値が、他の全員の上では補間されたネットワーク値が得られます。
+- `GetParameterId`で名前をIDに一度だけ解決し、`Update`ではIDを使うオーバーロードを使って名前の検索を省いてください。
+
+変更コールバックはありません。`Update`で値を読み取り、前回見た値と異なるときに反応してください。
+
+```csharp
+int lastScore = -1;
+
+void Update()
+{
+    int score = sync.GetInt(scoreId);
+    if (score == lastScore) return;
+    lastScore = score;
+    scoreLabel.text = score.ToString();
+}
+```
+
+## 独自のBasisSyncedObject
+
+値が独自のフィールドから来る場合は、`BasisSyncedObject`を継承します。`Awake`でフィールドを登録し、`OnBeforeTransmit`（オーナー）で現在の値を送り込み、リモートクライアントでそれを読み戻します。
+
+```csharp title="Turret.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Turret : BasisSyncedObject
+{
+    public Transform barrel;
+    public float yaw;
+    public bool firing;
+
+    BasisSyncHandle yawHandle, firingHandle;
+
+    protected void Awake()
+    {
+        yawHandle = RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 12));
+        firingHandle = RegisterBool();
+    }
+
+    protected override void OnBeforeTransmit()
+    {
+        LocalSet(yawHandle, yaw);
+        LocalSet(firingHandle, firing);
+    }
+
+    void Update()
+    {
+        if (!IsOwnedLocallyOnClient)
+        {
+            yaw = GetFloat(yawHandle);
+            firing = GetBool(firingHandle);
+        }
+        barrel.localRotation = Quaternion.Euler(0f, yaw, 0f);
+    }
+}
+```
+
+<Callout type="warn">
+すべてのフィールドは、オブジェクトがネットワーク準備完了になる前の`Awake`で登録してください。フィールドの配置がそのまま通信フォーマットになります。すべてのクライアントが同じフィールドを同じ順序で登録する必要があります。
+</Callout>
+
+`OnBeforeTransmit`は毎フレームではなく、パケットを送る予定のフレームでのみ実行されます。処理は値を単純にコピーするだけにしてください。
+
+登録したフィールドからトランスフォームを直接動かすには、`BindTransform(target, position, rotation, scale, worldSpace)`を呼び出します。すると、`Update`を実行しなくても、ドライバーがジョブ内で補間された値を適用します。
+
+## 圧縮
+
+すべてのfloatは、生の値（32ビット）、半精度（16ビット）、または**範囲指定**（最小値、最大値、ビット数）で送信できます。0度から90度の間で動くレバーは、ワールド座標よりもはるかに少ないビット数で済みます。
+
+```csharp
+RegisterFloat(BasisQuantSpec.Ranged(0f, 1f, 8));      // 0..1 in 256 steps
+RegisterFloat(BasisQuantSpec.Half);                    // 16 bit float
+RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
+```
+
+`BasisSyncedParameters`では、同じ選択を各軸の**Compression**設定で行います。
+
+## 送信レートの設定
+
+`BasisSyncedObject`はタイミングの設定をインスペクターに公開しています。
+
+| 設定 | デフォルト | 意味 |
+| --- | --- | --- |
+| `SendIntervalSeconds` | 0.05 | オーナーが送信できる頻度（1秒あたり20回）。値が変わらない間は何も送信されません。 |
+| `KeyframeIntervalSeconds` | 0.5 | 失われた差分を修復するために完全な状態を送信する頻度。アイドル中は間隔が延びます。 |
+| `DistanceReduction` | オン | 遠くにいるプレイヤーへの送信頻度を下げます。 |
+| `RelevanceCulling` / `RelevanceRadius` | オフ / 50 | 半径より外のプレイヤーにはまったく送信しません。 |
+| `Extrapolate` | オフ | パケットが遅れたとき、リモートの値を短時間前方に動かし続けます。 |
+| `UseDirectP2P` | オン | 直接のピア接続がある場合はそれを使用します。 |
+
+## Cilbox
+
+Cilboxスクリプトは`BasisSyncedObject`を継承できません。アップロードするコンテンツでは:
+
+- 動くオブジェクト: **Basis Synced Transform**または**Basis Pickup Sync Networking**コンポーネントを追加します。スクリプトは不要です。
+- 値: オーナー上に保持して[ネットワークイベント](/ja/docs/scripting/networking/network-events#cilbox)として送信し、[途中参加者](/ja/docs/scripting/networking/late-joiners)には再送します。[同期トグル](/ja/docs/scripting/examples/synced-toggle)のサンプルがそのテンプレートです。

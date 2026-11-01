@@ -1,0 +1,80 @@
+---
+title: 設定分頁
+description: 使用 BasisMenuShim 將世界選項加入玩家的設定選單，並使用 BasisSaveShim 記住它們。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisMenuShim` 會在您的內容載入期間，於玩家的設定中加入一個分頁。世界卸載時該分頁就會消失。
+
+## 腳本
+
+```csharp title="WorldOptions.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class WorldOptions : MonoBehaviour
+{
+    public GameObject rain;
+    public GameObject ambientMusic;
+    public Light sun;
+
+    BasisMenuPage page;
+    BasisMenuItem brightness;
+
+    void Start()
+    {
+        page = BasisMenuShim.AddSettingsTab(this, "Island");
+        if (page == null) return;
+
+        page.AddHeader("Weather");
+        page.AddToggle("Rain", rain.activeSelf, on => rain.SetActive(on));
+        page.AddDropdown("Time of day", new[] { "Morning", "Noon", "Dusk" }, 1, OnTimeOfDay);
+
+        page.AddHeader("Audio");
+        page.AddToggle("Music", ambientMusic.activeSelf, on => ambientMusic.SetActive(on));
+
+        page.AddHeader("Lighting");
+        brightness = page.AddSlider("Sun brightness", 0, 2, 1, false, value => sun.intensity = value);
+        page.AddButton("Reset", OnReset);
+    }
+
+    void OnTimeOfDay(int index)
+    {
+        float angle = index == 0 ? 20f : index == 1 ? 70f : 170f;
+        sun.transform.rotation = Quaternion.Euler(angle, -30f, 0f);
+    }
+
+    void OnReset()
+    {
+        brightness.SetValue(1);
+    }
+}
+```
+
+## 完整面板
+
+若是遊戲選單而非選項，請加入面板。它會在選單中擁有自己的按鈕，並且可以有多個分頁。
+
+```csharp title="Cilbox"
+BasisMenuPage game = BasisMenuShim.AddPanel(this, "Arcade");
+if (game == null) return;
+BasisMenuItem score = game.AddLabel("Score: 0");
+game.AddButton("New game", OnNewGame);
+BasisMenuPage rules = game.AddTab("Rules");
+rules.AddLabel("Hit every target before the timer runs out.");
+```
+
+`game.Open()` 只在玩家於您的內容中按下某樣東西後的 5 秒內有效。內容無法自行彈出選單。
+
+## 規則
+
+- 誰可以加入分頁：世界、本機玩家生成的道具，以及本機玩家自己的虛擬形象。`null` 表示遭拒絕；請檢查它。
+- 選項是本機的。每位玩家各自設定。只有當某個選擇應該為所有人改變世界時才需要同步。
+- 如果選擇應該保留到下次造訪，請用 [BasisSaveShim](/tw/docs/scripting/examples/persistence) 記住它們。
+
+<Callout type="info">
+在虛擬形象上，請在 `isOwner` 為 true 時從 `BasisAvatarShim.OnAvatarReady` 加入分頁。這樣只有穿戴者會看到它。
+</Callout>

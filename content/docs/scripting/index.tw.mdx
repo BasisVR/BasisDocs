@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 腳本在 Basis 框架內提供進階功能。本文件將引導您使用 Unity 和 Basis SDK 建立、編譯和測試腳本。
 
-Basis 也使用了 `Cilbox` 沙盒 CIL 模擬器 Unity 套件。
+## Native 與 Cilbox
+
+Basis 有兩種腳本：
+
+- **Native** 腳本會編譯進應用程式中。它們擁有完整的 Unity 與 Basis API 以及原生速度，但只存在於包含它們一起建置的客戶端中。在 Basis 上開發應用程式或遊戲時請使用它們。
+- **Cilbox** 腳本是執行階段腳本。它們隨世界、道具或虛擬形象一起發佈，標記為 `[Cilboxable]`，並在任何載入該內容的客戶端上於沙盒中執行。製作使用者內容時請使用它們。
+
+完整比較請參閱 [Native 與 Cilbox](/tw/docs/scripting/native-and-cilbox)。
 
 ## 快速入門指南
 
 <Cards>
   <Card
+    title="Native 與 Cilbox"
+    description="編譯進應用程式與內容中的執行階段腳本之比較"
+    href="/tw/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="腳本"
     description="如何使用腳本"
     href="/tw/docs/scripting/scripting"
+  />
+  <Card
+    title="常見用法"
+    description="玩家、輸入、UI、計時器、載入資料、儲存與選單"
+    href="/tw/docs/scripting/common-usages"
+  />
+  <Card
+    title="沙盒規則"
+    description="Cilbox 的注意事項與效能成本"
+    href="/tw/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="虛擬形象腳本"
+    description="虛擬形象上的腳本，穿戴者與所有人的差異"
+    href="/tw/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="網路"
+    description="同步變數、網路事件、擁有權與晚加入者"
+    href="/tw/docs/scripting/networking"
+  />
+  <Card
+    title="範例"
+    description="常見世界與道具功能的完整腳本"
+    href="/tw/docs/scripting/examples"
   />
   <Card
     title="OSC"

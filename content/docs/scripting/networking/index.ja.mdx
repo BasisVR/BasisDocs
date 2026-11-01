@@ -1,0 +1,91 @@
+---
+title: ネットワーク
+description: Basisのワールドやプロップをすべてのプレイヤーで同じように動作させる方法。同期変数、ネットワークイベント、オーナーシップ、途中参加者。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+スクリプトが行うことはすべて、1人のプレイヤーのマシン上で実行されます。プレイヤーがドアを開けても、ネットワークに伝えるまで他の誰にも見えません。
+
+トランスポート自体の仕組み（サーバーリレー、配信方式、距離に応じた更新レート）については[Network Syncing](/ja/docs/technical/network-syncing)を参照してください。
+
+## 4つの考え方
+
+| 考え方 | 内容 | 用途 |
+| --- | --- | --- |
+| **同期変数** | オーナーが書き込み、他の全員が読み取る値。継続的に送信され、補間されます。 | 位置、レバーの角度、スコアなど、現在の状態を持つもの。 |
+| **ネットワークイベント** | バイト列のペイロードを持つ単発のメッセージ。 | 「弾が発射された」「ラウンドが始まった」「この音を鳴らす」。 |
+| **オーナーシップ** | ネットワーク化された各オブジェクトはちょうど1人のプレイヤーが所有し、そのプレイヤーだけが書き込めます。 | 誰がピックアップを動かすか、誰がスコアを管理するかを決める。 |
+| **途中参加者** | 状況が変わった後に到着したプレイヤー。 | シーンのデフォルトではなく、現在の状態が見えるようにする。 |
+
+<Callout type="info">
+5分後に参加したプレイヤーにも見える必要があるなら、それは**状態**であり、同期変数に入れる（またはそのプレイヤーに再送する）べきです。それが起きた瞬間にだけ意味があるなら、それは**イベント**です。
+</Callout>
+
+## 構成要素
+
+- `BasisNetworkBehaviour`は、クライアントにコンパイルされるネットワーク対応スクリプトの基底クラスです。ネットワークID、オーナー、そしてコールバック`OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined`、`OnPlayerLeft`を持ちます。
+- `BasisNetworkShim`はCilboxスクリプト向けの同等のものです。Cilboxスクリプトは`BasisNetworkBehaviour`を継承できません。代わりに`GetComponent`で`BasisNetworkShim`を取得し、そのイベントを購読します。
+- `BasisSyncedObject`は`BasisNetworkBehaviour`を基に、コンパクトで補間される状態ストリームを提供します。`BasisSyncedParameters`、`BasisSyncedTransform`、`BasisSyncedRigidbody`はその上に作られた既製のコンポーネントです。
+- `BasisPickupSyncNetworking`と`BasisSeatSync`は、コードなしでピックアップと座席を同期します。
+
+## ネットワーク対応スクリプトを最初から最後まで
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+このようなNativeスクリプトはクライアントビルドで動作します。アップロードするコンテンツでは、同じものをCilboxスクリプトとして書いてください（下記参照）。
+
+このスクリプトが示していること:
+
+1. ボタンを押したプレイヤーがオーナーシップを取得し、唯一の信頼できる情報源になります。
+2. 新しい値は**イベントとして**他の全員に送信されます（`Recipients = null`は自分以外の全員を意味します）。
+3. 誰かが参加すると、**オーナーだけが**現在の値をその人に送信します。
+
+同じスクリプトのCilbox版は[ネットワークイベント](/ja/docs/scripting/networking/network-events#cilbox)にあります。
+
+## このガイドのページ
+
+- [ネットワークイベント](/ja/docs/scripting/networking/network-events): メッセージの送信、受信者、配信方式、ペイロード。
+- [同期変数](/ja/docs/scripting/networking/synced-variables): `BasisSyncedParameters`と独自の`BasisSyncedObject`フィールド。
+- [オーナーシップ](/ja/docs/scripting/networking/ownership): 誰が何を所有するか、オーナーシップの取得と確認、オーナーが退出したときに起きること。
+- [途中参加者](/ja/docs/scripting/networking/late-joiners): 新しいプレイヤーを最新の状態にする方法。
+- [ネットワークコンポーネント](/ja/docs/scripting/networking/network-components): コード不要の同期コンポーネント。
+- [パフォーマンスとデバッグ](/ja/docs/scripting/networking/performance): 帯域幅、送信レート、同期バグの見つけ方。

@@ -1,0 +1,152 @@
+---
+title: 동기화 변수
+description: BasisSyncedParameters 또는 커스텀 BasisSyncedObject로 모든 사람에게 같은 값을 유지하는 방법. 압축과 보간 포함.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+동기화 변수는 **소유자**가 쓰고 다른 모든 플레이어가 읽는 값입니다. Basis는 이를 압축된 델타 스트림으로 보내고, 수신 측에서 연속적인 값을 보간하며, 늦게 참여한 플레이어에게는 전체 키프레임을 보냅니다. 직렬화 코드를 작성할 필요가 없습니다.
+
+## 연속형과 신뢰형 선택
+
+| 필요한 것 | 사용할 것 |
+| --- | --- |
+| 자주 바뀌고 부드럽게 보여야 하는 값(레버, 다이얼, 색상 페이드) | **Interpolate**를 켠 동기화 변수. |
+| 정확해야 하고 드물게 바뀌는 값(점수, 모드, 문 열림 플래그) | **Interpolate**를 끈 동기화 변수(`Int`, `Bool`, `Byte`) 또는 신뢰형 [네트워크 이벤트](/ko/docs/scripting/networking/network-events). |
+| 움직이는 오브젝트 | [`BasisSyncedTransform`, `BasisSyncedRigidbody` 또는 `BasisPickupSyncNetworking`](/ko/docs/scripting/networking/network-components). |
+
+<Callout type="warn">
+`BasisSyncedParameters`와 직접 만든 `BasisSyncedObject` 하위 클래스는 업로드 콘텐츠의 기본 허용 목록에 없습니다. 해당 타입을 콘텐츠 폴리스 셀렉터에 추가하지 않으면 `.bee`에서 제거됩니다. 업로드되는 Cilbox 콘텐츠에서는 값은 [네트워크 이벤트](/ko/docs/scripting/networking/network-events#cilbox)로, 움직이는 오브젝트는 **Basis Synced Transform**으로 동기화하세요.
+</Callout>
+
+## BasisSyncedParameters: 직렬화 코드 없음
+
+**Basis Synced Parameters** 컴포넌트를 추가하고 인스펙터에서 이름이 지정된 파라미터를 선언하세요. 각 파라미터에는 타입(`Float`, `Angle`, `Vector2`, `Vector3`, `Vector4`, `Color`, `Rotation`, `Int`, `UInt`, `UShort`, `Bool`, `Byte`), **Interpolate** 플래그, 축별 압축 설정이 있습니다.
+
+그런 다음 어떤 스크립트에서든 이름으로 읽고 쓸 수 있습니다.
+
+```csharp title="Lever.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Lever : MonoBehaviour
+{
+    public BasisSyncedParameters sync;
+    public Transform handle;
+    int angleId;
+
+    void Start()
+    {
+        angleId = sync.GetParameterId("Angle");
+    }
+
+    public void SetAngleFromHand(float degrees)
+    {
+        if (!sync.IsLocalOwner()) sync.TakeOwnership();
+        sync.SetAngle(angleId, degrees);
+    }
+
+    void Update()
+    {
+        handle.localRotation = Quaternion.Euler(sync.GetAngle(angleId), 0f, 0f);
+    }
+}
+```
+
+- 쓰기는 소유자에게서만 유효합니다. 쓰기 전에 소유권을 가져오세요([소유권](/ko/docs/scripting/networking/ownership) 참조).
+- 읽기는 어디서나 작동합니다. 소유자는 자신이 쓴 값을 얻고, 다른 모든 사람은 보간된 네트워크 값을 얻습니다.
+- `GetParameterId`로 이름을 id로 한 번만 변환하고, `Update`에서는 id 오버로드를 사용하여 이름 조회를 건너뛰세요.
+
+변경 콜백은 없습니다. `Update`에서 값을 읽고 마지막으로 본 값과 다를 때 반응하세요.
+
+```csharp
+int lastScore = -1;
+
+void Update()
+{
+    int score = sync.GetInt(scoreId);
+    if (score == lastScore) return;
+    lastScore = score;
+    scoreLabel.text = score.ToString();
+}
+```
+
+## 커스텀 BasisSyncedObject
+
+값이 직접 만든 필드에서 오는 경우 `BasisSyncedObject`를 상속하세요. `Awake`에서 필드를 등록하고, `OnBeforeTransmit`(소유자)에서 현재 값을 넣고, 원격 클라이언트에서 다시 읽으세요.
+
+```csharp title="Turret.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Turret : BasisSyncedObject
+{
+    public Transform barrel;
+    public float yaw;
+    public bool firing;
+
+    BasisSyncHandle yawHandle, firingHandle;
+
+    protected void Awake()
+    {
+        yawHandle = RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 12));
+        firingHandle = RegisterBool();
+    }
+
+    protected override void OnBeforeTransmit()
+    {
+        LocalSet(yawHandle, yaw);
+        LocalSet(firingHandle, firing);
+    }
+
+    void Update()
+    {
+        if (!IsOwnedLocallyOnClient)
+        {
+            yaw = GetFloat(yawHandle);
+            firing = GetBool(firingHandle);
+        }
+        barrel.localRotation = Quaternion.Euler(0f, yaw, 0f);
+    }
+}
+```
+
+<Callout type="warn">
+오브젝트가 네트워크 준비 상태가 되기 전인 `Awake`에서 모든 필드를 등록하세요. 필드 레이아웃이 곧 전송 형식입니다. 모든 클라이언트는 같은 필드를 같은 순서로 등록해야 합니다.
+</Callout>
+
+`OnBeforeTransmit`는 매 프레임이 아니라 패킷을 보낼 차례인 프레임에서만 실행됩니다. 이 안에서는 값을 단순히 복사하기만 하세요.
+
+등록된 필드로 transform을 직접 구동하려면 `BindTransform(target, position, rotation, scale, worldSpace)`를 호출하세요. 그러면 드라이버가 `Update`를 실행하지 않고도 잡(job)에서 보간된 값을 적용합니다.
+
+## 압축
+
+모든 float는 원본(32비트), 반정밀도(16비트), 또는 **범위 지정**(최솟값, 최댓값, 비트 수)으로 보낼 수 있습니다. 0도에서 90도 사이의 레버는 월드 위치보다 훨씬 적은 비트가 필요합니다.
+
+```csharp
+RegisterFloat(BasisQuantSpec.Ranged(0f, 1f, 8));      // 0..1 in 256 steps
+RegisterFloat(BasisQuantSpec.Half);                    // 16 bit float
+RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
+```
+
+`BasisSyncedParameters`에서는 각 축의 **Compression** 설정이 같은 선택에 해당합니다.
+
+## 전송 빈도 설정
+
+`BasisSyncedObject`는 인스펙터에서 타이밍 설정을 노출합니다.
+
+| 설정 | 기본값 | 의미 |
+| --- | --- | --- |
+| `SendIntervalSeconds` | 0.05 | 소유자가 보낼 수 있는 빈도(초당 20회). 값이 바뀌지 않는 동안에는 아무것도 보내지 않습니다. |
+| `KeyframeIntervalSeconds` | 0.5 | 손실된 델타를 복구하기 위해 전체 상태를 보내는 빈도. 유휴 상태에서는 간격이 늘어납니다. |
+| `DistanceReduction` | 켜짐 | 멀리 있는 플레이어에게는 덜 자주 보냅니다. |
+| `RelevanceCulling` / `RelevanceRadius` | 꺼짐 / 50 | 반경 밖의 플레이어에게는 아예 보내지 않습니다. |
+| `Extrapolate` | 꺼짐 | 패킷이 늦을 때 원격 값을 잠시 앞으로 계속 진행시킵니다. |
+| `UseDirectP2P` | 켜짐 | 직접 피어 연결이 있으면 사용합니다. |
+
+## Cilbox
+
+Cilbox 스크립트는 `BasisSyncedObject`를 상속할 수 없습니다. 업로드되는 콘텐츠에서는:
+
+- 움직이는 오브젝트: **Basis Synced Transform** 또는 **Basis Pickup Sync Networking** 컴포넌트를 추가하세요. 스크립트가 필요 없습니다.
+- 값: 소유자가 값을 보관하고 [네트워크 이벤트](/ko/docs/scripting/networking/network-events#cilbox)로 보내며, [늦게 참여한 플레이어](/ko/docs/scripting/networking/late-joiners)에게 다시 보내세요. [동기화 토글](/ko/docs/scripting/examples/synced-toggle) 예제가 템플릿입니다.

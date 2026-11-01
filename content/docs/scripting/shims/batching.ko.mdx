@@ -1,0 +1,93 @@
+---
+title: 일괄 처리
+description: 많은 작업을 한 번의 호출로 처리하기 위한 BasisTransformBatchShim, BasisTransformSyncShim, BasisBlendShapeSyncShim, BasisVectorArrayShim, BasisSphereCastShim.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilbox 스크립트에서 Unity로의 모든 호출은 비용이 크며, 실제로 하는 작업보다 훨씬 비싼 경우가 많습니다. 이 심들은 배열 전체를 한 번의 호출로 경계 너머로 넘기고 루프를 네이티브로 실행합니다.
+
+<Callout type="info">
+`Update`의 루프가 몇 개 이상의 트랜스폼이나 블렌드셰이프를 건드린다면 일괄 처리하세요.
+</Callout>
+
+## BasisTransformBatchShim
+
+많은 트랜스폼의 위치, 회전, 스케일을 한 번에 읽거나 씁니다.
+
+```csharp
+using Basis.Shims;
+
+public Transform[] boids;
+Vector3[] positions;
+
+void Start() { positions = new Vector3[boids.Length]; }
+
+void Update()
+{
+    BasisTransformBatchShim.GetPositions(boids, positions);
+    for (int i = 0; i < positions.Length; i++) positions[i] = positions[i] + Vector3.up * Time.deltaTime;
+    BasisTransformBatchShim.SetPositions(boids, positions);
+}
+```
+
+그 밖에: `GetLocalPositions`, `SetLocalPositions`, `SetRotations`, `SetLocalRotations`, `SetLocalScales`, float `xyz` 배열 버전, `RotateWorld`.
+
+## BasisTransformSyncShim
+
+한 트랜스폼 세트를 매 프레임 다른 세트에 네이티브로 복사합니다. 네트워킹이 아닙니다. 이 클라이언트에서 트랜스폼을 따라 하게 하는 것으로, 예를 들어 의상이 아바타의 본을 따라가게 할 때 씁니다.
+
+```csharp
+BasisTransformSyncShim mirror;
+
+void Start()
+{
+    mirror = new BasisTransformSyncShim();
+    mirror.Channels = BasisTransformSyncShim.ChannelPose;
+    mirror.Space = BasisTransformSyncShim.SpaceLocal;
+    mirror.BindTransforms(sourceBones, costumeBones, this);
+}
+
+void OnDestroy() { mirror.Dispose(); }
+```
+
+일회성 정적 버전: `GetValues`, `SetValues`, `CopyValues`.
+
+## BasisBlendShapeSyncShim
+
+블렌드셰이프용으로 같은 일을 합니다. 메시의 모든 가중치를 한 번의 호출로 읽고, 쓰고, 복사합니다.
+
+```csharp
+float[] weights = new float[BasisBlendShapeSyncShim.ShapeCount(face)];
+BasisBlendShapeSyncShim.GetWeights(face, weights);
+BasisBlendShapeSyncShim.SetWeights(mask, weights, 0.01f);
+
+// Or keep a mask's blendshapes following the face every frame.
+var follow = new BasisBlendShapeSyncShim();
+follow.BindMeshes(new[] { face }, new[] { mask }, this);
+```
+
+## BasisVectorArrayShim
+
+벡터를 float 배열로 분리하고 다시 결합합니다. 일반 float로 하는 계산은 인터프리터에서 훨씬 저렴합니다.
+
+```csharp
+BasisVectorArrayShim.Split(positions, xs, ys, zs);
+for (int i = 0; i < xs.Length; i++) ys[i] += Mathf.Sin(xs[i] + Time.time) * 0.01f;
+BasisVectorArrayShim.Join(xs, ys, zs, positions);
+```
+
+## BasisSphereCastShim
+
+물리 콜라이더 없이 배열에 대해 레이와 구 테스트를 합니다. 많은 표적에 대한 총알이나 당구공에 유용합니다.
+
+```csharp
+if (BasisSphereCastShim.RaySphere(muzzle.position, muzzle.forward, target.position, 0.25f, out Vector3 hit))
+{
+    Spark(hit);
+}
+
+uint hitMask = BasisSphereCastShim.RaySpheresMask(origin, direction, targetCenters, 0u, 0.25f);
+```
+
+거리는 제곱 값입니다(`radiusSq`). `skipMask` 비트는 인덱스로 구를 제외합니다.

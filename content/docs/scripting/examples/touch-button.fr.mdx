@@ -1,0 +1,53 @@
+---
+title: Bouton tactile
+description: Un bouton qu'on presse en le touchant avec l'une ou l'autre main, à l'aide des positions des os des mains du joueur local.
+---
+
+Le pointage fonctionne partout, mais en VR il est plus agréable d'appuyer sur un bouton avec le doigt. Ce script lit les positions des mains du joueur local et se déclenche quand l'une d'elles s'approche.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- Les os du bout des doigts nécessitent un avatar doté d'os de doigts. Utilisez `LeftHand` et `RightHand` avec un rayon plus grand pour un appui avec la paume.
+- `touching` fait qu'il ne se déclenche qu'une fois par contact au lieu de chaque image.
+- Pour partager le résultat, envoyez-le sous forme d'[événement réseau](/fr/docs/scripting/examples/synced-toggle) depuis `Press`.

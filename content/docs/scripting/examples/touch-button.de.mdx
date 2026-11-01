@@ -1,0 +1,53 @@
+---
+title: Berührungs-Button
+description: Ein Button, der durch Berühren mit einer der beiden Hände gedrückt wird, anhand der Handknochen-Positionen des lokalen Spielers.
+---
+
+Zeigen funktioniert überall, aber in VR fühlt es sich besser an, einen Button mit dem Finger zu drücken. Dieses Skript liest die Handpositionen des lokalen Spielers und löst aus, wenn eine davon nahe genug kommt.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- Fingerspitzen-Knochen erfordern einen Avatar mit Fingerknochen. Verwenden Sie `LeftHand` und `RightHand` mit einem größeren Radius für ein Drücken mit der Handfläche.
+- `touching` sorgt dafür, dass einmal pro Berührung ausgelöst wird statt in jedem Frame.
+- Um das Ergebnis zu teilen, senden Sie es aus `Press` als [Netzwerkereignis](/de/docs/scripting/examples/synced-toggle).

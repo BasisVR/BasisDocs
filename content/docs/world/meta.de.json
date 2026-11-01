@@ -1,1 +1,1 @@
-{ "title": "Welt", "icon": "Globe", "pages": ["index", "setup", "building", "testing", "scene-props", "ui-canvas"] }
+{ "title": "Welt", "icon": "Globe", "pages": ["index", "setup", "building", "testing", "components", "layers", "scene-props", "ui-canvas", "media-player"] }

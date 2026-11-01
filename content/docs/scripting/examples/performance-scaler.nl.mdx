@@ -1,0 +1,52 @@
+---
+title: Prestatieschaler
+description: Dure effecten terugschroeven wanneer de framerate van de speler daalt, met BasisStatsShim en BasisGraphicsSettingsEventShim.
+---
+
+```csharp title="PerformanceScaler.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PerformanceScaler : MonoBehaviour
+{
+    public GameObject[] gpuHeavy;
+    public GameObject[] cpuHeavy;
+    float nextCheck;
+    bool reduced, lowQuality;
+
+    void Start()
+    {
+        GetComponent<BasisGraphicsSettingsEventShim>();
+    }
+
+    void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+    {
+        lowQuality = qualityTier <= BasisGraphicsSettingsShim.TierLow;
+        Apply();
+    }
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 2f;
+        float target = BasisStatsShim.TargetFramesPerSecond;
+        if (target <= 0f) return;
+        float fps = BasisStatsShim.FramesPerSecond;
+        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
+        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+    }
+
+    void Apply()
+    {
+        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
+        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
+        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
+    }
+}
+```
+
+- Twee drempels (80% om terug te schroeven, 95% om te herstellen) voorkomen dat het steeds aan en uit flikkert.
+- De bottleneck vertelt welke kant je moet verminderen: spiegels en particles voor de GPU, menigten en scripts voor de CPU.

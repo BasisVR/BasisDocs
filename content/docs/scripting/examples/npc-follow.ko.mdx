@@ -1,0 +1,102 @@
+---
+title: NPC 따라오기
+description: 가장 가까운 플레이어를 따라가는 내비게이션 메시 에이전트. 한 명의 소유자가 시뮬레이션하고 다른 모든 사람에게 전송합니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+내비게이션은 월드에서 사용할 수 있습니다(소품이나 아바타에서는 불가).
+
+## 설정
+
+1. 걸을 수 있는 바닥에 NavMesh를 베이크합니다(**Window > AI > Navigation**).
+2. **NavMeshAgent**가 있는 NPC를 만들고 **NpcFollow**를 추가합니다.
+
+## 스크립트
+
+```csharp title="NpcFollow.cs (Cilbox, world)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.AI;
+
+[Cilboxable]
+public class NpcFollow : MonoBehaviour
+{
+    public NavMeshAgent agent;
+    public float stopDistance = 1.5f;
+
+    BasisNetworkShim net;
+    float nextPath, nextSend;
+    Vector3 remotePosition;
+    float remoteYaw;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.RequestOwnershipIfNone();
+        remotePosition = transform.position;
+    }
+
+    void OnDestroy()
+    {
+        if (net != null) net.NetworkMessageReceived -= OnMessage;
+    }
+
+    void Update()
+    {
+        bool owner = net.HasNetworkID && net.IsOwnedLocallyOnServer;
+        agent.enabled = owner;
+        if (!owner)
+        {
+            transform.SetPositionAndRotation(Vector3.Lerp(transform.position, remotePosition, Time.deltaTime * 10f), Quaternion.Euler(0f, remoteYaw, 0f));
+            return;
+        }
+        if (Time.time >= nextPath)
+        {
+            nextPath = Time.time + 0.5f;
+            IBasisPlayer target = BasisPlayersShim.Nearest(transform.position);
+            if (target != null)
+            {
+                Vector3 goal = target.GetPosition();
+                if ((goal - transform.position).sqrMagnitude < stopDistance * stopDistance) agent.ResetPath();
+                else agent.SetDestination(goal);
+            }
+        }
+        if (Time.time >= nextSend)
+        {
+            nextSend = Time.time + 0.1f;
+            Vector3 p = transform.position;
+            byte[] data = new byte[16];
+            Buffer.BlockCopy(BitConverter.GetBytes(p.x), 0, data, 0, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.y), 0, data, 4, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(p.z), 0, data, 8, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(transform.eulerAngles.y), 0, data, 12, 4);
+            net.SendCustomNetworkEvent(data, DeliveryMethod.Sequenced);
+        }
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 16) return;
+        remotePosition = new Vector3(BitConverter.ToSingle(buffer, 0), BitConverter.ToSingle(buffer, 4), BitConverter.ToSingle(buffer, 8));
+        remoteYaw = BitConverter.ToSingle(buffer, 12);
+    }
+}
+```
+
+## 작동 방식
+
+- 시뮬레이션은 하나뿐입니다. 소유자만 에이전트를 실행하고, 다른 모든 사람은 에이전트를 비활성화한 채 받은 위치로 부드럽게 이동합니다. 두 클라이언트가 같은 NPC의 경로를 계산하면 서로 충돌합니다.
+- `Sequenced` 전송은 늦은 패킷을 버립니다. 오래된 위치가 새 위치를 덮어쓰지 않습니다. 스무딩을 사용하면 초당 10회 업데이트로 충분합니다.
+- 늦게 참여한 플레이어용 코드가 없습니다. 다음 업데이트가 0.1초 안에 도착합니다.
+- 소유자 변경에는 비용이 들지 않습니다. 소유자가 떠나면 새 소유자가 마지막으로 받은 위치에서 자신의 에이전트를 활성화합니다.
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions**에서 샌드박스가 `Buffer`와 `BitConverter`를 허용하는지 확인하세요. `BinaryWriter`([네트워크 이벤트](/ko/docs/scripting/networking/network-events#packing-a-payload) 참조)도 작동합니다.
+</Callout>

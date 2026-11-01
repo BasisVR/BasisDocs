@@ -1,0 +1,98 @@
+---
+title: 입력
+description: BasisControllerInputShim, BasisDesktopInputShim, BasisHapticsShim, BasisInteractableShim, BasisActionTrigger, BasisUIExtensions.
+---
+
+## BasisControllerInputShim
+
+월드 전용입니다. VR 컨트롤러 상태입니다. 메뉴가 열려 있거나 포인터가 UI 위에 있는 동안에는 모든 입력이 놓인 상태로 읽힙니다.
+
+```csharp
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return;
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Primary)) Jump();
+    bool holding = BasisControllerInputShim.GetButton(BasisControllerHand.Left, BasisControllerButton.Grip);
+    float trigger = BasisControllerInputShim.GetTrigger(BasisControllerHand.Right);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+버튼: `Trigger`, `Grip`, `Primary`, `Secondary`, `StickClick`, `Menu`.
+
+## BasisDesktopInputShim
+
+데스크톱의 마우스 입력입니다. 버튼 0은 왼쪽, 1은 오른쪽, 2는 가운데입니다.
+
+```csharp
+if (!BasisDesktopInputShim.HasMouse) return;
+if (BasisDesktopInputShim.GetMouseButtonDown(0)) Shoot();
+Vector2 delta = BasisDesktopInputShim.MouseDelta;
+float scroll = BasisDesktopInputShim.MouseScroll.y;
+Vector2 screen = BasisDesktopInputShim.MousePosition;
+```
+
+## BasisHapticsShim
+
+로컬 플레이어의 컨트롤러를 진동시킵니다. 강도는 0에서 1, 최대 1초, 콘텐츠당 초당 10회까지입니다. 아무것도 재생되지 않으면 false를 반환합니다.
+
+```csharp
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## BasisInteractableShim
+
+오브젝트를 포인터로 누를 수 있게 만들고, 렌더러에 호버 색과 누름 색을 적용합니다.
+
+```csharp
+BasisInteractableShim button;
+
+void Start()
+{
+    button = GetComponent<BasisInteractableShim>();
+    button.ButtonDown += OnDown;
+    button.ButtonUp += OnUp;
+}
+
+void OnDown() { lamp.SetActive(!lamp.activeSelf); }
+void OnUp() { }
+```
+
+인스펙터 필드: `isEnabled`, `Color`, `HoverColor`, `InteractColor`, `DisabledColor`, `PropertyName`(머티리얼 색상 속성).
+
+## BasisActionTrigger
+
+Unity UI 포인터 이벤트를 스크립트로 전달합니다. UI 요소에 추가하세요.
+
+```csharp
+using UnityEngine.EventSystems;
+
+void Start()
+{
+    var trigger = GetComponent<BasisActionTrigger>();
+    trigger.PointerEnter += e => highlight.SetActive(true);
+    trigger.PointerExit += e => highlight.SetActive(false);
+    trigger.PointerClick += e => Select();
+}
+```
+
+그 밖에 사용 가능: `PointerDown`, `PointerUp`, `BeginDrag`, `Drag`, `EndDrag`, `Drop`, `Scroll`.
+
+## BasisUIExtensions
+
+`Toggle.onValueChanged`는 `UnityAction<bool>`을 받습니다. 이 확장을 사용하면 대신 메서드를 넘길 수 있습니다.
+
+```csharp
+using Basis.Shims;
+using UnityEngine.UI;
+
+public Toggle musicToggle;
+
+void Start() { musicToggle.AddListener(OnMusic); }
+
+void OnMusic(bool on) { music.SetActive(on); }
+```

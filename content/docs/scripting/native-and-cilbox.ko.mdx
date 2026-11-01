@@ -1,0 +1,90 @@
+---
+title: Native와 Cilbox
+description: Basis를 스크립팅하는 두 가지 방법. Native 스크립트는 애플리케이션에 컴파일되고, Cilbox 스크립트는 콘텐츠 안에 포함되어 런타임에 샌드박스에서 실행됩니다.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis는 두 가지 방법으로 코드를 실행합니다. 어떤 방법을 사용할지는 **스크립트가 어디에 있는지**에 따라 달라집니다. 직접 빌드하는 애플리케이션 안에 있거나, 런타임에 로드되는 콘텐츠 안에 있습니다.
+
+## Native: 애플리케이션에 컴파일
+
+Native 스크립트는 Basis 클라이언트(또는 Basis 프레임워크로 만든 자체 앱)에 빌드되는 일반적인 Unity `MonoBehaviour`입니다. 애플리케이션과 함께 컴파일되며, 월드나 소품이 아니라 다음 클라이언트 빌드와 함께 배포됩니다.
+
+- 완전한 C#과 완전한 Unity 및 Basis API.
+- 완전한 네이티브 속도.
+- `BasisNetworkBehaviour`, `BasisSyncedObject` 같은 Basis 클래스를 상속할 수 있습니다.
+- 해당 스크립트로 빌드된 클라이언트에만 존재합니다. 공개 클라이언트를 사용하는 플레이어에게는 스크립트가 없습니다.
+
+**Basis로 애플리케이션이나 게임을 만들 때** Native 스크립트를 사용하세요. 자체 메뉴, 게임 규칙, 시스템, 그리고 콘텐츠가 의존하는 모든 컴포넌트가 여기에 해당합니다.
+
+## Cilbox: 콘텐츠 안의 런타임 스크립팅
+
+Cilbox 스크립트는 `[Cilboxable]`로 표시된 `MonoBehaviour`로, 월드, 소품 또는 아바타 `.bee` 파일 **안에** 포함되어 배포됩니다. 콘텐츠가 로드되면 Basis는 해당 콘텐츠 종류(Scene, Prop 또는 Avatar)의 샌드박스 안에서 Cilbox 인터프리터로 스크립트를 실행합니다.
+
+- 콘텐츠를 로드하는 모든 Basis 클라이언트에서 작동합니다. 클라이언트 빌드가 필요 없습니다.
+- 샌드박스 처리. 화이트리스트에 있는 타입과 메서드만 호출할 수 있고, 이 덕분에 콘텐츠가 플레이어의 컴퓨터에 해를 끼치지 못합니다.
+- 코드가 인터프리트되므로 Native보다 느립니다.
+- 기본 클래스 대신 shim을 사용합니다. 예를 들어 `BasisNetworkBehaviour`를 상속하는 대신 `BasisNetworkShim`을 사용합니다.
+
+**사용자 콘텐츠를 만들 때** Cilbox를 사용하세요. 다른 사람이 로드하는 월드, 소품, 아바타가 여기에 해당합니다.
+
+## 한눈에 보기
+
+| | Native | Cilbox |
+| --- | --- | --- |
+| 위치 | 애플리케이션 빌드 | 월드, 소품 또는 아바타 |
+| 로드 시점 | 앱을 빌드할 때 | 런타임에 콘텐츠와 함께 |
+| 표시 방법 | 없음 | `[Cilboxable]` |
+| API | 전체 | 샌드박스별 화이트리스트 |
+| 속도 | 네이티브 | 인터프리트, 훨씬 느림 |
+| 네트워킹 | `BasisNetworkBehaviour` 상속 | `BasisNetworkShim` 사용 |
+| 사용 가능한 사람 | 해당 빌드를 사용하는 플레이어 | 콘텐츠를 로드하는 모든 사람 |
+
+## 같은 스크립트, 두 가지 방식
+
+```csharp title="Native"
+using Basis;
+using Basis.Network.Core;
+
+public class Door : BasisNetworkBehaviour
+{
+    public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+```csharp title="Cilbox"
+using Basis;
+using Basis.Network.Core;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Door : MonoBehaviour
+{
+    BasisNetworkShim net;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        gameObject.SetActive(buffer[0] != 0);
+    }
+}
+```
+
+## 각각 배포하는 방법
+
+- Native: Unity 프로젝트에 스크립트를 추가하고 클라이언트를 빌드합니다. Native 컴포넌트를 월드나 소품 번들 안에 배치하는 경우, 해당 타입을 일치하는 콘텐츠 폴리스 셀렉터에도 추가해야 합니다. 그렇지 않으면 콘텐츠가 로드될 때 제거됩니다([허용된 컴포넌트](/ko/docs/scripting/allowed-components) 참조).
+- Cilbox: 콘텐츠에 **Cilbox Scene Basis**(월드) 또는 **Cilbox Prop Basis**(소품)를 추가하고, 스크립트를 `[Cilboxable]`로 표시한 뒤 평소처럼 `.bee`를 빌드합니다. [기본](/ko/docs/scripting/examples/basics)을 참조하세요.
+
+<Callout type="info">
+이 문서 전반의 예제에는 **Native** 또는 **Cilbox** 라벨이 붙어 있습니다. 대부분의 Cilbox 예제는 Native 스크립트로도 컴파일되지만, Native 예제는 보통 Cilbox에서 실행하려면 수정이 필요합니다. 주의해야 할 규칙은 [샌드박스 규칙](/ko/docs/scripting/sandbox-rules)에 있습니다.
+</Callout>

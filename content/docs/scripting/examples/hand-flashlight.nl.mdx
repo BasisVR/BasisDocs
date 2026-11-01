@@ -1,0 +1,38 @@
+---
+title: Handzaklamp
+description: Een zaklamp die zonder vertraging aan de hand van de lokale speler vastzit, met BasisBeforeRenderShim en controllerinvoer.
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- De positie in `Update` schrijven zou in VR een frame achter de hand aan lopen, omdat IK later klaar is. `OnBeforeRender` draait na IK.
+- Het licht is lokaal: elke speler krijgt een eigen lamp, en anderen zien die niet.

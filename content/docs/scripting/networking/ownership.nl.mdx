@@ -1,0 +1,115 @@
+---
+title: Eigenaarschap
+description: Wie eigenaar is van een genetwerkt object, hoe je eigenaarschap neemt en controleert, hoe je reageert op overdrachten en wat er gebeurt wanneer de eigenaar vertrekt.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Elk genetwerkt object heeft hoogstens één **eigenaar**. De eigenaar is de speler wiens kopie de waarheid is: die schrijft gesynchroniseerde variabelen, simuleert de physics, en diens versie is wat late joiners ontvangen. Alle anderen volgen.
+
+De server bepaalt het eigenaarschap en twee spelers kunnen nooit allebei eigenaar van een object zijn.
+
+## Eigenaarschap lezen
+
+| Lid | Betekenis |
+| --- | --- |
+| `IsLocalOwner()` | True wanneer de server heeft bevestigd dat jij de eigenaar bent. Gebruik dit voor beslissingen. |
+| `IsOwnedLocallyOnServer` | Hetzelfde als hierboven, als veld. Beschikbaar voor Cilbox. |
+| `IsOwnedLocallyOnClient` | Wordt ingesteld op het moment dat je eigenaarschap **aanvraagt**, voordat de server antwoordt. Hiermee kun je het object al besturen zonder op een round trip te wachten. |
+| `CurrentOwnerId` | Speler-ID van de eigenaar. |
+| `currentOwnedPlayer` | De eigenaar als `BasisNetworkPlayer`. |
+| `HasNetworkID` | False totdat het object netwerkklaar is. Eigenaarschap heeft daarvoor geen betekenis. |
+
+## Eigenaarschap nemen
+
+```csharp title="Native"
+public void OnGrab()
+{
+    if (!IsLocalOwner()) TakeOwnership();
+}
+```
+
+`TakeOwnership()` neemt het object, ook als iemand anders de eigenaar is. Als je het resultaat moet weten, wacht dan op de async-versie:
+
+```csharp title="Native"
+BasisOwnershipResult result = await TakeOwnershipAsync();
+if (result.Success) StartDriving();
+```
+
+Vraag wie de eigenaar is zonder het te nemen:
+
+```csharp title="Native"
+BasisOwnershipResult who = await RequestWhoIsOwnershipAsync();
+if (who.Success) Debug.Log($"owner is {who.PlayerId}");
+```
+
+<Callout type="info">
+Neem het eigenaarschap op het moment dat een speler iets **doet** met het object: het vastpakken, op de knop drukken, erin gaan zitten. Neem het niet in `Start` of `OnNetworkReady`; dan zou elke speler het bij het laden pakken en wint de laatste.
+</Callout>
+
+## Reageren op overdrachten
+
+```csharp title="Native"
+public override void OnOwnershipTransfer(BasisNetworkPlayer newOwner)
+{
+    bool mine = IsLocalOwner();
+    body.isKinematic = !mine;
+    ownerLabel.text = newOwner.Player != null ? newOwner.Player.SafeDisplayName : "";
+}
+
+public override void OnServerOwnershipDestroyed()
+{
+    // Nobody owns it any more.
+}
+```
+
+```csharp title="Cilbox"
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.OwnershipTransfer += OnOwnerChanged;
+}
+
+void OnOwnerChanged(BasisNetworkPlayer newOwner)
+{
+    body.isKinematic = !(net.HasNetworkID && net.IsOwnedLocallyOnServer);
+}
+```
+
+## Wie in het begin eigenaar is van een object
+
+Wanneer de server een genetwerkt object voor het eerst ziet, wordt de eerste speler die ernaar vraagt de eigenaar. In de praktijk is dat de eerste speler in de instance. `RequestOwnershipIfNone()` op een `BasisNetworkShim` vraagt het aan de server en krijgt alleen eigenaarschap als niemand het heeft.
+
+## Wanneer de eigenaar vertrekt
+
+Wanneer de eigenaar de verbinding verbreekt, geeft de server elk van diens objecten aan de **speler die het langst verbonden is en nog in de instance zit**. Iedereen krijgt `OnOwnershipTransfer`, en de nieuwe eigenaar gaat verder vanaf de status die die al had. Je script hoeft alleen op de overdracht te reageren, niet op het vertrek.
+
+## Patronen
+
+**De eigenaar doet het werk, iedereen toont het resultaat.** Physics, timers en spelregels draaien alleen bij de eigenaar. Anderen lezen gesynchroniseerde variabelen of ontvangen events.
+
+```csharp
+void Update()
+{
+    if (!IsLocalOwner()) return;
+    roundTimer -= Time.deltaTime;
+    if (roundTimer <= 0f) EndRound();
+}
+```
+
+**Verzoek via de eigenaar.** Wanneer een niet-eigenaar gedeelde status moet wijzigen zonder het over te nemen (een punt toevoegen aan het scorebord van iemand anders), stuur dan een event naar de eigenaar en laat de eigenaar het toepassen:
+
+```csharp
+public void AddPoint()
+{
+    if (IsLocalOwner()) { ApplyPoint(); return; }
+    SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered, new[] { CurrentOwnerId });
+}
+
+public override void OnNetworkMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+{
+    if (IsLocalOwner() && buffer != null && buffer.Length > 0 && buffer[0] == 1) ApplyPoint();
+}
+```
+
+**Pickups nemen automatisch eigenaarschap.** `BasisPickupSyncNetworking` neemt het eigenaarschap wanneer het wordt vastgepakt. Zet `CanNetworkSteal` uit om te voorkomen dat andere spelers een voorwerp uit iemands hand grijpen.

@@ -1,0 +1,175 @@
+---
+title: Événements réseau
+description: Envoyer des messages ponctuels entre joueurs, destinataires, méthodes de livraison, empaquetage de la charge utile et l'équivalent Cilbox.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Un événement réseau est un tableau d'octets envoyé depuis la copie d'un objet d'un joueur vers le même objet sur les machines des autres joueurs. Il arrive dans `OnNetworkMessage` (Native) ou dans l'événement `NetworkMessageReceived` (Cilbox).
+
+## Envoi
+
+```csharp
+SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
+```
+
+- `recipients = null` envoie à tout le monde sauf vous.
+- Passez un tableau d'ID de joueurs pour envoyer à des joueurs précis. Incluez votre propre ID pour que le message vous revienne via le réseau.
+- L'objet doit être prêt pour le réseau (`HasNetworkID` vaut true). Un envoi plus tôt journalise une erreur et ne fait rien. Envoyez depuis `OnNetworkReady` ou plus tard.
+
+<Callout type="warn">
+Les événements **ne sont pas mémorisés**. Un joueur qui rejoint après l'envoi d'un événement ne le reçoit jamais. Si l'événement modifie un état durable, gérez aussi les [joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners).
+</Callout>
+
+## Méthodes de livraison
+
+| Méthode | Arrive ? | Dans l'ordre ? | À utiliser pour |
+| --- | --- | --- | --- |
+| `Unreliable` | Peut-être | Non | Mises à jour à haute fréquence où la suivante remplace celle-ci. |
+| `Sequenced` | Peut-être | Les anciens sont ignorés | La dernière valeur l'emporte, par exemple un curseur en direct. |
+| `ReliableUnordered` | Oui | Non | Actions ponctuelles indépendantes. |
+| `ReliableSequenced` | Le dernier | Oui | Un interrupteur dont seule la valeur finale compte. |
+| `ReliableOrdered` | Oui | Oui | Tout ce où chaque message et son ordre comptent : scores, étapes de jeu. |
+
+En cas de doute, utilisez `ReliableOrdered`.
+
+## Réception
+
+```csharp title="Native"
+public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+{
+    if (buffer == null || buffer.Length == 0) return;
+    switch (buffer[0])
+    {
+        case 1: Open(); break;
+        case 2: Close(); break;
+    }
+}
+```
+
+`playerId` est l'expéditeur. Retrouvez-le avec `BasisNetworkPlayers.GetPlayerById(playerId, out BasisNetworkPlayer player)`.
+
+Validez toujours la longueur du buffer avant de le lire. N'importe qui dans l'instance peut envoyer des messages à votre objet.
+
+## Empaqueter une charge utile [#packing-a-payload]
+
+Pour une ou deux valeurs, `BitConverter` suffit. Au-delà, utilisez un `BinaryWriter`. Placez un octet de type de message en premier pour qu'un même objet puisse gérer plusieurs sortes d'événements.
+
+```csharp
+using System.IO;
+
+byte[] PackHit(ushort target, float damage, Vector3 point)
+{
+    using (var stream = new MemoryStream())
+    using (var writer = new BinaryWriter(stream))
+    {
+        writer.Write((byte)3);
+        writer.Write(target);
+        writer.Write(damage);
+        writer.Write(point.x); writer.Write(point.y); writer.Write(point.z);
+        return stream.ToArray();
+    }
+}
+
+void ReadHit(byte[] buffer)
+{
+    using (var reader = new BinaryReader(new MemoryStream(buffer)))
+    {
+        reader.ReadByte();
+        ushort target = reader.ReadUInt16();
+        float damage = reader.ReadSingle();
+        Vector3 point = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+    }
+}
+```
+
+Les charges utiles volumineuses (un dessin, la disposition d'un niveau) peuvent être compressées avec `BasisCompressionShim.Compress` et `Decompress` (LZ4, jusqu'à 1 Mo décompressé).
+
+## Cilbox [#cilbox]
+
+Un script Cilbox ne peut pas dériver de `BasisNetworkBehaviour`. Obtenez plutôt un `BasisNetworkShim` ; Cilbox ajoute le composant quand vous appelez `GetComponent`. Abonnez-vous dans `Start` et désabonnez-vous dans `OnDestroy`.
+
+```csharp title="NetworkedCounter.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class NetworkedCounter : MonoBehaviour
+{
+    public TextMeshPro label;
+    BasisNetworkShim net;
+    int count;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    public void Increment()
+    {
+        net.TakeOwnership();
+        count++;
+        Show();
+        net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer)
+        {
+            net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+Les événements de `BasisNetworkShim` reflètent les overrides de `BasisNetworkBehaviour` :
+
+| Override de `BasisNetworkBehaviour` | Événement de `BasisNetworkShim` |
+| --- | --- |
+| `OnNetworkReady()` | `NetworkReady` |
+| `OnNetworkMessage(...)` | `NetworkMessageReceived` |
+| `OnOwnershipTransfer(...)` | `OwnershipTransfer` |
+| `OnServerOwnershipDestroyed()` | `ServerOwnershipDestroyed` |
+| `OnPlayerJoined(...)` | `PlayerJoined` |
+| `OnPlayerLeft(...)` | `PlayerLeft` |
+
+<Callout type="info">
+`SafeUtil.MakeNetworkable(this)` fait la même chose que `GetComponent<BasisNetworkShim>()` et renvoie le shim.
+</Callout>
+
+## Le même résultat sur chaque client sans message
+
+Si tous les clients doivent seulement s'accorder sur un nombre aléatoire, `BasisSharedRandomShim` donne la même valeur pour la même graine et le même index sur chaque machine :
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Same weather for everyone, changing every 5 minutes of server time.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+```

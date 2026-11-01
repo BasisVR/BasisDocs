@@ -1,0 +1,67 @@
+---
+title: 小地圖
+description: 跟隨本機玩家的即時俯視小地圖，使用攝影機、render texture 以及可選的 Graphics.Blit 遮罩。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## 設定
+
+1. 建立一個 **Render Texture** 資產，例如 512 x 512。
+2. 建立一個垂直向下看的 **Camera**。將 **Projection** 設為 Orthographic，**Target Texture** 設為該 render texture，並設定排除玩家和 UI 的 **Culling Mask**。
+3. 在 canvas 中的 **Raw Image** 或材質上顯示該 render texture。
+4. 將 **Minimap** 加入攝影機。
+
+## 腳本
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## 使用 Graphics.Blit 製作圓形地圖
+
+若要將方形貼圖遮罩成圓形，請每一幀透過材質進行 blit。`Graphics.Blit` 是 Cilbox 腳本唯一可用的繪製呼叫。
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+小地圖攝影機會再渲染一次場景。請保持其 render texture 小巧、culling mask 精簡，並在低品質等級時透過 `BasisGraphicsSettingsShim.QualityTier` 將它關閉。
+</Callout>

@@ -1,0 +1,114 @@
+---
+title: Marcador
+description: Una puntuación en red en la que un único propietario mantiene el valor verdadero y los demás jugadores le piden que sume puntos.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> Este es un ejemplo nativo para compilaciones del cliente: `BasisSyncedParameters` y los scripts personalizados no están en la lista de permitidos predeterminada para el contenido subido. Para un marcador con Cilbox, use el patrón de solicitud al propietario que se describe abajo con eventos de red, como en el [Interruptor sincronizado](/es/docs/scripting/examples/synced-toggle).
+
+Una puntuación debe ser exacta y debe sobrevivir a que los jugadores entren y salgan. Si dos jugadores suman un punto en el mismo instante, el resultado debe ser +2, no +1. Este ejemplo mantiene la puntuación en un único propietario y hace pasar cada cambio por él.
+
+## Configuración
+
+1. Añada **Basis Synced Parameters** al objeto del marcador. Añada dos parámetros llamados `Red` y `Blue`, de tipo **Int**, con **Interpolate** desactivado.
+2. Añada **Scoreboard** al mismo objeto y asigne el componente de parámetros y dos etiquetas.
+3. Conecte botones (o triggers de gol) a `AddRed`, `AddBlue` y `ResetScores`.
+
+## Script
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` ya recibe los mensajes de red de su propio flujo. Dirija las solicitudes al marcador con una pequeña subclase:
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+Use **ScoreboardParameters** en lugar de **Basis Synced Parameters** en la configuración.
+
+## Cómo funciona
+
+- Solo el propietario escribe la puntuación. Las pulsaciones simultáneas se aplican una tras otra en el propietario.
+- Todos los demás envían una solicitud a `CurrentOwnerId` en lugar de tomar la propiedad. Tomar la propiedad permitiría que dos jugadores sumaran 1 cada uno al mismo valor antiguo.
+- Los jugadores que se unen tarde no necesitan nada adicional. Los parámetros sincronizados envían un keyframe a los jugadores nuevos.
+- Si el propietario se va, la propiedad pasa al jugador que lleva más tiempo conectado, que ya tiene la puntuación actual.
+
+<Callout type="info">
+Las solicitudes ocupan un byte y los paquetes de sincronización siempre son más grandes. Por eso aquí basta con comprobar la longitud. Para más tipos de mensaje, anteponga a sus propios mensajes un byte marcador con el que el flujo de sincronización nunca empiece, o coloque la gestión de solicitudes en un `BasisNetworkBehaviour` aparte.
+</Callout>

@@ -1,0 +1,110 @@
+---
+title: Сеть
+description: BasisNetworkShim, BasisNetworkTimeShim, BasisSharedRandomShim, BasisBinaryShim, BasisCompressionShim и BasisConnectionShim.
+---
+
+## BasisNetworkShim
+
+Способ Cilbox отправлять сетевые события и отслеживать владение. Полное руководство: [Сеть](/ru/docs/scripting/networking).
+
+```csharp
+using Basis;
+using Basis.Network.Core;
+
+BasisNetworkShim net;
+
+void Start()
+{
+    net = GetComponent<BasisNetworkShim>();
+    net.NetworkReady += () => Debug.Log("ready");
+    net.NetworkMessageReceived += OnMessage;
+    net.OwnershipTransfer += owner => Debug.Log($"owner {owner.playerId}");
+    net.PlayerJoined += player => { };
+    net.PlayerLeft += player => { };
+}
+
+void Send() => net.SendCustomNetworkEvent(new byte[] { 1 }, DeliveryMethod.ReliableOrdered);
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method) { }
+void Grab() => net.TakeOwnership();
+bool Mine => net.HasNetworkID && net.IsOwnedLocallyOnServer;
+```
+
+Отложенные колбэки заменяют корутины: `net.SendCustomEventDelayedSeconds(Close, 3f)` и `net.SendCustomEventDelayedFrames(Rebuild, 2)`.
+
+## BasisNetworkTimeShim
+
+Часы сервера, одинаковые на всех клиентах (с точностью до сетевой задержки). Используйте их для обратных отсчётов и циклов дня, которые все видят синхронно.
+
+```csharp
+using Basis.Shims;
+
+double now = BasisNetworkTimeShim.ServerTimeSeconds;
+System.DateTime utc = BasisNetworkTimeShim.ServerUtcNow;
+
+// A 24 minute day cycle that matches for everyone.
+float dayFraction = (float)(now % 1440.0 / 1440.0);
+sun.transform.rotation = Quaternion.Euler(dayFraction * 360f - 90f, 30f, 0f);
+```
+
+## BasisSharedRandomShim
+
+Одинаковые seed и индекс дают одинаковое число на всех клиентах, без каких-либо сообщений.
+
+```csharp
+float roll = BasisSharedRandomShim.Value(42, round);
+float speed = BasisSharedRandomShim.Range(42, round, 2f, 5f);
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Index taken from the server clock: a new value every 5 minutes, the same for everyone.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+long window = BasisSharedRandomShim.WindowIndex(300d);
+```
+
+## BasisBinaryShim
+
+Упаковывает числа и векторы в массив байтов одним вызовом, в песочнице это намного быстрее, чем `BinaryWriter`. Каждый `Write` возвращает следующее смещение.
+
+```csharp
+byte[] buffer = new byte[4 + 12 + 16];
+int at = BasisBinaryShim.WriteInt32(buffer, 0, score);
+at = BasisBinaryShim.WriteVector3(buffer, at, transform.position);
+at = BasisBinaryShim.WriteQuaternion(buffer, at, transform.rotation);
+net.SendCustomNetworkEvent(buffer, DeliveryMethod.Sequenced);
+
+// Receiving
+int s = BasisBinaryShim.ReadInt32(data, 0);
+Vector3 p = BasisBinaryShim.ReadVector3(data, 4);
+Quaternion r = BasisBinaryShim.ReadQuaternion(data, 16);
+```
+
+Версии для массивов (`WriteSingles`, `WriteVector3s`, `ReadQuaternions` и так далее) упаковывают сразу много значений.
+
+## BasisCompressionShim
+
+Сжатие LZ4. Данные, которые не сжимаются, стоят один лишний байт. `Decompress` возвращает null для любых повреждённых данных или данных больше 1 МБ в распакованном виде.
+
+```csharp
+net.SendCustomNetworkEvent(BasisCompressionShim.Compress(drawing), DeliveryMethod.ReliableOrdered);
+
+void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+{
+    byte[] drawing = BasisCompressionShim.Decompress(data);
+    if (drawing == null) return;
+}
+```
+
+## BasisConnectionShim
+
+Просит игрока перейти на другой сервер. Должен вызываться из собственного нажатия или клика игрока; игрок видит адрес и должен согласиться.
+
+```csharp
+public void OnPortalPressed()
+{
+    BasisConnectionShim.RequestConnect(this, "play.example.com", 4296, null, result =>
+    {
+        if (result != BasisConnectionResult.Accepted) sign.text = "Maybe next time";
+    });
+}
+
+public void OnLeavePressed() => BasisConnectionShim.RequestDisconnect(this);
+```

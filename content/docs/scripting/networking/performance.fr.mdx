@@ -1,0 +1,37 @@
+---
+title: Performances et débogage
+description: Garder le contenu en réseau peu coûteux et traquer les objets qui se désynchronisent.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Rester économe
+
+- Envoyez l'état, pas les frames. Les variables synchronisées n'envoient que lorsque les valeurs changent. N'appelez pas `SendCustomNetworkEvent` depuis `Update`.
+- Utilisez le type le plus petit. Un `Byte` ou un `Bool` plutôt qu'un `Int`, un float ranged plutôt qu'un float brut.
+- Utilisez une livraison non fiable pour les données à haute fréquence. Les messages fiables sont renvoyés jusqu'à leur arrivée, ce qui coûte plus cher et ajoute du délai quand des paquets sont perdus.
+- Laissez `DistanceReduction` activé. Les joueurs éloignés reçoivent moins de mises à jour. Activez `RelevanceCulling` pour les objets que personne hors d'une pièce n'a besoin de voir.
+- Un objet, plusieurs valeurs. Un seul `BasisSyncedParameters` avec dix valeurs coûte moins cher que dix objets avec une valeur chacun, car chaque objet transporte son propre en-tête et ses propres keyframes.
+- Regroupez les événements. Empaquetez plusieurs changements dans un seul message au lieu d'envoyer un message par changement.
+
+<Callout type="info">
+Les objets synchronisés inactifs ne coûtent presque rien : rien n'est envoyé tant que les valeurs ne changent pas, et les keyframes s'espacent. Le coût à éviter, ce sont les valeurs qui changent à chaque frame sans nécessité.
+</Callout>
+
+## Bugs de synchronisation courants
+
+| Symptôme | Cause habituelle |
+| --- | --- |
+| Cela fonctionne pour vous, personne d'autre ne le voit | Le changement a été appliqué localement sans jamais être envoyé, ou l'objet n'était pas encore prêt pour le réseau (`HasNetworkID` à false). |
+| Les joueurs arrivés en retard voient l'état par défaut de la scène | L'état a été envoyé sous forme d'événement sans être renvoyé dans `OnPlayerJoined`. Voir [Joueurs arrivés en retard](/fr/docs/scripting/networking/late-joiners). |
+| Deux joueurs se disputent une valeur | Les deux l'écrivent. Seul le propriétaire doit écrire ; prenez la propriété quand un joueur agit. |
+| La valeur revient en arrière après votre modification | Vous avez écrit une variable synchronisée sans posséder l'objet, donc le flux du propriétaire l'a écrasée. |
+| Tout se réinitialise quand quelqu'un rejoint | La propriété est prise dans `Start` ou `OnNetworkReady`, donc le nouveau venu devient propriétaire avec les valeurs par défaut. |
+| Les gestionnaires d'événements se déclenchent deux fois | Abonnement dans `Start` puis à nouveau dans `OnEnable`, ou jamais de désabonnement dans `OnDestroy`. |
+
+## Outils
+
+- Inspecteurs en mode Play. Les inspecteurs des objets synchronisés, des pickups et des sièges affichent le propriétaire, l'ID réseau, la profondeur du buffer et les octets par seconde.
+- Gizmos de synchronisation. Les objets synchronisés distants dessinent où ils étaient et où ils se dirigent, et montrent l'interpolation et l'extrapolation au moment où elles se produisent.
+- Plusieurs clients. Compilez un client et lancez-le à côté de l'éditeur, les deux connectés à un serveur local. Voir [Tests](/fr/docs/world/testing).
+- `BasisStatsShim` (Cilbox) indique le temps d'aller-retour et les secondes écoulées depuis le dernier paquet, utile pour afficher un panneau « reconnexion ».

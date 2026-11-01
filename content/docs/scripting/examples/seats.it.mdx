@@ -1,0 +1,60 @@
+---
+title: Sedili
+description: Far sedere i giocatori da uno script, una sedia girevole e un pulsante di espulsione, con Basis Seat e Basis Seat Sync.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configurazione
+
+1. Aggiungi **Basis Seat** a una sedia e posiziona il suo punto di seduta. Il prefab `SimpleSeat` in com.basis.examples è un sedile pronto all'uso.
+2. Aggiungi **Basis Seat Sync** così tutti vedono chi è seduto e due giocatori non possono occupare lo stesso sedile.
+
+I giocatori possono sedersi puntando il sedile. Lo script qui sotto aggiunge un pulsante che li fa sedere, ruota la sedia e permette loro di alzarsi.
+
+```csharp title="SwivelChair.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Interactions;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class SwivelChair : MonoBehaviour
+{
+    public BasisSeat seat;
+    public float turnDegrees = 45f;
+    float yaw;
+
+    public void SitHere()
+    {
+        if (seat.IsAvailable) seat.TrySeatLocalPlayer();
+    }
+
+    public void TurnLeft() => Turn(-turnDegrees);
+    public void TurnRight() => Turn(turnDegrees);
+
+    void Turn(float delta)
+    {
+        if (!seat.IsLocalPlayerSeated) return;
+        yaw += delta;
+        seat.SetOccupantYaw(yaw);
+    }
+
+    public void StandUp()
+    {
+        if (seat.IsLocalPlayerSeated) seat.EjectLocalPlayer();
+    }
+}
+```
+
+| Membro | Significato |
+| --- | --- |
+| `IsAvailable` | Nessuno è seduto e i sedili non sono disattivati nelle impostazioni del giocatore. |
+| `IsLocalPlayerSeated` | Il giocatore locale è su questo sedile. |
+| `HasOccupant` | Qualcuno è su questo sedile. |
+| `TrySeatLocalPlayer()` | Fa sedere il giocatore locale se il sedile è libero. |
+| `SetOccupantYaw(degrees)` | Ruota il giocatore seduto, entro i limiti di rotazione del sedile. |
+| `EjectLocalPlayer()` | Fa alzare il giocatore locale. |
+
+<Callout type="info">
+I sedili muovono solo il giocatore locale e lo script non ha bisogno di un networking proprio. **Basis Seat Sync** gestisce chi è seduto.
+</Callout>

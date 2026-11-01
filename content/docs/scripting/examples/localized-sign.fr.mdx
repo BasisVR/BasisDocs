@@ -1,0 +1,37 @@
+---
+title: Panneau localisé
+description: Un panneau qui affiche du texte dans la langue du joueur et change en direct quand il la modifie, grâce à BasisLanguageEventShim.
+---
+
+```csharp title="LocalizedSign.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class LocalizedSign : MonoBehaviour
+{
+    public TextMeshPro label;
+    public string[] languageCodes = { "en", "de", "fr", "ja" };
+    public string[] texts = { "Welcome", "Willkommen", "Bienvenue", "ようこそ" };
+
+    void Start()
+    {
+        GetComponent<BasisLanguageEventShim>();
+    }
+
+    void OnLanguageChanged(string code)
+    {
+        label.text = texts[0];
+        for (int i = 0; i < languageCodes.Length; i++)
+        {
+            if (code.StartsWith(languageCodes[i])) { label.text = texts[i]; return; }
+        }
+    }
+}
+```
+
+- `OnLanguageChanged` est appelé une première fois immédiatement avec la langue actuelle.
+- Comparer avec `StartsWith` permet à `es` de couvrir `es-MX`.
+- Remplissez les tableaux dans l'inspecteur plutôt qu'avec un initialiseur si votre sandbox refuse les initialiseurs de tableaux, et assurez-vous que la police contient les glyphes dont vous avez besoin.

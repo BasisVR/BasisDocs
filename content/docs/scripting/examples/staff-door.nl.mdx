@@ -1,0 +1,33 @@
+---
+title: Personeelsdeur
+description: Een deur die alleen opengaat voor admins en moderators, en live wordt bijgewerkt wanneer rollen veranderen.
+---
+
+```csharp title="StaffDoor.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class StaffDoor : MonoBehaviour
+{
+    public GameObject door;
+    public GameObject staffSign;
+
+    void Start()
+    {
+        GetComponent<BasisPermissionEventShim>();
+    }
+
+    void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+    {
+        bool staff = isAdmin || isModerator;
+        door.SetActive(!staff);
+        staffSign.SetActive(staff);
+    }
+}
+```
+
+- De deur wordt voor personeel op hun eigen client uitgezet. Niemand anders merkt er iets van en er wordt niets over het netwerk gestuurd.
+- Om een badge boven *ander* personeel te tonen, vraag je het op met `BasisPermissionsShim.IsModerator(player, callback)`; dat is een round trip naar de server.
+- Controles aan de clientkant houden eerlijke spelers buiten. Vertrouw er niet op voor iets wat een aangepaste client niet mag bereiken.

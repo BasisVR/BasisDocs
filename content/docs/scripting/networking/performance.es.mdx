@@ -1,0 +1,37 @@
+---
+title: Rendimiento y depuración
+description: Mantener barato el contenido en red y localizar los objetos que se desincronizan.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Manténgalo barato
+
+- Envíe estado, no fotogramas. Las variables sincronizadas solo se envían cuando cambian los valores. No llame a `SendCustomNetworkEvent` desde `Update`.
+- Use el tipo más pequeño. Un `Byte` o `Bool` en lugar de un `Int`, un float con rango en lugar de uno sin procesar.
+- Use entrega no fiable para datos de alta frecuencia. Los mensajes fiables se reenvían hasta que llegan, lo que cuesta más y añade retraso cuando se pierden paquetes.
+- Deje `DistanceReduction` activado. Los jugadores lejanos reciben menos actualizaciones. Active `RelevanceCulling` para objetos que nadie fuera de una sala necesita ver.
+- Un objeto, muchos valores. Un `BasisSyncedParameters` con diez valores es más barato que diez objetos con un valor cada uno, porque cada objeto lleva su propia cabecera y sus propios keyframes.
+- Agrupe eventos. Empaquete varios cambios en un solo mensaje en lugar de enviar un mensaje por cambio.
+
+<Callout type="info">
+Los objetos sincronizados inactivos no cuestan casi nada: no se envía nada mientras los valores no cambian, y los keyframes se espacian. El coste que hay que evitar son los valores que cambian en cada fotograma cuando no es necesario.
+</Callout>
+
+## Errores de sincronización comunes
+
+| Síntoma | Causa habitual |
+| --- | --- |
+| Funciona para usted, nadie más lo ve | El cambio se aplicó localmente y nunca se envió, o el objeto aún no estaba listo para la red (`HasNetworkID` en false). |
+| Los jugadores que se unen tarde ven el valor predeterminado de la escena | El estado se envió como evento y no se reenvió en `OnPlayerJoined`. Consulte [Jugadores que se unen tarde](/es/docs/scripting/networking/late-joiners). |
+| Dos jugadores se pelean por un valor | Ambos lo escriben. Solo el propietario debería escribir; tome la propiedad cuando un jugador actúe. |
+| El valor vuelve atrás después de cambiarlo | Escribió una variable sincronizada sin ser propietario del objeto, así que el flujo del propietario la sobrescribió. |
+| Todo se restablece cuando alguien se une | La propiedad se toma en `Start` u `OnNetworkReady`, así que el recién llegado se convierte en propietario con los valores predeterminados. |
+| Los manejadores de eventos se disparan dos veces | Se suscribieron en `Start` y otra vez en `OnEnable`, o nunca se cancelaron las suscripciones en `OnDestroy`. |
+
+## Herramientas
+
+- Inspectores en modo de juego. Los inspectores de objetos sincronizados, pickups y asientos muestran el propietario, el ID de red, la profundidad del búfer y los bytes por segundo.
+- Gizmos de sincronización. Los objetos sincronizados remotos dibujan dónde estaban y hacia dónde se dirigen, y muestran la interpolación y la extrapolación en el momento en que ocurren.
+- Varios clientes. Compile un cliente y ejecútelo junto al editor, ambos conectados a un servidor local. Consulte [Pruebas](/es/docs/world/testing).
+- `BasisStatsShim` (Cilbox) informa del tiempo de ida y vuelta y de los segundos desde el último paquete, útil para mostrar un aviso de "reconectando".

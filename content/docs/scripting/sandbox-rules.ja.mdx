@@ -1,0 +1,75 @@
+---
+title: サンドボックスのルール
+description: APIからは分かりにくいCilboxのルールと、考慮すべきパフォーマンスコスト。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Cilboxはスクリプトのコンパイル済みコードをサンドボックス内でインタープリター実行します。ほとんどのC#は動作しますが、以下のルールにはほぼ誰もが一度はつまずきます。
+
+## ライフサイクル
+
+- `LateUpdate`、`OnGUI`、`OnAnimatorIK`、`OnParticleCollision`、コルーチンは使えません。`Update`と[遅延イベント](/ja/docs/scripting/common-usages#timers-and-delayed-events)を使用してください。
+- 最初の`OnEnable`は呼ばれません。セットアップは`Start`で、後片付けは`OnDestroy`で行ってください。
+- `BasisNetworkBehaviour`を継承しないでください。スクリプトを置き換えるプロキシは`BasisNetworkBehaviour`ではありません。`BasisNetworkShim`を使用してください（[ネットワークイベント](/ja/docs/scripting/networking/network-events#cilbox)を参照）。
+
+## 構造体は値を共有する
+
+Unityの構造体（`Vector3`、`Quaternion`、`Color`）を変数にコピーすると、同じ値が共有されます。コピー側のフィールドを変更すると元の値も変わります。
+
+```csharp
+// Wrong: also moves `target`.
+Vector3 p = target;
+p.y = 0f;
+
+// Right: build a new value.
+Vector3 p = new Vector3(target.x, 0f, target.z);
+```
+
+- 配列に対する`points[i].x = 5f`は何も言わずに失われます。`points[i] = new Vector3(5f, points[i].y, points[i].z)`と書いてください。
+- `points[i] += offset`は例外を投げます。`points[i] = points[i] + offset`と書いてください。
+- Unityの呼び出しや演算子から得られる値（`a + b`、`transform.position`、`new Vector3(...)`）は新しい値なので、変更しても安全です。
+
+## 呼び出しと権限
+
+- ホワイトリストに登録された型は、その型にメソッド制限がない限り、すべてのpublicメソッドが許可されます。フィールドは、記載がない限り拒否されます。
+- パラメーター型、ジェネリック型、戻り値の型もチェックされます。名前のチェックを通過しても、いずれかの型が原因で呼び出しが拒否されることがあります。
+- `this.GetComponent`は常に動作します。`gameObject.GetComponent`は制限されており、プロップのサンドボックスではそれを使ってヒエラルキーをたどることはできません。
+- `AddComponent`、`SendMessage`、`BroadcastMessage`は常にブロックされます。`GetComponent`の際に、Cilboxが`BasisNetworkShim`とイベントシムを自動で追加します。
+- `Debug.DrawLine`と`Debug.DrawRay`はサンドボックスの`Debug`に存在しません。これらを参照すると、そのコンテンツ内のすべてのスクリプトが読み込まれなくなります。
+- 定数は自由に使えます。`const`にはホワイトリストの登録は不要です。
+
+## イベントとデリゲート
+
+メソッドをデリゲートとして使うたびに新しいラッパーが作られ、`-=`で追加したものを削除できない場合があります。スクリプトより長く存在する発行元については、購読するのではなく`Update`で値をポーリングしてください。
+
+## コンテンツポリス
+
+コンテンツ内のコンポーネントのうち、`[Cilboxable]`でも許可リストに載っているものでもないものは、**読み込み時に破棄されます**。スクリプトの変換とコンポーネントの許可は別々の作業です。[許可されたコンポーネント](/ja/docs/scripting/allowed-components)を参照してください。
+
+## アバタースクリプトは全員のマシンで実行される
+
+アバター上のすべてのCilboxスクリプトは、そのアバターを読み込むすべてのクライアントで、アバターごとのビヘイビア上限まで実行されます。装着者専用のロジックは`avatar.IsOwnedLocally`で制限してください（[アバタースクリプティング](/ja/docs/scripting/avatar-scripting)を参照）。
+
+## パフォーマンス
+
+インタープリター実行のコードはネイティブコードよりかなり遅くなります。デスクトップPCでのおおよそのコストは次のとおりです。
+
+| 操作 | コスト |
+| --- | --- |
+| floatの単純な算術演算 | 約15 ns |
+| 自分のメソッドの呼び出し | 約270 ns |
+| `Vector3`の演算子（`a + b`） | 約1.7 µs、加えてガベージ |
+| `Mathf.Sqrt`などのUnity呼び出し | 約0.9 µs |
+
+スクリプトを軽く保つには、次のようにします。
+
+- 毎フレームではなくイベントで処理してください。タイマー、距離、UIのチェックは1秒に数回で十分です。
+- ループ内では`Vector3`の計算よりfloatを優先してください。ホットループ内のベクトル計算は、同じ計算を個別のfloatで行うより約100倍遅くなります。
+- 重い処理はコンポーネントに任せてください。Animator、パーティクルシステム、物理、コンストレイントはネイティブで動作します。
+- 弾を撃つたびに`Instantiate`を呼ぶのではなく、オブジェクトをプールしてください。
+- トランスフォームの処理はまとめて行ってください。`BasisTransformSyncShim`はトランスフォームの配列全体を1回の呼び出しで読み取り、書き込み、コピーでき、`BasisBlendShapeSyncShim`はブレンドシェイプに対して同じことを行います。
+
+<Callout type="info">
+**Basis > Tools > Cilbox Permissions**では各サンドボックスのホワイトリストを確認でき、その**Script Check**タブでは、アップロード前にスクリプト内のブロックされる呼び出しをスキャンできます。
+</Callout>

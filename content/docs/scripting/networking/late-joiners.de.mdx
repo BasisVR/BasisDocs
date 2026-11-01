@@ -1,0 +1,44 @@
+---
+title: Late Joiner
+description: Sicherstellen, dass Spieler, die nach einer Änderung beitreten, den aktuellen Zustand sehen statt der Standardwerte der Szene.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Ein Spieler, der beitritt, lädt die Szene genau so, wie Sie sie gebaut haben. Alles, was sich seitdem geändert hat (eine Tür wurde geöffnet, ein Punktestand ist gestiegen, ein Licht wurde ausgeschaltet), ist für ihn unsichtbar, bis es ihm jemand mitteilt.
+
+## Synchronisierte Variablen: wird für Sie erledigt
+
+`BasisSyncedObject` und alles, was darauf aufbaut (`BasisSyncedParameters`, `BasisSyncedTransform`, `BasisSyncedRigidbody`, `BasisPickupSyncNetworking`), sendet einen vollständigen Keyframe, sobald ein Spieler beitritt. Wenn der Owner gegangen ist und noch niemand das Objekt besitzt, sendet stattdessen ein Spieler, der den Zustand hat, ihn an den Neuankömmling. Sie müssen nichts tun.
+
+## Netzwerk-Events: den Zustand erneut senden
+
+Events werden nicht gespeichert. Wenn ein Event dauerhaften Zustand geändert hat, senden Sie diesen **Zustand** (nicht den Event-Verlauf) erneut an den neuen Spieler. Nur der Owner tut das. Der Neuankömmling erhält eine Nachricht statt einer von jedem Spieler.
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+Gestalten Sie Ihre Nachrichten so, dass das Anwenden des vollständigen Zustands derselbe Codepfad ist wie das Anwenden einer Änderung. Das [Synced-Toggle-Beispiel](/de/docs/scripting/examples/synced-toggle) macht das mit einem Byte.
+
+<Callout type="warn">
+Spielen Sie einem Neuankömmling keine Liste vergangener Events vor (zum Beispiel "Tür geöffnet, Tür geschlossen, Tür geöffnet"). Senden Sie das aktuelle Ergebnis. Wiederholungen werden lang, kommen veraltet an und brechen, wenn ein Event vom Timing abhängt.
+</Callout>
+
+## Was Sie prüfen sollten
+
+- Funktioniert es, wenn der Owner nicht der erste Spieler ist? Testen Sie mit drei Clients: A tritt bei, B tritt bei und ändert etwas, A geht, C tritt bei.
+- Wird etwas in `Start` gesetzt, das aus dem Netzwerk kommen sollte? Das `Start` eines Late Joiners läuft vor seiner ersten Netzwerknachricht. Zeigen Sie einen neutralen Zustand, bis die erste Nachricht oder der erste synchronisierte Wert ankommt.
+- Persistente Props. Props, die aus einer Load Config gespawnt werden, benötigen die Einstellung **Persistent**, damit sie für später beitretende Spieler existieren. Siehe [Scene Props](/de/docs/world/scene-props).

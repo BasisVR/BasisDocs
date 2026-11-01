@@ -1,0 +1,38 @@
+---
+title: 手持手電筒
+description: 使用 BasisBeforeRenderShim 與控制器輸入，將手電筒無延遲地固定在本機玩家的手上。
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- 在 `Update` 中寫入位置，在 VR 中會比手慢一幀，因為 IK 較晚才完成。`OnBeforeRender` 則在 IK 之後執行。
+- 這盞燈是本機的：每位玩家都有自己的手電筒，其他人看不到。

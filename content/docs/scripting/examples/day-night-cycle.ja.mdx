@@ -1,0 +1,33 @@
+---
+title: 昼夜サイクル
+description: サーバー時計で動く太陽。すべてのプレイヤーが同じ時間帯を見られ、ネットワークのコードは不要です。
+---
+
+`Time.time`で動かす昼夜サイクルは、異なるタイミングで参加したプレイヤーの間でずれていきます。サーバー時計で動かせば、メッセージを一切送らずに全員の足並みが揃います。
+
+```csharp title="DayNightCycle.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DayNightCycle : MonoBehaviour
+{
+    public Light sun;
+    public float minutesPerDay = 24f;
+    public Gradient skyColor;
+
+    void Update()
+    {
+        double seconds = BasisNetworkTimeShim.ServerTimeSeconds;
+        float day = minutesPerDay * 60f;
+        float t = (float)(seconds % day / day);
+        sun.transform.rotation = Quaternion.Euler(t * 360f - 90f, 30f, 0f);
+        sun.intensity = Mathf.Clamp01(Mathf.Sin(t * Mathf.PI * 2f) * 2f);
+        RenderSettings.ambientLight = skyColor.Evaluate(t);
+    }
+}
+```
+
+- オーナーシップも途中参加者向けのコードも不要です。時計そのものが共有された状態です。
+- 重いシーンでは、太陽を毎フレームではなく1秒に数回だけ更新してください。

@@ -1,0 +1,38 @@
+---
+title: Фонарик в руке
+description: Фонарик, закреплённый на руке локального игрока без задержки, с помощью BasisBeforeRenderShim и ввода с контроллера.
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- Если записывать позицию в `Update`, в VR она будет отставать от руки на кадр, потому что IK завершается позже. `OnBeforeRender` выполняется после IK.
+- Свет локальный: у каждого игрока свой фонарик, и другие его не видят.

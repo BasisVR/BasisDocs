@@ -1,0 +1,91 @@
+---
+title: 网络
+description: 如何让 Basis 世界或道具对每位玩家表现一致：同步变量、网络事件、所有权和后加入者。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+脚本所做的一切都在某一位玩家的机器上运行。如果一位玩家打开了一扇门，在您通知网络之前，其他人都看不到。
+
+关于传输层本身的工作方式（服务器中继、传输方式、基于距离的更新频率），请参见[网络同步](/cn/docs/technical/network-syncing)。
+
+## 四个核心概念
+
+| 概念 | 是什么 | 用于 |
+| --- | --- | --- |
+| **同步变量** | 由所有者写入、其他所有人读取的值，持续发送并进行插值。 | 位置、拉杆角度、分数，任何具有当前状态的东西。 |
+| **网络事件** | 带有字节载荷的一次性消息。 | “开了一枪”、“回合开始”、“播放这个声音”。 |
+| **所有权** | 每个联网对象都恰好由一位玩家拥有，并且只有该玩家可以写入它。 | 决定谁来驱动拾取物、谁来记录分数。 |
+| **后加入者** | 在状态变化之后才到达的玩家。 | 确保他们看到的是当前状态，而不是场景的默认值。 |
+
+<Callout type="info">
+如果五分钟后加入的玩家也需要看到它，它就是**状态**，应当放在同步变量中（或者必须重新发送给他们）。如果它只在发生的那一刻才重要，它就是**事件**。
+</Callout>
+
+## 构建模块
+
+- `BasisNetworkBehaviour` 是编译进客户端的联网脚本的基类。它拥有网络 ID、所有者，以及回调 `OnNetworkReady`、`OnNetworkMessage`、`OnOwnershipTransfer`、`OnPlayerJoined` 和 `OnPlayerLeft`。
+- `BasisNetworkShim` 是 Cilbox 脚本中的对应物。Cilbox 脚本无法派生自 `BasisNetworkBehaviour`；它改为通过 `GetComponent` 获取一个 `BasisNetworkShim` 并订阅其事件。
+- `BasisSyncedObject` 在 `BasisNetworkBehaviour` 的基础上提供紧凑的、经过插值的状态流。`BasisSyncedParameters`、`BasisSyncedTransform` 和 `BasisSyncedRigidbody` 是基于它的现成组件。
+- `BasisPickupSyncNetworking` 和 `BasisSeatSync` 无需代码即可同步拾取物和座位。
+
+## 一个完整的联网脚本
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+像这样的 Native 脚本适用于客户端构建。在上传的内容中，请将同样的逻辑写成 Cilbox 脚本（见下文）。
+
+它展示了：
+
+1. 按下按钮的玩家获取所有权，成为唯一的权威数据源。
+2. 新值会**作为事件发送**给其他所有人（`Recipients = null` 表示除您之外的所有人）。
+3. 有人加入时，**只有所有者**会向其发送当前值。
+
+同一脚本的 Cilbox 版本位于[网络事件](/cn/docs/scripting/networking/network-events#cilbox)。
+
+## 本指南中的页面
+
+- [网络事件](/cn/docs/scripting/networking/network-events)：发送消息、接收者、传输方式、载荷。
+- [同步变量](/cn/docs/scripting/networking/synced-variables)：`BasisSyncedParameters` 和自定义 `BasisSyncedObject` 字段。
+- [所有权](/cn/docs/scripting/networking/ownership)：谁拥有什么、获取和检查所有权、所有者离开时会发生什么。
+- [后加入者](/cn/docs/scripting/networking/late-joiners)：让新玩家同步到最新状态。
+- [网络组件](/cn/docs/scripting/networking/network-components)：无需代码的同步组件。
+- [性能与调试](/cn/docs/scripting/networking/performance)：带宽、发送频率以及查找同步错误。

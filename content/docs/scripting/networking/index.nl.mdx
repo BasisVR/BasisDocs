@@ -1,0 +1,91 @@
+---
+title: Netwerken
+description: Hoe je een Basis-wereld of -prop voor elke speler hetzelfde laat werken, gesynchroniseerde variabelen, netwerkevents, eigenaarschap en late joiners.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Alles wat een script doet, draait op de computer van één speler. Als een speler een deur opent, ziet niemand anders dat totdat je het aan het netwerk vertelt.
+
+Voor hoe het transport zelf werkt (server-relay, leveringsmethoden, op afstand gebaseerde updatefrequenties), zie [Netwerksynchronisatie](/nl/docs/technical/network-syncing).
+
+## De vier ideeën
+
+| Idee | Wat het is | Gebruik het voor |
+| --- | --- | --- |
+| **Gesynchroniseerde variabelen** | Waarden die de eigenaar schrijft en alle anderen lezen, continu verzonden en geïnterpoleerd. | Posities, de hoek van een hendel, een score, alles wat een huidige status heeft. |
+| **Netwerkevents** | Eenmalige berichten met een byte-payload. | "Er is een schot gelost", "de ronde is begonnen", "speel dit geluid af". |
+| **Eigenaarschap** | Precies één speler is eigenaar van elk genetwerkt object en mag het schrijven. | Bepalen wie een pickup bestuurt, wie de score bijhoudt. |
+| **Late joiners** | Spelers die aankomen nadat er dingen zijn veranderd. | Zorgen dat ze de huidige status zien, niet de standaardwaarden van de scène. |
+
+<Callout type="info">
+Als een speler die vijf minuten later binnenkomt het moet zien, is het **status** en hoort het in een gesynchroniseerde variabele (of moet het opnieuw naar die speler worden gestuurd). Als het alleen ertoe doet op het moment dat het gebeurt, is het een **event**.
+</Callout>
+
+## De bouwstenen
+
+- `BasisNetworkBehaviour` is de basisklasse voor genetwerkte scripts die in de client zijn gecompileerd. Het krijgt een netwerk-ID, een eigenaar en de callbacks `OnNetworkReady`, `OnNetworkMessage`, `OnOwnershipTransfer`, `OnPlayerJoined` en `OnPlayerLeft`.
+- `BasisNetworkShim` is hetzelfde voor Cilbox-scripts. Een Cilbox-script kan niet afleiden van `BasisNetworkBehaviour`. Het haalt in plaats daarvan een `BasisNetworkShim` op via `GetComponent` en abonneert zich op de events daarvan.
+- `BasisSyncedObject` bouwt voort op `BasisNetworkBehaviour` met een compacte, geïnterpoleerde statusstroom. `BasisSyncedParameters`, `BasisSyncedTransform` en `BasisSyncedRigidbody` zijn kant-en-klare componenten daarbovenop.
+- `BasisPickupSyncNetworking` en `BasisSeatSync` synchroniseren pickups en stoelen zonder code.
+
+## Een genetwerkt script, van begin tot eind
+
+```csharp title="NetworkedCounter.cs (Native)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using TMPro;
+using UnityEngine;
+
+public class NetworkedCounter : BasisNetworkBehaviour
+{
+    public TextMeshPro label;
+    int count;
+
+    public void Increment()
+    {
+        TakeOwnership();
+        count++;
+        Show();
+        SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    public override void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (IsLocalOwner())
+        {
+            SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+Native scripts zoals deze werken in client-builds. Schrijf in geüploade content hetzelfde als een Cilbox-script (hieronder).
+
+Wat het laat zien:
+
+1. De speler die op de knop drukt, neemt het eigenaarschap en wordt de enige bron van waarheid.
+2. De nieuwe waarde wordt **als event verstuurd** naar alle anderen (`Recipients = null` betekent iedereen behalve jij).
+3. Wanneer iemand binnenkomt, stuurt **alleen de eigenaar** die speler de huidige waarde.
+
+Hetzelfde script voor Cilbox staat in [Netwerkevents](/nl/docs/scripting/networking/network-events#cilbox).
+
+## Pagina's in deze handleiding
+
+- [Netwerkevents](/nl/docs/scripting/networking/network-events): berichten versturen, ontvangers, leveringsmethoden, payloads.
+- [Gesynchroniseerde variabelen](/nl/docs/scripting/networking/synced-variables): `BasisSyncedParameters` en aangepaste `BasisSyncedObject`-velden.
+- [Eigenaarschap](/nl/docs/scripting/networking/ownership): wie is eigenaar van wat, eigenaarschap nemen en controleren, wat er gebeurt wanneer de eigenaar vertrekt.
+- [Late joiners](/nl/docs/scripting/networking/late-joiners): nieuwe spelers bijwerken.
+- [Netwerkcomponenten](/nl/docs/scripting/networking/network-components): de synchronisatiecomponenten zonder code.
+- [Prestaties en debuggen](/nl/docs/scripting/networking/performance): bandbreedte, verzendfrequenties en synchronisatiefouten vinden.

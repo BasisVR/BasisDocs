@@ -1,0 +1,32 @@
+---
+title: Butin aléatoire
+description: Un coffre à butin qui montre à chaque joueur le même objet aléatoire sans envoyer de message, grâce à BasisSharedRandomShim.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- Toutes les 10 minutes de temps serveur, le coffre refait un tirage, et chaque client tire le même objet.
+- Donnez à chaque coffre sa propre `seed` pour qu'ils n'affichent pas tous la même chose.
+- Pour un tirage déclenché par un joueur, envoyez seulement le numéro de manche comme événement réseau et laissez chaque client calculer `RangeInt(seed, round, ...)`.

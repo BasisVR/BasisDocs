@@ -1,0 +1,79 @@
+---
+title: Conceptos básicos
+description: Sus primeros scripts de Basis, un objeto que gira y un botón de UI, como scripts Cilbox que se incluyen dentro de una escena o un prop.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Configuración
+
+1. Cree un GameObject vacío y añada **Basis Scene** (para un mundo) o **Basis Prop** (para un prop).
+2. Añada **Cilbox Scene Basis** (mundo) o el componente Cilbox correspondiente a su tipo de contenido. Este es el sandbox en el que se ejecutan todos los scripts del contenido.
+3. Añada sus scripts a objetos situados debajo de él.
+
+<Callout type="info">
+Si su editor no encuentra el namespace `Cilbox`, añada una referencia al assembly de Cilbox en su propio `.asmdef`, o active **Auto Referenced** en el assembly de Cilbox.
+</Callout>
+
+## Un objeto que gira
+
+```csharp title="Spinner.cs"
+using UnityEngine;
+using Cilbox;
+
+[Cilboxable]
+public class Spinner : MonoBehaviour
+{
+    public Vector3 degreesPerSecond = new Vector3(0f, 90f, 0f);
+
+    void Update()
+    {
+        transform.Rotate(degreesPerSecond * Time.deltaTime);
+    }
+}
+```
+
+Los campos públicos y los campos `[SerializeField]` se guardan con el contenido y se pueden ajustar en el inspector.
+
+## Un botón que cambia un texto
+
+1. Cree un **Canvas** en espacio de mundo con un **Button** y un **TextMeshPro - Text (UI)**.
+2. Añada este script al canvas y asigne el botón y el texto.
+
+```csharp title="ClickCounter.cs"
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+using Cilbox;
+
+[Cilboxable]
+public class ClickCounter : MonoBehaviour
+{
+    public Button button;
+    public TextMeshProUGUI label;
+    int clicks;
+
+    void Start()
+    {
+        button.onClick.AddListener(OnClick);
+        label.text = "Click me";
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+    }
+
+    void OnClick()
+    {
+        clicks++;
+        label.text = $"Clicked {clicks} times";
+    }
+}
+```
+
+Este contador es local: cada jugador tiene su propia cuenta. El ejemplo [Interruptor sincronizado](/es/docs/scripting/examples/synced-toggle) crea un botón que comparten todos.
+
+## Pruebas
+
+Entre en el modo de reproducción en su escena. Basis sustituye cada script `[Cilboxable]` por un `CilboxProxy`, igual que después de subir el contenido. Después compile el contenido y cárguelo en el cliente como se describe en [Compilación](/es/docs/world/building).

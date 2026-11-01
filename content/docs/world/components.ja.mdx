@@ -1,0 +1,65 @@
+---
+title: シーンコンポーネント
+description: ワールドに配置するBasisコンポーネント、それぞれの役割、詳細情報の参照先。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+これらのコンポーネントはBasisワールドの構成要素です。どれもコードは不要です。*（クライアントビルド）*と記されたものは、アップロードされるコンテンツのデフォルト許可リストに含まれていません。[許可されたコンポーネント](/ja/docs/scripting/allowed-components)を参照してください。
+
+## 必須
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Basis Scene** | シーンをBasisワールドとしてマークします。**Spawn Point**、プレイヤーが落下したときに戻される**Respawn Height**、オーディオミキサーグループ、メインカメラを設定します。ワールドごとに1つです。[ビルド](/ja/docs/world/building)を参照してください。 |
+
+## インタラクション
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Basis Interactable Shim** | オブジェクトをスクリプトから押せるようにします。`ButtonDown`と`ButtonUp`、ホバー時と押下時の色を持ちます。 |
+| **Basis Pickup Interactable** | プレイヤーがオブジェクトを掴む、持つ、使うことができるようにします。持っている間にトリガーが押されると`OnPickupUse`を発生させます。 |
+| **Basis Interactable Button** | 既製の押せるボタンです（com.basis.examples、`ExampleInteractableButton`プレハブ）。 |
+| **Basis Seat** | プレイヤーが座れるようにします。回転制限、ハイライトモード、そして`TrySeatLocalPlayer`、`EjectLocalPlayer`、`IsAvailable`によるスクリプティング。 |
+| **Basis Avatar Pedestal** | アバターを展示し、プレイヤーがそのアバターに切り替えられるようにします。ワールド専用です。 |
+| **Basis Runtime Loader** *（クライアントビルド）* | ロード設定からプロップをスポーンします。例えばボタンからです。[Scene Props](/ja/docs/world/scene-props)を参照してください。 |
+
+## ネットワーク
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Basis Pickup Sync Networking** | ピックアップのポーズと持ち主を同期します。 |
+| **Basis Synced Transform** | 動くオブジェクトを同期します。**Basis Synced Rigidbody** *（クライアントビルド）*は速度も加えます。 |
+| **Basis Synced Parameters** *（クライアントビルド）* | 名前付きの値（float、int、bool、色）を同期します。 |
+| **Basis Seat Sync** | 誰が座席に座っているかを同期します。 |
+| **Basis Networked Vehicle** | 車体、車輪、スラスター、操縦席のパーツから組み立てる、同期された運転可能な乗り物。 |
+
+[ネットワークコンポーネント](/ja/docs/scripting/networking/network-components)を参照してください。
+
+## メディアとレンダリング
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Basis Media Player** | 同期されたビデオとストリームの再生。[Media Player](/ja/docs/world/media-player)を参照してください。 |
+| **Basis SDK Mirror** | ミラーです。レンダーテクスチャのサイズ、ファークリップ、反射内でポストプロセスをレンダリングするかを設定します。ミラーはシーンをもう一度レンダリングします。小さく保ち、デフォルトではオフにしてください。 |
+| **TextMesh Pro** | 看板やUIのテキスト。ワールドとCilboxスクリプトでサポートされています。 |
+| **Canvas** | Basisのポインターで動作するワールド空間のUI。[UI Canvas](/ja/docs/world/ui-canvas)を参照してください。 |
+
+## プレイヤーとプラットフォーム
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Basis Locomotion Zone** *（クライアントビルド）* | ローカルプレイヤーがトリガー内にいる間、ジャンプの高さ、歩行と走行の速度、重力、移動モードを変更します。 |
+| **Basis Platform Switch** | ルールのリストに基づいて、プラットフォーム（VR、デスクトップ、モバイル）ごとにオブジェクトやコンポーネントを有効化、無効化します。 |
+
+## スクリプティング
+
+| コンポーネント | 役割 |
+| --- | --- |
+| **Cilbox Scene Basis** / **Cilbox Prop Basis** | ワールドやプロップの`[Cilboxable]`スクリプトが実行されるサンドボックス。[スクリプティング](/ja/docs/scripting/scripting)を参照してください。 |
+| **Basis OSC** | OSCメッセージを公開、購読します。[OSC](/ja/docs/scripting/osc)を参照してください。 |
+| **Basis Action Trigger** | UIのポインターイベント（enter、exit、click、drag）をCilboxスクリプトに転送します。 |
+
+<Callout type="info">
+すべてのコンポーネントはUnityエディター内でドキュメント化されています。コンポーネントを選択してインスペクターのドキュメントボタンを使うか、**Basis > Creator Guide**を開いてこのガイドをオフラインで参照してください。
+</Callout>

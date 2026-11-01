@@ -1,0 +1,67 @@
+---
+title: Minimap
+description: Een live minimap van bovenaf die de lokale speler volgt, met een camera, een render texture en een optioneel Graphics.Blit-masker.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Setup
+
+1. Maak een **Render Texture**-asset aan, bijvoorbeeld 512 x 512.
+2. Maak een **Camera** aan die recht naar beneden kijkt. Zet **Projection** op Orthographic, **Target Texture** op de render texture, en een **Culling Mask** die spelers en UI weglaat.
+3. Toon de render texture op een **Raw Image** in een canvas, of op een materiaal.
+4. Voeg **Minimap** toe aan de camera.
+
+## Script
+
+```csharp title="Minimap.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Minimap : MonoBehaviour
+{
+    public float height = 40f;
+    public bool rotateWithPlayer = true;
+    public Transform playerMarker;
+
+    void Update()
+    {
+        BasisLocalPlayer local = BasisLocalPlayer.Instance;
+        if (local == null) return;
+        local.GetPositionAndRotation(out Vector3 position, out Quaternion rotation);
+
+        float yaw = rotateWithPlayer ? rotation.eulerAngles.y : 0f;
+        transform.SetPositionAndRotation(position + Vector3.up * height, Quaternion.Euler(90f, yaw, 0f));
+
+        if (playerMarker != null) playerMarker.localRotation = Quaternion.Euler(0f, 0f, rotateWithPlayer ? 0f : -rotation.eulerAngles.y);
+    }
+}
+```
+
+## Ronde kaart met Graphics.Blit
+
+Om de vierkante texture tot een cirkel te maskeren, blit je die elk frame door een materiaal. `Graphics.Blit` is de enige tekenaanroep die beschikbaar is voor Cilbox-scripts.
+
+```csharp title="MinimapMask.cs (Cilbox)"
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class MinimapMask : MonoBehaviour
+{
+    public RenderTexture source;
+    public RenderTexture destination;
+    public Material circleMask;
+
+    void Update()
+    {
+        Graphics.Blit(source, destination, circleMask);
+    }
+}
+```
+
+<Callout type="info">
+Een minimapcamera rendert de scène een tweede keer. Houd de render texture klein en de culling mask strak, en zet de camera uit op lage kwaliteitsniveaus met `BasisGraphicsSettingsShim.QualityTier`.
+</Callout>

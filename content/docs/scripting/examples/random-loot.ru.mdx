@@ -1,0 +1,32 @@
+---
+title: Случайная добыча
+description: Сундук с добычей, который показывает каждому игроку один и тот же случайный предмет без отправки сообщений, с помощью BasisSharedRandomShim.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- Каждые 10 минут серверного времени сундук перебрасывает предмет, и каждый клиент выбрасывает один и тот же.
+- Дайте каждому сундуку свой `seed`, чтобы они не показывали одно и то же.
+- Для броска, который запускает игрок, отправьте сетевым событием только номер раунда, и пусть каждый клиент вычислит `RangeInt(seed, round, ...)`.

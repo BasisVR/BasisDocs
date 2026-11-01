@@ -8,15 +8,52 @@ import { Card, Cards } from 'fumadocs-ui/components/card';
 
 스크립팅은 Basis 프레임워크 내에서 고급 기능을 제공합니다. 이 문서는 Unity와 Basis SDK를 사용하여 스크립트를 생성, 빌드 및 테스트하는 방법을 안내합니다.
 
-Basis는 샌드박스 CIL 에뮬레이터 Unity 패키지인 `Cilbox`도 사용합니다.
+## Native와 Cilbox
+
+Basis에는 두 종류의 스크립트가 있습니다.
+
+- **Native** 스크립트는 애플리케이션에 컴파일됩니다. 완전한 Unity 및 Basis API와 네이티브 속도를 갖지만, 해당 스크립트로 빌드된 클라이언트에만 존재합니다. Basis로 앱이나 게임을 만들 때 사용하세요.
+- **Cilbox** 스크립트는 런타임 스크립트입니다. 월드, 소품 또는 아바타 안에 포함되어 배포되고, `[Cilboxable]`로 표시되며, 콘텐츠를 로드하는 모든 클라이언트에서 샌드박스로 실행됩니다. 사용자 콘텐츠에 사용하세요.
+
+전체 비교는 [Native와 Cilbox](/ko/docs/scripting/native-and-cilbox)를 참조하세요.
 
 ## 빠른 시작 가이드
 
 <Cards>
   <Card
+    title="Native와 Cilbox"
+    description="앱에 컴파일되는 스크립트와 콘텐츠 안의 런타임 스크립트"
+    href="/ko/docs/scripting/native-and-cilbox"
+  />
+  <Card
     title="스크립팅"
     description="스크립트 사용 방법"
     href="/ko/docs/scripting/scripting"
+  />
+  <Card
+    title="일반적인 사용법"
+    description="플레이어, 입력, UI, 타이머, 데이터 로드, 저장 및 메뉴"
+    href="/ko/docs/scripting/common-usages"
+  />
+  <Card
+    title="샌드박스 규칙"
+    description="Cilbox의 주의 사항과 성능 비용"
+    href="/ko/docs/scripting/sandbox-rules"
+  />
+  <Card
+    title="아바타 스크립팅"
+    description="아바타의 스크립트, 착용자와 모든 사람의 차이"
+    href="/ko/docs/scripting/avatar-scripting"
+  />
+  <Card
+    title="네트워킹"
+    description="동기화 변수, 네트워크 이벤트, 소유권 및 늦게 참여한 플레이어"
+    href="/ko/docs/scripting/networking"
+  />
+  <Card
+    title="예제"
+    description="일반적인 월드 및 소품 기능을 위한 완전한 스크립트"
+    href="/ko/docs/scripting/examples"
   />
   <Card
     title="OSC"

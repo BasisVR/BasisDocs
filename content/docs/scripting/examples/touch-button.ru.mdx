@@ -1,0 +1,53 @@
+---
+title: Сенсорная кнопка
+description: Кнопка, которая нажимается касанием любой руки, с использованием позиций костей рук локального игрока.
+---
+
+Указание лучом работает везде, но в VR приятнее нажимать кнопку пальцем. Этот скрипт читает позиции рук локального игрока и срабатывает, когда одна из них оказывается рядом.
+
+```csharp title="TouchButton.cs (Cilbox)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.Events;
+
+[Cilboxable]
+public class TouchButton : MonoBehaviour
+{
+    public float radius = 0.06f;
+    public float cooldown = 0.5f;
+    public AudioSource click;
+    public GameObject target;
+
+    bool touching;
+    float nextPress;
+
+    void Update()
+    {
+        IBasisPlayer local = BasisPlayersShim.Local;
+        if (local == null) return;
+        Vector3 center = transform.position;
+        float left = (local.GetBonePosition(HumanBodyBones.LeftIndexDistal) - center).sqrMagnitude;
+        float right = (local.GetBonePosition(HumanBodyBones.RightIndexDistal) - center).sqrMagnitude;
+        bool now = Mathf.Min(left, right) < radius * radius;
+        if (now && !touching && Time.time >= nextPress)
+        {
+            nextPress = Time.time + cooldown;
+            Press();
+        }
+        touching = now;
+    }
+
+    void Press()
+    {
+        click.Play();
+        target.SetActive(!target.activeSelf);
+        BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.5f, 0.05f);
+    }
+}
+```
+
+- Для костей кончиков пальцев нужен аватар с костями пальцев. Для нажатия ладонью используйте `LeftHand` и `RightHand` с большим радиусом.
+- `touching` заставляет кнопку срабатывать один раз за касание, а не каждый кадр.
+- Чтобы поделиться результатом, отправьте его как [сетевое событие](/ru/docs/scripting/examples/synced-toggle) из `Press`.

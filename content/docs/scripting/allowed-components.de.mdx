@@ -1,0 +1,41 @@
+---
+title: Erlaubte Komponenten
+description: Welche Komponenten in hochgeladenen Welten, Props und Avataren erhalten bleiben, wie Sie das prüfen und wie Client-Builds weitere hinzufügen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Wenn Inhalte geladen werden, entfernt die **Content Police** von Basis jede Komponente, deren Typ nicht auf der Allowlist für diese Art von Inhalt steht. Mit `[Cilboxable]` markierte Skripte bleiben erhalten, weil sie vorher in Proxies für die Sandbox umgewandelt werden.
+
+## Die Allowlists
+
+Die Listen liegen in `Packages/com.basis.sdk/Settings/`:
+
+| Asset | Gilt für |
+| --- | --- |
+| `SceneContentPoliceSelector` | Welten |
+| `PropContentPoliceSelector` | Props |
+| `AvatarContentPoliceSelector` | Avatare |
+
+Jede ist eine Liste vollständiger Typnamen. Der Abgleich ist exakt: Eine Unterklasse eines erlaubten Typs ist **nicht** erlaubt, sofern sie nicht selbst aufgeführt ist.
+
+## Was standardmäßig erlaubt ist
+
+**Welten und Props:** Rendering (Mesh-, Skinned-Mesh-, Line-, Trail-, Partikel- und LOD-Komponenten, Lichter, Reflection Probes, Kameras), Physik (Collider, Rigidbodies, Joints), Audioquellen und Steam Audio, Animatoren und Animation, UI-Canvases und TextMesh Pro, `VideoPlayer`, VFX-Graph-Binder, AudioLink, Basis-Constraints, der Basis-Mediaplayer, Spiegel, Sitze, Pickups, `BasisSyncedTransform`, `BasisPickupSyncNetworking`, `BasisSeatSync`, Fahrzeuge, `BasisPlatformSwitch` sowie die Cilbox-Sandbox und Shims. Welten erlauben zusätzlich Navigation (`NavMeshAgent`, `NavMeshObstacle`), Post-Processing-Volumes und das Avatar-Podest.
+
+**Avatare:** Rendering, Physik, Audio, Animatoren, Constraints, Sitze, synchronisierte Transforms, OSC und die Avatar-Shims. Keine Kameras, Lichter, UI oder Videos.
+
+**Standardmäßig nicht erlaubt** (nur Client-Builds): `BasisSyncedParameters`, `BasisSyncedRigidbody`, `BasisLocomotionZone`, `BasisRuntimeLoader` und jedes eigene native `MonoBehaviour`.
+
+<Callout type="info">
+Die Selector-Assets sind die maßgebliche Quelle und ändern sich zwischen Versionen. Öffnen Sie sie im Inspector, um die aktuelle Liste zu sehen.
+</Callout>
+
+## Ihre Inhalte prüfen
+
+- Starten Sie den Play Mode: Basis wendet dieselbe Prüfung an, und entfernte Komponenten werden protokolliert.
+- Das Fenster **Basis > Tools > Cilbox Permissions** listet auf, was Skripte in jeder Sandbox aufrufen dürfen.
+
+## Eine Komponente hinzufügen (Client-Builds)
+
+Wenn Sie Ihren eigenen Client ausliefern, fügen Sie den vollständigen Namen des Typs dem passenden Selector-Asset hinzu. Inhalte für den öffentlichen Client können sich darauf nicht verlassen; dort wandeln Sie die Logik in ein `[Cilboxable]`-Skript um.

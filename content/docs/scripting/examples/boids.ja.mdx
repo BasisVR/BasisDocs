@@ -1,0 +1,49 @@
+---
+title: Boids
+description: BasisTransformBatchShimでTransformの書き込みをまとめ、Cilboxで200羽の鳥の群れを低コストでアニメーションさせます。
+---
+
+Cilboxスクリプトから200個のTransformを1つずつ動かすと、1フレームに数百回のインタープリター呼び出しがかかります。バッチ処理にすれば1回で済みます。
+
+```csharp title="Flock.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Flock : MonoBehaviour
+{
+    public Transform[] birds;
+    public float radius = 10f;
+    public float speed = 0.4f;
+
+    float[] xyz;
+    float[] phase;
+
+    void Start()
+    {
+        xyz = new float[birds.Length * 3];
+        phase = new float[birds.Length];
+        for (int i = 0; i < phase.Length; i++) phase[i] = i * 0.37f;
+    }
+
+    void Update()
+    {
+        float t = Time.time * speed;
+        Vector3 c = transform.position;
+        float cx = c.x, cy = c.y, cz = c.z;
+        for (int i = 0; i < birds.Length; i++)
+        {
+            float a = t + phase[i];
+            xyz[i * 3] = cx + Mathf.Cos(a) * radius;
+            xyz[i * 3 + 1] = cy + Mathf.Sin(a * 2f) * 2f;
+            xyz[i * 3 + 2] = cz + Mathf.Sin(a) * radius;
+        }
+        BasisTransformBatchShim.SetPositions(birds, xyz);
+    }
+}
+```
+
+- 計算は単純なfloatで行います。インタープリターでは`Vector3`の演算子よりずっと安価です。
+- `SetPositions(Transform[], float[])`は、すべての鳥を1回のネイティブ呼び出しで書き込みます。
+- 群れをプレイヤー間で正確に揃える必要がある場合は、`Time.time`の代わりに`BasisNetworkTimeShim.ServerTimeSeconds`を使用してください。

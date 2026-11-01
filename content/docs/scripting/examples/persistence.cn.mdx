@@ -1,0 +1,125 @@
+---
+title: 持久化
+description: 使用 BasisSaveShim 在多次访问之间保存玩家进度，将值打包成字节，并在世界与其道具之间共享存档。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`BasisSaveShim` 将字节存储在玩家自己的机器上，按您内容的 ID 归档。它是按玩家区分的：每位玩家都有自己的存档，不会同步任何内容。
+
+## 脚本
+
+此脚本保存玩家到达了哪些检查点以及他们的最佳时间，并在他们回来时将其放回最后一个检查点。
+
+```csharp title="CourseProgress.cs (Cilbox)"
+using System.IO;
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class CourseProgress : MonoBehaviour
+{
+    const string Slot = "progress";
+    const byte Version = 1;
+
+    public Transform[] checkpoints;
+    public TextMeshPro bestLabel;
+
+    int reached = -1;
+    float bestTime = float.MaxValue;
+
+    void Start()
+    {
+        Load();
+        if (reached >= 0)
+        {
+            Transform point = checkpoints[reached];
+            BasisLocalPlayer.Instance.Teleport(point.position, point.rotation, BasisTeleportMode.Instant);
+        }
+        ShowBest();
+    }
+
+    public void ReachCheckpoint(int index)
+    {
+        if (index <= reached) return;
+        reached = index;
+        Save();
+    }
+
+    public void FinishRun(float seconds)
+    {
+        if (seconds < bestTime) bestTime = seconds;
+        reached = -1;
+        Save();
+        ShowBest();
+    }
+
+    void Save()
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write(Version);
+            writer.Write(reached);
+            writer.Write(bestTime);
+            BasisSaveShim.Save(this, Slot, stream.ToArray());
+        }
+    }
+
+    void Load()
+    {
+        byte[] data = BasisSaveShim.Load(this, Slot);
+        if (data == null || data.Length < 9) return;
+        using (var reader = new BinaryReader(new MemoryStream(data)))
+        {
+            if (reader.ReadByte() != Version) return;
+            reached = Mathf.Clamp(reader.ReadInt32(), -1, checkpoints.Length - 1);
+            bestTime = reader.ReadSingle();
+        }
+    }
+
+    void ShowBest()
+    {
+        bestLabel.text = bestTime < float.MaxValue ? $"Best: {bestTime:F1}s" : "No time yet";
+    }
+}
+```
+
+## 规则
+
+- 由玩家决定。在玩家允许为您的内容保存之前，`Save` 返回 false，`Load` 返回 null。无论哪种情况，您的脚本都会继续运行。请始终处理存档缺失的情况。
+- 为数据加上版本号。先写入一个版本字节，并拒绝您无法理解的数据。当您更新世界时，玩家仍会保留旧的存档。
+- 加载时进行验证。限制索引范围；永远不要相信保存的值仍然与您的场景匹配。
+- 限制：每个槽位 256 KB，每个存储 32 个槽位和 1 MB，每秒 8 次写入。请在有意义的事件发生时保存，而不是每帧保存。
+
+## 在内容之间共享
+
+为存储命名即可共享存档，例如在世界与其生成的道具之间：
+
+```csharp
+BasisSaveShim.Save(this, "my-game", "progress", bytes);
+byte[] data = BasisSaveShim.Load(this, "my-game", "progress");
+```
+
+作用域控制谁可以读取和写入：
+
+| 作用域 | 读取 | 写入 |
+| --- | --- | --- |
+| `BasisSaveScope.Protected` | 仅限此内容 | 仅限此内容 |
+| `BasisSaveScope.ReadOnly` | 任何内容（需提供您的 Content ID） | 仅限此内容 |
+| `BasisSaveScope.Shared` | 任何指定该存储名称的内容 | 任何指定该存储名称的内容 |
+
+```csharp
+// Publish a badge other worlds can read.
+BasisSaveShim.Save(this, BasisSaveScope.ReadOnly, null, "badge", bytes);
+
+// Another world reads it.
+byte[] badge = BasisSaveShim.LoadReadOnly(this, partnerContentId, null, "badge");
+```
+
+<Callout type="warn">
+存档保存在玩家的机器上，玩家可以编辑它们。不要将它们用于任何必须可信的内容，例如排行榜。
+</Callout>

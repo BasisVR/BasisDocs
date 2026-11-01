@@ -1,0 +1,98 @@
+---
+title: События
+description: Шимы событий по подписке. Получите компонент в Start, затем объявите колбэк с нужным именем.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Все шимы событий работают одинаково: один раз вызовите `GetComponent<T>()` в `Start` (Cilbox добавит компонент за вас), затем объявите метод с именем колбэка шима. Basis вызывает его напрямую. Ни подписываться, ни отписываться не нужно.
+
+<Callout type="info">
+Большинство шимов событий вызывают вас один раз сразу после подписки с текущим значением. Отдельный код начальной настройки не нужен.
+</Callout>
+
+## BasisPlatformEventShim
+
+```csharp
+void Start() { GetComponent<BasisPlatformEventShim>(); }
+
+void OnPlatformChanged(string mode, bool vr, bool headsetWorn)
+{
+    vrHud.SetActive(vr);
+    desktopHud.SetActive(!vr);
+}
+```
+
+## BasisLanguageEventShim
+
+```csharp
+void Start() { GetComponent<BasisLanguageEventShim>(); }
+
+void OnLanguageChanged(string code)
+{
+    sign.text = code == "de" ? "Willkommen" : "Welcome";
+}
+```
+
+## BasisGraphicsSettingsEventShim
+
+Объединяется не более чем в один вызов за кадр.
+
+```csharp
+void Start() { GetComponent<BasisGraphicsSettingsEventShim>(); }
+
+void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+{
+    detail.SetActive(qualityTier >= BasisGraphicsSettingsShim.TierMedium);
+}
+```
+
+## BasisPermissionEventShim
+
+```csharp
+void Start() { GetComponent<BasisPermissionEventShim>(); }
+
+void OnLocalPermissionsChanged(bool isAdmin, bool isModerator)
+{
+    staffPanel.SetActive(isAdmin || isModerator);
+}
+```
+
+## BasisJiggleEventShim
+
+Срабатывает, когда кто-то хватает или касается jiggle-физики этого объекта. Оба колбэка срабатывают один раз в начале (`began` равно true) и один раз в конце.
+
+```csharp
+BasisJiggleEventShim jiggle;
+int tail;
+
+void Start()
+{
+    jiggle = GetComponent<BasisJiggleEventShim>();
+    tail = jiggle.FindJiggleRig("Tail");
+}
+
+void OnJiggleGrab(int playerId, bool began, int hand, int rigIndex)
+{
+    if (rigIndex == tail && began) squeak.Play();
+}
+
+void OnJiggleTouch(int playerId, bool began, int hand, int rigIndex) { }
+```
+
+`GetJiggleRigCount()` и `GetJiggleRigName(index)` перечисляют риги. Обнаружение работает только пока какой-либо скрипт подписан.
+
+## BasisBeforeRenderShim
+
+Выполняется после всей работы с позой и IK, прямо перед отрисовкой кадра. Используйте его, чтобы закрепить что-то на руке или голове без задержки в кадр. Делайте его коротким: рендер ждёт его завершения.
+
+```csharp
+void Start() { GetComponent<BasisBeforeRenderShim>(); }
+
+void OnBeforeRender()
+{
+    IBasisPlayer me = BasisPlayersShim.Local;
+    if (me == null) return;
+    transform.position = me.GetBonePosition(HumanBodyBones.RightHand);
+}
+```

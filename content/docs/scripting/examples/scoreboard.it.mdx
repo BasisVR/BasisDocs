@@ -1,0 +1,114 @@
+---
+title: Tabellone segnapunti
+description: Un punteggio di rete con un solo proprietario che custodisce la verità e gli altri giocatori che gli chiedono di aggiungere punti.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> Questo è un esempio nativo per le build del client: `BasisSyncedParameters` e gli script personalizzati non sono nella allowlist predefinita per i contenuti caricati. Per un tabellone Cilbox, usa lo schema di richiesta al proprietario descritto sotto con gli eventi di rete, come nell'[Interruttore sincronizzato](/it/docs/scripting/examples/synced-toggle).
+
+Un punteggio deve essere esatto e deve sopravvivere all'entrata e all'uscita dei giocatori. Due giocatori che aggiungono un punto nello stesso momento devono dare +2, non +1. Questo esempio mantiene il punteggio su un solo proprietario e fa passare ogni modifica attraverso di lui.
+
+## Configurazione
+
+1. Aggiungi **Basis Synced Parameters** all'oggetto del tabellone. Aggiungi due parametri chiamati `Red` e `Blue`, di tipo **Int**, con **Interpolate** disattivato.
+2. Aggiungi **Scoreboard** allo stesso oggetto e assegna il componente dei parametri e due etichette.
+3. Collega i pulsanti (o i trigger delle porte) a `AddRed`, `AddBlue` e `ResetScores`.
+
+## Script
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` riceve già messaggi di rete per il proprio flusso. Indirizza le richieste al tabellone con una piccola sottoclasse:
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+Usa **ScoreboardParameters** al posto di **Basis Synced Parameters** nella configurazione.
+
+## Come funziona
+
+- Solo il proprietario scrive il punteggio. Le pressioni simultanee vengono applicate una dopo l'altra sul proprietario.
+- Tutti gli altri inviano una richiesta a `CurrentOwnerId` invece di prendere l'ownership. Prendere l'ownership permetterebbe a due giocatori di aggiungere ciascuno 1 allo stesso vecchio valore.
+- I giocatori arrivati in ritardo non richiedono nulla di aggiuntivo. I parametri sincronizzati inviano ai nuovi giocatori un keyframe.
+- Se il proprietario se ne va, l'ownership passa al giocatore connesso da più tempo, che ha già il punteggio attuale.
+
+<Callout type="info">
+Le richieste sono di un byte e i pacchetti di sincronizzazione sono sempre più grandi, per questo qui basta controllare la lunghezza. Per più tipi di messaggio, fai precedere i tuoi messaggi da un byte marcatore con cui il flusso di sincronizzazione non inizia mai, oppure sposta la gestione delle richieste su un `BasisNetworkBehaviour` separato.
+</Callout>

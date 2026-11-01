@@ -1,0 +1,38 @@
+---
+title: 手持ちの懐中電灯
+description: BasisBeforeRenderShimとコントローラー入力を使い、遅延なくローカルプレイヤーの手に固定される懐中電灯。
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- `Update`で位置を書き込むと、IKが後で完了するため、VRでは手から1フレーム遅れてしまいます。`OnBeforeRender`はIKの後に実行されます。
+- ライトはローカルです。各プレイヤーが自分のライトを持ち、他の人には見えません。

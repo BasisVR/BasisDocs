@@ -1,0 +1,38 @@
+---
+title: 손전등
+description: BasisBeforeRenderShim과 컨트롤러 입력을 사용해 지연 없이 로컬 플레이어의 손에 고정되는 손전등.
+---
+
+```csharp title="HandFlashlight.cs (Cilbox, world)"
+using Basis.Scripts.BasisSdk.Players;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class HandFlashlight : MonoBehaviour
+{
+    public Light beam;
+
+    void Start()
+    {
+        GetComponent<BasisBeforeRenderShim>();
+    }
+
+    void Update()
+    {
+        if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Secondary))
+            beam.enabled = !beam.enabled;
+    }
+
+    void OnBeforeRender()
+    {
+        IBasisPlayer me = BasisPlayersShim.Local;
+        if (me == null) return;
+        transform.SetPositionAndRotation(me.GetBonePosition(HumanBodyBones.RightHand), me.GetBoneRotation(HumanBodyBones.RightHand));
+    }
+}
+```
+
+- `Update`에서 위치를 쓰면 IK가 더 늦게 끝나기 때문에 VR에서 손보다 한 프레임 뒤처집니다. `OnBeforeRender`는 IK 이후에 실행됩니다.
+- 조명은 로컬입니다. 각 플레이어가 자신만의 손전등을 가지며, 다른 사람에게는 보이지 않습니다.

@@ -1,0 +1,32 @@
+---
+title: 무작위 전리품
+description: BasisSharedRandomShim을 사용해 메시지를 보내지 않고도 모든 플레이어에게 같은 무작위 아이템을 보여 주는 전리품 상자.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- 서버 시간으로 10분마다 상자가 다시 뽑히며, 모든 클라이언트가 같은 아이템을 뽑습니다.
+- 상자마다 고유한 `seed`를 주어 모두 같은 것을 보여 주지 않게 하세요.
+- 플레이어가 직접 일으키는 뽑기라면 라운드 번호만 네트워크 이벤트로 보내고, 각 클라이언트가 `RangeInt(seed, round, ...)`를 계산하게 하세요.

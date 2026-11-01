@@ -1,0 +1,44 @@
+---
+title: 后加入者
+description: 确保在状态变化之后才加入的玩家看到的是当前状态，而不是场景的默认值。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+加入的玩家加载的场景与您构建时完全相同。此后发生的任何变化（一扇门被打开、分数上升、一盏灯被关掉），在有人通知他们之前，他们都看不到。
+
+## 同步变量：已为您处理
+
+每当有玩家加入时，`BasisSyncedObject` 以及基于它构建的一切（`BasisSyncedParameters`、`BasisSyncedTransform`、`BasisSyncedRigidbody`、`BasisPickupSyncNetworking`）都会发送完整的关键帧。如果所有者已经离开且对象尚无人拥有，则由拥有该状态的玩家将其发送给新来者。您无需做任何事情。
+
+## 网络事件：重新发送状态
+
+事件不会被记住。如果某个事件改变了持久状态，请将该**状态**（而不是事件历史）重新发送给新玩家。只由所有者来做这件事。新来者只会收到一条消息，而不是每位玩家各发一条。
+
+```csharp title="Native"
+public override void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!IsLocalOwner()) return;
+    SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+```csharp title="Cilbox"
+void OnPlayerJoined(BasisNetworkPlayer player)
+{
+    if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+    net.SendCustomNetworkEvent(PackState(), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+}
+```
+
+请设计您的消息，使应用完整状态与应用一次变化走的是同一条代码路径。[同步开关示例](/cn/docs/scripting/examples/synced-toggle)只用一个字节就做到了这一点。
+
+<Callout type="warn">
+不要向新来者重放过去的事件列表（例如“门开了、门关了、门开了”）。请发送当前结果。重放会越来越长、到达时已经过时，并且在事件依赖时序时会出错。
+</Callout>
+
+## 需要检查的事项
+
+- 所有者不是第一位玩家时是否仍然有效？用三个客户端测试：A 加入，B 加入并更改某些内容，A 离开，C 加入。
+- 是否有本应来自网络的内容在 `Start` 中被设置？后加入者的 `Start` 会在其收到第一条网络消息之前运行。在第一条消息或同步值到达之前，请显示一个中性状态。
+- 持久道具。从加载配置生成的道具需要设置 **Persistent**，这样它们才会对之后加入的玩家存在。参见[场景道具](/cn/docs/world/scene-props)。

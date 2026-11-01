@@ -1,0 +1,76 @@
+---
+title: 电梯
+description: 所有人一起乘坐的移动平台。只同步目标楼层；每个客户端各自将平台移向该楼层。
+---
+
+持续传输平台的位置每帧都要消耗带宽。电梯只会朝某个楼层移动。只需同步**目标楼层**，让每个客户端自己移动平台。
+
+## 设置
+
+1. 创建带有碰撞体的平台。
+2. 添加 **Elevator** 以及调用 `GoTo(floor)` 的按钮。在检查器中设置各楼层的高度。
+
+```csharp title="Elevator.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class Elevator : MonoBehaviour
+{
+    public Transform platform;
+    public float[] floorHeights;
+    public float speed = 1.5f;
+
+    BasisNetworkShim net;
+    int target;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void GoTo(int floor)
+    {
+        net.TakeOwnership();
+        target = floor;
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(new[] { (byte)floor }, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length >= 1) target = data[0];
+        if (data.Length == 5)
+        {
+            Vector3 p = platform.localPosition;
+            platform.localPosition = new Vector3(p.x, BasisBinaryShim.ReadSingle(data, 1), p.z);
+        }
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (!net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] state = new byte[5];
+        state[0] = (byte)target;
+        BasisBinaryShim.WriteSingle(state, 1, platform.localPosition.y);
+        net.SendCustomNetworkEvent(state, DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Update()
+    {
+        Vector3 p = platform.localPosition;
+        float y = Mathf.MoveTowards(p.y, floorHeights[target], speed * Time.deltaTime);
+        platform.localPosition = new Vector3(p.x, y, p.z);
+    }
+}
+```
+
+- 每个客户端运行相同的运动。乘客无需位置流也能看到平稳移动的平台。
+- 后加入者通过一条 5 字节的消息获得目标楼层和当前高度。
+- 注意这里的 `new Vector3(...)`：在 Cilbox 中直接修改 `p.y`，也会改变它被复制出来的那个原始值（参见[沙盒规则](/cn/docs/scripting/sandbox-rules)）。

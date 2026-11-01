@@ -1,0 +1,98 @@
+---
+title: 輸入
+description: BasisControllerInputShim、BasisDesktopInputShim、BasisHapticsShim、BasisInteractableShim、BasisActionTrigger 與 BasisUIExtensions。
+---
+
+## BasisControllerInputShim
+
+僅限世界。VR 控制器狀態。當選單開啟或指標停在 UI 上時，所有輸入都會讀取為放開。
+
+```csharp
+using Basis.Shims;
+
+void Update()
+{
+    if (!BasisControllerInputShim.IsAvailable(BasisControllerHand.Right)) return;
+
+    if (BasisControllerInputShim.GetButtonDown(BasisControllerHand.Right, BasisControllerButton.Primary)) Jump();
+    bool holding = BasisControllerInputShim.GetButton(BasisControllerHand.Left, BasisControllerButton.Grip);
+    float trigger = BasisControllerInputShim.GetTrigger(BasisControllerHand.Right);
+    Vector2 stick = BasisControllerInputShim.GetStick(BasisControllerHand.Left);
+}
+```
+
+按鈕：`Trigger`、`Grip`、`Primary`、`Secondary`、`StickClick`、`Menu`。
+
+## BasisDesktopInputShim
+
+桌面模式下的滑鼠輸入。按鍵 0 是左鍵，1 是右鍵，2 是中鍵。
+
+```csharp
+if (!BasisDesktopInputShim.HasMouse) return;
+if (BasisDesktopInputShim.GetMouseButtonDown(0)) Shoot();
+Vector2 delta = BasisDesktopInputShim.MouseDelta;
+float scroll = BasisDesktopInputShim.MouseScroll.y;
+Vector2 screen = BasisDesktopInputShim.MousePosition;
+```
+
+## BasisHapticsShim
+
+震動本機玩家的控制器。強度為 0 到 1，最長 1 秒，每個內容每秒最多 10 次脈衝。沒有播放任何震動時會傳回 false。
+
+```csharp
+BasisHapticsShim.Play(this, BasisHapticHand.Right);
+BasisHapticsShim.Play(this, BasisHapticHand.Both, 0.8f, 0.2f);
+```
+
+## BasisInteractableShim
+
+讓物件可以用指標按下，並在其渲染器上顯示懸停與按下的顏色。
+
+```csharp
+BasisInteractableShim button;
+
+void Start()
+{
+    button = GetComponent<BasisInteractableShim>();
+    button.ButtonDown += OnDown;
+    button.ButtonUp += OnUp;
+}
+
+void OnDown() { lamp.SetActive(!lamp.activeSelf); }
+void OnUp() { }
+```
+
+檢查器欄位：`isEnabled`、`Color`、`HoverColor`、`InteractColor`、`DisabledColor`、`PropertyName`（材質的顏色屬性）。
+
+## BasisActionTrigger
+
+將 Unity UI 指標事件轉送到您的腳本。請將它加到 UI 元素上。
+
+```csharp
+using UnityEngine.EventSystems;
+
+void Start()
+{
+    var trigger = GetComponent<BasisActionTrigger>();
+    trigger.PointerEnter += e => highlight.SetActive(true);
+    trigger.PointerExit += e => highlight.SetActive(false);
+    trigger.PointerClick += e => Select();
+}
+```
+
+另外還有：`PointerDown`、`PointerUp`、`BeginDrag`、`Drag`、`EndDrag`、`Drop`、`Scroll`。
+
+## BasisUIExtensions
+
+`Toggle.onValueChanged` 接受的是 `UnityAction<bool>`。這個擴充功能讓您可以改為直接傳入方法。
+
+```csharp
+using Basis.Shims;
+using UnityEngine.UI;
+
+public Toggle musicToggle;
+
+void Start() { musicToggle.AddListener(OnMusic); }
+
+void OnMusic(bool on) { music.SetActive(on); }
+```

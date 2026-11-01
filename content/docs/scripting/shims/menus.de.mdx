@@ -1,0 +1,64 @@
+---
+title: Menüs
+description: BasisMenuShim, Einstellungs-Tabs und Menü-Panels mit Überschriften, Beschriftungen, Buttons, Schaltern, Slidern und Dropdowns.
+---
+
+`BasisMenuShim` fügt dem eigenen Menü des Spielers UI hinzu. Beide Aufrufe geben null zurück, wenn sie abgelehnt werden. Prüfen Sie das immer.
+
+| Aufruf | Fügt hinzu |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Einen Tab in den Einstellungen des Spielers (bis zu 4 pro Inhalt). |
+| `BasisMenuShim.AddPanel(this, title)` | Ein Panel mit eigenem Menü-Button (eines pro Inhalt, bis zu 8 Tabs). |
+
+## Eine Seite aufbauen
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Einträge später ändern
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Seiten: `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (Panels), `IsOpen` und `Open()`.
+
+## Ein Panel öffnen
+
+`Open()` funktioniert nur innerhalb von 5 Sekunden, nachdem der Spieler etwas in Ihrem Inhalt gedrückt hat. Inhalte können Menüs also nicht von sich aus aufklappen.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Grenzen: 64 Einträge pro Seite, 32 Dropdown-Optionen, Titel mit 48 Zeichen. Mehr: [Beispiel Einstellungs-Tab](/de/docs/scripting/examples/settings-tab).

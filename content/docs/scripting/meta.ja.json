@@ -1,1 +1,1 @@
-{ "title": "スクリプティング", "icon": "FolderOpen", "pages": ["index", "scripting", "osc"] }
+{ "title": "スクリプティング", "icon": "FolderOpen", "pages": ["index", "native-and-cilbox", "scripting", "common-usages", "sandbox-rules", "allowed-components", "avatar-scripting", "networking", "examples", "shims", "osc"] }

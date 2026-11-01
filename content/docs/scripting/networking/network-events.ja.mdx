@@ -1,0 +1,175 @@
+---
+title: ネットワークイベント
+description: プレイヤー間での単発メッセージの送信、受信者、配信方式、ペイロードの詰め方、そしてCilboxでの同等の方法。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+ネットワークイベントは、あるプレイヤーのオブジェクトのコピーから、他のプレイヤーのマシン上の同じオブジェクトへ送られるバイト配列です。`OnNetworkMessage`（Native）または`NetworkMessageReceived`イベント（Cilbox）で受け取ります。
+
+## 送信
+
+```csharp
+SendCustomNetworkEvent(byte[] buffer, DeliveryMethod method = DeliveryMethod.Unreliable, ushort[] recipients = null);
+```
+
+- `recipients = null`は自分以外の全員に送信します。
+- 特定のプレイヤーに送信するには、プレイヤーIDの配列を渡します。自分のIDを含めると、メッセージがネットワーク経由で自分にも戻ってきます。
+- オブジェクトはネットワーク準備完了（`HasNetworkID`がtrue）である必要があります。それより前に送信するとエラーがログに出力され、何も起きません。`OnNetworkReady`以降に送信してください。
+
+<Callout type="warn">
+イベントは**記憶されません**。イベントが送信された後に参加したプレイヤーはそれを受け取りません。イベントが永続的な状態を変更する場合は、[途中参加者](/ja/docs/scripting/networking/late-joiners)にも対応してください。
+</Callout>
+
+## 配信方式
+
+| 方式 | 届くか | 順序どおりか | 用途 |
+| --- | --- | --- | --- |
+| `Unreliable` | 届かないこともある | いいえ | 次の更新がこの更新を置き換える高頻度の更新。 |
+| `Sequenced` | 届かないこともある | 古いものは破棄 | 最新の値が優先されるもの。例えばライブのスライダー。 |
+| `ReliableUnordered` | はい | いいえ | 互いに独立した単発のアクション。 |
+| `ReliableSequenced` | 最新のもの | はい | 最終的な値だけが重要なトグル。 |
+| `ReliableOrdered` | はい | はい | すべてのメッセージとその順序が重要なもの: スコア、ゲームの進行。 |
+
+迷ったら`ReliableOrdered`を使用してください。
+
+## 受信
+
+```csharp title="Native"
+public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+{
+    if (buffer == null || buffer.Length == 0) return;
+    switch (buffer[0])
+    {
+        case 1: Open(); break;
+        case 2: Close(); break;
+    }
+}
+```
+
+`playerId`は送信者です。`BasisNetworkPlayers.GetPlayerById(playerId, out BasisNetworkPlayer player)`で検索できます。
+
+読み取る前に必ずバッファの長さを検証してください。インスタンス内の誰でもあなたのオブジェクトに送信できます。
+
+## ペイロードの詰め方 [#packing-a-payload]
+
+値が1つか2つなら`BitConverter`で十分です。それ以上なら`BinaryWriter`を使用してください。1つのオブジェクトで複数の種類のイベントを扱えるよう、先頭にメッセージ種別のバイトを置きます。
+
+```csharp
+using System.IO;
+
+byte[] PackHit(ushort target, float damage, Vector3 point)
+{
+    using (var stream = new MemoryStream())
+    using (var writer = new BinaryWriter(stream))
+    {
+        writer.Write((byte)3);
+        writer.Write(target);
+        writer.Write(damage);
+        writer.Write(point.x); writer.Write(point.y); writer.Write(point.z);
+        return stream.ToArray();
+    }
+}
+
+void ReadHit(byte[] buffer)
+{
+    using (var reader = new BinaryReader(new MemoryStream(buffer)))
+    {
+        reader.ReadByte();
+        ushort target = reader.ReadUInt16();
+        float damage = reader.ReadSingle();
+        Vector3 point = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+    }
+}
+```
+
+大きなペイロード（絵、レベルのレイアウトなど）は`BasisCompressionShim.Compress`と`Decompress`で圧縮できます（LZ4、展開後最大1 MB）。
+
+## Cilbox [#cilbox]
+
+Cilboxスクリプトは`BasisNetworkBehaviour`を継承できません。代わりに`BasisNetworkShim`を取得してください。`GetComponent`を呼ぶとCilboxがコンポーネントを追加します。`Start`で購読し、`OnDestroy`で購読解除します。
+
+```csharp title="NetworkedCounter.cs (Cilbox)"
+using System;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class NetworkedCounter : MonoBehaviour
+{
+    public TextMeshPro label;
+    BasisNetworkShim net;
+    int count;
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    public void Increment()
+    {
+        net.TakeOwnership();
+        count++;
+        Show();
+        net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 4) return;
+        count = BitConverter.ToInt32(buffer, 0);
+        Show();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer)
+        {
+            net.SendCustomNetworkEvent(BitConverter.GetBytes(count), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+        }
+    }
+
+    void Show() => label.text = count.ToString();
+}
+```
+
+`BasisNetworkShim`のイベントは`BasisNetworkBehaviour`のオーバーライドに対応しています。
+
+| `BasisNetworkBehaviour`のオーバーライド | `BasisNetworkShim`のイベント |
+| --- | --- |
+| `OnNetworkReady()` | `NetworkReady` |
+| `OnNetworkMessage(...)` | `NetworkMessageReceived` |
+| `OnOwnershipTransfer(...)` | `OwnershipTransfer` |
+| `OnServerOwnershipDestroyed()` | `ServerOwnershipDestroyed` |
+| `OnPlayerJoined(...)` | `PlayerJoined` |
+| `OnPlayerLeft(...)` | `PlayerLeft` |
+
+<Callout type="info">
+`SafeUtil.MakeNetworkable(this)`は`GetComponent<BasisNetworkShim>()`と同じことを行い、シムを返します。
+</Callout>
+
+## メッセージなしですべてのクライアントで同じ結果を得る
+
+すべてのクライアントが乱数について合意するだけでよい場合、`BasisSharedRandomShim`は同じシードとインデックスに対してどのマシンでも同じ値を返します。
+
+```csharp title="Cilbox"
+using Basis.Shims;
+
+int card = BasisSharedRandomShim.RangeInt(42, round, 0, 52);
+
+// Same weather for everyone, changing every 5 minutes of server time.
+int weather = BasisSharedRandomShim.NowRangeInt(7, 300d, 0, 4);
+```

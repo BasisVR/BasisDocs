@@ -1,0 +1,34 @@
+---
+title: Layer
+description: I layer di Unity usati da Basis, cosa significa ciascuno per collisioni, interazione e telecamere, e quale usare per i tuoi oggetti.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Basis riserva diversi layer di Unity. Usali come descritto, in modo che giocatori, puntatori e telecamere trattino correttamente i tuoi oggetti.
+
+| # | Layer | Usato per |
+| --- | --- | --- |
+| 0 | Default | Normale geometria del mondo. I giocatori collidono con essa e i puntatori la colpiscono. |
+| 1 | TransparentFX | Predefinito di Unity. |
+| 2 | Ignore Raycast | Non colpito da puntatori o raycast, e ignorato dalla telecamera in terza persona. |
+| 3 | Player | Il character controller del giocatore locale. |
+| 4 | Water | Predefinito di Unity. |
+| 5 | UI | UI in world space. |
+| 6 | LocalPlayerAvatar | Il tuo avatar. Nascosto dalla tua visuale in prima persona dove necessario. |
+| 7 | RemotePlayerAvatar | Gli avatar degli altri giocatori. |
+| 8 | Interactable | Oggetti che il puntatore deve evidenziare e con cui deve interagire. |
+| 9 | OverlayUI | UI disegnata sopra tutto, come il menu. |
+| 10 | IgnoredByInteractable | Visibile e solido, ma i puntatori lo attraversano. Usalo per vetri o volumi trigger davanti ai pulsanti. |
+| 11 | HandHeldCameraUI | La UI della telecamera portatile. |
+
+## Scegliere un layer
+
+- Pareti, pavimenti, prop: Default.
+- Volumi trigger e barriere invisibili davanti ai pulsanti: IgnoredByInteractable. I puntatori li attraversano e raggiungono ciò che c'è dietro.
+- Collider decorativi che il puntatore non deve mai colpire: Ignore Raycast.
+- Non mettere mai i tuoi oggetti su Player, LocalPlayerAvatar, RemotePlayerAvatar o OverlayUI.
+
+<Callout type="info">
+I nomi e i numeri dei layer provengono dal Tag Manager del progetto Basis. I contenuti vengono costruiti con essi. Non rinominare né riordinare i layer di Basis nel tuo progetto.
+</Callout>

@@ -1,0 +1,114 @@
+---
+title: 计分板
+description: 联网的分数，由一位所有者维护权威数据，其他玩家请求所有者加分。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> 这是一个用于客户端构建的 Native 示例：`BasisSyncedParameters` 和自定义脚本不在上传内容的默认允许列表中。如需 Cilbox 计分板，请将下面的所有者请求模式与网络事件结合使用，就像[同步开关](/cn/docs/scripting/examples/synced-toggle)那样。
+
+分数必须精确，并且必须在玩家加入和离开时保持不变。两位玩家同时加一分必须得到 +2，而不是 +1。本示例将分数保存在一位所有者那里，并让每次变化都经过该所有者。
+
+## 设置
+
+1. 向计分板物体添加 **Basis Synced Parameters**。添加两个名为 `Red` 和 `Blue` 的参数，类型为 **Int**，关闭 **Interpolate**。
+2. 将 **Scoreboard** 添加到同一物体上，并分配参数组件和两个标签。
+3. 将按钮（或进球触发器）连接到 `AddRed`、`AddBlue` 和 `ResetScores`。
+
+## 脚本
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters` 已经会为自己的数据流接收网络消息。请用一个小的子类将请求转发给计分板：
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+在设置中，请使用 **ScoreboardParameters** 代替 **Basis Synced Parameters**。
+
+## 工作原理
+
+- 只有所有者写入分数。同时发生的按压会在所有者那里依次应用。
+- 其他所有人向 `CurrentOwnerId` 发送请求，而不是获取所有权。获取所有权会导致两位玩家各自在同一个旧值上加 1。
+- 后加入者不需要额外处理。同步参数会向新玩家发送关键帧。
+- 如果所有者离开，所有权会转移到连接时间最长的玩家，而该玩家已经拥有当前分数。
+
+<Callout type="info">
+请求只有一个字节，同步数据包总是比它大，在这里检查长度就足以区分两者。如需更多消息类型，请在您自己的消息前加上一个同步流永远不会作为开头的标记字节，或者将请求处理放在单独的 `BasisNetworkBehaviour` 上。
+</Callout>

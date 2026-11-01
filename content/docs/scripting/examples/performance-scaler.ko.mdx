@@ -1,0 +1,52 @@
+---
+title: 성능 스케일러
+description: BasisStatsShim과 BasisGraphicsSettingsEventShim을 사용해 플레이어의 프레임 레이트가 떨어지면 비싼 효과를 줄입니다.
+---
+
+```csharp title="PerformanceScaler.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class PerformanceScaler : MonoBehaviour
+{
+    public GameObject[] gpuHeavy;
+    public GameObject[] cpuHeavy;
+    float nextCheck;
+    bool reduced, lowQuality;
+
+    void Start()
+    {
+        GetComponent<BasisGraphicsSettingsEventShim>();
+    }
+
+    void OnGraphicsSettingsChanged(string qualityLevel, int qualityTier)
+    {
+        lowQuality = qualityTier <= BasisGraphicsSettingsShim.TierLow;
+        Apply();
+    }
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 2f;
+        float target = BasisStatsShim.TargetFramesPerSecond;
+        if (target <= 0f) return;
+        float fps = BasisStatsShim.FramesPerSecond;
+        if (!reduced && fps < target * 0.8f) { reduced = true; Apply(); }
+        else if (reduced && fps > target * 0.95f) { reduced = false; Apply(); }
+    }
+
+    void Apply()
+    {
+        bool cutGpu = lowQuality || (reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckGpu);
+        bool cutCpu = reduced && BasisStatsShim.Bottleneck == BasisStatsShim.BottleneckCpu;
+        foreach (GameObject g in gpuHeavy) g.SetActive(!cutGpu);
+        foreach (GameObject g in cpuHeavy) g.SetActive(!cutCpu);
+    }
+}
+```
+
+- 두 개의 임계값(줄이기 80%, 되돌리기 95%)으로 켜졌다 꺼졌다 깜빡이는 것을 막습니다.
+- 병목이 어느 쪽을 줄일지 알려 줍니다. GPU라면 거울과 파티클, CPU라면 군중과 스크립트입니다.

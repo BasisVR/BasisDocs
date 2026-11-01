@@ -1,0 +1,37 @@
+---
+title: ローカライズされた看板
+description: BasisLanguageEventShimを使い、プレイヤーの言語でテキストを表示し、言語が変わるとライブで切り替わる看板。
+---
+
+```csharp title="LocalizedSign.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using TMPro;
+using UnityEngine;
+
+[Cilboxable]
+public class LocalizedSign : MonoBehaviour
+{
+    public TextMeshPro label;
+    public string[] languageCodes = { "en", "de", "fr", "ja" };
+    public string[] texts = { "Welcome", "Willkommen", "Bienvenue", "ようこそ" };
+
+    void Start()
+    {
+        GetComponent<BasisLanguageEventShim>();
+    }
+
+    void OnLanguageChanged(string code)
+    {
+        label.text = texts[0];
+        for (int i = 0; i < languageCodes.Length; i++)
+        {
+            if (code.StartsWith(languageCodes[i])) { label.text = texts[i]; return; }
+        }
+    }
+}
+```
+
+- `OnLanguageChanged`は、すぐに現在の言語で一度呼び出されます。
+- `StartsWith`で照合すると、`es`で`es-MX`もカバーできます。
+- サンドボックスが配列の初期化子を拒否する場合は、初期化子ではなくインスペクターで配列を設定してください。また、必要なグリフがフォントに含まれていることを確認してください。

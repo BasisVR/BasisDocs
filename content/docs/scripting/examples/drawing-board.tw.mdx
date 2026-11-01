@@ -1,0 +1,78 @@
+---
+title: 繪圖板
+description: 共享白板。點以 BasisBinaryShim 打包，完整繪圖以 BasisCompressionShim 壓縮後傳送給晚加入者。
+---
+
+```csharp title="DrawingBoard.cs (Cilbox)"
+using System.Collections.Generic;
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class DrawingBoard : MonoBehaviour
+{
+    public LineRenderer line;
+    public int maxPoints = 4096;
+
+    BasisNetworkShim net;
+    readonly List<Vector3> points = new List<Vector3>();
+
+    void Start()
+    {
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    public void AddPoint(Vector3 localPoint)
+    {
+        if (points.Count >= maxPoints) return;
+        net.TakeOwnership();
+        points.Add(localPoint);
+        Redraw();
+        byte[] one = new byte[12];
+        BasisBinaryShim.WriteVector3(one, 0, localPoint);
+        if (net.HasNetworkID) net.SendCustomNetworkEvent(one, DeliveryMethod.ReliableOrdered);
+    }
+
+    void OnMessage(ushort sender, byte[] data, DeliveryMethod method)
+    {
+        if (data == null) return;
+        if (data.Length == 12)
+        {
+            points.Add(BasisBinaryShim.ReadVector3(data, 0));
+            Redraw();
+            return;
+        }
+        byte[] all = BasisCompressionShim.Decompress(data);
+        if (all == null) return;
+        Vector3[] loaded = new Vector3[all.Length / 12];
+        BasisBinaryShim.ReadVector3s(all, 0, loaded);
+        points.Clear();
+        points.AddRange(loaded);
+        Redraw();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (points.Count == 0 || !net.HasNetworkID || !net.IsOwnedLocallyOnServer) return;
+        byte[] all = new byte[points.Count * 12];
+        BasisBinaryShim.WriteVector3s(all, 0, points.ToArray());
+        net.SendCustomNetworkEvent(BasisCompressionShim.Compress(all), DeliveryMethod.ReliableOrdered, new[] { player.playerId });
+    }
+
+    void Redraw()
+    {
+        line.positionCount = points.Count;
+        line.SetPositions(points.ToArray());
+    }
+}
+```
+
+- 即時的點每個 12 位元組；給晚加入者的完整繪圖則是一則壓縮過的訊息。
+- 壓縮快照與單一點是靠長度區分的。真正的白板應該加上一個訊息類型位元組。
+- 最後一位繪圖的玩家擁有白板，也是唯一負責回應晚加入者的人。

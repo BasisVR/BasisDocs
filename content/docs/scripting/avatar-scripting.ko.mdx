@@ -1,0 +1,79 @@
+---
+title: 아바타 스크립팅
+description: 아바타의 Cilbox 스크립트, 착용자와 다른 모든 사람의 차이, 아바타 준비 이벤트, 아바타 상태 동기화.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+아바타의 Cilbox 스크립트는 착용자의 클라이언트뿐만 아니라 아바타를 로드하는 **모든 클라이언트**에서 실행됩니다. 대부분의 아바타 로직은 누가 실행하고 있는지 확인해야 합니다.
+
+## 아바타 컴포넌트
+
+아바타 샌드박스 안에서 `BasisAvatar`는 `BasisAvatarShim`으로 해석됩니다. 평소처럼 `BasisAvatar`를 작성하세요.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| 멤버 | 용도 |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | 아바타 설정이 끝나면 한 번 발생합니다. 착용자의 클라이언트에서 `isOwner`가 true입니다. |
+| `IsOwnedLocally` | 착용자의 클라이언트에서 true. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | 아바타의 리그를 읽습니다. |
+| `TryGetLinkedPlayer(out ushort playerId)` | 착용자의 플레이어 ID. |
+| `PlayspaceInput` | 착용자 자신의 이동을 제어합니다(착용자 전용). |
+
+## 착용자 전용과 모든 사람
+
+| 실행 대상 | 용도 |
+| --- | --- |
+| **착용자 전용** (`IsOwnedLocally`) | 메뉴, 햅틱, 저장, 입력, 네트워크 이벤트 전송. |
+| **모든 사람** | 동기화된 상태를 따르는 시각 효과: 파티클, 머티리얼, 사운드. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## 아바타 상태 동기화
+
+- 커스텀 값: `BasisNetworkShim`을 가져와 착용자가 [네트워크 이벤트](/ko/docs/scripting/networking/network-events#cilbox)를 보내고, 모든 클라이언트에서 적용하세요.
+- 움직이는 부품: `BasisSyncedTransform`은 아바타에서 허용됩니다.
+
+## 아바타의 설정 탭
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+아바타 샌드박스가 허용하는 것은 무엇이든 낯선 사람의 아바타가 당신의 기기에서 할 수 있습니다. 그래서 아바타 샌드박스가 셋 중 가장 엄격합니다. 카메라도, 라이트도, 웹 요청도 없으며, 햅틱은 착용자에게만 전달됩니다.
+</Callout>

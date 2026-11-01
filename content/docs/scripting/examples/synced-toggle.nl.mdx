@@ -1,0 +1,94 @@
+---
+title: Gesynchroniseerde schakelaar
+description: Een knop die een object voor elke speler aan- of uitzet, ook voor spelers die later binnenkomen.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Dit is het kleinste complete genetwerkte script: één byte status, verstuurd wanneer die verandert en opnieuw verstuurd naar iedereen die binnenkomt.
+
+## Setup
+
+1. Maak een canvas in wereldruimte aan met een **Button**.
+2. Voeg **SyncedToggle** toe aan het canvas. Wijs de knop toe en het object dat geschakeld moet worden (een lamp, een spiegel, een deur).
+
+## Script
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## Hoe het werkt
+
+- Indrukken neemt het eigenaarschap, draait de waarde lokaal om zodat degene die drukt het direct ziet, en verstuurt de nieuwe waarde naar alle anderen.
+- `ReliableSequenced` garandeert dat de laatste waarde aankomt en gooit oudere weg. Een schakelaar geeft alleen om de laatste waarde.
+- Een speler die binnenkomt krijgt de huidige waarde alleen van de eigenaar. Omdat het bericht de volledige status is, verwerkt dezelfde `OnMessage` zowel live wijzigingen als het bijwerken.
+
+<Callout type="info">
+Native versie: leid af van `BasisNetworkBehaviour`, vervang de shim-events door de overrides `OnNetworkMessage` en `OnPlayerJoined`, en roep `TakeOwnership()` en `SendCustomNetworkEvent` direct aan.
+</Callout>

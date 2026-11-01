@@ -1,0 +1,62 @@
+---
+title: Referencia de shims
+description: Todos los shims de Basis que puede usar un script de Cilbox, agrupados por área, cada uno con un ejemplo breve.
+---
+
+Los shims son la parte de Basis del sandbox de Cilbox: API pequeñas y seguras que dan a un script aislado acceso a jugadores, entrada, red, guardado, menús y más. La mayoría están en el espacio de nombres `Basis.Shims`.
+
+Los shims tienen tres formas:
+
+- Clases estáticas que se llaman directamente, como `BasisPlayersShim.Count`.
+- Componentes de eventos que se activan llamando a `GetComponent<T>()` en `Start`. Cilbox añade el componente por usted y Basis llama a un método con un nombre conocido en su script, como `OnPlatformChanged`.
+- Tipos sustituidos. Usted escribe el nombre normal de Unity (`Debug`, `VideoPlayer`, `BasisAvatar`) y el sandbox ofrece una versión segura.
+
+| Shim | Qué hace | Página |
+| --- | --- | --- |
+| `BasisPlayersShim` | Lista de jugadores, jugador más cercano, poses | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisVelocityShim` | Lanzar o empujar al jugador local | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisPlayspaceInputShim` | Controlar el movimiento del portador desde un avatar | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisSeatShim` | Si el jugador local está sentado y dónde | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisAvatarSwitchShim` | Saber cuándo un jugador cambia de avatar | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisPermissionsShim` | Comprobaciones de administrador, moderador y permisos | [Jugadores](/es/docs/scripting/shims/players) |
+| `BasisControllerInputShim` | Botones, gatillos y joysticks de los mandos de VR | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisDesktopInputShim` | Botones, movimiento y rueda del ratón | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisHapticsShim` | Vibración de los mandos | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisInteractableShim` | Objetos que se pueden pulsar | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisActionTrigger` | Eventos de puntero de la UI | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisUIExtensions` | `Toggle.AddListener` | [Entrada](/es/docs/scripting/shims/input) |
+| `BasisPlatformEventShim` | Cambios entre VR y escritorio | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisLanguageEventShim` | Cambios de idioma | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisGraphicsSettingsEventShim` | Cambios de calidad | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisPermissionEventShim` | Cambios de permisos locales | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisJiggleEventShim` | Alguien agarra o toca huesos jiggle | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisBeforeRenderShim` | Actualización tardía después del IK, antes de dibujar | [Eventos](/es/docs/scripting/shims/events) |
+| `BasisNetworkShim` | Eventos de red, propiedad | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisNetworkTimeShim` | Reloj compartido del servidor | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisSharedRandomShim` | Los mismos números aleatorios en todos los clientes | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisBinaryShim` | Empaquetado rápido de números y vectores | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisCompressionShim` | Compresión LZ4 | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisConnectionShim` | Enviar al jugador a otro servidor | [Redes](/es/docs/scripting/shims/networking) |
+| `BasisSaveShim` | Guardar datos en el equipo del jugador | [Datos](/es/docs/scripting/shims/data) |
+| `BasisServerStorageShim` | Guardar datos en el servidor | [Datos](/es/docs/scripting/shims/data) |
+| `BasisJson` | Analizar JSON | [Datos](/es/docs/scripting/shims/data) |
+| `BasisWebRequestShim` | GET y POST por HTTPS | [Datos](/es/docs/scripting/shims/data) |
+| `BasisExternalLinkShim` | Abrir un sitio web | [Datos](/es/docs/scripting/shims/data) |
+| `BasisMenuShim` | Pestañas de ajustes y paneles de menú | [Menús](/es/docs/scripting/shims/menus) |
+| `BasisGraphicsSettingsShim` | Leer los ajustes de calidad | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `BasisStatsShim` | Tasa de fotogramas, cuello de botella, conexión | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `BasisComputeShim` | Presupuesto de compute shaders | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `BasisVoiceRoutingShim` | Reproducir la voz de un jugador desde un objeto | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `VideoPlayerShim` | `VideoPlayer` con el aviso de URL | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `BasisPlatformShim` | Detección de plataforma | [Renderizado y audio](/es/docs/scripting/shims/rendering-and-audio) |
+| `BasisTransformBatchShim` | Leer o escribir muchos transforms a la vez | [Procesamiento por lotes](/es/docs/scripting/shims/batching) |
+| `BasisTransformSyncShim` | Copiar transforms a otros transforms cada fotograma | [Procesamiento por lotes](/es/docs/scripting/shims/batching) |
+| `BasisBlendShapeSyncShim` | Leer, escribir o copiar muchos blendshapes | [Procesamiento por lotes](/es/docs/scripting/shims/batching) |
+| `BasisVectorArrayShim` | Separar y unir arrays de vectores | [Procesamiento por lotes](/es/docs/scripting/shims/batching) |
+| `BasisSphereCastShim` | Pruebas de rayos y esferas sobre arrays | [Procesamiento por lotes](/es/docs/scripting/shims/batching) |
+| `BasisAvatarShim` | El componente de avatar en los avatares | [Avatar](/es/docs/scripting/shims/avatar) |
+| `BasisVixxyShim` | Leer y controlar elementos del menú Vixxy | [Avatar](/es/docs/scripting/shims/avatar) |
+| `BasisOsc` | Mensajes OSC | [OSC](/es/docs/scripting/osc) |
+| `Debug` (`BasisDebugPropsShim`) | Registro etiquetado con su contenido | [Reglas del sandbox](/es/docs/scripting/sandbox-rules) |
+
+Qué sandbox permite cada shim se muestra en directo en el editor de Unity en **Basis > Creator Guide**, en la sección Cilbox API Reference.

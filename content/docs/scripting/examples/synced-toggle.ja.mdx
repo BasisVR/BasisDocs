@@ -1,0 +1,94 @@
+---
+title: 同期トグル
+description: 後から参加するプレイヤーを含むすべてのプレイヤーに対して、オブジェクトをオン・オフするボタン。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+これは最小の完全なネットワーク対応スクリプトです。1バイトの状態を持ち、変更時に送信し、参加した人には再送します。
+
+## セットアップ
+
+1. **Button**を持つワールド空間のキャンバスを作成します。
+2. キャンバスに**SyncedToggle**を追加します。ボタンと、切り替えるオブジェクト（ライト、ミラー、ドア）を割り当てます。
+
+## スクリプト
+
+```csharp title="SyncedToggle.cs (Cilbox)"
+using Basis;
+using Basis.Network.Core;
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Cilbox;
+using UnityEngine;
+using UnityEngine.UI;
+
+[Cilboxable]
+public class SyncedToggle : MonoBehaviour
+{
+    public Button button;
+    public GameObject target;
+    public bool startOn = true;
+
+    BasisNetworkShim net;
+    bool on;
+
+    void Start()
+    {
+        on = startOn;
+        Apply();
+        button.onClick.AddListener(OnPressed);
+        net = GetComponent<BasisNetworkShim>();
+        net.NetworkMessageReceived += OnMessage;
+        net.PlayerJoined += OnPlayerJoined;
+    }
+
+    void OnDestroy()
+    {
+        button.onClick.RemoveAllListeners();
+        if (net == null) return;
+        net.NetworkMessageReceived -= OnMessage;
+        net.PlayerJoined -= OnPlayerJoined;
+    }
+
+    void OnPressed()
+    {
+        net.TakeOwnership();
+        on = !on;
+        Apply();
+        Send(null);
+    }
+
+    void OnMessage(ushort sender, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer == null || buffer.Length < 1) return;
+        on = buffer[0] != 0;
+        Apply();
+    }
+
+    void OnPlayerJoined(BasisNetworkPlayer player)
+    {
+        if (net.HasNetworkID && net.IsOwnedLocallyOnServer) Send(new[] { player.playerId });
+    }
+
+    void Send(ushort[] recipients)
+    {
+        if (!net.HasNetworkID) return;
+        net.SendCustomNetworkEvent(new[] { on ? (byte)1 : (byte)0 }, DeliveryMethod.ReliableSequenced, recipients);
+    }
+
+    void Apply()
+    {
+        target.SetActive(on);
+    }
+}
+```
+
+## 仕組み
+
+- 押すとオーナーシップを取得し、押した人にすぐ見えるようローカルで値を反転させ、新しい値を他の全員に送信します。
+- `ReliableSequenced`は最新の値が届くことを保証し、古いものは破棄します。トグルに必要なのは最新の値だけです。
+- 参加するプレイヤーは、オーナーからのみ現在の値を受け取ります。メッセージが状態全体なので、同じ`OnMessage`がライブの変更と追いつきの両方を処理します。
+
+<Callout type="info">
+Native版: `BasisNetworkBehaviour`を継承し、シムのイベントを`OnNetworkMessage`と`OnPlayerJoined`のオーバーライドに置き換え、`TakeOwnership()`と`SendCustomNetworkEvent`を直接呼び出します。
+</Callout>

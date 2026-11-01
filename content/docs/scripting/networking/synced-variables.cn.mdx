@@ -1,0 +1,152 @@
+---
+title: 同步变量
+description: 使用 BasisSyncedParameters 或自定义 BasisSyncedObject 让一个值对所有人保持一致，包括压缩和插值。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+同步变量是由**所有者**写入、其他每位玩家读取的值。Basis 以紧凑的增量流发送它，在接收端对连续值进行插值，并向后加入的玩家发送完整的关键帧。您无需编写任何序列化代码。
+
+## 选择连续还是可靠
+
+| 您需要 | 使用 |
+| --- | --- |
+| 经常变化且应当看起来平滑的值（拉杆、旋钮、颜色渐变） | 开启 **Interpolate** 的同步变量。 |
+| 必须精确且很少变化的值（分数、模式、门的开启标志） | 关闭 **Interpolate** 的同步变量（`Int`、`Bool`、`Byte`），或可靠的[网络事件](/cn/docs/scripting/networking/network-events)。 |
+| 移动的物体 | [`BasisSyncedTransform`、`BasisSyncedRigidbody` 或 `BasisPickupSyncNetworking`](/cn/docs/scripting/networking/network-components)。 |
+
+<Callout type="warn">
+`BasisSyncedParameters` 和您自己的 `BasisSyncedObject` 子类不在上传内容的默认允许列表中。除非将该类型添加到 content police 选择器中，否则它们会从 `.bee` 中被剔除。在上传的 Cilbox 内容中，请用[网络事件](/cn/docs/scripting/networking/network-events#cilbox)同步值，用 **Basis Synced Transform** 同步移动物体。
+</Callout>
+
+## BasisSyncedParameters：无需序列化代码
+
+添加 **Basis Synced Parameters** 组件，并在检查器中声明命名参数。每个参数都有一个类型（`Float`、`Angle`、`Vector2`、`Vector3`、`Vector4`、`Color`、`Rotation`、`Int`、`UInt`、`UShort`、`Bool`、`Byte`）、一个 **Interpolate** 标志，以及按轴设置的压缩。
+
+然后在任何脚本中按名称读写它们：
+
+```csharp title="Lever.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Lever : MonoBehaviour
+{
+    public BasisSyncedParameters sync;
+    public Transform handle;
+    int angleId;
+
+    void Start()
+    {
+        angleId = sync.GetParameterId("Angle");
+    }
+
+    public void SetAngleFromHand(float degrees)
+    {
+        if (!sync.IsLocalOwner()) sync.TakeOwnership();
+        sync.SetAngle(angleId, degrees);
+    }
+
+    void Update()
+    {
+        handle.localRotation = Quaternion.Euler(sync.GetAngle(angleId), 0f, 0f);
+    }
+}
+```
+
+- 只有所有者的写入才有效。写入前请先获取所有权（参见[所有权](/cn/docs/scripting/networking/ownership)）。
+- 读取在任何地方都有效。在所有者那里，您得到的是自己写入的值；在其他所有人那里，您得到的是插值后的网络值。
+- 使用 `GetParameterId` 将名称解析为 id 一次，并在 `Update` 中使用 id 重载，以跳过名称查找。
+
+没有变更回调。请在 `Update` 中读取值，并在它与上次看到的值不同时做出响应：
+
+```csharp
+int lastScore = -1;
+
+void Update()
+{
+    int score = sync.GetInt(scoreId);
+    if (score == lastScore) return;
+    lastScore = score;
+    scoreLabel.text = score.ToString();
+}
+```
+
+## 自定义 BasisSyncedObject
+
+当您的值来自您自己的字段时，请派生自 `BasisSyncedObject`。在 `Awake` 中注册字段，在 `OnBeforeTransmit` 中推送实时值（所有者），并在远程客户端上读回它们。
+
+```csharp title="Turret.cs (Native)"
+using Basis.Scripts.Networking.Sync;
+using UnityEngine;
+
+public class Turret : BasisSyncedObject
+{
+    public Transform barrel;
+    public float yaw;
+    public bool firing;
+
+    BasisSyncHandle yawHandle, firingHandle;
+
+    protected void Awake()
+    {
+        yawHandle = RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 12));
+        firingHandle = RegisterBool();
+    }
+
+    protected override void OnBeforeTransmit()
+    {
+        LocalSet(yawHandle, yaw);
+        LocalSet(firingHandle, firing);
+    }
+
+    void Update()
+    {
+        if (!IsOwnedLocallyOnClient)
+        {
+            yaw = GetFloat(yawHandle);
+            firing = GetBool(firingHandle);
+        }
+        barrel.localRotation = Quaternion.Euler(0f, yaw, 0f);
+    }
+}
+```
+
+<Callout type="warn">
+请在 `Awake` 中、对象网络就绪之前注册每个字段。字段布局就是传输格式。每个客户端都必须以相同的顺序注册相同的字段。
+</Callout>
+
+`OnBeforeTransmit` 只在需要发送数据包的帧上运行，而不是每帧都运行。请让它只做简单的值复制。
+
+要直接用已注册的字段驱动变换，请调用 `BindTransform(target, position, rotation, scale, worldSpace)`；之后驱动器会在 job 中应用插值后的值，无需运行您的 `Update`。
+
+## 压缩
+
+每个浮点数都可以原样发送（32 位）、以半精度发送（16 位），或者以**范围**方式发送：指定最小值、最大值和位数。0 到 90 度之间的拉杆所需的位数远少于世界位置。
+
+```csharp
+RegisterFloat(BasisQuantSpec.Ranged(0f, 1f, 8));      // 0..1 in 256 steps
+RegisterFloat(BasisQuantSpec.Half);                    // 16 bit float
+RegisterAngle(BasisQuantSpec.Ranged(-180f, 180f, 10)); // ~0.35 degree steps
+```
+
+在 `BasisSyncedParameters` 中，同样的选择对应每个轴上的 **Compression** 设置。
+
+## 发送频率设置
+
+`BasisSyncedObject` 在检查器中公开了其时序设置：
+
+| 设置 | 默认值 | 含义 |
+| --- | --- | --- |
+| `SendIntervalSeconds` | 0.05 | 所有者可以发送的频率（每秒 20 次）。值未改变时不发送任何内容。 |
+| `KeyframeIntervalSeconds` | 0.5 | 发送完整状态的频率，以便修复丢失的增量。空闲时会降低频率。 |
+| `DistanceReduction` | 开 | 降低向远处玩家发送的频率。 |
+| `RelevanceCulling` / `RelevanceRadius` | 关 / 50 | 完全不向半径之外的玩家发送。 |
+| `Extrapolate` | 关 | 数据包延迟时，让远程值短暂继续向前推进。 |
+| `UseDirectP2P` | 开 | 存在直接点对点连接时使用它。 |
+
+## Cilbox
+
+Cilbox 脚本无法派生自 `BasisSyncedObject`。在上传的内容中：
+
+- 移动物体：添加 **Basis Synced Transform** 或 **Basis Pickup Sync Networking** 组件。无需脚本。
+- 值：将它们保存在所有者那里，并作为[网络事件](/cn/docs/scripting/networking/network-events#cilbox)发送，同时重新发送给[后加入者](/cn/docs/scripting/networking/late-joiners)。[同步开关](/cn/docs/scripting/examples/synced-toggle)示例就是模板。

@@ -1,0 +1,64 @@
+---
+title: Menus
+description: BasisMenuShim, onglets de paramètres et panneaux de menu avec en-têtes, libellés, boutons, interrupteurs, curseurs et listes déroulantes.
+---
+
+`BasisMenuShim` ajoute de l'UI au menu du joueur. Les deux appels renvoient null en cas de refus. Vérifiez toujours.
+
+| Appel | Ajoute |
+| --- | --- |
+| `BasisMenuShim.AddSettingsTab(this, title)` | Un onglet dans les paramètres du joueur (jusqu'à 4 par contenu). |
+| `BasisMenuShim.AddPanel(this, title)` | Un panneau avec son propre bouton de menu (un par contenu, jusqu'à 8 onglets). |
+
+## Construire une page
+
+```csharp
+using Basis.Shims;
+
+BasisMenuPage page;
+BasisMenuItem status, volume, mode;
+
+void Start()
+{
+    page = BasisMenuShim.AddSettingsTab(this, "Club");
+    if (page == null) return;
+
+    page.AddHeader("Music");
+    status = page.AddLabel("Playing: nothing");
+    volume = page.AddSlider("Volume", 0f, 1f, 0.6f, OnVolume);
+    page.AddToggle("Lights", true, on => lights.SetActive(on));
+    mode = page.AddDropdown("Mode", new[] { "Chill", "Dance", "Off" }, 0, OnMode);
+    page.AddButton("Skip track", OnSkip);
+}
+
+void OnVolume(float v) { music.volume = v; }
+void OnMode(int index) { }
+void OnSkip() { status.SetText("Playing: next"); }
+```
+
+## Modifier les éléments plus tard
+
+```csharp
+volume.SetValue(0.3f);
+float current = volume.Value;
+mode.SetOptions(new[] { "Chill", "Dance" });
+status.SetTooltip("What the DJ is playing");
+volume.SetInteractable(isOwner);
+status.SetVisible(false);
+```
+
+Pages : `SetTitle`, `SetVisible`, `Clear`, `Remove`, `AddTab` (panneaux), `IsOpen` et `Open()`.
+
+## Ouvrir un panneau
+
+`Open()` ne fonctionne que dans les 5 secondes qui suivent un appui du joueur sur quelque chose dans votre contenu, et le contenu ne peut pas ouvrir des menus de lui-même.
+
+```csharp
+BasisMenuPage arcade;
+
+void Start() { arcade = BasisMenuShim.AddPanel(this, "Arcade"); }
+
+public void OnKioskPressed() { arcade?.Open(); }
+```
+
+Limites : 64 éléments par page, 32 options de liste déroulante, titres de 48 caractères. Plus : [exemple Onglet de paramètres](/fr/docs/scripting/examples/settings-tab).

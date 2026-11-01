@@ -1,0 +1,32 @@
+---
+title: Zufällige Beute
+description: Eine Beutetruhe, die jedem Spieler mit BasisSharedRandomShim denselben zufälligen Gegenstand zeigt, ohne eine Nachricht zu senden.
+---
+
+```csharp title="LootChest.cs (Cilbox)"
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class LootChest : MonoBehaviour
+{
+    public GameObject[] items;
+    public int seed = 1234;
+    public double refreshSeconds = 600d;
+    long shownWindow = -1;
+
+    void Update()
+    {
+        long window = BasisSharedRandomShim.WindowIndex(refreshSeconds);
+        if (window == shownWindow) return;
+        shownWindow = window;
+        int pick = BasisSharedRandomShim.RangeInt(seed, window, 0, items.Length);
+        for (int i = 0; i < items.Length; i++) items[i].SetActive(i == pick);
+    }
+}
+```
+
+- Alle 10 Minuten Serverzeit würfelt die Truhe neu, und jeder Client würfelt denselben Gegenstand.
+- Geben Sie jeder Truhe einen eigenen `seed`, damit nicht alle dasselbe zeigen.
+- Für einen Wurf, den ein Spieler auslöst, senden Sie nur die Rundennummer als Netzwerk-Event und lassen jeden Client `RangeInt(seed, round, ...)` berechnen.

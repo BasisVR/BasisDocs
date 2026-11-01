@@ -1,0 +1,114 @@
+---
+title: スコアボード
+description: 1人のオーナーが正しい値を管理し、他のプレイヤーがオーナーにポイントの追加を依頼するネットワーク対応のスコア。
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+> これはクライアントビルド向けのNativeサンプルです。`BasisSyncedParameters`と独自のスクリプトは、アップロードされるコンテンツのデフォルト許可リストに含まれていません。Cilboxのスコアボードを作る場合は、[同期トグル](/ja/docs/scripting/examples/synced-toggle)のように、以下のオーナーへの依頼パターンをネットワークイベントで使用してください。
+
+スコアは正確でなければならず、プレイヤーの参加や退出があっても失われてはいけません。2人のプレイヤーが同時にポイントを追加したら、+1ではなく+2になる必要があります。このサンプルでは、スコアを1人のオーナーが保持し、すべての変更をそのオーナーを経由させます。
+
+## セットアップ
+
+1. スコアボードのオブジェクトに**Basis Synced Parameters**を追加します。`Red`と`Blue`という名前の2つのパラメーターを、型**Int**、**Interpolate**オフで追加します。
+2. 同じオブジェクトに**Scoreboard**を追加し、パラメーターコンポーネントと2つのラベルを割り当てます。
+3. ボタン（またはゴールのトリガー）を`AddRed`、`AddBlue`、`ResetScores`に接続します。
+
+## スクリプト
+
+```csharp title="Scoreboard.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+using TMPro;
+using UnityEngine;
+
+public class Scoreboard : MonoBehaviour
+{
+    const byte AddRedPoint = 1, AddBluePoint = 2, Reset = 3;
+
+    public BasisSyncedParameters sync;
+    public TextMeshPro redLabel, blueLabel;
+
+    int redId, blueId, shownRed = -1, shownBlue = -1;
+
+    void Start()
+    {
+        redId = sync.GetParameterId("Red");
+        blueId = sync.GetParameterId("Blue");
+    }
+
+    public void AddRed() => Request(AddRedPoint);
+    public void AddBlue() => Request(AddBluePoint);
+    public void ResetScores() => Request(Reset);
+
+    void Request(byte action)
+    {
+        if (sync.IsLocalOwner())
+        {
+            Apply(action);
+            return;
+        }
+        if (!sync.HasNetworkID) return;
+        sync.SendCustomNetworkEvent(new[] { action }, DeliveryMethod.ReliableOrdered, new[] { sync.CurrentOwnerId });
+    }
+
+    public void OnRequestReceived(byte[] buffer)
+    {
+        if (!sync.IsLocalOwner() || buffer == null || buffer.Length < 1) return;
+        Apply(buffer[0]);
+    }
+
+    void Apply(byte action)
+    {
+        switch (action)
+        {
+            case AddRedPoint: sync.SetInt(redId, sync.GetInt(redId) + 1); break;
+            case AddBluePoint: sync.SetInt(blueId, sync.GetInt(blueId) + 1); break;
+            case Reset: sync.SetInt(redId, 0); sync.SetInt(blueId, 0); break;
+        }
+    }
+
+    void Update()
+    {
+        int red = sync.GetInt(redId), blue = sync.GetInt(blueId);
+        if (red != shownRed) { shownRed = red; redLabel.text = red.ToString(); }
+        if (blue != shownBlue) { shownBlue = blue; blueLabel.text = blue.ToString(); }
+    }
+}
+```
+
+`BasisSyncedParameters`はすでに自身のストリーム用のネットワークメッセージを受信しています。小さなサブクラスを使って、依頼をスコアボードに転送します。
+
+```csharp title="ScoreboardParameters.cs (Native)"
+using Basis.Network.Core;
+using Basis.Scripts.Networking.Sync;
+
+public class ScoreboardParameters : BasisSyncedParameters
+{
+    public Scoreboard board;
+
+    public override void OnNetworkMessage(ushort playerId, byte[] buffer, DeliveryMethod method)
+    {
+        if (buffer != null && buffer.Length == 1)
+        {
+            board.OnRequestReceived(buffer);
+            return;
+        }
+        base.OnNetworkMessage(playerId, buffer, method);
+    }
+}
+```
+
+セットアップでは**Basis Synced Parameters**の代わりに**ScoreboardParameters**を使用してください。
+
+## 仕組み
+
+- スコアを書き込むのはオーナーだけです。同時に押された場合も、オーナー上で順番に適用されます。
+- 他の全員は、オーナーシップを取得する代わりに`CurrentOwnerId`へ依頼を送信します。オーナーシップを取得すると、2人のプレイヤーがそれぞれ同じ古い値に1を足してしまう可能性があります。
+- 途中参加者には追加の処理は不要です。同期パラメーターが新しいプレイヤーにキーフレームを送信します。
+- オーナーが退出した場合、オーナーシップは最も長く接続しているプレイヤーに移ります。そのプレイヤーはすでに現在のスコアを持っています。
+
+<Callout type="info">
+依頼は1バイトで、同期パケットは常にそれより大きくなります。ここで長さのチェックだけで足りるのはそのためです。メッセージの種類を増やす場合は、同期ストリームが決して先頭に持たないマーカーバイトを独自のメッセージの先頭に付けるか、依頼の処理を別の`BasisNetworkBehaviour`に置いてください。
+</Callout>

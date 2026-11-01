@@ -1,0 +1,79 @@
+---
+title: Scripting degli avatar
+description: Script Cilbox sugli avatar, chi lo indossa rispetto a tutti gli altri, eventi di avatar pronto e sincronizzazione dello stato dell'avatar.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Gli script Cilbox di un avatar vengono eseguiti su **ogni client** che carica l'avatar, non solo su quello di chi lo indossa. La maggior parte della logica dell'avatar dovrebbe verificare chi la sta eseguendo.
+
+## Il componente avatar
+
+All'interno della sandbox degli avatar, `BasisAvatar` si risolve in `BasisAvatarShim`. Scrivi `BasisAvatar` come al solito.
+
+```csharp title="AvatarGlow.cs (Cilbox, avatar)"
+using Basis.Scripts.BasisSdk;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class AvatarGlow : MonoBehaviour
+{
+    public GameObject glow;
+    BasisAvatar avatar;
+
+    void Start()
+    {
+        avatar = BasisAvatar.GetGameObject(this).GetComponent<BasisAvatar>();
+        avatar.OnAvatarReady += OnReady;
+    }
+
+    void OnReady(bool isOwner)
+    {
+        glow.SetActive(isOwner);
+    }
+}
+```
+
+| Membro | Uso |
+| --- | --- |
+| `OnAvatarReady(bool isOwner)` | Si attiva quando l'avatar è configurato. `isOwner` è true sul client di chi lo indossa. |
+| `IsOwnedLocally` | True sul client di chi lo indossa. |
+| `Animator`, `FaceVisemeMesh`, `HumanScale` | Leggono il rig dell'avatar. |
+| `TryGetLinkedPlayer(out ushort playerId)` | L'ID giocatore di chi lo indossa. |
+| `PlayspaceInput` | Controlla il movimento di chi lo indossa (solo chi lo indossa). |
+
+## Solo chi lo indossa o tutti
+
+| Eseguito su | Per |
+| --- | --- |
+| **Solo chi lo indossa** (`IsOwnedLocally`) | Menu, feedback aptico, salvataggi, input, invio di eventi di rete. |
+| **Tutti** | Effetti visivi che seguono lo stato sincronizzato: particelle, materiali, suoni. |
+
+```csharp
+void Update()
+{
+    if (!avatar.IsOwnedLocally) return;
+    // wearer's input and decisions here
+}
+```
+
+## Sincronizzare lo stato dell'avatar
+
+- Valori personalizzati: ottieni un `BasisNetworkShim` e invia [eventi di rete](/it/docs/scripting/networking/network-events#cilbox) da chi lo indossa, poi applicali su ogni client.
+- Parti in movimento: `BasisSyncedTransform` è consentito sugli avatar.
+
+## Scheda delle impostazioni su un avatar
+
+```csharp
+void OnReady(bool isOwner)
+{
+    if (!isOwner) return;
+    BasisMenuPage page = BasisMenuShim.AddSettingsTab(this, "My Avatar");
+    page?.AddToggle("Glow", true, on => glow.SetActive(on));
+}
+```
+
+<Callout type="warn">
+Tutto ciò che la sandbox degli avatar consente, l'avatar di uno sconosciuto può farlo sul tuo computer. Per questo la sandbox degli avatar è la più restrittiva delle tre: niente telecamere, niente luci, niente richieste web, e il feedback aptico raggiunge solo chi indossa l'avatar.
+</Callout>

@@ -1,0 +1,53 @@
+---
+title: 음성 무대
+description: BasisVoiceRoutingShim을 사용해 발표자의 목소리를 큰 스피커에서 재생하는 무대.
+---
+
+```csharp title="VoiceStage.cs (Cilbox, world)"
+using Basis.Scripts.Networking.NetworkedAvatar;
+using Basis.Shims;
+using Cilbox;
+using UnityEngine;
+
+[Cilboxable]
+public class VoiceStage : MonoBehaviour
+{
+    public Collider stageArea;
+    public Transform speaker;
+    public float range = 60f;
+
+    int route = -1;
+    ushort routedPlayer;
+    float nextCheck;
+
+    void Update()
+    {
+        if (Time.time < nextCheck) return;
+        nextCheck = Time.time + 0.5f;
+
+        BasisNetworkPlayer onStage = null;
+        foreach (BasisNetworkPlayer p in BasisNetworkPlayer.GetAllPlayers())
+        {
+            if (p.Player != null && stageArea.bounds.Contains(p.Player.GetPosition())) { onStage = p; break; }
+        }
+
+        if (onStage != null && route >= 0 && onStage.playerId == routedPlayer) return;
+        Stop();
+        if (onStage == null || !BasisVoiceRoutingShim.HasConsent(onStage)) return;
+        route = BasisVoiceRoutingShim.RouteVoiceToObject(onStage, speaker, 2f, range);
+        routedPlayer = onStage.playerId;
+    }
+
+    void Stop()
+    {
+        if (route >= 0) BasisVoiceRoutingShim.StopVoiceRoute(route);
+        route = -1;
+    }
+
+    void OnDestroy() => Stop();
+}
+```
+
+- 각 클라이언트가 이미 가진 위치 정보로 목소리를 로컬에서 라우팅합니다. 추가 네트워크 트래픽은 없습니다.
+- 발표자의 동의를 먼저 확인합니다. 음성 라우팅을 허용하지 않은 플레이어의 목소리는 평소처럼 들립니다.
+- **Basis > Tools > Cilbox Permissions**에서 샌드박스에 `BasisNetworkPlayer.GetAllPlayers`가 허용되어 있는지 확인하세요.
