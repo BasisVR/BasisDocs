@@ -1,1 +1,1 @@
-{ "title": "Référence des shims", "pages": ["index", "players", "input", "events", "networking", "data", "menus", "rendering-and-audio", "batching", "avatar"] }
+{ "title": "Référence des shims Cilbox", "pages": ["index", "players", "input", "events", "networking", "data", "menus", "rendering-and-audio", "spawning", "script-bus", "batching", "avatar", "pose"] }

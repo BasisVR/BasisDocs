@@ -1,6 +1,6 @@
 ---
 title: Players
-description: BasisPlayersShim, BasisVelocityShim, BasisPlayspaceInputShim, BasisSeatShim, BasisAvatarSwitchShim and BasisPermissionsShim.
+description: BasisPlayersShim, BasisVelocityShim, BasisPlayspaceInputShim, BasisSeatShim, BasisLockShim, BasisEyeTrackingShim, BasisAvatarSwitchShim and BasisPermissionsShim.
 ---
 
 ## BasisPlayersShim
@@ -57,6 +57,43 @@ if (BasisSeatShim.IsSeated)
     seatLabel.text = seat.name;
 }
 ```
+
+## BasisLockShim
+
+Locks the local player's movement, look rotation or crouching, in any mix. Worlds, props the local player spawned and the avatar they wear lock straight away. Someone else's avatar or prop has to ask first, and the player gets a prompt naming who wants it.
+
+```csharp
+BasisLockShim.Lock(this, BasisPlayerLock.Movement | BasisPlayerLock.Crouching, result =>
+{
+    if (result == BasisLockResult.Locked) countdown.SetActive(true);
+});
+
+bool mine = BasisLockShim.IsLocking(this, BasisPlayerLock.Movement);
+bool anyone = BasisLockShim.IsLocked(this, BasisPlayerLock.LookRotation);
+
+BasisLockShim.Unlock(this, BasisPlayerLock.Movement);
+BasisLockShim.UnlockAll(this);
+```
+
+`Lock` returns true only when the lock took on the spot. A prompt answers later on the callback with `Locked`, `Declined`, `Blocked`, `Busy` (another prompt is open), `Unsupported` or `Throttled` (the script keeps re-locking). `IsGranted(this, kinds)` says whether the player already said yes. Locks lift when the script is disabled or the player respawns, and for 10 seconds after a respawn new locks are refused.
+
+## BasisEyeTrackingShim
+
+The local player's eye gaze, eye angles and how open their eyes are. Worlds, props the local player spawned and the wearer's avatar; anything else reads nothing.
+
+```csharp
+if (BasisEyeTrackingShim.TryGetGaze(this, out Vector3 origin, out Vector3 direction))
+{
+    gazeDot.position = origin + direction * 2f;
+}
+
+bool eyes = BasisEyeTrackingShim.GetGazeOrHead(this, out Vector3 from, out Vector3 forward); // false means head forward
+BasisEyeTrackingShim.TryGetOpenness(this, out float leftOpen, out float rightOpen);
+BasisEyeTrackingShim.TryGetEyeAngles(this, out Vector2 leftEye, out Vector2 rightEye); // yaw, pitch in degrees
+BasisEyeGazeSource source = BasisEyeTrackingShim.GetSource(this);
+```
+
+`FindLookTarget(this, xs, ys, zs, radii, count, toleranceDegrees, headFallback)` returns the index of the sphere the player is looking at, or -1. `Fill(this, state)` writes everything into a float array of `BasisEyeTrackingShim.Length` and returns `FlagGaze`, `FlagAngles`, `FlagOpenness` and `FlagHead` bits for the parts that were valid.
 
 ## BasisAvatarSwitchShim
 
