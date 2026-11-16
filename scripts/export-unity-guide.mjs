@@ -12,7 +12,7 @@ if (!basisRoot) {
 const outDir = path.join(basisRoot, 'Basis', 'Packages', 'com.basis.shim', 'Shims', 'Editor', 'CreatorGuide');
 
 const sections = [
-  { title: 'Scripting', pages: ['scripting/native-and-cilbox', 'scripting/common-usages', 'scripting/sandbox-rules', 'scripting/allowed-components', 'scripting/avatar-scripting'] },
+  { title: 'Scripting', pages: ['scripting/native-and-cilbox', 'scripting/common-usages', 'scripting/sandbox-rules', 'scripting/allowed-components', 'scripting/packages', 'scripting/avatar-scripting'] },
   { folder: 'scripting/networking' },
   { folder: 'scripting/examples' },
   { folder: 'scripting/shims' },

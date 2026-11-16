@@ -1,6 +1,6 @@
 ---
 title: Data
-description: BasisSaveShim, BasisServerStorageShim, BasisJson, BasisWebRequestShim, BasisExternalLinkShim and the image and text downloaders.
+description: BasisSaveShim, BasisServerStorageShim, BasisJson, BasisWebRequestShim, BasisExternalLinkShim, BasisUrl and the image and text downloaders.
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
@@ -114,5 +114,20 @@ public void OnLinkPressed()
     {
         if (result != BasisExternalLinkResult.Opened) label.text = "example.com";
     });
+}
+```
+
+## BasisUrl
+
+A web address set in the inspector that a script can read but not change. Worlds and props.
+
+```csharp
+using Basis;
+
+public BasisUrl homepage;
+
+public void OnLinkPressed()
+{
+    BasisExternalLinkShim.Open(this, homepage.url, result => { });
 }
 ```

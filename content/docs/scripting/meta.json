@@ -8,6 +8,7 @@
     "common-usages",
     "sandbox-rules",
     "allowed-components",
+    "packages",
     "avatar-scripting",
     "networking",
     "examples",
